@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V5.6</title>
+    <title>BROOKLYN-TERMINAL // V5.8</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -169,7 +169,11 @@
             </div>
             <div class="stock-drag-item" draggable="true" id="stockDraggable">
                 <div style="display:flex; flex-direction:column;"><span id="selectedStockName" style="font-weight:bold; font-size:1rem;">AAPL Apple</span><span style="font-size:0.8rem; opacity:0.7;">Drag to Grid</span></div>
-                <span id="selectedStockPrice" style="font-size:1.2rem; font-weight:bold; color:var(--stock-up);">175.00 ▲</span>
+                <span id="selectedStockPrice" style="display:flex; flex-direction:column; align-items:end;">
+                    <!-- Placeholders for targeted updates -->
+                    <div id="preview-price" style="font-size:1.2rem; font-weight:bold; color:var(--stock-up);">175.00</div>
+                    <div id="preview-change" style="font-size:0.6em; color:var(--stock-up);">▲ 1.20</div>
+                </span>
             </div>
             <div style="margin-top: auto;"></div>
             <div class="sidebar-title">Controls</div>
@@ -187,7 +191,7 @@
         const selectedStockName = document.getElementById('selectedStockName'), selectedStockPrice = document.getElementById('selectedStockPrice'), gridResizer = document.getElementById('gridResizer');
         const sidebar = document.getElementById('sidebar'), sidebarToggle = document.getElementById('sidebarToggle');
         let items = [], activeColor = '#007bff', currentStock = { symbol: 'AAPL', name: 'Apple Inc.', price: 175.00, change: 1.20, history: [], type: 'stock' };
-        let isSidebarCollapsed = false, isLiveConnectionFailed = false, cryptoErrorLogged = false;
+        let isSidebarCollapsed = false, isLiveConnectionFailed = false, cryptoDataAvailable = false;
 
         const stockCategories = {
             'US': [{ s: 'AAPL', n: 'Apple Inc.' }, { s: 'TSLA', n: 'Tesla Inc.' }, { s: 'NVDA', n: 'NVIDIA' }, { s: 'MSFT', n: 'Microsoft' }, { s: 'GOOGL', n: 'Alphabet' }, { s: 'AMZN', n: 'Amazon' }],
@@ -203,8 +207,15 @@
             'SOL-USD': 'solana', 'ADA-USD': 'cardano', 'XRP-USD': 'xrp', 'DOT-USD': 'polkadot'
         };
         const mockStockData = {};
+        // Init Mock Data - Crypto starts empty until fetch
         Object.values(stockCategories).flat().forEach(item => {
-            mockStockData[item.s] = { symbol: item.s, name: item.n, price: Math.random() * 500 + 50, change: 0, isCrypto: !!cryptoMapping[item.s], history: generateHistory(Math.random() * 500 + 50, 60) };
+            const isCrypto = !!cryptoMapping[item.s];
+            mockStockData[item.s] = { 
+                symbol: item.s, name: item.n, 
+                price: isCrypto ? 0 : Math.random() * 500 + 50, 
+                change: 0, isCrypto: isCrypto, 
+                history: isCrypto ? [] : generateHistory(Math.random() * 500 + 50, 60) 
+            };
         });
         const mockNews = [
             { title: "Wall Street Futures Swing Amid Volatility", time: "6m ago", source: "Bloomberg", summary: "US stock futures fluctuated as major indices faced weekly losses." },
@@ -223,42 +234,44 @@
             return history;
         }
 
-        // Dual API Fetch with Failover
         async function updateCryptoPrices() {
-            // Build list of IDs from cryptoMapping
             const ids = Object.values(cryptoMapping).join(',');
-            // Try CoinCap first
             try {
                 const response = await fetch(`https://api.coincap.io/v2/assets?ids=${ids}`);
                 if (!response.ok) throw new Error("CoinCap failed");
                 const result = await response.json();
                 if (result.data) {
+                    let hasData = false;
                     result.data.forEach(coin => {
                         const symbol = Object.keys(cryptoMapping).find(key => cryptoMapping[key] === coin.id);
-                        updateLocalCryptoData(symbol, parseFloat(coin.priceUsd), parseFloat(coin.changePercent24Hr));
+                        if(symbol) {
+                            updateLocalCryptoData(symbol, parseFloat(coin.priceUsd), parseFloat(coin.changePercent24Hr));
+                            hasData = true;
+                        }
                     });
-                    isLiveConnectionFailed = false; cryptoErrorLogged = false;
-                    return; // Success
+                    cryptoDataAvailable = hasData;
+                    isLiveConnectionFailed = false;
                 }
             } catch (e) {
-                // Failover to CoinGecko
+                console.warn("Crypto API failed, fallback...");
                 try {
-                    // Note: CoinGecko IDs might slightly differ, for now assume mapping roughly works or falls back to simple list
-                    // Correcting mapped IDs for CoinGecko where different
                     const cgIds = ids.replace('binance-coin', 'binancecoin').replace('xrp', 'ripple'); 
                     const response2 = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cgIds}&vs_currencies=usd&include_24hr_change=true`);
                     if (!response2.ok) throw new Error("CoinGecko failed");
                     const result2 = await response2.json();
+                    let hasData = false;
                     Object.keys(result2).forEach(id => {
-                        // Reverse map might need adjustment for ripple/binancecoin if implemented fully
-                        // For now, this covers the main ones that match
                         const symbol = Object.keys(cryptoMapping).find(key => cryptoMapping[key] === id || (id==='ripple' && cryptoMapping[key]==='xrp'));
-                        if(symbol) updateLocalCryptoData(symbol, result2[id].usd, result2[id].usd_24h_change);
+                        if(symbol) {
+                            updateLocalCryptoData(symbol, result2[id].usd, result2[id].usd_24h_change);
+                            hasData = true;
+                        }
                     });
-                    isLiveConnectionFailed = false; cryptoErrorLogged = false;
+                    cryptoDataAvailable = hasData;
+                    isLiveConnectionFailed = false;
                 } catch (e2) {
-                    // Both failed
-                    if (!cryptoErrorLogged) { console.warn("All Crypto APIs failed. Using simulation."); cryptoErrorLogged = true; }
+                    console.warn("All APIs failed.");
+                    cryptoDataAvailable = false;
                     isLiveConnectionFailed = true;
                 }
             }
@@ -267,8 +280,11 @@
         function updateLocalCryptoData(symbol, price, change) {
             if (symbol && mockStockData[symbol]) {
                 const data = mockStockData[symbol];
-                if (Math.abs(data.price - price) / price > 0.5) data.history = generateHistory(price, 60);
-                else {
+                // If first time or drastic change (reconnection), regen history
+                if (data.history.length === 0 || Math.abs(data.price - price) / (data.price || 1) > 0.5) {
+                    data.history = generateHistory(price, 60);
+                } else {
+                    // Smooth update
                     let last = data.history[data.history.length - 1];
                     last.close = price; last.high = Math.max(last.high, price); last.low = Math.min(last.low, price);
                     if (Math.random() > 0.9) { data.history.push({open: price, high: price, low: price, close: price}); if(data.history.length > 100) data.history.shift(); }
@@ -280,7 +296,8 @@
         function simulateMarket() {
             Object.keys(mockStockData).forEach(symbol => {
                 const data = mockStockData[symbol];
-                if (!data.isCrypto || isLiveConnectionFailed) {
+                // Only simulate stocks/indices. NEVER simulate crypto.
+                if (!data.isCrypto) {
                     const change = (Math.random() - 0.5) * (data.price * 0.005), newPrice = data.price + change;
                     let last = data.history[data.history.length - 1];
                     last.close = newPrice; last.high = Math.max(last.high, newPrice); last.low = Math.min(last.low, newPrice);
@@ -288,38 +305,68 @@
                     data.price = newPrice; data.change = change;
                 }
             });
-            if (currentStock.symbol && mockStockData[currentStock.symbol]) updateStockDisplay(mockStockData[currentStock.symbol]);
+            
+            // Update Sidebar Preview (Targeted DOM update)
+            if (currentStock.symbol && mockStockData[currentStock.symbol]) updateSidebarPreview(mockStockData[currentStock.symbol]);
+
+            // Update Grid Items
             items.forEach(item => {
                 if(item.type === 'stock' && item.stockData) {
                     const symbol = item.stockData.symbol;
                     if(mockStockData[symbol]) {
-                        item.stockData.price = mockStockData[symbol].price; item.stockData.change = mockStockData[symbol].change; item.stockData.history = mockStockData[symbol].history;
+                        // Sync data from source of truth
+                        item.stockData.price = mockStockData[symbol].price; 
+                        item.stockData.change = mockStockData[symbol].change; 
+                        item.stockData.history = mockStockData[symbol].history;
+                        // Targeted re-render
                         renderStockContent(item);
                     }
                 } else if (item.type === 'clock') renderClockContent(item);
             });
         }
 
-        function updateStockDisplay(stock) {
+        function updateSidebarPreview(stock) {
             selectedStockName.innerText = `${stock.symbol} ${stock.name}`;
-            const isUp = stock.change >= 0;
-            const liveTag = (stock.isCrypto && !isLiveConnectionFailed) ? '<span style="font-size:0.5em; border:1px solid; padding:1px 3px; border-radius:3px; margin-left:5px; color:#0f0; border-color:#0f0;">LIVE</span>' : '';
-            selectedStockPrice.innerHTML = `<div style="display:flex; align-items:center; gap:5px;">${stock.price.toFixed(2)}${liveTag}</div><div style="font-size:0.6em; margin-top:5px; color:${isUp ? 'var(--stock-up)' : 'var(--stock-down)'}">${isUp ? '▲' : '▼'} ${Math.abs(stock.change).toFixed(2)}${stock.isCrypto ? '%' : ''}</div>`;
-            currentStock = stock;
+            
+            const pPrice = document.getElementById('preview-price');
+            const pChange = document.getElementById('preview-change');
+            
+            if (stock.isCrypto && !cryptoDataAvailable) {
+                pPrice.innerText = "No Data";
+                pChange.innerText = "Temporarily Unavailable";
+                pPrice.style.color = 'var(--text-secondary)';
+                pChange.style.color = 'var(--text-secondary)';
+            } else {
+                const isUp = stock.change >= 0;
+                const suffix = stock.isCrypto ? '%' : '';
+                const liveTag = (stock.isCrypto && cryptoDataAvailable) ? ' [LIVE]' : '';
+                
+                pPrice.innerText = `${stock.price.toFixed(2)}${liveTag}`;
+                pPrice.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
+                
+                pChange.innerText = `${isUp ? '▲' : '▼'} ${Math.abs(stock.change).toFixed(2)}${suffix}`;
+                pChange.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
+            }
+            currentStock = stock; // Sync reference
         }
 
         function populateStockList(category) {
             stockList.innerHTML = ''; const list = stockCategories[category] || [];
             list.forEach(item => { const opt = document.createElement('option'); opt.value = item.s; opt.innerText = `${item.s} ${item.n}`; stockList.appendChild(opt); });
-            if(list.length > 0) { stockList.value = list[0].s; currentStock.symbol = list[0].s; updateStockDisplay(mockStockData[list[0].s]); }
+            if(list.length > 0) { 
+                stockList.value = list[0].s; 
+                currentStock.symbol = list[0].s; 
+                // Force initial update
+                updateSidebarPreview(mockStockData[list[0].s]); 
+            }
         }
 
         categoryList.addEventListener('change', (e) => populateStockList(e.target.value)); populateStockList('US');
-        stockList.addEventListener('change', (e) => { const symbol = e.target.value; if(mockStockData[symbol]) { currentStock.symbol = symbol; updateStockDisplay(mockStockData[symbol]); }});
-        stockSearch.addEventListener('input', (e) => { const val = e.target.value.toUpperCase(); const found = Object.values(mockStockData).find(d => d.symbol.includes(val) || d.name.toUpperCase().includes(val)); if(found) { currentStock.symbol = found.symbol; updateStockDisplay(found); }});
+        stockList.addEventListener('change', (e) => { const symbol = e.target.value; if(mockStockData[symbol]) { currentStock.symbol = symbol; updateSidebarPreview(mockStockData[symbol]); }});
+        stockSearch.addEventListener('input', (e) => { const val = e.target.value.toUpperCase(); const found = Object.values(mockStockData).find(d => d.symbol.includes(val) || d.name.toUpperCase().includes(val)); if(found) { currentStock.symbol = found.symbol; updateSidebarPreview(found); }});
 
         setInterval(simulateMarket, 1000);
-        setInterval(updateCryptoPrices, 15000); // Increased interval to avoid rate limits
+        setInterval(updateCryptoPrices, 30000); 
         updateCryptoPrices();
 
         sidebarToggle.addEventListener('click', () => { isSidebarCollapsed = !isSidebarCollapsed; if (isSidebarCollapsed) { sidebar.classList.add('collapsed'); sidebarToggle.innerHTML = '&gt;'; } else { sidebar.classList.remove('collapsed'); sidebarToggle.innerHTML = '&lt;'; }});
@@ -363,28 +410,89 @@
         }
 
         function deleteItem(id) { const idx = items.findIndex(i => i.id === id); if (idx > -1) { items[idx].el.remove(); items.splice(idx, 1); } }
-        function renderClockContent(item) { const container = item.el.querySelector('.content-container'), now = new Date(), fontSize = item.w / 5; container.innerHTML = `<div class="clock-layout" style="font-size:${fontSize}px">${now.toLocaleTimeString('en-US', { hour12: false })}</div>`; }
-        function renderNewsContent(item) { const container = item.el.querySelector('.content-container'); let newsHTML = `<div class="news-layout"><div class="news-header widget-header">最新動態 (Market)</div>`; mockNews.forEach(news => { newsHTML += `<div class="news-card"><div class="news-meta"><span>${news.source}</span> • <span>${news.time}</span></div><div class="news-title">${news.title}</div><div class="news-summary">${news.summary}</div></div>`; }); newsHTML += `</div>`; container.innerHTML = newsHTML; }
+        function renderClockContent(item) { const container = item.el.querySelector('.content-container'), now = new Date(), fontSize = item.w / 6.5; container.innerHTML = `<div class="clock-layout" style="font-size:${fontSize}px">${now.toLocaleTimeString('en-US', { hour12: false })}</div>`; }
+        function renderNewsContent(item) { const container = item.el.querySelector('.content-container'); if(container.querySelector('.news-layout')) return; let newsHTML = `<div class="news-layout"><div class="news-header widget-header">最新動態 (Market)</div>`; mockNews.forEach(news => { newsHTML += `<div class="news-card"><div class="news-meta"><span>${news.source}</span> • <span>${news.time}</span></div><div class="news-title">${news.title}</div><div class="news-summary">${news.summary}</div></div>`; }); newsHTML += `</div>`; container.innerHTML = newsHTML; }
         function renderChatContent(item) {
-            const container = item.el.querySelector('.content-container'); container.innerHTML = `<div class="chat-layout"><div class="chat-header widget-header"><span>LLM CHAT</span><span style="font-size:0.8em; opacity:0.7;">ONLINE</span></div><div class="chat-history" id="history-${item.id}"><div class="chat-msg sys">System initialized. Select model and type command.</div></div><div class="chat-input-area"><input type="text" class="chat-input" placeholder="Type command..." id="input-${item.id}"><select class="chat-model-select" id="model-${item.id}"><option value="llama3">Llama 3</option><option value="deepseek">DeepSeek</option></select><button class="chat-send-btn" id="btn-${item.id}">SEND</button></div></div>`;
+            const container = item.el.querySelector('.content-container'); if(container.querySelector('.chat-layout')) return;
+            container.innerHTML = `<div class="chat-layout"><div class="chat-header widget-header"><span>LLM CHAT</span><span style="font-size:0.8em; opacity:0.7;">ONLINE</span></div><div class="chat-history" id="history-${item.id}"><div class="chat-msg sys">System initialized. Select model and type command.</div></div><div class="chat-input-area"><input type="text" class="chat-input" placeholder="Type command..." id="input-${item.id}"><select class="chat-model-select" id="model-${item.id}"><option value="llama3">Llama 3</option><option value="deepseek">DeepSeek</option></select><button class="chat-send-btn" id="btn-${item.id}">SEND</button></div></div>`;
             const input = container.querySelector(`#input-${item.id}`), btn = container.querySelector(`#btn-${item.id}`), history = container.querySelector(`#history-${item.id}`), modelSelect = container.querySelector(`#model-${item.id}`);
             const sendMsg = () => { const text = input.value.trim(); if(!text) return; const userDiv = document.createElement('div'); userDiv.className = 'chat-msg user'; userDiv.innerText = text; history.appendChild(userDiv); input.value = ''; history.scrollTop = history.scrollHeight; setTimeout(() => { const selectedModel = modelSelect.value === 'llama3' ? 'Llama 3' : 'DeepSeek'; const sysDiv = document.createElement('div'); sysDiv.className = 'chat-msg sys'; sysDiv.innerText = `[${selectedModel}] Processing request... Analysis complete. Market volatility is high.`; history.appendChild(sysDiv); history.scrollTop = history.scrollHeight; }, 800); };
             btn.onclick = sendMsg; input.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMsg(); });
         }
         function renderStockContent(item) {
             if (!item.stockData) return;
-            const container = item.el.querySelector('.content-container'), data = item.stockData, isUp = data.change >= 0, trendClass = isUp ? 'up' : 'down';
-            let chartSVG = '', xAxisLabels = '', displayHistory = data.history;
-            if (item.viewMode === 'candle') {
-                const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50; displayHistory = data.history.slice(-count);
-                chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4); xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange);
-            } else {
-                const prices = data.history.map(d => d.close), pathD = generateSparkline(prices, item.w, item.h * 0.4);
-                chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`;
+            const container = item.el.querySelector('.content-container'), data = item.stockData;
+            
+            // --- Targeted DOM Update Implementation ---
+            // Instead of replacing innerHTML every time, check if structure exists
+            let layout = container.querySelector('.stock-layout');
+            if (!layout) {
+                // Initial Render
+                const isUp = data.change >= 0;
+                const trendClass = isUp ? 'up' : 'down';
+                const updateTimeHtml = item.showTime ? `<div class="stock-footer-info" id="time-${item.id}">Last: ${new Date().toLocaleTimeString()}</div>` : '';
+                container.innerHTML = `<div class="stock-layout ${trendClass}" id="layout-${item.id}"><div class="stock-header"><span>${data.symbol} ${data.name}</span><span id="change-${item.id}" style="font-size:0.8em">${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}</span></div><div class="stock-price-large ${trendClass}" id="price-${item.id}">${data.price.toFixed(2)}</div><svg class="stock-chart" id="chart-${item.id}" preserveAspectRatio="none" viewBox="0 0 ${item.w} ${item.h*0.4 + 20}"></svg>${updateTimeHtml}</div>`;
+                layout = container.querySelector('.stock-layout');
             }
-            const updateTimeHtml = item.showTime ? `<div class="stock-footer-info">Last: ${new Date().toLocaleTimeString()}</div>` : '';
-            container.innerHTML = `<div class="stock-layout ${trendClass}"><div class="stock-header"><span>${data.symbol} ${data.name}</span><span style="font-size:0.8em">${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}</span></div><div class="stock-price-large ${trendClass}">${data.price.toFixed(2)}</div><svg class="stock-chart" preserveAspectRatio="none" viewBox="0 0 ${item.w} ${item.h*0.4 + 20}">${chartSVG}${xAxisLabels}</svg>${updateTimeHtml}</div>`;
+
+            // Check No Data state for Crypto
+            if (data.isCrypto && !cryptoDataAvailable) {
+                const priceEl = container.querySelector(`#price-${item.id}`);
+                if(priceEl) {
+                    priceEl.innerText = "暫時無資訊";
+                    priceEl.style.fontSize = "1.2em";
+                    priceEl.style.color = "var(--text-secondary)";
+                }
+                const changeEl = container.querySelector(`#change-${item.id}`);
+                if(changeEl) changeEl.innerText = "";
+                const chartEl = container.querySelector(`#chart-${item.id}`);
+                if(chartEl) chartEl.innerHTML = ""; // Clear chart
+                return;
+            }
+
+            // Normal Update
+            const isUp = data.change >= 0;
+            const trendClass = isUp ? 'up' : 'down';
+            
+            // Update classes
+            layout.className = `stock-layout ${trendClass}`;
+            const priceEl = container.querySelector(`#price-${item.id}`);
+            if(priceEl) {
+                priceEl.className = `stock-price-large ${trendClass}`;
+                priceEl.innerText = data.price.toFixed(2);
+                priceEl.style.fontSize = ""; // Reset if previously No Data
+            }
+            const changeEl = container.querySelector(`#change-${item.id}`);
+            if(changeEl) changeEl.innerText = `${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}${data.isCrypto?'%':''}`;
+
+            // Re-draw Chart (SVG requires redraw)
+            const chartEl = container.querySelector(`#chart-${item.id}`);
+            if(chartEl) {
+                let chartSVG = '', xAxisLabels = '', displayHistory = data.history;
+                if (item.viewMode === 'candle') {
+                    const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50; displayHistory = data.history.slice(-count);
+                    chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4); xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange);
+                } else {
+                    const prices = data.history.map(d => d.close), pathD = generateSparkline(prices, item.w, item.h * 0.4);
+                    chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`;
+                }
+                chartEl.innerHTML = chartSVG + xAxisLabels;
+                chartEl.setAttribute('viewBox', `0 0 ${item.w} ${item.h*0.4 + 20}`);
+            }
+            
+            // Update time if exists
+            const timeEl = container.querySelector(`#time-${item.id}`);
+            if(timeEl) timeEl.innerText = `Last: ${new Date().toLocaleTimeString()}`;
+            else if(item.showTime) {
+                 // Handle case where toggled on
+                 const footer = document.createElement('div');
+                 footer.className = "stock-footer-info";
+                 footer.id = `time-${item.id}`;
+                 footer.innerText = `Last: ${new Date().toLocaleTimeString()}`;
+                 layout.appendChild(footer);
+            }
         }
+
         function generateSparkline(data, w, h) {
             if (!data.length) return ""; const max = Math.max(...data), min = Math.min(...data), range = max - min || 1, stepX = w / (data.length - 1); let d = `M 0 ${h - ((data[0] - min) / range * h)}`; for (let i = 1; i < data.length; i++) d += ` L ${i * stepX} ${h - ((data[i] - min) / range * h)}`; return d;
         }
