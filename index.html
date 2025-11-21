@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V6.4</title>
+    <title>BROOKLYN-TERMINAL // V7.1 PRO</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
+            /* Default Cyberpunk Theme */
             --bg-body: #050505; --bg-panel: #111111; --grid-bg: #0a0a0a;
             --text-primary: #00ffcc; --text-secondary: #888;
             --border-color: #333; --accent-color: #00ffcc;
@@ -18,7 +19,10 @@
             --input-bg: rgba(0,0,0,0.5); --input-text: #00ffcc;
             --msg-user-bg: rgba(0, 255, 204, 0.1); --msg-sys-bg: rgba(255, 255, 255, 0.05);
             --btn-bg: rgba(0, 255, 204, 0.1);
+            --font-main: 'Rajdhani', 'Orbitron', sans-serif;
+            --border-radius: 4px;
         }
+
         [data-theme="light"] {
             --bg-body: #e8eef2; --bg-panel: #ffffff; --grid-bg: #f4f7f9;
             --text-primary: #2c3e50; --text-secondary: #555;
@@ -30,67 +34,124 @@
             --msg-user-bg: rgba(0, 102, 204, 0.1); --msg-sys-bg: rgba(0, 0, 0, 0.03);
             --btn-bg: rgba(0, 0, 0, 0.05);
         }
-        * { box-sizing: border-box; user-select: none; font-family: 'Rajdhani', 'Orbitron', sans-serif; }
+
+        /* --- PRO MODE (Bloomberg Style) --- */
+        [data-pro="true"] {
+            --bg-body: #000000; 
+            --bg-panel: #1a1a1a; 
+            --grid-bg: #000000;
+            --text-primary: #ff9800; /* Bloomberg Amber/Orange */
+            --text-secondary: #ffcc80;
+            --border-color: #ff9800; 
+            --accent-color: #ff9800;
+            --grid-line: rgba(255, 152, 0, 0.15); 
+            --grid-line-strong: rgba(255, 152, 0, 0.3);
+            --handle-color: #ffffff; 
+            --shadow-glow: none;
+            --glass-bg: #000000; 
+            --error-color: #ff3333;
+            --stock-up: #00ff00; /* Classic Terminal Green */
+            --stock-down: #ff3333; /* Classic Terminal Red */
+            --input-bg: #000000; 
+            --input-text: #ff9800;
+            --msg-user-bg: #331a00; 
+            --msg-sys-bg: #1a1a1a;
+            --btn-bg: #331a00;
+            --font-main: 'Consolas', 'Monaco', 'Courier New', monospace;
+            --border-radius: 0px; /* Sharp corners */
+        }
+
+        * { box-sizing: border-box; user-select: none; font-family: var(--font-main); }
+
+        /* Pro Mode Global Overrides */
+        [data-pro="true"] * {
+            text-transform: uppercase !important; /* All Caps for seriousness */
+            letter-spacing: 0.5px;
+            box-shadow: none !important; /* No shadows allowed */
+        }
+        [data-pro="true"] .grid-item {
+            border: 1px solid var(--border-color) !important;
+        }
+        [data-pro="true"] .sidebar {
+            border-right: 2px solid var(--border-color);
+        }
+        [data-pro="true"] header {
+            border-bottom: 2px solid var(--border-color);
+        }
+        [data-pro="true"] .stock-price-large {
+            font-family: 'Consolas', monospace; /* Ensure numbers are monospaced */
+        }
+
         body { margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-primary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
         header { height: 60px; background-color: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 20px; box-shadow: 0 2px 15px rgba(0,0,0,0.5); z-index: 20; justify-content: space-between; }
         .brand { font-family: 'Orbitron', sans-serif; font-weight: 900; letter-spacing: 3px; font-size: 1.5rem; text-transform: uppercase; text-shadow: var(--shadow-glow); display: flex; align-items: center; gap: 10px; }
+        [data-pro="true"] .brand { font-family: var(--font-main); text-shadow: none; }
         .brand span { color: var(--handle-color); }
-        .beta-badge { font-size: 0.7rem; background: var(--accent-color); color: #000; padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: bold; letter-spacing: 1px; transform: translateY(-2px); box-shadow: 0 0 5px var(--accent-color); }
+        .beta-badge { font-size: 0.7rem; background: var(--accent-color); color: #000; padding: 2px 6px; border-radius: var(--border-radius); margin-left: 5px; font-weight: bold; letter-spacing: 1px; transform: translateY(-2px); box-shadow: 0 0 5px var(--accent-color); }
         .logo-icon { width: 32px; height: 32px; fill: none; stroke: var(--accent-color); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 5px var(--accent-color)); }
         
         .sidebar { width: 300px; min-width: 250px; max-width: 500px; background-color: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: relative; z-index: 10; padding: 20px; overflow-y: auto; overflow-x: hidden; transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease; }
         .sidebar.collapsed { width: 70px; min-width: 70px; padding: 20px 10px; }
-        .sidebar.collapsed .sidebar-title, .sidebar.collapsed .stock-selector, .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .tool-item span, .sidebar.collapsed .stock-drag-item > div, .sidebar.collapsed .sidebar-footer span, .sidebar.collapsed .sidebar-footer .switch, .sidebar.collapsed label, .sidebar.collapsed .control-btn-group span { display: none; }
+        .sidebar.collapsed .sidebar-title, .sidebar.collapsed .stock-selector, .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .tool-item span, .sidebar.collapsed .stock-drag-item > div, .sidebar.collapsed .sidebar-footer-content label, .sidebar.collapsed .control-btn-group span { display: none; }
         .sidebar.collapsed .tool-item, .sidebar.collapsed .stock-drag-item { justify-content: center; padding: 10px; }
         .sidebar.collapsed .stock-drag-item span#selectedStockPrice { font-size: 0.8rem; }
-        .sidebar.collapsed .sidebar-footer { justify-content: center; }
-        .sidebar.collapsed .sidebar-footer::after { content: '☀/☾'; font-size: 10px; opacity: 0.5; cursor: pointer; }
-        .sidebar-toggle-btn { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 12px; transition: all 0.2s; z-index: 20; }
+        .sidebar.collapsed .sidebar-footer-content { justify-content: center; }
+        .sidebar.collapsed .sidebar-footer-content::after { content: '⚙'; font-size: 12px; opacity: 0.5; cursor: pointer; }
+        .sidebar-toggle-btn { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: var(--border-radius); font-size: 12px; transition: all 0.2s; z-index: 20; }
         .sidebar-toggle-btn:hover { background: var(--accent-color); color: #000; }
         .sidebar.collapsed .sidebar-toggle-btn { right: 50%; transform: translateX(50%); top: 10px; }
         
         .sidebar-title { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px; margin-top: 20px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px; text-transform: uppercase; font-weight: 700; white-space: nowrap; }
         .sidebar-title:first-child { margin-top: 0; }
         
-        .color-picker-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: var(--input-bg); padding: 5px 10px; border-radius: 4px; border: 1px solid var(--border-color); width: fit-content; transition: all 0.3s; }
+        .color-picker-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: var(--input-bg); padding: 5px 10px; border-radius: var(--border-radius); border: 1px solid var(--border-color); width: fit-content; transition: all 0.3s; }
         .sidebar.collapsed .color-picker-container { width: 100%; justify-content: center; padding: 5px; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 24px; height: 24px; cursor: pointer; background: none; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border-color); }
 
         .control-btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 20px; }
-        .control-btn { background: var(--btn-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; font-family: 'Rajdhani'; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
+        .control-btn { background: var(--btn-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; font-family: var(--font-main); font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; border-radius: var(--border-radius); }
         .control-btn:hover { border-color: var(--accent-color); background: rgba(0, 255, 204, 0.2); }
+        [data-pro="true"] .control-btn:hover { background: var(--accent-color); color: #000; }
         .control-btn:active { transform: translateY(1px); }
         .sidebar.collapsed .control-btn { padding: 8px 0; }
 
-        .tool-item { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 15px; margin-bottom: 10px; cursor: grab; transition: all 0.2s; display: flex; align-items: center; gap: 15px; white-space: nowrap; }
+        .tool-item { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 15px; margin-bottom: 10px; cursor: grab; transition: all 0.2s; display: flex; align-items: center; gap: 15px; white-space: nowrap; border-radius: var(--border-radius); }
         .tool-item:hover { border-color: var(--accent-color); box-shadow: var(--shadow-glow); background: rgba(255,255,255,0.08); }
-        .tool-preview { width: 30px; height: 30px; border: 2px solid var(--text-primary); background: rgba(0, 255, 204, 0.1); flex-shrink: 0; }
+        .tool-preview { width: 30px; height: 30px; border: 2px solid var(--text-primary); background: rgba(0, 255, 204, 0.1); flex-shrink: 0; border-radius: var(--border-radius); }
+        [data-pro="true"] .tool-preview { background: transparent; border: 1px solid var(--accent-color); }
         .tool-preview.clock-icon { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border-color: var(--handle-color); }
+        [data-pro="true"] .tool-preview.clock-icon { border-radius: 0; border-color: var(--accent-color); }
         .tool-preview.icon-only { display: flex; align-items: center; justify-content: center; font-size: 16px; }
         
         .stock-selector { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         .stock-selector label { font-size: 12px; color: var(--text-secondary); margin-bottom: -5px; }
-        .stock-selector select, .stock-selector input { background: var(--input-bg); color: var(--input-text); border: 1px solid var(--border-color); padding: 10px; border-radius: 4px; outline: none; font-weight: 500; transition: background 0.3s, color 0.3s, border 0.3s; width: 100%; }
+        .stock-selector select, .stock-selector input { background: var(--input-bg); color: var(--input-text); border: 1px solid var(--border-color); padding: 10px; border-radius: var(--border-radius); outline: none; font-weight: 500; transition: background 0.3s, color 0.3s, border 0.3s; width: 100%; font-family: var(--font-main); }
         .stock-selector select:focus, .stock-selector input:focus { border-color: var(--accent-color); }
-        .stock-drag-item { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 15px; cursor: grab; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; white-space: nowrap; }
+        .stock-drag-item { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 15px; cursor: grab; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; border-radius: var(--border-radius); white-space: nowrap; }
         .stock-drag-item:hover { border-color: var(--accent-color); box-shadow: var(--shadow-glow); }
-        .sidebar-footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+        
+        .sidebar-footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
+        .sidebar-footer-content { display: flex; align-items: center; justify-content: space-between; width: 100%; }
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 20px; }
+        [data-pro="true"] .slider { border-radius: 0; border: 1px solid var(--border-color); }
         .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: #fff; transition: .4s; border-radius: 50%; }
+        [data-pro="true"] .slider:before { border-radius: 0; background-color: var(--accent-color); }
         input:checked + .slider { background-color: var(--accent-color); }
         input:checked + .slider:before { transform: translateX(20px); }
+        [data-pro="true"] input:checked + .slider { background-color: #000; }
 
         .main-container { display: flex; flex: 1; height: calc(100vh - 60px); }
         .workspace { flex: 1; background-color: #000; background-image: radial-gradient(var(--border-color) 1px, transparent 1px); background-size: 20px 20px; overflow: auto; padding: 50px; position: relative; }
         #grid-canvas { width: 1200px; height: 1200px; background-color: var(--grid-bg); position: relative; background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px); background-size: 20px 20px; border: 1px solid var(--accent-color); box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        [data-pro="true"] #grid-canvas { border: 2px solid var(--accent-color); box-shadow: none; background-image: linear-gradient(to right, rgba(255,152,0,0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,152,0,0.1) 1px, transparent 1px); }
         #grid-canvas::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px); background-size: 100px 100px; pointer-events: none; }
         .grid-resize-handle { width: 20px; height: 20px; background: var(--accent-color); position: absolute; bottom: -10px; right: -10px; cursor: nwse-resize; clip-path: polygon(100% 0, 100% 100%, 0 100%); z-index: 5; }
 
-        .grid-item { position: absolute; border: 1px solid rgba(255,255,255,0.3); box-sizing: border-box; display: flex; flex-direction: column; backdrop-filter: blur(5px); transition: box-shadow 0.2s, border-color 0.2s; }
+        .grid-item { position: absolute; border: 1px solid rgba(255,255,255,0.3); box-sizing: border-box; display: flex; flex-direction: column; backdrop-filter: blur(5px); transition: box-shadow 0.2s, border-color 0.2s; border-radius: var(--border-radius); }
         .grid-item:hover { box-shadow: 0 0 20px rgba(255,255,255,0.2); z-index: 100; border-color: var(--accent-color); }
         .grid-item.collision { background-color: rgba(255, 0, 51, 0.2) !important; border-color: var(--error-color) !important; box-shadow: 0 0 20px var(--error-color); }
         .content-container { width: 100%; height: 100%; overflow: hidden; position: relative; }
@@ -101,69 +162,62 @@
         .stock-price-large.up { color: var(--stock-up); }
         .stock-price-large.down { color: var(--stock-down); }
         .stock-chart { flex: 1; width: 100%; min-height: 0; opacity: 0.9; }
-        .clock-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--text-primary); pointer-events: none; }
+        .clock-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; font-family: var(--font-main); font-weight: bold; color: var(--text-primary); pointer-events: none; }
         .clock-city { margin-top: 5px; font-size: 0.3em; opacity: 0.7; text-transform: uppercase; }
         .news-layout { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 10px; overflow-y: auto; overflow-x: hidden; user-select: text; cursor: default; }
         .news-header { font-weight: bold; font-size: 1.1em; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; margin-bottom: 10px; color: var(--text-primary); cursor: move; }
-        .news-card { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+        .news-card { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 10px; margin-bottom: 10px; border-radius: var(--border-radius); }
         .news-card:hover { border-color: var(--accent-color); }
         .news-meta { display: flex; gap: 10px; font-size: 0.7em; color: var(--text-secondary); margin-bottom: 5px; align-items: center;}
         .news-title { font-weight: bold; font-size: 0.9em; margin-bottom: 5px; color: var(--text-primary); line-height: 1.3; }
         .news-summary { font-size: 0.8em; color: var(--text-secondary); line-height: 1.4; }
         .chat-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; }
-        .chat-header { padding: 8px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-family: 'Orbitron'; font-size: 0.9em; display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); cursor: move; }
+        .chat-header { padding: 8px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-family: var(--font-main); font-size: 0.9em; display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); cursor: move; }
         .chat-history { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; user-select: text; }
-        .chat-msg { padding: 8px; border-radius: 4px; font-size: 0.85em; max-width: 85%; word-wrap: break-word; }
+        .chat-msg { padding: 8px; border-radius: var(--border-radius); font-size: 0.85em; max-width: 85%; word-wrap: break-word; }
         .chat-msg.sys { align-self: flex-start; background: var(--msg-sys-bg); border-left: 2px solid var(--accent-color); color: var(--text-primary); }
         .chat-msg.user { align-self: flex-end; background: var(--msg-user-bg); border-right: 2px solid var(--text-primary); color: #fff; }
         .chat-input-area { padding: 8px; border-top: 1px solid var(--border-color); display: flex; gap: 5px; background: rgba(0,0,0,0.2); }
-        .chat-input { flex: 1; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 5px; outline: none; font-family: 'Rajdhani'; }
+        .chat-input { flex: 1; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 5px; outline: none; font-family: var(--font-main); border-radius: var(--border-radius); }
         .chat-input:focus { border-color: var(--accent-color); }
-        .chat-model-select { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 5px; outline: none; font-family: 'Rajdhani'; font-size: 0.8em; margin-right: 5px; cursor: pointer; }
+        .chat-model-select { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 5px; outline: none; font-family: var(--font-main); font-size: 0.8em; margin-right: 5px; cursor: pointer; border-radius: var(--border-radius); }
         .chat-model-select:focus { border-color: var(--accent-color); }
-        .chat-send-btn { background: var(--accent-color); color: #000; border: none; padding: 0 10px; cursor: pointer; font-weight: bold; font-family: 'Orbitron'; font-size: 0.8em; }
+        .chat-send-btn { background: var(--accent-color); color: #000; border: none; padding: 0 10px; cursor: pointer; font-weight: bold; font-family: var(--font-main); font-size: 0.8em; border-radius: var(--border-radius); }
         .chat-send-btn:hover { opacity: 0.8; }
         
+        /* Calculator Styles */
         .calc-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; }
         .calc-header { padding: 5px 10px; font-size: 0.8em; opacity: 0.7; border-bottom: 1px solid var(--border-color); cursor: move; }
-        .calc-display { flex: 1; background: rgba(0,0,0,0.3); color: var(--text-primary); font-family: 'Orbitron'; font-size: 1.5em; text-align: right; padding: 10px; display: flex; align-items: flex-end; justify-content: flex-end; overflow: hidden; }
+        .calc-display { flex: 1; background: rgba(0,0,0,0.3); color: var(--text-primary); font-family: var(--font-main); font-size: 1.5em; text-align: right; padding: 10px; display: flex; align-items: flex-end; justify-content: flex-end; overflow: hidden; }
         .calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 2px; background: var(--border-color); flex: 2; }
-        .calc-key { background: var(--bg-panel); border: none; color: var(--text-primary); font-family: 'Rajdhani'; font-size: 1.2em; cursor: pointer; transition: background 0.1s; }
+        .calc-key { background: var(--bg-panel); border: none; color: var(--text-primary); font-family: var(--font-main); font-size: 1.2em; cursor: pointer; transition: background 0.1s; border-radius: 0; }
         .calc-key:hover { background: rgba(255,255,255,0.1); }
         .calc-key.op { color: var(--accent-color); font-weight: bold; }
         .calc-key.eq { background: var(--accent-color); color: #000; }
         
+        /* Note Styles */
         .note-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; }
         .note-header { padding: 5px 10px; font-size: 0.8em; opacity: 0.7; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.2); cursor: move; display: flex; justify-content: space-between; }
-        .note-content { flex: 1; background: transparent; border: none; color: var(--text-primary); padding: 10px; font-family: 'Rajdhani'; font-size: 1em; overflow-y: auto; outline: none; white-space: pre-wrap; }
+        .note-content { flex: 1; background: transparent; border: none; color: var(--text-primary); padding: 10px; font-family: var(--font-main); font-size: 1em; overflow-y: auto; outline: none; white-space: pre-wrap; }
         .note-toolbar { display: flex; gap: 5px; padding: 5px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color); }
-        .note-btn { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; font-family: 'Rajdhani'; padding: 2px 8px; font-size: 0.8em; }
+        .note-btn { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; font-family: var(--font-main); padding: 2px 8px; font-size: 0.8em; border-radius: var(--border-radius); }
         .note-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
-        .note-select { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); font-family: 'Rajdhani'; font-size: 0.8em; cursor: pointer; }
-
-        /* System Monitor Styles */
-        .sys-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; overflow: hidden; }
-        .sys-header { padding: 5px 10px; font-size: 0.8em; opacity: 0.7; border-bottom: 1px solid var(--border-color); cursor: move; }
-        .sys-content { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 10px; font-family: 'Orbitron'; font-size: 0.8em; }
-        .sys-row { display: flex; align-items: center; gap: 10px; }
-        .sys-label { width: 40px; }
-        .sys-bar-container { flex: 1; height: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); position: relative; }
-        .sys-bar { height: 100%; background: var(--accent-color); transition: width 0.5s; }
-        .sys-val { width: 30px; text-align: right; }
-        .sys-graph-container { flex: 1; border: 1px solid var(--border-color); position: relative; overflow: hidden; background: rgba(0,0,0,0.2); }
-        .sys-canvas { width: 100%; height: 100%; display: block; }
+        .note-select { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); font-family: var(--font-main); font-size: 0.8em; cursor: pointer; border-radius: var(--border-radius); }
 
         .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
         .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
         .grid-item:hover .menu-trigger { opacity: 1; }
         .menu-trigger:hover { background: var(--accent-color); color: #000; }
-        .context-menu { position: absolute; top: 30px; right: 5px; background: var(--bg-panel); border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(0,0,0,0.8); border-radius: 4px; z-index: 9999; display: none; min-width: 140px; }
+        .context-menu { position: absolute; top: 30px; right: 5px; background: var(--bg-panel); border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(0,0,0,0.8); border-radius: var(--border-radius); z-index: 9999; display: none; min-width: 140px; }
+        [data-pro="true"] .context-menu { box-shadow: none; border: 1px solid var(--accent-color); }
         .context-menu.show { display: block; }
         .context-menu-item { padding: 8px 12px; cursor: pointer; font-size: 12px; color: var(--text-primary); border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; }
         .context-menu-item:hover { background: rgba(255,255,255,0.1); }
+        [data-pro="true"] .context-menu-item:hover { background: var(--accent-color); color: #000; }
         .context-menu-item:last-child { border-bottom: none; }
         .context-menu-item.danger:hover { background: rgba(255,255,255,0.1); color: var(--error-color); }
         
+        /* Submenu */
         .context-menu-item .submenu { display: none; position: absolute; right: 100%; top: 0; background: var(--bg-panel); border: 1px solid var(--border-color); min-width: 120px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .context-menu-item:hover .submenu { display: block; }
 
@@ -203,7 +257,6 @@
             <div class="tool-item" draggable="true" id="tool-chat"><div class="tool-preview icon-only">🤖</div><span>LLM Chat</span></div>
             <div class="tool-item" draggable="true" id="tool-calc"><div class="tool-preview icon-only">🧮</div><span>Calculator</span></div>
             <div class="tool-item" draggable="true" id="tool-note"><div class="tool-preview icon-only">📝</div><span>Notes</span></div>
-            <div class="tool-item" draggable="true" id="tool-sys"><div class="tool-preview icon-only">📊</div><span>System Mon</span></div>
             <div class="sidebar-title">Stock Indicators</div>
             <div class="stock-selector">
                 <label>Asset Class:</label>
@@ -220,6 +273,7 @@
             <div class="stock-drag-item" draggable="true" id="stockDraggable">
                 <div style="display:flex; flex-direction:column;"><span id="selectedStockName" style="font-weight:bold; font-size:1rem;">AAPL Apple</span><span style="font-size:0.8rem; opacity:0.7;">Drag to Grid</span></div>
                 <span id="selectedStockPrice" style="display:flex; flex-direction:column; align-items:end;">
+                    <!-- Placeholders for targeted updates -->
                     <div id="preview-price" style="font-size:1.2rem; font-weight:bold; color:var(--stock-up);">175.00</div>
                     <div id="preview-change" style="font-size:0.6em; color:var(--stock-up);">▲ 1.20</div>
                 </span>
@@ -232,7 +286,16 @@
                 <button class="control-btn" onclick="clearGrid()">🗑️ CLEAR</button>
             </div>
             <div class="color-picker-container"><input type="color" id="colorPicker" value="#007bff"><span id="colorValue" style="font-size: 12px; opacity: 0.8;">#007bff</span></div>
-            <div class="sidebar-footer"><span style="font-size: 12px;">THEME MODE</span><label class="switch"><input type="checkbox" id="themeSwitch"><span class="slider"></span></label></div>
+            <div class="sidebar-footer">
+                <div class="sidebar-footer-content">
+                    <span id="mode-label">MODE: DARK</span>
+                    <label class="switch"><input type="checkbox" id="themeSwitch"><span class="slider"></span></label>
+                </div>
+                <div class="sidebar-footer-content">
+                    <span>PRO MODE</span>
+                    <label class="switch"><input type="checkbox" id="proSwitch"><span class="slider"></span></label>
+                </div>
+            </div>
         </div>
         <div class="workspace">
             <div id="grid-canvas"><div class="grid-resize-handle" id="gridResizer"></div></div>
@@ -240,7 +303,8 @@
     </div>
     <script>
         const CELL_SIZE = 20, MIN_W = CELL_SIZE * 4, MIN_H = CELL_SIZE * 4;
-        const gridCanvas = document.getElementById('grid-canvas'), colorPicker = document.getElementById('colorPicker'), colorValue = document.getElementById('colorValue'), themeSwitch = document.getElementById('themeSwitch');
+        const gridCanvas = document.getElementById('grid-canvas'), colorPicker = document.getElementById('colorPicker'), colorValue = document.getElementById('colorValue');
+        const themeSwitch = document.getElementById('themeSwitch'), proSwitch = document.getElementById('proSwitch'), modeLabel = document.getElementById('mode-label');
         const categoryList = document.getElementById('categoryList'), stockList = document.getElementById('stockList'), stockSearch = document.getElementById('stockSearch'), stockDraggable = document.getElementById('stockDraggable');
         const selectedStockName = document.getElementById('selectedStockName'), selectedStockPrice = document.getElementById('selectedStockPrice'), gridResizer = document.getElementById('gridResizer');
         const sidebar = document.getElementById('sidebar'), sidebarToggle = document.getElementById('sidebarToggle');
@@ -368,7 +432,6 @@
                         renderStockContent(item);
                     }
                 } else if (item.type === 'clock') renderClockContent(item);
-                else if (item.type === 'sys') renderSysContent(item);
             });
         }
 
@@ -391,7 +454,11 @@
         function populateStockList(category) {
             stockList.innerHTML = ''; const list = stockCategories[category] || [];
             list.forEach(item => { const opt = document.createElement('option'); opt.value = item.s; opt.innerText = `${item.s} ${item.n}`; stockList.appendChild(opt); });
-            if(list.length > 0) { stockList.value = list[0].s; currentStock.symbol = list[0].s; updateSidebarPreview(mockStockData[list[0].s]); }
+            if(list.length > 0) { 
+                stockList.value = list[0].s; 
+                currentStock.symbol = list[0].s; 
+                updateSidebarPreview(mockStockData[list[0].s]); 
+            }
         }
 
         categoryList.addEventListener('change', (e) => populateStockList(e.target.value)); populateStockList('US');
@@ -403,15 +470,33 @@
         updateCryptoPrices();
 
         sidebarToggle.addEventListener('click', () => { isSidebarCollapsed = !isSidebarCollapsed; if (isSidebarCollapsed) { sidebar.classList.add('collapsed'); sidebarToggle.innerHTML = '&gt;'; } else { sidebar.classList.remove('collapsed'); sidebarToggle.innerHTML = '&lt;'; }});
-        themeSwitch.addEventListener('change', (e) => { if (e.target.checked) document.documentElement.setAttribute('data-theme', 'light'); else document.documentElement.removeAttribute('data-theme'); });
-        colorPicker.addEventListener('input', (e) => { activeColor = e.target.value; colorValue.innerText = activeColor; document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D'; document.querySelector('.tool-preview').style.borderColor = activeColor; });
-        document.querySelector('.sidebar-footer').addEventListener('click', (e) => { if (isSidebarCollapsed && e.target === document.querySelector('.sidebar-footer')) themeSwitch.click(); });
+        
+        // THEME SWITCH LOGIC
+        themeSwitch.addEventListener('change', (e) => { 
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'light');
+                modeLabel.innerText = "MODE: LIGHT";
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                modeLabel.innerText = "MODE: DARK";
+            }
+        });
 
+        // PRO MODE SWITCH LOGIC
+        proSwitch.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-pro', 'true');
+            } else {
+                document.documentElement.removeAttribute('data-pro');
+            }
+        });
+
+        colorPicker.addEventListener('input', (e) => { activeColor = e.target.value; colorValue.innerText = activeColor; document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D'; document.querySelector('.tool-preview').style.borderColor = activeColor; });
+        
         // Save/Load Logic
         function saveLayout() {
             const layoutData = items.map(i => {
                 const el = document.getElementById(i.id);
-                // Save note content specifically
                 let noteContent = '';
                 if(i.type === 'note') {
                     const contentDiv = el.querySelector('.note-content');
@@ -436,11 +521,10 @@
             clearGrid();
             const layoutData = JSON.parse(saved);
             layoutData.forEach(data => {
-                let color = '#007bff'; // Default blue
-                if(data.type === 'clock' || data.type === 'news' || data.type === 'chat' || data.type === 'calc' || data.type === 'note' || data.type === 'sys') color = '#ffffff';
+                let color = '#007bff'; 
+                if(data.type === 'clock' || data.type === 'news' || data.type === 'chat' || data.type === 'calc' || data.type === 'note') color = '#ffffff';
                 
                 const newItem = createItem(data.x, data.y, data.w, data.h, color, data.type);
-                // Restore State
                 if(data.type === 'stock' && data.stockSymbol && mockStockData[data.stockSymbol]) {
                     newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[data.stockSymbol]));
                     newItem.obj.viewMode = data.viewMode;
@@ -459,13 +543,7 @@
             });
         }
 
-        function clearGrid() {
-            items.forEach(i => {
-                const el = document.getElementById(i.id);
-                if(el) el.remove();
-            });
-            items = [];
-        }
+        function clearGrid() { items.forEach(i => { const el = document.getElementById(i.id); if(el) el.remove(); }); items = []; }
 
         // Drag Listeners
         document.getElementById('tool-square').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'shape'));
@@ -474,7 +552,6 @@
         document.getElementById('tool-chat').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'chat'));
         document.getElementById('tool-calc').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'calc'));
         document.getElementById('tool-note').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'note'));
-        document.getElementById('tool-sys').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'sys'));
         stockDraggable.addEventListener('dragstart', (e) => { e.dataTransfer.setData('type', 'stock'); e.dataTransfer.setData('symbol', currentStock.symbol); });
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
         gridCanvas.addEventListener('drop', (e) => {
@@ -485,7 +562,6 @@
             else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
             else if (type === 'calc') { if(!checkCollision({x, y, w: 200, h: 300})) createItem(x, y, 200, 300, '#ffffff', 'calc'); }
             else if (type === 'note') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, '#ffffff', 'note'); }
-            else if (type === 'sys') { if(!checkCollision({x, y, w: 300, h: 200})) createItem(x, y, 300, 200, '#ffffff', 'sys'); }
             else if (type === 'stock') {
                 const symbol = e.dataTransfer.getData('symbol');
                 if(!checkCollision({x, y, w: 300, h: 200})) { const newItem = createItem(x, y, 300, 200, activeColor, 'stock'); if(mockStockData[symbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[symbol])); renderStockContent(newItem.obj); } }
@@ -516,11 +592,12 @@
             gridCanvas.appendChild(el);
             const itemObj = { id, x, y, w, h, el, type, stockData: null, showTime: false, viewMode: 'line', timeRange: '1M', timeZone: 'local', cityLabel: 'LOCAL' }; items.push(itemObj);
             if (type === 'clock') renderClockContent(itemObj); if (type === 'news') renderNewsContent(itemObj); if (type === 'chat') renderChatContent(itemObj);
-            if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj); if (type === 'sys') renderSysContent(itemObj);
+            if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj);
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
         }
 
         function deleteItem(id) { const idx = items.findIndex(i => i.id === id); if (idx > -1) { items[idx].el.remove(); items.splice(idx, 1); } }
+        
         function renderClockContent(item) { 
             const container = item.el.querySelector('.content-container'); const now = new Date(); let timeStr;
             if (!item.timeZone || item.timeZone === 'local') { timeStr = now.toLocaleTimeString('en-US', { hour12: false }); } 
@@ -554,76 +631,79 @@
             toolbar.addEventListener('click', (e) => { if(e.target.classList.contains('note-btn') || e.target.parentElement.classList.contains('note-btn')) { const btn = e.target.classList.contains('note-btn') ? e.target : e.target.parentElement; document.execCommand(btn.dataset.cmd, false, null); content.focus(); }});
             toolbar.querySelector('.note-select').addEventListener('change', (e) => { document.execCommand('fontSize', false, e.target.value); content.focus(); });
         }
-        function renderSysContent(item) {
-            const container = item.el.querySelector('.content-container'); 
-            // Update values continuously
-            const cpu = Math.floor(Math.random() * 100);
-            const ram = Math.floor(Math.random() * 100);
-            const net = Math.floor(Math.random() * 500);
-
-            let layout = container.querySelector('.sys-layout');
-            if(!layout) {
-                container.innerHTML = `<div class="sys-layout"><div class="sys-header widget-header">SYSTEM MON</div><div class="sys-content">
-                <div class="sys-row"><div class="sys-label">CPU</div><div class="sys-bar-container"><div class="sys-bar" id="bar-cpu-${item.id}" style="width:0%"></div></div><div class="sys-val" id="val-cpu-${item.id}">0%</div></div>
-                <div class="sys-row"><div class="sys-label">RAM</div><div class="sys-bar-container"><div class="sys-bar" id="bar-ram-${item.id}" style="width:0%"></div></div><div class="sys-val" id="val-ram-${item.id}">0%</div></div>
-                <div class="sys-row"><div class="sys-label">NET</div><div class="sys-graph-container" id="graph-net-${item.id}"><canvas class="sys-canvas"></canvas></div><div class="sys-val" id="val-net-${item.id}">0ms</div></div>
-                </div></div>`;
-                layout = container.querySelector('.sys-layout');
-            }
-            
-            // Update DOM
-            container.querySelector(`#bar-cpu-${item.id}`).style.width = `${cpu}%`;
-            container.querySelector(`#val-cpu-${item.id}`).innerText = `${cpu}%`;
-            container.querySelector(`#bar-ram-${item.id}`).style.width = `${ram}%`;
-            container.querySelector(`#val-ram-${item.id}`).innerText = `${ram}%`;
-            container.querySelector(`#val-net-${item.id}`).innerText = `${net}ms`;
-            
-            // Draw simple graph for NET
-            const canvas = container.querySelector('canvas');
-            if(canvas) {
-                canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                // Random wave
-                for(let i=0; i<canvas.width; i+=10) {
-                    const y = Math.random() * canvas.height;
-                    if(i===0) ctx.moveTo(i, y); else ctx.lineTo(i, y);
-                }
-                ctx.stroke();
-            }
-        }
 
         function renderStockContent(item) {
             if (!item.stockData) return;
             const container = item.el.querySelector('.content-container'), data = item.stockData;
+            
+            // --- Targeted DOM Update Implementation ---
+            // Instead of replacing innerHTML every time, check if structure exists
             let layout = container.querySelector('.stock-layout');
             if (!layout) {
-                const isUp = data.change >= 0; const trendClass = isUp ? 'up' : 'down';
+                // Initial Render
+                const isUp = data.change >= 0;
+                const trendClass = isUp ? 'up' : 'down';
                 const updateTimeHtml = item.showTime ? `<div class="stock-footer-info" id="time-${item.id}">Last: ${new Date().toLocaleTimeString()}</div>` : '';
                 container.innerHTML = `<div class="stock-layout ${trendClass}" id="layout-${item.id}"><div class="stock-header"><span>${data.symbol} ${data.name}</span><span id="change-${item.id}" style="font-size:0.8em">${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}</span></div><div class="stock-price-large ${trendClass}" id="price-${item.id}">${data.price.toFixed(2)}</div><svg class="stock-chart" id="chart-${item.id}" preserveAspectRatio="none" viewBox="0 0 ${item.w} ${item.h*0.4 + 20}"></svg>${updateTimeHtml}</div>`;
                 layout = container.querySelector('.stock-layout');
             }
+
+            // Check No Data state for Crypto
             if (data.isCrypto && !cryptoDataAvailable) {
-                const priceEl = container.querySelector(`#price-${item.id}`); if(priceEl) { priceEl.innerText = "暫時無資訊"; priceEl.style.fontSize = "1.2em"; priceEl.style.color = "var(--text-secondary)"; }
-                const changeEl = container.querySelector(`#change-${item.id}`); if(changeEl) changeEl.innerText = "";
-                const chartEl = container.querySelector(`#chart-${item.id}`); if(chartEl) chartEl.innerHTML = ""; 
+                const priceEl = container.querySelector(`#price-${item.id}`);
+                if(priceEl) {
+                    priceEl.innerText = "暫時無資訊";
+                    priceEl.style.fontSize = "1.2em";
+                    priceEl.style.color = "var(--text-secondary)";
+                }
+                const changeEl = container.querySelector(`#change-${item.id}`);
+                if(changeEl) changeEl.innerText = "";
+                const chartEl = container.querySelector(`#chart-${item.id}`);
+                if(chartEl) chartEl.innerHTML = ""; // Clear chart
                 return;
             }
-            const isUp = data.change >= 0, trendClass = isUp ? 'up' : 'down';
+
+            // Normal Update
+            const isUp = data.change >= 0;
+            const trendClass = isUp ? 'up' : 'down';
+            
+            // Update classes
             layout.className = `stock-layout ${trendClass}`;
-            const priceEl = container.querySelector(`#price-${item.id}`); if(priceEl) { priceEl.className = `stock-price-large ${trendClass}`; priceEl.innerText = data.price.toFixed(2); priceEl.style.fontSize = ""; }
-            const changeEl = container.querySelector(`#change-${item.id}`); if(changeEl) changeEl.innerText = `${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}${data.isCrypto?'%':''}`;
+            const priceEl = container.querySelector(`#price-${item.id}`);
+            if(priceEl) {
+                priceEl.className = `stock-price-large ${trendClass}`;
+                priceEl.innerText = data.price.toFixed(2);
+                priceEl.style.fontSize = ""; // Reset if previously No Data
+            }
+            const changeEl = container.querySelector(`#change-${item.id}`);
+            if(changeEl) changeEl.innerText = `${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}${data.isCrypto?'%':''}`;
+
+            // Re-draw Chart (SVG requires redraw)
             const chartEl = container.querySelector(`#chart-${item.id}`);
             if(chartEl) {
                 let chartSVG = '', xAxisLabels = '', displayHistory = data.history;
-                if (item.viewMode === 'candle') { const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50; displayHistory = data.history.slice(-count); chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4); xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange); } 
-                else { const prices = data.history.map(d => d.close), pathD = generateSparkline(prices, item.w, item.h * 0.4); chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`; }
-                chartEl.innerHTML = chartSVG + xAxisLabels; chartEl.setAttribute('viewBox', `0 0 ${item.w} ${item.h*0.4 + 20}`);
+                if (item.viewMode === 'candle') {
+                    const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50; displayHistory = data.history.slice(-count);
+                    chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4); xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange);
+                } else {
+                    const prices = data.history.map(d => d.close), pathD = generateSparkline(prices, item.w, item.h * 0.4);
+                    chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`;
+                }
+                chartEl.innerHTML = chartSVG + xAxisLabels;
+                chartEl.setAttribute('viewBox', `0 0 ${item.w} ${item.h*0.4 + 20}`);
             }
+            
+            // Update time if exists
             const timeEl = container.querySelector(`#time-${item.id}`);
-            if(timeEl) timeEl.innerText = `Last: ${new Date().toLocaleTimeString()}`; else if(item.showTime) { const footer = document.createElement('div'); footer.className = "stock-footer-info"; footer.id = `time-${item.id}`; footer.innerText = `Last: ${new Date().toLocaleTimeString()}`; layout.appendChild(footer); }
+            if(timeEl) timeEl.innerText = `Last: ${new Date().toLocaleTimeString()}`;
+            else if(item.showTime) {
+                 // Handle case where toggled on
+                 const footer = document.createElement('div');
+                 footer.className = "stock-footer-info";
+                 footer.id = `time-${item.id}`;
+                 footer.innerText = `Last: ${new Date().toLocaleTimeString()}`;
+                 layout.appendChild(footer);
+            }
         }
 
         function generateSparkline(data, w, h) {
@@ -643,7 +723,7 @@
         function setupInteractions(item) {
             const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
             el.addEventListener('mousedown', (e) => {
-                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION'].includes(e.target.tagName)) return; if (['news', 'chat', 'calc', 'note', 'sys'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION'].includes(e.target.tagName)) return; if (['news', 'chat', 'calc', 'note'].includes(item.type) && !e.target.closest('.widget-header')) return;
                 e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
                 function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY); if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); else el.classList.remove('collision'); }
                 function onUp(ev) { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); el.style.zIndex = ''; const finalX = snap(parseInt(el.style.left)), finalY = snap(parseInt(el.style.top)); if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; } else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; } el.classList.remove('collision'); }
