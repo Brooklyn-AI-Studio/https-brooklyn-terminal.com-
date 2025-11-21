@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Brooklyn Terminal – Web Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 頂部標題列 -->
+  <header class="app-header">
+    <div class="logo">
+      <span class="logo-main">BROOKLYN</span>
+      <span class="logo-sub">TERMINAL</span>
+      <span class="logo-tag">WEB DEMO</span>
+    </div>
+
+    <div class="header-right">
+      <div class="status-pill online">LIVE</div>
+      <div class="timestamp">
+        Last update:
+        <span id="lastUpdate">--:--:--</span>
+      </div>
+      <button id="refreshBtn" class="btn btn-primary">模擬更新</button>
+    </div>
+  </header>
+
+  <!-- 主版面：左 → 自選股表格，右 → 走勢圖 + 新聞 -->
+  <main class="layout">
+    <!-- 左側：自選股 -->
+    <section class="panel watchlist-panel">
+      <h2 class="panel-title">自選股 WATCHLIST</h2>
+
+      <table id="watchlistTable" class="watchlist-table">
+        <thead>
+          <tr>
+            <th>代號</th>
+            <th>名稱</th>
+            <th>價格</th>
+            <th>漲跌</th>
+            <th>漲跌幅</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 由 script.js 動態產生 -->
+        </tbody>
+      </table>
+
+      <p class="hint">💡 點選任一檔股票，右側會顯示模擬走勢圖與假新聞。</p>
+    </section>
+
+    <!-- 右側：走勢圖 + 迷你資訊 + 新聞 -->
+    <section class="panel chart-panel">
+      <div class="chart-header">
+        <div>
+          <h2 class="panel-title" id="chartTitle">請先選擇一檔股票</h2>
+          <p class="panel-subtitle" id="chartSubtitle">—</p>
+        </div>
+        <div class="chart-badges">
+          <span class="badge" id="badgeMarket">--</span>
+          <span class="badge badge-outline" id="badgeType">LINE</span>
+        </div>
+      </div>
+
+      <div class="chart-wrapper">
+        <canvas id="priceChart"></canvas>
+      </div>
+
+      <!-- 迷你統計數據 -->
+      <div class="mini-stats">
+        <div class="stat">
+          <span class="stat-label">開盤</span>
+          <span class="stat-value" id="statOpen">-</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">最高</span>
+          <span class="stat-value up" id="statHigh">-</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">最低</span>
+          <span class="stat-value down" id="statLow">-</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">成交量</span>
+          <span class="stat-value" id="statVolume">-</span>
+        </div>
+      </div>
+
+      <!-- 假新聞區塊 -->
+      <section class="news-section">
+        <h3 class="panel-title small">相關新聞（範例假資料）</h3>
+        <ul id="newsList" class="news-list">
+          <!-- 由 script.js 動態產生 -->
+        </ul>
+      </section>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span>Demo 前端版 · 使用假資料模擬 · 之後可改接真實 API</span>
+    <span>Design by Brooklyn</span>
+  </footer>
+
+  <!-- 第三方圖表庫（CDN）-->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- 你的主程式 -->
+  <script src="script.js"></script>
+</body>
+</html>
