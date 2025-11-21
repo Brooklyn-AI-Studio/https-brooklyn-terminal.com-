@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V7.1 PRO</title>
+    <title>BROOKLYN-TERMINAL // V7.2 PRO</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -90,6 +90,10 @@
         .beta-badge { font-size: 0.7rem; background: var(--accent-color); color: #000; padding: 2px 6px; border-radius: var(--border-radius); margin-left: 5px; font-weight: bold; letter-spacing: 1px; transform: translateY(-2px); box-shadow: 0 0 5px var(--accent-color); }
         .logo-icon { width: 32px; height: 32px; fill: none; stroke: var(--accent-color); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 5px var(--accent-color)); }
         
+        .header-right { display: flex; align-items: center; gap: 20px; font-size: 12px; opacity: 0.8; }
+        .visitor-count { display: flex; align-items: center; gap: 5px; }
+        .visitor-num { font-family: 'Orbitron', monospace; color: var(--accent-color); font-weight: bold; letter-spacing: 1px; }
+
         .sidebar { width: 300px; min-width: 250px; max-width: 500px; background-color: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: relative; z-index: 10; padding: 20px; overflow-y: auto; overflow-x: hidden; transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease; }
         .sidebar.collapsed { width: 70px; min-width: 70px; padding: 20px 10px; }
         .sidebar.collapsed .sidebar-title, .sidebar.collapsed .stock-selector, .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .tool-item span, .sidebar.collapsed .stock-drag-item > div, .sidebar.collapsed .sidebar-footer-content label, .sidebar.collapsed .control-btn-group span { display: none; }
@@ -217,7 +221,6 @@
         .context-menu-item:last-child { border-bottom: none; }
         .context-menu-item.danger:hover { background: rgba(255,255,255,0.1); color: var(--error-color); }
         
-        /* Submenu */
         .context-menu-item .submenu { display: none; position: absolute; right: 100%; top: 0; background: var(--bg-panel); border: 1px solid var(--border-color); min-width: 120px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .context-menu-item:hover .submenu { display: block; }
 
@@ -244,7 +247,12 @@
             <svg class="logo-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
             Brooklyn-<span>Terminal</span><span class="beta-badge">BETA</span>
         </div>
-        <div style="font-size: 12px; opacity: 0.7;">SYS.STATUS: ONLINE</div>
+        <div class="header-right">
+            <div class="visitor-count" title="Simulated Live Visitors">
+                <span>VISITORS:</span> <span id="visitor-num" class="visitor-num">00000</span>
+            </div>
+            <div style="font-size: 12px; opacity: 0.7;">SYS.STATUS: ONLINE</div>
+        </div>
     </header>
     <div class="main-container">
         <div class="sidebar" id="sidebar">
@@ -310,6 +318,37 @@
         const sidebar = document.getElementById('sidebar'), sidebarToggle = document.getElementById('sidebarToggle');
         let items = [], activeColor = '#007bff', currentStock = { symbol: 'AAPL', name: 'Apple Inc.', price: 175.00, change: 1.20, history: [], type: 'stock' };
         let isSidebarCollapsed = false, isLiveConnectionFailed = false, cryptoDataAvailable = false;
+
+        // Visitor Counter Logic
+        function initVisitorCounter() {
+            const visitorEl = document.getElementById('visitor-num');
+            let count = localStorage.getItem('visitorCount');
+            if (!count) {
+                // Initialize random count between 8000 and 12000
+                count = Math.floor(Math.random() * 4000) + 8000;
+            } else {
+                count = parseInt(count);
+            }
+            // Increment for new session
+            count++;
+            localStorage.setItem('visitorCount', count);
+            
+            // Display formatted
+            const updateDisplay = () => {
+                visitorEl.innerText = count.toLocaleString('en-US', {minimumIntegerDigits: 5, useGrouping:false});
+            };
+            updateDisplay();
+
+            // Randomly increment
+            setInterval(() => {
+                if(Math.random() > 0.7) {
+                    count += Math.floor(Math.random() * 3) + 1;
+                    localStorage.setItem('visitorCount', count);
+                    updateDisplay();
+                }
+            }, 3000);
+        }
+        initVisitorCounter();
 
         const stockCategories = {
             'US': [{ s: 'AAPL', n: 'Apple Inc.' }, { s: 'TSLA', n: 'Tesla Inc.' }, { s: 'NVDA', n: 'NVIDIA' }, { s: 'MSFT', n: 'Microsoft' }, { s: 'GOOGL', n: 'Alphabet' }, { s: 'AMZN', n: 'Amazon' }],
@@ -635,75 +674,32 @@
         function renderStockContent(item) {
             if (!item.stockData) return;
             const container = item.el.querySelector('.content-container'), data = item.stockData;
-            
-            // --- Targeted DOM Update Implementation ---
-            // Instead of replacing innerHTML every time, check if structure exists
             let layout = container.querySelector('.stock-layout');
             if (!layout) {
-                // Initial Render
-                const isUp = data.change >= 0;
-                const trendClass = isUp ? 'up' : 'down';
+                const isUp = data.change >= 0; const trendClass = isUp ? 'up' : 'down';
                 const updateTimeHtml = item.showTime ? `<div class="stock-footer-info" id="time-${item.id}">Last: ${new Date().toLocaleTimeString()}</div>` : '';
                 container.innerHTML = `<div class="stock-layout ${trendClass}" id="layout-${item.id}"><div class="stock-header"><span>${data.symbol} ${data.name}</span><span id="change-${item.id}" style="font-size:0.8em">${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}</span></div><div class="stock-price-large ${trendClass}" id="price-${item.id}">${data.price.toFixed(2)}</div><svg class="stock-chart" id="chart-${item.id}" preserveAspectRatio="none" viewBox="0 0 ${item.w} ${item.h*0.4 + 20}"></svg>${updateTimeHtml}</div>`;
                 layout = container.querySelector('.stock-layout');
             }
-
-            // Check No Data state for Crypto
             if (data.isCrypto && !cryptoDataAvailable) {
-                const priceEl = container.querySelector(`#price-${item.id}`);
-                if(priceEl) {
-                    priceEl.innerText = "暫時無資訊";
-                    priceEl.style.fontSize = "1.2em";
-                    priceEl.style.color = "var(--text-secondary)";
-                }
-                const changeEl = container.querySelector(`#change-${item.id}`);
-                if(changeEl) changeEl.innerText = "";
-                const chartEl = container.querySelector(`#chart-${item.id}`);
-                if(chartEl) chartEl.innerHTML = ""; // Clear chart
+                const priceEl = container.querySelector(`#price-${item.id}`); if(priceEl) { priceEl.innerText = "暫時無資訊"; priceEl.style.fontSize = "1.2em"; priceEl.style.color = "var(--text-secondary)"; }
+                const changeEl = container.querySelector(`#change-${item.id}`); if(changeEl) changeEl.innerText = "";
+                const chartEl = container.querySelector(`#chart-${item.id}`); if(chartEl) chartEl.innerHTML = ""; 
                 return;
             }
-
-            // Normal Update
-            const isUp = data.change >= 0;
-            const trendClass = isUp ? 'up' : 'down';
-            
-            // Update classes
+            const isUp = data.change >= 0, trendClass = isUp ? 'up' : 'down';
             layout.className = `stock-layout ${trendClass}`;
-            const priceEl = container.querySelector(`#price-${item.id}`);
-            if(priceEl) {
-                priceEl.className = `stock-price-large ${trendClass}`;
-                priceEl.innerText = data.price.toFixed(2);
-                priceEl.style.fontSize = ""; // Reset if previously No Data
-            }
-            const changeEl = container.querySelector(`#change-${item.id}`);
-            if(changeEl) changeEl.innerText = `${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}${data.isCrypto?'%':''}`;
-
-            // Re-draw Chart (SVG requires redraw)
+            const priceEl = container.querySelector(`#price-${item.id}`); if(priceEl) { priceEl.className = `stock-price-large ${trendClass}`; priceEl.innerText = data.price.toFixed(2); priceEl.style.fontSize = ""; }
+            const changeEl = container.querySelector(`#change-${item.id}`); if(changeEl) changeEl.innerText = `${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}${data.isCrypto?'%':''}`;
             const chartEl = container.querySelector(`#chart-${item.id}`);
             if(chartEl) {
                 let chartSVG = '', xAxisLabels = '', displayHistory = data.history;
-                if (item.viewMode === 'candle') {
-                    const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50; displayHistory = data.history.slice(-count);
-                    chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4); xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange);
-                } else {
-                    const prices = data.history.map(d => d.close), pathD = generateSparkline(prices, item.w, item.h * 0.4);
-                    chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`;
-                }
-                chartEl.innerHTML = chartSVG + xAxisLabels;
-                chartEl.setAttribute('viewBox', `0 0 ${item.w} ${item.h*0.4 + 20}`);
+                if (item.viewMode === 'candle') { const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50; displayHistory = data.history.slice(-count); chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4); xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange); } 
+                else { const prices = data.history.map(d => d.close), pathD = generateSparkline(prices, item.w, item.h * 0.4); chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`; }
+                chartEl.innerHTML = chartSVG + xAxisLabels; chartEl.setAttribute('viewBox', `0 0 ${item.w} ${item.h*0.4 + 20}`);
             }
-            
-            // Update time if exists
             const timeEl = container.querySelector(`#time-${item.id}`);
-            if(timeEl) timeEl.innerText = `Last: ${new Date().toLocaleTimeString()}`;
-            else if(item.showTime) {
-                 // Handle case where toggled on
-                 const footer = document.createElement('div');
-                 footer.className = "stock-footer-info";
-                 footer.id = `time-${item.id}`;
-                 footer.innerText = `Last: ${new Date().toLocaleTimeString()}`;
-                 layout.appendChild(footer);
-            }
+            if(timeEl) timeEl.innerText = `Last: ${new Date().toLocaleTimeString()}`; else if(item.showTime) { const footer = document.createElement('div'); footer.className = "stock-footer-info"; footer.id = `time-${item.id}`; footer.innerText = `Last: ${new Date().toLocaleTimeString()}`; layout.appendChild(footer); }
         }
 
         function generateSparkline(data, w, h) {
