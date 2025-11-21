@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V5.8</title>
+    <title>BROOKLYN-TERMINAL // V6.1</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -110,6 +110,26 @@
         .chat-model-select:focus { border-color: var(--accent-color); }
         .chat-send-btn { background: var(--accent-color); color: #000; border: none; padding: 0 10px; cursor: pointer; font-weight: bold; font-family: 'Orbitron'; font-size: 0.8em; }
         .chat-send-btn:hover { opacity: 0.8; }
+        
+        /* Calculator Styles */
+        .calc-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; }
+        .calc-header { padding: 5px 10px; font-size: 0.8em; opacity: 0.7; border-bottom: 1px solid var(--border-color); cursor: move; }
+        .calc-display { flex: 1; background: rgba(0,0,0,0.3); color: var(--text-primary); font-family: 'Orbitron'; font-size: 1.5em; text-align: right; padding: 10px; display: flex; align-items: flex-end; justify-content: flex-end; overflow: hidden; }
+        .calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 2px; background: var(--border-color); flex: 2; }
+        .calc-key { background: var(--bg-panel); border: none; color: var(--text-primary); font-family: 'Rajdhani'; font-size: 1.2em; cursor: pointer; transition: background 0.1s; }
+        .calc-key:hover { background: rgba(255,255,255,0.1); }
+        .calc-key.op { color: var(--accent-color); font-weight: bold; }
+        .calc-key.eq { background: var(--accent-color); color: #000; }
+        
+        /* Note Styles */
+        .note-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; }
+        .note-header { padding: 5px 10px; font-size: 0.8em; opacity: 0.7; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.2); cursor: move; display: flex; justify-content: space-between; }
+        .note-content { flex: 1; background: transparent; border: none; color: var(--text-primary); padding: 10px; font-family: 'Rajdhani'; font-size: 1em; overflow-y: auto; outline: none; white-space: pre-wrap; }
+        .note-toolbar { display: flex; gap: 5px; padding: 5px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-color); }
+        .note-btn { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; font-family: 'Rajdhani'; padding: 2px 8px; font-size: 0.8em; }
+        .note-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+        .note-select { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); font-family: 'Rajdhani'; font-size: 0.8em; cursor: pointer; }
+
         .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
         .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
         .grid-item:hover .menu-trigger { opacity: 1; }
@@ -154,6 +174,8 @@
             <div class="tool-item" draggable="true" id="tool-clock"><div class="tool-preview clock-icon">🕓</div><span>Digital Clock</span></div>
             <div class="tool-item" draggable="true" id="tool-news"><div class="tool-preview icon-only">📰</div><span>Market</span></div>
             <div class="tool-item" draggable="true" id="tool-chat"><div class="tool-preview icon-only">🤖</div><span>LLM Chat</span></div>
+            <div class="tool-item" draggable="true" id="tool-calc"><div class="tool-preview icon-only">🧮</div><span>Calculator</span></div>
+            <div class="tool-item" draggable="true" id="tool-note"><div class="tool-preview icon-only">📝</div><span>Notes</span></div>
             <div class="sidebar-title">Stock Indicators</div>
             <div class="stock-selector">
                 <label>Asset Class:</label>
@@ -207,7 +229,6 @@
             'SOL-USD': 'solana', 'ADA-USD': 'cardano', 'XRP-USD': 'xrp', 'DOT-USD': 'polkadot'
         };
         const mockStockData = {};
-        // Init Mock Data - Crypto starts empty until fetch
         Object.values(stockCategories).flat().forEach(item => {
             const isCrypto = !!cryptoMapping[item.s];
             mockStockData[item.s] = { 
@@ -374,10 +395,13 @@
         colorPicker.addEventListener('input', (e) => { activeColor = e.target.value; colorValue.innerText = activeColor; document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D'; document.querySelector('.tool-preview').style.borderColor = activeColor; });
         document.querySelector('.sidebar-footer').addEventListener('click', (e) => { if (isSidebarCollapsed && e.target === document.querySelector('.sidebar-footer')) themeSwitch.click(); });
 
+        // Drag Listeners
         document.getElementById('tool-square').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'shape'));
         document.getElementById('tool-clock').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'clock'));
         document.getElementById('tool-news').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'news'));
         document.getElementById('tool-chat').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'chat'));
+        document.getElementById('tool-calc').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'calc'));
+        document.getElementById('tool-note').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'note'));
         stockDraggable.addEventListener('dragstart', (e) => { e.dataTransfer.setData('type', 'stock'); e.dataTransfer.setData('symbol', currentStock.symbol); });
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
         gridCanvas.addEventListener('drop', (e) => {
@@ -386,6 +410,8 @@
             else if (type === 'clock') { if(!checkCollision({x, y, w: 200, h: 100})) createItem(x, y, 200, 100, '#ffffff', 'clock'); }
             else if (type === 'news') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'news'); }
             else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
+            else if (type === 'calc') { if(!checkCollision({x, y, w: 200, h: 300})) createItem(x, y, 200, 300, '#ffffff', 'calc'); }
+            else if (type === 'note') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, '#ffffff', 'note'); }
             else if (type === 'stock') {
                 const symbol = e.dataTransfer.getData('symbol');
                 if(!checkCollision({x, y, w: 300, h: 200})) { const newItem = createItem(x, y, 300, 200, activeColor, 'stock'); if(mockStockData[symbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[symbol])); renderStockContent(newItem.obj); } }
@@ -406,6 +432,7 @@
             gridCanvas.appendChild(el);
             const itemObj = { id, x, y, w, h, el, type, stockData: null, showTime: false, viewMode: 'line', timeRange: '1M' }; items.push(itemObj);
             if (type === 'clock') renderClockContent(itemObj); if (type === 'news') renderNewsContent(itemObj); if (type === 'chat') renderChatContent(itemObj);
+            if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj);
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
         }
 
@@ -419,6 +446,64 @@
             const sendMsg = () => { const text = input.value.trim(); if(!text) return; const userDiv = document.createElement('div'); userDiv.className = 'chat-msg user'; userDiv.innerText = text; history.appendChild(userDiv); input.value = ''; history.scrollTop = history.scrollHeight; setTimeout(() => { const selectedModel = modelSelect.value === 'llama3' ? 'Llama 3' : 'DeepSeek'; const sysDiv = document.createElement('div'); sysDiv.className = 'chat-msg sys'; sysDiv.innerText = `[${selectedModel}] Processing request... Analysis complete. Market volatility is high.`; history.appendChild(sysDiv); history.scrollTop = history.scrollHeight; }, 800); };
             btn.onclick = sendMsg; input.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMsg(); });
         }
+        function renderCalcContent(item) {
+            const container = item.el.querySelector('.content-container'); if(container.querySelector('.calc-layout')) return;
+            container.innerHTML = `<div class="calc-layout"><div class="calc-header widget-header">CALC-8000</div><div class="calc-display" id="disp-${item.id}">0</div><div class="calc-keys" id="keys-${item.id}"></div></div>`;
+            const display = container.querySelector(`#disp-${item.id}`), keysContainer = container.querySelector(`#keys-${item.id}`);
+            const keys = ['7','8','9','/','4','5','6','*','1','2','3','-','C','0','=','+'];
+            let currentExp = '';
+            keys.forEach(k => {
+                const btn = document.createElement('button'); btn.className = 'calc-key'; btn.innerText = k;
+                if(['/','*','-','+'].includes(k)) btn.classList.add('op'); if(k === '=') btn.classList.add('eq');
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    if(k === 'C') { currentExp = ''; display.innerText = '0'; }
+                    else if(k === '=') { try { display.innerText = eval(currentExp) || '0'; currentExp = display.innerText; } catch { display.innerText = 'ERR'; currentExp = ''; } }
+                    else { currentExp += k; display.innerText = currentExp; }
+                };
+                keysContainer.appendChild(btn);
+            });
+        }
+        function renderNoteContent(item) {
+            const container = item.el.querySelector('.content-container'); if(container.querySelector('.note-layout')) return;
+            container.innerHTML = `<div class="note-layout">
+                <div class="note-header widget-header"><span>NOTES</span></div>
+                <div class="note-toolbar">
+                    <button class="note-btn" data-cmd="bold"><b>B</b></button>
+                    <button class="note-btn" data-cmd="italic"><i>I</i></button>
+                    <select class="note-select" data-cmd="fontSize">
+                        <option value="1">Tiny</option>
+                        <option value="3" selected>Normal</option>
+                        <option value="5">Large</option>
+                        <option value="7">Huge</option>
+                    </select>
+                </div>
+                <div class="note-content" contenteditable="true"></div>
+            </div>`;
+            
+            const toolbar = container.querySelector('.note-toolbar');
+            const content = container.querySelector('.note-content');
+            
+            // Prevent drag
+            toolbar.addEventListener('mousedown', e => e.stopPropagation());
+            content.addEventListener('mousedown', e => e.stopPropagation());
+
+            // Toolbar Logic
+            toolbar.addEventListener('click', (e) => {
+                if(e.target.classList.contains('note-btn') || e.target.parentElement.classList.contains('note-btn')) {
+                    const btn = e.target.classList.contains('note-btn') ? e.target : e.target.parentElement;
+                    const cmd = btn.dataset.cmd;
+                    document.execCommand(cmd, false, null);
+                    content.focus(); // Keep focus
+                }
+            });
+
+            toolbar.querySelector('.note-select').addEventListener('change', (e) => {
+                document.execCommand('fontSize', false, e.target.value);
+                content.focus();
+            });
+        }
+
         function renderStockContent(item) {
             if (!item.stockData) return;
             const container = item.el.querySelector('.content-container'), data = item.stockData;
@@ -510,7 +595,7 @@
         function setupInteractions(item) {
             const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
             el.addEventListener('mousedown', (e) => {
-                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION'].includes(e.target.tagName)) return; if ((item.type === 'news' || item.type === 'chat') && !e.target.closest('.widget-header')) return;
+                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION'].includes(e.target.tagName)) return; if (['news', 'chat', 'calc', 'note'].includes(item.type) && !e.target.closest('.widget-header')) return;
                 e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
                 function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY); if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); else el.classList.remove('collision'); }
                 function onUp(ev) { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); el.style.zIndex = ''; const finalX = snap(parseInt(el.style.left)), finalY = snap(parseInt(el.style.top)); if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; } else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; } el.classList.remove('collision'); }
