@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V5.5</title>
+    <title>BROOKLYN-TERMINAL // V5.6</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -193,9 +193,15 @@
             'US': [{ s: 'AAPL', n: 'Apple Inc.' }, { s: 'TSLA', n: 'Tesla Inc.' }, { s: 'NVDA', n: 'NVIDIA' }, { s: 'MSFT', n: 'Microsoft' }, { s: 'GOOGL', n: 'Alphabet' }, { s: 'AMZN', n: 'Amazon' }],
             'TW': [{ s: '2330', n: '台積電' }, { s: '2317', n: '鴻海' }, { s: '2454', n: '聯發科' }, { s: '2303', n: '聯電' }, { s: '2881', n: '富邦金' }],
             'IDX': [{ s: '^DJI', n: 'Dow Jones' }, { s: '^IXIC', n: 'Nasdaq' }, { s: '^GSPC', n: 'S&P 500' }, { s: '^TWII', n: 'TAIEX' }],
-            'CRYPTO': [{ s: 'BTC-USD', n: 'Bitcoin' }, { s: 'ETH-USD', n: 'Ethereum' }, { s: 'DOGE-USD', n: 'Dogecoin' }]
+            'CRYPTO': [
+                { s: 'BTC-USD', n: 'Bitcoin' }, { s: 'ETH-USD', n: 'Ethereum' }, { s: 'DOGE-USD', n: 'Dogecoin' },
+                { s: 'SOL-USD', n: 'Solana' }, { s: 'ADA-USD', n: 'Cardano' }, { s: 'XRP-USD', n: 'XRP' }, { s: 'DOT-USD', n: 'Polkadot' }
+            ]
         };
-        const cryptoMapping = { 'BTC-USD': 'bitcoin', 'ETH-USD': 'ethereum', 'DOGE-USD': 'dogecoin' };
+        const cryptoMapping = {
+            'BTC-USD': 'bitcoin', 'ETH-USD': 'ethereum', 'DOGE-USD': 'dogecoin',
+            'SOL-USD': 'solana', 'ADA-USD': 'cardano', 'XRP-USD': 'xrp', 'DOT-USD': 'polkadot'
+        };
         const mockStockData = {};
         Object.values(stockCategories).flat().forEach(item => {
             mockStockData[item.s] = { symbol: item.s, name: item.n, price: Math.random() * 500 + 50, change: 0, isCrypto: !!cryptoMapping[item.s], history: generateHistory(Math.random() * 500 + 50, 60) };
@@ -219,9 +225,11 @@
 
         // Dual API Fetch with Failover
         async function updateCryptoPrices() {
+            // Build list of IDs from cryptoMapping
+            const ids = Object.values(cryptoMapping).join(',');
             // Try CoinCap first
             try {
-                const response = await fetch('https://api.coincap.io/v2/assets?ids=bitcoin,ethereum,dogecoin');
+                const response = await fetch(`https://api.coincap.io/v2/assets?ids=${ids}`);
                 if (!response.ok) throw new Error("CoinCap failed");
                 const result = await response.json();
                 if (result.data) {
@@ -235,12 +243,17 @@
             } catch (e) {
                 // Failover to CoinGecko
                 try {
-                    const response2 = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,dogecoin&vs_currencies=usd&include_24hr_change=true');
+                    // Note: CoinGecko IDs might slightly differ, for now assume mapping roughly works or falls back to simple list
+                    // Correcting mapped IDs for CoinGecko where different
+                    const cgIds = ids.replace('binance-coin', 'binancecoin').replace('xrp', 'ripple'); 
+                    const response2 = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cgIds}&vs_currencies=usd&include_24hr_change=true`);
                     if (!response2.ok) throw new Error("CoinGecko failed");
                     const result2 = await response2.json();
                     Object.keys(result2).forEach(id => {
-                        const symbol = Object.keys(cryptoMapping).find(key => cryptoMapping[key] === id);
-                        updateLocalCryptoData(symbol, result2[id].usd, result2[id].usd_24h_change);
+                        // Reverse map might need adjustment for ripple/binancecoin if implemented fully
+                        // For now, this covers the main ones that match
+                        const symbol = Object.keys(cryptoMapping).find(key => cryptoMapping[key] === id || (id==='ripple' && cryptoMapping[key]==='xrp'));
+                        if(symbol) updateLocalCryptoData(symbol, result2[id].usd, result2[id].usd_24h_change);
                     });
                     isLiveConnectionFailed = false; cryptoErrorLogged = false;
                 } catch (e2) {
