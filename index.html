@@ -3,220 +3,407 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>brooklyn-terminal</title>
+    <title>BROOKLYN-TERMINAL // V3.0</title>
+    <!-- 引入科技感字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* 淺色模式變數 (預設) */
-            --bg-body: #f0f2f5;
-            --bg-panel: #ffffff;
-            --text-color: #333333;
-            --border-color: #cccccc;
-            --grid-line: #e0e0e0;
-            --accent-color: #007bff;
-            --item-bg: rgba(0, 123, 255, 0.2);
-            --item-border: #007bff;
-            --handle-color: #0056b3;
-            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            /* --- 變數定義：深色模式 (Default / Sci-Fi) --- */
+            --bg-body: #050505;
+            --bg-panel: #111111;
+            --grid-bg: #0a0a0a;
+            --text-primary: #00ffcc; /* Cyan Neon */
+            --text-secondary: #888;
+            --border-color: #333;
+            --accent-color: #00ffcc;
+            --grid-line: rgba(0, 255, 204, 0.1);
+            --grid-line-strong: rgba(0, 255, 204, 0.3);
+            --handle-color: #ff0055;
+            --shadow-glow: 0 0 10px rgba(0, 255, 204, 0.3);
+            --glass-bg: rgba(17, 17, 17, 0.9);
+            --error-color: #ff0033;
+            --stock-up: #00ffcc;
+            --stock-down: #ff0033;
         }
 
-        /* 深色模式變數 */
-        [data-theme="dark"] {
-            --bg-body: #121212;
-            --bg-panel: #1e1e1e;
-            --text-color: #e0e0e0;
-            --border-color: #444444;
-            --grid-line: #333333;
-            --accent-color: #bb86fc;
-            --item-bg: rgba(187, 134, 252, 0.2);
-            --item-border: #bb86fc;
-            --handle-color: #9965f4;
-            --shadow: 0 2px 10px rgba(0,0,0,0.5);
+        /* --- 淺色模式 (Laboratory Style) --- */
+        [data-theme="light"] {
+            --bg-body: #e8eef2;
+            --bg-panel: #ffffff;
+            --grid-bg: #f4f7f9;
+            --text-primary: #2c3e50;
+            --text-secondary: #666;
+            --border-color: #cbd5e0;
+            --accent-color: #0066cc;
+            --grid-line: rgba(0, 0, 0, 0.05);
+            --grid-line-strong: rgba(0, 0, 0, 0.1);
+            --handle-color: #ff9900;
+            --shadow-glow: none;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --error-color: #e74c3c;
+            --stock-up: #0066cc;
+            --stock-down: #e74c3c;
         }
 
         * {
             box-sizing: border-box;
-            user-select: none; /* 防止拖曳時選取文字 */
+            user-select: none;
+            /* 使用新的科技感字體 */
+            font-family: 'Rajdhani', 'Orbitron', sans-serif;
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-body);
-            color: var(--text-color);
+            color: var(--text-primary);
             height: 100vh;
             display: flex;
             flex-direction: column;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        /* 頂部導航列 */
-        header {
-            background-color: var(--bg-panel);
-            padding: 0 20px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            z-index: 10;
-        }
-
-        .brand {
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            font-size: 1.2rem;
-            letter-spacing: 1px;
-        }
-
-        .brand span {
-            color: var(--accent-color);
-        }
-
-        .theme-toggle {
-            cursor: pointer;
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-body);
-            color: var(--text-color);
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .theme-toggle:hover {
-            border-color: var(--accent-color);
-        }
-
-        /* 主要佈局 */
-        .main-container {
-            display: flex;
-            flex: 1;
             overflow: hidden;
         }
 
-        /* 左側工具列 */
-        .sidebar {
-            width: 250px;
+        /* --- Header --- */
+        header {
+            height: 60px;
             background-color: var(--bg-panel);
-            border-right: 1px solid var(--border-color);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            z-index: 5;
-        }
-
-        .tool-title {
-            font-size: 0.9rem;
-            color: var(--text-color);
-            opacity: 0.7;
-            margin-bottom: 10px;
-        }
-
-        /* 工具列中的可拖曳範本 */
-        .draggable-template {
-            width: 100px;
-            height: 100px;
-            background-color: var(--item-bg);
-            border: 2px dashed var(--item-border);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            justify-content: center;
-            cursor: grab;
+            padding: 0 20px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.5);
+            z-index: 20;
+            justify-content: space-between;
+        }
+
+        /* 重新設計的 Logo */
+        .brand {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            letter-spacing: 3px;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            text-shadow: var(--shadow-glow);
+            display: flex;
+            align-items: center;
+        }
+        .brand span { color: var(--handle-color); }
+        .brand::before {
+            content: '◈';
+            margin-right: 10px;
+            color: var(--accent-color);
+            font-size: 1.8rem;
+        }
+
+        /* --- Main Layout --- */
+        .main-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+            position: relative;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 300px; /* 初始寬度 */
+            min-width: 250px;
+            max-width: 500px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+            padding: 20px;
+            overflow-y: auto; /* 允許側邊欄滾動 */
+        }
+
+        .sidebar-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Color Picker Style */
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
             border-radius: 4px;
-            transition: transform 0.1s;
+            border: 1px solid var(--border-color);
+        }
+        
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            background: none;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--text-primary); }
+
+        /* Draggable Tool */
+        .tool-item {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: grab;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .tool-item:hover {
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-glow);
+            background: rgba(255,255,255,0.08);
         }
 
-        .draggable-template:active {
-            cursor: grabbing;
-            transform: scale(0.95);
+        .tool-preview {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--text-primary);
+            background: rgba(0, 255, 204, 0.1);
         }
 
-        /* 操作區容器 (捲動區) */
+        /* Stock Indicator Style */
+        .stock-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .stock-selector select, .stock-selector input {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px;
+            border-radius: 4px;
+            outline: none;
+        }
+        .stock-selector select:focus, .stock-selector input:focus {
+            border-color: var(--accent-color);
+        }
+        .stock-drag-item {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            cursor: grab;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        .stock-drag-item:hover {
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-glow);
+            background: rgba(255,255,255,0.08);
+        }
+        .stock-price {
+            font-weight: bold;
+        }
+        .stock-price.up { color: var(--stock-up); }
+        .stock-price.down { color: var(--stock-down); }
+
+        /* Sidebar Resizer */
+        .sidebar-resizer {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            cursor: col-resize;
+            background: transparent;
+            z-index: 11;
+            transition: background 0.2s;
+        }
+        .sidebar-resizer:hover { background: var(--accent-color); }
+
+        /* Theme Switch (Bottom of Sidebar) */
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Switch CSS */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border: 1px solid var(--border-color);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-secondary);
+            transition: .4s;
+        }
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(26px); background-color: #000; }
+
+        /* --- Workspace --- */
         .workspace {
             flex: 1;
+            background-color: #000;
+            background-image: 
+                radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-size: 20px 20px;
             overflow: auto;
+            padding: 50px;
             position: relative;
-            padding: 40px;
-            background-color: var(--bg-body);
         }
 
-        /* 實際的網格畫布 */
+        /* Grid Canvas */
         #grid-canvas {
-            /* 60格 * 20px = 1200px */
-            width: 1200px; 
+            /* Default 60x60 * 20px = 1200px */
+            width: 1200px;
             height: 1200px;
-            background-color: var(--bg-panel);
+            background-color: var(--grid-bg);
             position: relative;
-            box-shadow: var(--shadow);
             
-            /* 網格線繪製 */
+            /* Grid Pattern */
             background-image: 
                 linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
                 linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-            background-size: 20px 20px; /* 每一格的大小 */
-            border: 1px solid var(--border-color);
+            background-size: 20px 20px;
+            
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
-        /* 操作區內的物件 */
+        /* Major Grid Lines (Every 100px / 5 cells) */
+        #grid-canvas::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+            background-size: 100px 100px;
+            pointer-events: none;
+        }
+
+        /* Grid Resize Handle */
+        .grid-resize-handle {
+            width: 20px;
+            height: 20px;
+            background: var(--accent-color);
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            cursor: nwse-resize;
+            clip-path: polygon(100% 0, 100% 100%, 0 100%); /* Triangle shape */
+            z-index: 5;
+        }
+
+        /* --- Grid Items --- */
         .grid-item {
             position: absolute;
-            background-color: var(--item-bg);
-            border: 2px solid var(--item-border);
-            border-radius: 4px;
+            border: 2px solid rgba(255,255,255,0.5);
+            box-sizing: border-box; /* Important calculation fix */
             cursor: move;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
-            color: var(--accent-color);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+            transition: box-shadow 0.2s, border-color 0.2s;
+            padding: 5px;
         }
 
         .grid-item:hover {
-            z-index: 100; /* 懸停時浮起 */
-            box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            z-index: 100;
+            border-color: #fff;
         }
 
-        /* 調整大小的手把 */
-        .resize-handle {
-            width: 12px;
-            height: 12px;
-            background-color: var(--handle-color);
+        /* Item Resize Handle */
+        .item-resize {
+            width: 10px;
+            height: 10px;
+            background: #fff;
             position: absolute;
-            bottom: -6px;
-            right: -6px;
+            bottom: 0;
+            right: 0;
             cursor: nwse-resize;
-            border-radius: 50%;
             z-index: 101;
         }
 
-        /* 刪除按鈕 */
-        .delete-btn {
+        /* Delete Button */
+        .item-delete {
             position: absolute;
-            top: -10px;
-            right: -10px;
-            width: 20px;
-            height: 20px;
-            background: red;
+            top: 2px;
+            right: 2px;
+            width: 16px;
+            height: 16px;
+            background: var(--error-color);
             color: white;
-            border-radius: 50%;
             text-align: center;
-            line-height: 20px;
-            font-size: 12px;
+            line-height: 14px;
             cursor: pointer;
+            font-size: 10px;
             display: none;
+            z-index: 102;
         }
+        .grid-item:hover .item-delete { display: block; }
 
-        .grid-item:hover .delete-btn {
-            display: block;
+        /* Collision State */
+        .grid-item.collision {
+            background-color: rgba(255, 0, 51, 0.5) !important;
+            border-color: var(--error-color) !important;
+            box-shadow: 0 0 20px var(--error-color);
         }
-
-        /* 標示尺寸 */
-        .size-label {
-            pointer-events: none;
+        
+        /* Stock Info in Grid Item */
+        .stock-info-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            pointer-events: none; /* 防止阻擋拖曳 */
+        }
+        .stock-symbol {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+        .stock-data {
+            font-size: 1em;
         }
 
     </style>
@@ -224,80 +411,236 @@
 <body>
 
     <header>
-        <div class="brand">brooklyn-<span>terminal</span></div>
-        <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">
-            切換深色模式
-        </button>
+        <!-- 重新設計的 Logo -->
+        <div class="brand">Brooklyn-<span>Terminal</span></div>
+        <div style="font-size: 12px; opacity: 0.7;">SYS.STATUS: ONLINE</div>
     </header>
 
     <div class="main-container">
-        <div class="sidebar">
-            <div>
-                <div class="tool-title">基本物件</div>
-                <div class="tool-desc" style="font-size: 0.8rem; color: var(--text-color); margin-bottom: 10px;">
-                    拖曳此方塊至右側網格
-                </div>
-                <div class="draggable-template" draggable="true" id="square-template">
-                    10x10
-                </div>
-            </div>
+        <!-- Left Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-title">Object Controls</div>
             
-            <div style="margin-top: auto; font-size: 0.75rem; opacity: 0.5;">
-                Grid Size: 60x60<br>
-                Cell Size: 20px
+            <!-- Color Picker -->
+            <div class="color-picker-container">
+                <label for="colorPicker" style="font-size: 12px;">COLOR:</label>
+                <input type="color" id="colorPicker" value="#007bff">
+                <span id="colorValue" style="font-size: 10px; opacity: 0.8;">#007bff</span>
             </div>
+
+            <!-- Library -->
+            <div class="sidebar-title">Library</div>
+            <div class="tool-item" draggable="true" id="tool-square">
+                <div class="tool-preview" style="background-color: rgba(0,123,255,0.3);"></div>
+                <span style="font-size: 12px;">Module 10x10</span>
+            </div>
+
+            <!-- Stock Indicators -->
+            <div class="sidebar-title">Stock Indicators</div>
+            <div class="stock-selector">
+                <select id="stockList">
+                    <option value="2330">2330 台積電</option>
+                    <option value="2317">2317 鴻海</option>
+                    <option value="2454">2454 聯發科</option>
+                    <option value="2303">2303 聯電</option>
+                    <option value="2881">2881 富邦金</option>
+                </select>
+                <input type="text" id="stockSearch" placeholder="Search Stock (e.g., 2330)">
+            </div>
+            <div class="stock-drag-item" draggable="true" id="stockDraggable">
+                <span id="selectedStockName">2330 台積電</span>
+                <span id="selectedStockPrice" class="stock-price up">580.00</span>
+            </div>
+
+
+            <!-- Sidebar Footer (Theme Switch) -->
+            <div class="sidebar-footer">
+                <span style="font-size: 12px;">THEME MODE</span>
+                <label class="switch">
+                    <input type="checkbox" id="themeSwitch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Sidebar Resizer Handle -->
+            <div class="sidebar-resizer" id="sidebarResizer"></div>
         </div>
 
+        <!-- Workspace -->
         <div class="workspace">
             <div id="grid-canvas">
-                </div>
+                <div class="grid-resize-handle" id="gridResizer"></div>
+                <!-- Dynamic Items Here -->
+            </div>
         </div>
     </div>
 
     <script>
-        // --- 設定與常數 ---
-        const CELL_SIZE = 20; // 每一格的像素大小
-        const GRID_ROWS = 60;
-        const GRID_COLS = 60;
-        
+        // --- Configuration ---
+        const CELL_SIZE = 20;
+        const MIN_W = CELL_SIZE;
+        const MIN_H = CELL_SIZE;
+
+        // --- DOM Elements ---
         const gridCanvas = document.getElementById('grid-canvas');
-        const squareTemplate = document.getElementById('square-template');
-        const themeBtn = document.getElementById('themeBtn');
+        const colorPicker = document.getElementById('colorPicker');
+        const colorValue = document.getElementById('colorValue');
+        const themeSwitch = document.getElementById('themeSwitch');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarResizer = document.getElementById('sidebarResizer');
+        const gridResizer = document.getElementById('gridResizer');
+        const stockList = document.getElementById('stockList');
+        const stockSearch = document.getElementById('stockSearch');
+        const stockDraggable = document.getElementById('stockDraggable');
+        const selectedStockName = document.getElementById('selectedStockName');
+        const selectedStockPrice = document.getElementById('selectedStockPrice');
 
-        // --- 狀態變數 ---
-        let draggedElement = null; // 正在從側邊欄拖曳的元素類型
-        let activeItem = null;     // 正在操作區移動的物件
-        let isResizing = false;
-        let startX, startY, startLeft, startTop, startWidth, startHeight;
+        // --- State ---
+        let items = []; // Stores item data {id, x, y, w, h, el, stockData}
+        let activeColor = '#007bff';
+        let currentStock = { symbol: '2330', name: '台積電', price: 580.00, change: 5.00 }; // Initial Mock Data
 
-        // --- 主題切換邏輯 ---
-        function toggleTheme() {
-            const body = document.body;
-            const currentTheme = body.getAttribute('data-theme');
-            
-            if (currentTheme === 'dark') {
-                body.removeAttribute('data-theme');
-                themeBtn.innerText = '切換深色模式';
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                themeBtn.innerText = '切換淺色模式';
+        // --- Mock Stock Data ---
+        const mockStockData = {
+            '2330': { name: '台積電', price: 580.00, change: 5.00 },
+            '2317': { name: '鴻海', price: 105.00, change: -0.50 },
+            '2454': { name: '聯發科', price: 950.00, change: 15.00 },
+            '2303': { name: '聯電', price: 48.50, change: 0.20 },
+            '2881': { name: '富邦金', price: 62.00, change: -0.10 }
+        };
+
+        function getMockStockPrice(symbol) {
+            if (mockStockData[symbol]) {
+                // Simulate price change
+                const change = (Math.random() - 0.5) * 2;
+                mockStockData[symbol].price += change;
+                mockStockData[symbol].change = change;
+                return mockStockData[symbol];
             }
+            // Fallback for search
+            return { name: 'Unknown', price: (Math.random() * 1000).toFixed(2), change: (Math.random() - 0.5) * 10 };
         }
 
-        // --- 輔助函式：網格吸附計算 ---
-        function snapToGrid(value) {
-            return Math.round(value / CELL_SIZE) * CELL_SIZE;
+        function updateStockDisplay(stock) {
+            currentStock = stock;
+            selectedStockName.innerText = `${stock.symbol} ${stock.name}`;
+            selectedStockPrice.innerText = stock.price.toFixed(2);
+            selectedStockPrice.className = `stock-price ${stock.change >= 0 ? 'up' : 'down'}`;
         }
-
-        // --- 1. 從側邊欄拖曳新增 (HTML5 Drag & Drop) ---
         
-        squareTemplate.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('type', 'square-10x10');
-            e.dataTransfer.effectAllowed = 'copy';
+        // --- Initialization ---
+        
+        // 1. Theme Toggle
+        themeSwitch.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        });
+
+        // 2. Color Picker
+        colorPicker.addEventListener('input', (e) => {
+            activeColor = e.target.value;
+            colorValue.innerText = activeColor;
+            // Update tool preview color
+            document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D'; // 30% opacity
+            document.querySelector('.tool-preview').style.borderColor = activeColor;
+        });
+
+        // 3. Sidebar Resizing
+        sidebarResizer.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            document.addEventListener('mousemove', resizeSidebar);
+            document.addEventListener('mouseup', stopResizeSidebar);
+        });
+
+        function resizeSidebar(e) {
+            let newWidth = e.clientX;
+            if(newWidth < 250) newWidth = 250;
+            if(newWidth > 500) newWidth = 500;
+            sidebar.style.width = newWidth + 'px';
+        }
+
+        function stopResizeSidebar() {
+            document.removeEventListener('mousemove', resizeSidebar);
+            document.removeEventListener('mouseup', stopResizeSidebar);
+        }
+
+        // 4. Grid Canvas Resizing
+        gridResizer.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const startW = parseInt(getComputedStyle(gridCanvas).width);
+            const startH = parseInt(getComputedStyle(gridCanvas).height);
+
+            function doGridResize(ev) {
+                const dx = ev.clientX - startX;
+                const dy = ev.clientY - startY;
+                
+                let newW = Math.max(600, Math.round((startW + dx) / CELL_SIZE) * CELL_SIZE);
+                let newH = Math.max(600, Math.round((startH + dy) / CELL_SIZE) * CELL_SIZE);
+
+                gridCanvas.style.width = newW + 'px';
+                gridCanvas.style.height = newH + 'px';
+            }
+
+            function stopGridResize() {
+                document.removeEventListener('mousemove', doGridResize);
+                document.removeEventListener('mouseup', stopGridResize);
+            }
+
+            document.addEventListener('mousemove', doGridResize);
+            document.addEventListener('mouseup', stopGridResize);
+        });
+
+        // 5. Stock Selection
+        stockList.addEventListener('change', (e) => {
+            const symbol = e.target.value;
+            const stockData = getMockStockPrice(symbol);
+            updateStockDisplay({ symbol, ...stockData });
+        });
+
+        stockSearch.addEventListener('input', (e) => {
+            const symbol = e.target.value.trim();
+            if (symbol.length >= 4) {
+                const stockData = getMockStockPrice(symbol);
+                updateStockDisplay({ symbol, ...stockData });
+            }
+        });
+
+        // Simulate live stock price updates
+        setInterval(() => {
+            if (currentStock.symbol) {
+                const stockData = getMockStockPrice(currentStock.symbol);
+                updateStockDisplay({ symbol: currentStock.symbol, ...stockData });
+                
+                // Update stock data in grid items
+                items.forEach(item => {
+                    if (item.stockData && item.stockData.symbol === currentStock.symbol) {
+                        item.stockData = { symbol: currentStock.symbol, ...stockData };
+                        renderStockInfo(item.el, item.stockData);
+                    }
+                });
+            }
+        }, 3000); // Update every 3 seconds
+
+
+        // --- Drag & Drop (Creation & Stock Drop) ---
+        
+        document.getElementById('tool-square').addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('type', 'new-square');
+        });
+
+        stockDraggable.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('type', 'stock-data');
+            e.dataTransfer.setData('stock-symbol', currentStock.symbol);
         });
 
         gridCanvas.addEventListener('dragover', (e) => {
-            e.preventDefault(); // 允許 drop
+            e.preventDefault();
             e.dataTransfer.dropEffect = 'copy';
         });
 
@@ -305,185 +648,310 @@
             e.preventDefault();
             const type = e.dataTransfer.getData('type');
             
-            if (type === 'square-10x10') {
-                // 計算放置位置 (相對於 gridCanvas)
+            if (type === 'new-square') {
                 const rect = gridCanvas.getBoundingClientRect();
                 const rawX = e.clientX - rect.left;
                 const rawY = e.clientY - rect.top;
 
-                // 預設生成 10x10 格子 (200px x 200px)
-                const width = 10 * CELL_SIZE; 
-                const height = 10 * CELL_SIZE;
+                const w = 10 * CELL_SIZE;
+                const h = 10 * CELL_SIZE;
+                
+                // Snap center
+                let x = snap(rawX - w/2);
+                let y = snap(rawY - h/2);
 
-                // 置中游標放置
-                const x = snapToGrid(rawX - width / 2);
-                const y = snapToGrid(rawY - height / 2);
+                // Boundary Check
+                const maxW = parseInt(gridCanvas.style.width);
+                const maxH = parseInt(gridCanvas.style.height);
+                if(x < 0) x = 0;
+                if(y < 0) y = 0;
+                if(x + w > maxW) x = maxW - w;
+                if(y + h > maxH) y = maxH - h;
 
-                createGridItem(x, y, width, height);
+                // Collision Check for New Item
+                if (checkCollision({id: 'temp', x, y, w, h})) {
+                    alert("ERROR: 空間重疊，無法生成物件 (Collision Detected)");
+                    return;
+                }
+
+                createItem(x, y, w, h, activeColor);
+            } else if (type === 'stock-data') {
+                const symbol = e.dataTransfer.getData('stock-symbol');
+                const stockData = { symbol, ...getMockStockPrice(symbol) };
+                
+                // Find which grid item was dropped on
+                const rect = gridCanvas.getBoundingClientRect();
+                const dropX = e.clientX - rect.left;
+                const dropY = e.clientY - rect.top;
+
+                const targetItem = items.find(item => {
+                    return dropX >= item.x && dropX <= item.x + item.w &&
+                           dropY >= item.y && dropY <= item.y + item.h;
+                });
+
+                if (targetItem) {
+                    targetItem.stockData = stockData;
+                    renderStockInfo(targetItem.el, stockData);
+                }
             }
         });
 
-        // --- 2. 建立網格物件 ---
-        function createGridItem(x, y, w, h) {
-            // 邊界檢查
-            if (x < 0) x = 0;
-            if (y < 0) y = 0;
-            if (x + w > GRID_COLS * CELL_SIZE) x = GRID_COLS * CELL_SIZE - w;
-            if (y + h > GRID_ROWS * CELL_SIZE) y = GRID_ROWS * CELL_SIZE - h;
+        function renderStockInfo(el, stockData) {
+            // Remove existing stock info if any
+            const existingInfo = el.querySelector('.stock-info-container');
+            if (existingInfo) existingInfo.remove();
 
-            const item = document.createElement('div');
-            item.className = 'grid-item';
-            item.style.left = x + 'px';
-            item.style.top = y + 'px';
-            item.style.width = w + 'px';
-            item.style.height = h + 'px';
+            const container = document.createElement('div');
+            container.className = 'stock-info-container';
+            
+            const symbolEl = document.createElement('div');
+            symbolEl.className = 'stock-symbol';
+            symbolEl.innerText = `${stockData.symbol} ${stockData.name}`;
+            
+            const dataEl = document.createElement('div');
+            dataEl.className = 'stock-data';
+            dataEl.innerText = stockData.price.toFixed(2);
+            dataEl.className += ` stock-price ${stockData.change >= 0 ? 'up' : 'down'}`;
 
-            // 內容標籤
-            const label = document.createElement('span');
-            label.className = 'size-label';
-            updateLabel(label, w, h);
-            item.appendChild(label);
+            container.appendChild(symbolEl);
+            container.appendChild(dataEl);
+            
+            // Insert before the resize handle
+            el.insertBefore(container, el.querySelector('.item-resize'));
+            
+            // Hide default label
+            el.querySelector('.label').style.display = 'none';
+        }
 
-            // 調整大小手把
-            const handle = document.createElement('div');
-            handle.className = 'resize-handle';
-            item.appendChild(handle);
 
-            // 刪除按鈕
-            const delBtn = document.createElement('div');
-            delBtn.className = 'delete-btn';
-            delBtn.innerHTML = '×';
-            delBtn.onclick = function(e) {
-                e.stopPropagation(); // 防止觸發拖曳
-                item.remove();
+        // --- Core Logic: Create Item ---
+
+        function createItem(x, y, w, h, color) {
+            const id = 'item_' + Date.now();
+            const el = document.createElement('div');
+            el.className = 'grid-item';
+            el.id = id;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.style.width = w + 'px';
+            el.style.height = h + 'px';
+            
+            // Apply color style
+            // Use rgba for background to keep it semi-transparent
+            const r = parseInt(color.substr(1,2), 16);
+            const g = parseInt(color.substr(3,2), 16);
+            const b = parseInt(color.substr(5,2), 16);
+            el.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+            el.style.borderColor = color;
+            el.style.color = color;
+
+            el.innerHTML = `<span class="label">${w/CELL_SIZE}x${h/CELL_SIZE}</span>`;
+
+            // Delete Btn
+            const btn = document.createElement('div');
+            btn.className = 'item-delete';
+            btn.innerHTML = 'X';
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                deleteItem(id);
             };
-            item.appendChild(delBtn);
+            el.appendChild(btn);
 
-            // --- 事件綁定：移動 ---
-            item.addEventListener('mousedown', function(e) {
-                // 如果點到的是 resize handle 或 delete btn，不觸發移動
-                if (e.target === handle || e.target === delBtn) return;
+            // Resize Handle
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'item-resize';
+            el.appendChild(resizeHandle);
 
-                e.preventDefault(); // 防止瀏覽器預設拖曳行為
-                activeItem = item;
-                isResizing = false;
+            gridCanvas.appendChild(el);
 
-                // 記錄初始狀態
-                startX = e.clientX;
-                startY = e.clientY;
-                startLeft = parseInt(item.style.left || 0);
-                startTop = parseInt(item.style.top || 0);
+            // Add to tracking array
+            const itemObj = { id, x, y, w, h, el, stockData: null };
+            items.push(itemObj);
 
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
+            // Bind Events
+            bindItemEvents(itemObj, resizeHandle);
+        }
+
+        function deleteItem(id) {
+            const idx = items.findIndex(i => i.id === id);
+            if(idx > -1) {
+                items[idx].el.remove();
+                items.splice(idx, 1);
+            }
+        }
+
+        function bindItemEvents(item, resizeHandle) {
+            // Move Logic
+            item.el.addEventListener('mousedown', (e) => {
+                if(e.target === resizeHandle || e.target.className === 'item-delete') return;
+                e.preventDefault(); // Prevent native drag
+
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const origX = item.x;
+                const origY = item.y;
+                const maxW = parseInt(gridCanvas.style.width);
+                const maxH = parseInt(gridCanvas.style.height);
+
+                item.el.style.zIndex = 999;
+
+                function onMove(ev) {
+                    const dx = ev.clientX - startX;
+                    const dy = ev.clientY - startY;
+                    
+                    // Raw Position for smoothness
+                    let rawX = origX + dx;
+                    let rawY = origY + dy;
+                    
+                    // Visual update (snapped visually for feedback?) 
+                    // Let's keep smooth move, snap on release
+                    item.el.style.left = rawX + 'px';
+                    item.el.style.top = rawY + 'px';
+
+                    // Collision Preview
+                    const testX = snap(rawX);
+                    const testY = snap(rawY);
+                    
+                    // Check boundaries relative to grid
+                    const isOut = testX < 0 || testY < 0 || testX + item.w > maxW || testY + item.h > maxH;
+                    
+                    if (checkCollision({...item, x: testX, y: testY}, item.id) || isOut) {
+                        item.el.classList.add('collision');
+                    } else {
+                        item.el.classList.remove('collision');
+                    }
+                }
+
+                function onUp(ev) {
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onUp);
+                    item.el.style.zIndex = '';
+
+                    const finalX = snap(parseInt(item.el.style.left));
+                    const finalY = snap(parseInt(item.el.style.top));
+
+                    // Validate Final Position
+                    const isOut = finalX < 0 || finalY < 0 || finalX + item.w > maxW || finalY + item.h > maxH;
+                    
+                    if (checkCollision({...item, x: finalX, y: finalY}, item.id) || isOut) {
+                        // Revert
+                        item.el.style.left = item.x + 'px';
+                        item.el.style.top = item.y + 'px';
+                        item.el.classList.remove('collision');
+                    } else {
+                        // Commit
+                        item.x = finalX;
+                        item.y = finalY;
+                        item.el.style.left = finalX + 'px';
+                        item.el.style.top = finalY + 'px';
+                    }
+                }
+
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
             });
 
-            // --- 事件綁定：縮放 ---
-            handle.addEventListener('mousedown', function(e) {
+            // Resize Logic
+            resizeHandle.addEventListener('mousedown', (e) => {
                 e.preventDefault();
-                e.stopPropagation(); // 阻止冒泡到 item 的移動事件
-                activeItem = item;
-                isResizing = true;
+                e.stopPropagation();
+                
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const origW = item.w;
+                const origH = item.h;
+                const maxGridW = parseInt(gridCanvas.style.width);
+                const maxGridH = parseInt(gridCanvas.style.height);
 
-                startX = e.clientX;
-                startY = e.clientY;
-                startWidth = parseInt(item.style.width);
-                startHeight = parseInt(item.style.height);
+                function onResize(ev) {
+                    const dx = ev.clientX - startX;
+                    const dy = ev.clientY - startY;
 
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
+                    let newW = Math.max(MIN_W, origW + dx);
+                    let newH = Math.max(MIN_H, origH + dy);
+
+                    item.el.style.width = newW + 'px';
+                    item.el.style.height = newH + 'px';
+                    
+                    const snappedW = snap(newW);
+                    const snappedH = snap(newH);
+
+                    // Update Label (if visible)
+                    const label = item.el.querySelector('.label');
+                    if (label && label.style.display !== 'none') {
+                         label.innerText = `${Math.round(snappedW/CELL_SIZE)}x${Math.round(snappedH/CELL_SIZE)}`;
+                    }
+
+                    // Check Collision
+                    const isOut = item.x + snappedW > maxGridW || item.y + snappedH > maxGridH;
+
+                    if (checkCollision({...item, w: snappedW, h: snappedH}, item.id) || isOut) {
+                        item.el.classList.add('collision');
+                    } else {
+                        item.el.classList.remove('collision');
+                    }
+                }
+
+                function onUp(ev) {
+                    document.removeEventListener('mousemove', onResize);
+                    document.removeEventListener('mouseup', onUp);
+
+                    let finalW = snap(parseInt(item.el.style.width));
+                    let finalH = snap(parseInt(item.el.style.height));
+                    
+                    if (finalW < MIN_W) finalW = MIN_W;
+                    if (finalH < MIN_H) finalH = MIN_H;
+
+                    const isOut = item.x + finalW > maxGridW || item.y + finalH > maxGridH;
+
+                    if (checkCollision({...item, w: finalW, h: finalH}, item.id) || isOut) {
+                        // Revert
+                        item.el.style.width = item.w + 'px';
+                        item.el.style.height = item.h + 'px';
+                        const label = item.el.querySelector('.label');
+                        if (label && label.style.display !== 'none') {
+                             label.innerText = `${item.w/CELL_SIZE}x${item.h/CELL_SIZE}`;
+                        }
+                        item.el.classList.remove('collision');
+                    } else {
+                        // Commit
+                        item.w = finalW;
+                        item.h = finalH;
+                        item.el.style.width = finalW + 'px';
+                        item.el.style.height = finalH + 'px';
+                        const label = item.el.querySelector('.label');
+                        if (label && label.style.display !== 'none') {
+                            label.innerText = `${finalW/CELL_SIZE}x${finalH/CELL_SIZE}`;
+                        }
+                    }
+                }
+
+                document.addEventListener('mousemove', onResize);
+                document.addEventListener('mouseup', onUp);
             });
-
-            gridCanvas.appendChild(item);
         }
 
-        // --- 3. 全域滑鼠移動處理 (移動 & 縮放) ---
-        function onMouseMove(e) {
-            if (!activeItem) return;
+        // --- Helpers ---
 
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
+        function snap(val) {
+            return Math.round(val / CELL_SIZE) * CELL_SIZE;
+        }
 
-            if (isResizing) {
-                // --- 處理縮放 ---
-                let newWidth = startWidth + dx;
-                let newHeight = startHeight + dy;
-
-                // 最小尺寸限制 (例如 1格)
-                if (newWidth < CELL_SIZE) newWidth = CELL_SIZE;
-                if (newHeight < CELL_SIZE) newHeight = CELL_SIZE;
-
-                // 即時更新視覺 (不吸附，為了流暢感)
-                activeItem.style.width = newWidth + 'px';
-                activeItem.style.height = newHeight + 'px';
+        // AABB Collision Detection
+        function checkCollision(currentItem, ignoreId = null) {
+            for (let other of items) {
+                if (other.id === ignoreId) continue;
                 
-                // 更新標籤
-                const snappedW = Math.round(newWidth / CELL_SIZE);
-                const snappedH = Math.round(newHeight / CELL_SIZE);
-                updateLabel(activeItem.querySelector('.size-label'), snappedW * CELL_SIZE, snappedH * CELL_SIZE);
-
-            } else {
-                // --- 處理移動 ---
-                let newLeft = startLeft + dx;
-                let newTop = startTop + dy;
-
-                activeItem.style.left = newLeft + 'px';
-                activeItem.style.top = newTop + 'px';
+                if (
+                    currentItem.x < other.x + other.w &&
+                    currentItem.x + currentItem.w > other.x &&
+                    currentItem.y < other.y + other.h &&
+                    currentItem.y + currentItem.h > other.y
+                ) {
+                    return true;
+                }
             }
-        }
-
-        // --- 4. 全域滑鼠放開處理 (吸附 Grid) ---
-        function onMouseUp(e) {
-            if (!activeItem) return;
-
-            if (isResizing) {
-                // 縮放結束：吸附
-                let currentW = parseInt(activeItem.style.width);
-                let currentH = parseInt(activeItem.style.height);
-                
-                let snappedW = snapToGrid(currentW);
-                let snappedH = snapToGrid(currentH);
-
-                // 防止縮到 0
-                if (snappedW < CELL_SIZE) snappedW = CELL_SIZE;
-                if (snappedH < CELL_SIZE) snappedH = CELL_SIZE;
-
-                activeItem.style.width = snappedW + 'px';
-                activeItem.style.height = snappedH + 'px';
-                updateLabel(activeItem.querySelector('.size-label'), snappedW, snappedH);
-
-            } else {
-                // 移動結束：吸附
-                let currentLeft = parseInt(activeItem.style.left);
-                let currentTop = parseInt(activeItem.style.top);
-
-                let snappedLeft = snapToGrid(currentLeft);
-                let snappedTop = snapToGrid(currentTop);
-
-                // 邊界限制 (吸附後)
-                const maxLeft = (GRID_COLS * CELL_SIZE) - parseInt(activeItem.style.width);
-                const maxTop = (GRID_ROWS * CELL_SIZE) - parseInt(activeItem.style.height);
-
-                if (snappedLeft < 0) snappedLeft = 0;
-                if (snappedTop < 0) snappedTop = 0;
-                if (snappedLeft > maxLeft) snappedLeft = maxLeft;
-                if (snappedTop > maxTop) snappedTop = maxTop;
-
-                activeItem.style.left = snappedLeft + 'px';
-                activeItem.style.top = snappedTop + 'px';
-            }
-
-            // 清理
-            activeItem = null;
-            isResizing = false;
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        function updateLabel(element, w, h) {
-            const gridW = Math.round(w / CELL_SIZE);
-            const gridH = Math.round(h / CELL_SIZE);
-            element.innerText = `${gridW}x${gridH}`;
+            return false;
         }
 
     </script>
