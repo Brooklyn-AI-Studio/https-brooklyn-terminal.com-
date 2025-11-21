@@ -40,7 +40,7 @@
             --bg-body: #000000; 
             --bg-panel: #1a1a1a; 
             --grid-bg: #000000;
-            --text-primary: #ff9800; /* Bloomberg Amber/Orange */
+            --text-primary: #ff9800;
             --text-secondary: #ffcc80;
             --border-color: #ff9800; 
             --accent-color: #ff9800;
@@ -50,24 +50,24 @@
             --shadow-glow: none;
             --glass-bg: #000000; 
             --error-color: #ff3333;
-            --stock-up: #00ff00; /* Classic Terminal Green */
-            --stock-down: #ff3333; /* Classic Terminal Red */
+            --stock-up: #00ff00;
+            --stock-down: #ff3333;
             --input-bg: #000000; 
             --input-text: #ff9800;
             --msg-user-bg: #331a00; 
             --msg-sys-bg: #1a1a1a;
             --btn-bg: #331a00;
             --font-main: 'Consolas', 'Monaco', 'Courier New', monospace;
-            --border-radius: 0px; /* Sharp corners */
+            --border-radius: 0px;
         }
 
         * { box-sizing: border-box; user-select: none; font-family: var(--font-main); }
 
         /* Pro Mode Global Overrides */
         [data-pro="true"] * {
-            text-transform: uppercase !important; /* All Caps for seriousness */
+            text-transform: uppercase !important;
             letter-spacing: 0.5px;
-            box-shadow: none !important; /* No shadows allowed */
+            box-shadow: none !important;
         }
         [data-pro="true"] .grid-item {
             border: 1px solid var(--border-color) !important;
@@ -79,7 +79,7 @@
             border-bottom: 2px solid var(--border-color);
         }
         [data-pro="true"] .stock-price-large {
-            font-family: 'Consolas', monospace; /* Ensure numbers are monospaced */
+            font-family: 'Consolas', monospace;
         }
 
         body { margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-primary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
@@ -281,7 +281,6 @@
             <div class="stock-drag-item" draggable="true" id="stockDraggable">
                 <div style="display:flex; flex-direction:column;"><span id="selectedStockName" style="font-weight:bold; font-size:1rem;">AAPL Apple</span><span style="font-size:0.8rem; opacity:0.7;">Drag to Grid</span></div>
                 <span id="selectedStockPrice" style="display:flex; flex-direction:column; align-items:end;">
-                    <!-- Placeholders for targeted updates -->
                     <div id="preview-price" style="font-size:1.2rem; font-weight:bold; color:var(--stock-up);">175.00</div>
                     <div id="preview-change" style="font-size:0.6em; color:var(--stock-up);">▲ 1.20</div>
                 </span>
@@ -319,31 +318,39 @@
         let items = [], activeColor = '#007bff', currentStock = { symbol: 'AAPL', name: 'Apple Inc.', price: 175.00, change: 1.20, history: [], type: 'stock' };
         let isSidebarCollapsed = false, isLiveConnectionFailed = false, cryptoDataAvailable = false;
 
-        // Visitor Counter Logic
+        // Visitor Counter Logic (加上 try/catch 保護 localStorage)
         function initVisitorCounter() {
             const visitorEl = document.getElementById('visitor-num');
-            let count = localStorage.getItem('visitorCount');
-            if (!count) {
-                // Initialize random count between 8000 and 12000
+            let count = 0;
+
+            try {
+                const saved = localStorage.getItem('visitorCount');
+                if (saved) {
+                    count = parseInt(saved) || 0;
+                } else {
+                    count = Math.floor(Math.random() * 4000) + 8000;
+                }
+                count++;
+                localStorage.setItem('visitorCount', count);
+            } catch (err) {
+                // localStorage 無法使用時，用記憶體模擬
                 count = Math.floor(Math.random() * 4000) + 8000;
-            } else {
-                count = parseInt(count);
             }
-            // Increment for new session
-            count++;
-            localStorage.setItem('visitorCount', count);
-            
-            // Display formatted
+
             const updateDisplay = () => {
-                visitorEl.innerText = count.toLocaleString('en-US', {minimumIntegerDigits: 5, useGrouping:false});
+                visitorEl.innerText = count.toLocaleString('en-US', {
+                    minimumIntegerDigits: 5,
+                    useGrouping: false
+                });
             };
             updateDisplay();
 
-            // Randomly increment
             setInterval(() => {
-                if(Math.random() > 0.7) {
+                if (Math.random() > 0.7) {
                     count += Math.floor(Math.random() * 3) + 1;
-                    localStorage.setItem('visitorCount', count);
+                    try {
+                        localStorage.setItem('visitorCount', count);
+                    } catch (e) {}
                     updateDisplay();
                 }
             }, 3000);
@@ -500,15 +507,42 @@
             }
         }
 
-        categoryList.addEventListener('change', (e) => populateStockList(e.target.value)); populateStockList('US');
-        stockList.addEventListener('change', (e) => { const symbol = e.target.value; if(mockStockData[symbol]) { currentStock.symbol = symbol; updateSidebarPreview(mockStockData[symbol]); }});
-        stockSearch.addEventListener('input', (e) => { const val = e.target.value.toUpperCase(); const found = Object.values(mockStockData).find(d => d.symbol.includes(val) || d.name.toUpperCase().includes(val)); if(found) { currentStock.symbol = found.symbol; updateSidebarPreview(found); }});
+        categoryList.addEventListener('change', (e) => populateStockList(e.target.value)); 
+        populateStockList('US');
+
+        stockList.addEventListener('change', (e) => { 
+            const symbol = e.target.value; 
+            if(mockStockData[symbol]) { 
+                currentStock.symbol = symbol; 
+                updateSidebarPreview(mockStockData[symbol]); 
+            }
+        });
+
+        stockSearch.addEventListener('input', (e) => { 
+            const val = e.target.value.toUpperCase(); 
+            const found = Object.values(mockStockData).find(d => d.symbol.includes(val) || d.name.toUpperCase().includes(val)); 
+            if(found) { 
+                currentStock.symbol = found.symbol; 
+                updateSidebarPreview(found); 
+                // 若也想同步下拉選單，可加上：
+                // stockList.value = found.symbol;
+            }
+        });
 
         setInterval(simulateMarket, 1000);
         setInterval(updateCryptoPrices, 30000); 
         updateCryptoPrices();
 
-        sidebarToggle.addEventListener('click', () => { isSidebarCollapsed = !isSidebarCollapsed; if (isSidebarCollapsed) { sidebar.classList.add('collapsed'); sidebarToggle.innerHTML = '&gt;'; } else { sidebar.classList.remove('collapsed'); sidebarToggle.innerHTML = '&lt;'; }});
+        sidebarToggle.addEventListener('click', () => { 
+            isSidebarCollapsed = !isSidebarCollapsed; 
+            if (isSidebarCollapsed) { 
+                sidebar.classList.add('collapsed'); 
+                sidebarToggle.innerHTML = '&gt;'; 
+            } else { 
+                sidebar.classList.remove('collapsed'); 
+                sidebarToggle.innerHTML = '&lt;'; 
+            }
+        });
         
         // THEME SWITCH LOGIC
         themeSwitch.addEventListener('change', (e) => { 
@@ -530,9 +564,17 @@
             }
         });
 
-        colorPicker.addEventListener('input', (e) => { activeColor = e.target.value; colorValue.innerText = activeColor; document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D'; document.querySelector('.tool-preview').style.borderColor = activeColor; });
+        colorPicker.addEventListener('input', (e) => { 
+            activeColor = e.target.value; 
+            colorValue.innerText = activeColor; 
+            const preview = document.querySelector('.tool-preview');
+            if (preview) {
+                preview.style.backgroundColor = activeColor + '4D'; 
+                preview.style.borderColor = activeColor; 
+            }
+        });
         
-        // Save/Load Logic
+        // Save/Load Logic（加上防呆）
         function saveLayout() {
             const layoutData = items.map(i => {
                 const el = document.getElementById(i.id);
@@ -550,15 +592,39 @@
                     noteContent: noteContent
                 };
             });
-            localStorage.setItem('brooklyn_layout', JSON.stringify(layoutData));
-            alert('Layout Saved!');
+
+            try {
+                localStorage.setItem('brooklyn_layout', JSON.stringify(layoutData));
+                alert('Layout Saved!');
+            } catch (e) {
+                alert('Cannot save layout (localStorage unavailable).');
+            }
         }
 
         function loadLayout() {
-            const saved = localStorage.getItem('brooklyn_layout');
-            if(!saved) { alert('No saved layout found.'); return; }
+            let saved = null;
+            try {
+                saved = localStorage.getItem('brooklyn_layout');
+            } catch (e) {
+                alert('Cannot access localStorage.');
+                return;
+            }
+
+            if(!saved) { 
+                alert('No saved layout found.'); 
+                return; 
+            }
+
+            let layoutData;
+            try {
+                layoutData = JSON.parse(saved);
+            } catch (e) {
+                alert('Saved layout is corrupted. Please clear and save again.');
+                return;
+            }
+
             clearGrid();
-            const layoutData = JSON.parse(saved);
+
             layoutData.forEach(data => {
                 let color = '#007bff'; 
                 if(data.type === 'clock' || data.type === 'news' || data.type === 'chat' || data.type === 'calc' || data.type === 'note') color = '#ffffff';
@@ -582,7 +648,13 @@
             });
         }
 
-        function clearGrid() { items.forEach(i => { const el = document.getElementById(i.id); if(el) el.remove(); }); items = []; }
+        function clearGrid() { 
+            items.forEach(i => { 
+                const el = document.getElementById(i.id); 
+                if(el) el.remove(); 
+            }); 
+            items = []; 
+        }
 
         // Drag Listeners
         document.getElementById('tool-square').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'shape'));
@@ -591,84 +663,371 @@
         document.getElementById('tool-chat').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'chat'));
         document.getElementById('tool-calc').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'calc'));
         document.getElementById('tool-note').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'note'));
-        stockDraggable.addEventListener('dragstart', (e) => { e.dataTransfer.setData('type', 'stock'); e.dataTransfer.setData('symbol', currentStock.symbol); });
-        gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+        stockDraggable.addEventListener('dragstart', (e) => { 
+            e.dataTransfer.setData('type', 'stock'); 
+            e.dataTransfer.setData('symbol', currentStock.symbol); 
+        });
+
+        gridCanvas.addEventListener('dragover', (e) => { 
+            e.preventDefault(); 
+            e.dataTransfer.dropEffect = 'copy'; 
+        });
+
         gridCanvas.addEventListener('drop', (e) => {
-            e.preventDefault(); const type = e.dataTransfer.getData('type'); const rect = gridCanvas.getBoundingClientRect(); const x = snap(e.clientX - rect.left); const y = snap(e.clientY - rect.top);
-            if (type === 'shape') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, activeColor, 'shape'); }
-            else if (type === 'clock') { if(!checkCollision({x, y, w: 200, h: 100})) createItem(x, y, 200, 100, '#ffffff', 'clock'); }
-            else if (type === 'news') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'news'); }
-            else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
-            else if (type === 'calc') { if(!checkCollision({x, y, w: 200, h: 300})) createItem(x, y, 200, 300, '#ffffff', 'calc'); }
-            else if (type === 'note') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, '#ffffff', 'note'); }
+            e.preventDefault(); 
+            const type = e.dataTransfer.getData('type'); 
+            const rect = gridCanvas.getBoundingClientRect(); 
+            const x = snap(e.clientX - rect.left); 
+            const y = snap(e.clientY - rect.top);
+
+            if (type === 'shape') { 
+                if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, activeColor, 'shape'); 
+            }
+            else if (type === 'clock') { 
+                if(!checkCollision({x, y, w: 200, h: 100})) createItem(x, y, 200, 100, '#ffffff', 'clock'); 
+            }
+            else if (type === 'news') { 
+                if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'news'); 
+            }
+            else if (type === 'chat') { 
+                if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); 
+            }
+            else if (type === 'calc') { 
+                if(!checkCollision({x, y, w: 200, h: 300})) createItem(x, y, 200, 300, '#ffffff', 'calc'); 
+            }
+            else if (type === 'note') { 
+                if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, '#ffffff', 'note'); 
+            }
             else if (type === 'stock') {
                 const symbol = e.dataTransfer.getData('symbol');
-                if(!checkCollision({x, y, w: 300, h: 200})) { const newItem = createItem(x, y, 300, 200, activeColor, 'stock'); if(mockStockData[symbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[symbol])); renderStockContent(newItem.obj); } }
+                if(!checkCollision({x, y, w: 300, h: 200})) { 
+                    const newItem = createItem(x, y, 300, 200, activeColor, 'stock'); 
+                    if(mockStockData[symbol]) { 
+                        newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[symbol])); 
+                        renderStockContent(newItem.obj); 
+                    } 
+                }
             }
         });
 
         function createItem(x, y, w, h, color, type) {
-            const id = 'item_' + Date.now(); const el = document.createElement('div'); el.className = 'grid-item'; el.id = id; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.width = w + 'px'; el.style.height = h + 'px';
-            const rgb = hexToRgb(color); el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`; el.style.borderColor = color;
-            el.innerHTML = `<div class="content-container" style="width:100%; height:100%;"></div><div class="menu-trigger">⋮</div><div class="context-menu"><div class="context-menu-item danger" onclick="deleteItem('${id}')">移除 (Remove)</div></div><div class="item-resize"></div>`;
+            const id = 'item_' + Date.now(); 
+            const el = document.createElement('div'); 
+            el.className = 'grid-item'; 
+            el.id = id; 
+            el.style.left = x + 'px'; 
+            el.style.top = y + 'px'; 
+            el.style.width = w + 'px'; 
+            el.style.height = h + 'px';
+            const rgb = hexToRgb(color); 
+            el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`; 
+            el.style.borderColor = color;
+
+            el.innerHTML = `
+                <div class="content-container" style="width:100%; height:100%;"></div>
+                <div class="menu-trigger">⋮</div>
+                <div class="context-menu">
+                    <div class="context-menu-item danger" onclick="deleteItem('${id}')">移除 (Remove)</div>
+                </div>
+                <div class="item-resize"></div>
+            `;
+
+            // Stock context menu
             if (type === 'stock') {
-                const menu = el.querySelector('.context-menu'); const removeBtn = menu.querySelector('.context-menu-item');
-                const timeBtn = document.createElement('div'); timeBtn.className = 'context-menu-item'; timeBtn.innerText = '顯示/隱藏 更新時間'; timeBtn.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.showTime = !obj.showTime; renderStockContent(obj); } menu.classList.remove('show'); }; menu.insertBefore(timeBtn, removeBtn);
-                ['K 線圖 (1W)', 'K 線圖 (1M)', 'K 線圖 (3M)'].forEach((label, idx) => { const itemBtn = document.createElement('div'); itemBtn.className = 'context-menu-item'; itemBtn.innerText = label; itemBtn.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.viewMode = 'candle'; obj.timeRange = idx === 0 ? '1W' : idx === 1 ? '1M' : '3M'; renderStockContent(obj); } menu.classList.remove('show'); }; menu.insertBefore(itemBtn, removeBtn); });
-                const lineBtn = document.createElement('div'); lineBtn.className = 'context-menu-item'; lineBtn.innerText = '即時走勢 (Live Trend)'; lineBtn.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.viewMode = 'line'; renderStockContent(obj); } menu.classList.remove('show'); }; menu.insertBefore(lineBtn, removeBtn);
+                const menu = el.querySelector('.context-menu'); 
+                const removeBtn = menu.querySelector('.context-menu-item');
+                const timeBtn = document.createElement('div'); 
+                timeBtn.className = 'context-menu-item'; 
+                timeBtn.innerText = '顯示/隱藏 更新時間'; 
+                timeBtn.onclick = (e) => { 
+                    e.stopPropagation(); 
+                    const obj = items.find(i => i.id === id); 
+                    if(obj) { 
+                        obj.showTime = !obj.showTime; 
+                        renderStockContent(obj); 
+                    } 
+                    menu.classList.remove('show'); 
+                }; 
+                menu.insertBefore(timeBtn, removeBtn);
+
+                ['K 線圖 (1W)', 'K 線圖 (1M)', 'K 線圖 (3M)'].forEach((label, idx) => { 
+                    const itemBtn = document.createElement('div'); 
+                    itemBtn.className = 'context-menu-item'; 
+                    itemBtn.innerText = label; 
+                    itemBtn.onclick = (e) => { 
+                        e.stopPropagation(); 
+                        const obj = items.find(i => i.id === id); 
+                        if(obj) { 
+                            obj.viewMode = 'candle'; 
+                            obj.timeRange = idx === 0 ? '1W' : idx === 1 ? '1M' : '3M'; 
+                            renderStockContent(obj); 
+                        } 
+                        menu.classList.remove('show'); 
+                    }; 
+                    menu.insertBefore(itemBtn, removeBtn); 
+                });
+
+                const lineBtn = document.createElement('div'); 
+                lineBtn.className = 'context-menu-item'; 
+                lineBtn.innerText = '即時走勢 (Live Trend)'; 
+                lineBtn.onclick = (e) => { 
+                    e.stopPropagation(); 
+                    const obj = items.find(i => i.id === id); 
+                    if(obj) { 
+                        obj.viewMode = 'line'; 
+                        renderStockContent(obj); 
+                    } 
+                    menu.classList.remove('show'); 
+                }; 
+                menu.insertBefore(lineBtn, removeBtn);
             }
-            // Clock Context Menu
+
+            // Clock context menu
             if (type === 'clock') {
-                const menu = el.querySelector('.context-menu'); const removeBtn = menu.querySelector('.context-menu-item');
-                const worldBtn = document.createElement('div'); worldBtn.className = 'context-menu-item'; worldBtn.innerHTML = '世界時鐘 (World Clock) <div class="submenu"></div>';
-                const submenu = document.createElement('div'); submenu.className = 'submenu'; worldBtn.appendChild(submenu);
-                const zones = [{ label: '本地時間 (Local)', tz: 'local', display: 'LOCAL' }, { label: '紐約 (New York)', tz: 'America/New_York', display: 'NEW YORK' }, { label: '倫敦 (London)', tz: 'Europe/London', display: 'LONDON' }, { label: '東京 (Tokyo)', tz: 'Asia/Tokyo', display: 'TOKYO' }, { label: '台北 (Taipei)', tz: 'Asia/Taipei', display: 'TAIPEI' }, { label: '雪梨 (Sydney)', tz: 'Australia/Sydney', display: 'SYDNEY' }];
-                zones.forEach(z => { const subItem = document.createElement('div'); subItem.className = 'context-menu-item'; subItem.innerText = z.label; subItem.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.timeZone = z.tz; obj.cityLabel = z.display; renderClockContent(obj); } menu.classList.remove('show'); }; submenu.appendChild(subItem); });
+                const menu = el.querySelector('.context-menu'); 
+                const removeBtn = menu.querySelector('.context-menu-item');
+                const worldBtn = document.createElement('div'); 
+                worldBtn.className = 'context-menu-item'; 
+                worldBtn.innerHTML = '世界時鐘 (World Clock) <div class="submenu"></div>';
+                const submenu = document.createElement('div'); 
+                submenu.className = 'submenu'; 
+                worldBtn.appendChild(submenu);
+
+                const zones = [
+                    { label: '本地時間 (Local)', tz: 'local', display: 'LOCAL' }, 
+                    { label: '紐約 (New York)', tz: 'America/New_York', display: 'NEW YORK' }, 
+                    { label: '倫敦 (London)', tz: 'Europe/London', display: 'LONDON' }, 
+                    { label: '東京 (Tokyo)', tz: 'Asia/Tokyo', display: 'TOKYO' }, 
+                    { label: '台北 (Taipei)', tz: 'Asia/Taipei', display: 'TAIPEI' }, 
+                    { label: '雪梨 (Sydney)', tz: 'Australia/Sydney', display: 'SYDNEY' }
+                ];
+
+                zones.forEach(z => { 
+                    const subItem = document.createElement('div'); 
+                    subItem.className = 'context-menu-item'; 
+                    subItem.innerText = z.label; 
+                    subItem.onclick = (e) => { 
+                        e.stopPropagation(); 
+                        const obj = items.find(i => i.id === id); 
+                        if(obj) { 
+                            obj.timeZone = z.tz; 
+                            obj.cityLabel = z.display; 
+                            renderClockContent(obj); 
+                        } 
+                        menu.classList.remove('show'); 
+                    }; 
+                    submenu.appendChild(subItem); 
+                });
                 menu.insertBefore(worldBtn, removeBtn);
             }
 
-            const trigger = el.querySelector('.menu-trigger'), menu = el.querySelector('.context-menu'); trigger.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); menu.classList.toggle('show'); };
+            const trigger = el.querySelector('.menu-trigger'), menu = el.querySelector('.context-menu'); 
+            trigger.onclick = (e) => { 
+                e.stopPropagation(); 
+                document.querySelectorAll('.context-menu').forEach(m => { 
+                    if(m!==menu) m.classList.remove('show'); 
+                }); 
+                menu.classList.toggle('show'); 
+            };
+
             gridCanvas.appendChild(el);
-            const itemObj = { id, x, y, w, h, el, type, stockData: null, showTime: false, viewMode: 'line', timeRange: '1M', timeZone: 'local', cityLabel: 'LOCAL' }; items.push(itemObj);
-            if (type === 'clock') renderClockContent(itemObj); if (type === 'news') renderNewsContent(itemObj); if (type === 'chat') renderChatContent(itemObj);
-            if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj);
-            setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
+
+            const itemObj = { 
+                id, x, y, w, h, el, type, 
+                stockData: null, showTime: false, 
+                viewMode: 'line', timeRange: '1M', 
+                timeZone: 'local', cityLabel: 'LOCAL' 
+            }; 
+
+            items.push(itemObj);
+
+            if (type === 'clock') renderClockContent(itemObj); 
+            if (type === 'news') renderNewsContent(itemObj); 
+            if (type === 'chat') renderChatContent(itemObj);
+            if (type === 'calc') renderCalcContent(itemObj); 
+            if (type === 'note') renderNoteContent(itemObj);
+
+            setupInteractions(itemObj); 
+            document.addEventListener('click', () => menu.classList.remove('show')); 
+            return { el, obj: itemObj };
         }
 
-        function deleteItem(id) { const idx = items.findIndex(i => i.id === id); if (idx > -1) { items[idx].el.remove(); items.splice(idx, 1); } }
+        function deleteItem(id) { 
+            const idx = items.findIndex(i => i.id === id); 
+            if (idx > -1) { 
+                items[idx].el.remove(); 
+                items.splice(idx, 1); 
+            } 
+        }
         
         function renderClockContent(item) { 
-            const container = item.el.querySelector('.content-container'); const now = new Date(); let timeStr;
-            if (!item.timeZone || item.timeZone === 'local') { timeStr = now.toLocaleTimeString('en-US', { hour12: false }); } 
-            else { try { timeStr = now.toLocaleTimeString('en-US', { hour12: false, timeZone: item.timeZone }); } catch(e) { timeStr = "Invalid TZ"; } }
-            const fontSize = item.w / 5; const adjustedFontSize = item.timeZone && item.timeZone !== 'local' ? fontSize * 0.8 : fontSize; const labelSize = adjustedFontSize * 0.3;
-            container.innerHTML = `<div class="clock-layout"><div style="font-size:${adjustedFontSize}px; line-height: 1;">${timeStr}</div><div class="clock-city" style="font-size:${labelSize}px;">${item.cityLabel || 'LOCAL'}</div></div>`; 
+            const container = item.el.querySelector('.content-container'); 
+            const now = new Date(); 
+            let timeStr;
+            if (!item.timeZone || item.timeZone === 'local') { 
+                timeStr = now.toLocaleTimeString('en-US', { hour12: false }); 
+            } else { 
+                try { 
+                    timeStr = now.toLocaleTimeString('en-US', { hour12: false, timeZone: item.timeZone }); 
+                } catch(e) { 
+                    timeStr = "Invalid TZ"; 
+                } 
+            }
+            const fontSize = item.w / 5; 
+            const adjustedFontSize = item.timeZone && item.timeZone !== 'local' ? fontSize * 0.8 : fontSize; 
+            const labelSize = adjustedFontSize * 0.3;
+            container.innerHTML = `
+                <div class="clock-layout">
+                    <div style="font-size:${adjustedFontSize}px; line-height: 1;">${timeStr}</div>
+                    <div class="clock-city" style="font-size:${labelSize}px;">${item.cityLabel || 'LOCAL'}</div>
+                </div>
+            `; 
         }
-        function renderNewsContent(item) { const container = item.el.querySelector('.content-container'); if(container.querySelector('.news-layout')) return; let newsHTML = `<div class="news-layout"><div class="news-header widget-header">最新動態 (Market)</div>`; mockNews.forEach(news => { newsHTML += `<div class="news-card"><div class="news-meta"><span>${news.source}</span> • <span>${news.time}</span></div><div class="news-title">${news.title}</div><div class="news-summary">${news.summary}</div></div>`; }); newsHTML += `</div>`; container.innerHTML = newsHTML; }
+
+        function renderNewsContent(item) { 
+            const container = item.el.querySelector('.content-container'); 
+            if(container.querySelector('.news-layout')) return; 
+            let newsHTML = `<div class="news-layout"><div class="news-header widget-header">最新動態 (Market)</div>`; 
+            mockNews.forEach(news => { 
+                newsHTML += `
+                    <div class="news-card">
+                        <div class="news-meta"><span>${news.source}</span> • <span>${news.time}</span></div>
+                        <div class="news-title">${news.title}</div>
+                        <div class="news-summary">${news.summary}</div>
+                    </div>
+                `; 
+            }); 
+            newsHTML += `</div>`; 
+            container.innerHTML = newsHTML; 
+        }
+
         function renderChatContent(item) {
-            const container = item.el.querySelector('.content-container'); if(container.querySelector('.chat-layout')) return;
-            container.innerHTML = `<div class="chat-layout"><div class="chat-header widget-header"><span>LLM CHAT</span><span style="font-size:0.8em; opacity:0.7;">ONLINE</span></div><div class="chat-history" id="history-${item.id}"><div class="chat-msg sys">System initialized. Select model and type command.</div></div><div class="chat-input-area"><input type="text" class="chat-input" placeholder="Type command..." id="input-${item.id}"><select class="chat-model-select" id="model-${item.id}"><option value="llama3">Llama 3</option><option value="deepseek">DeepSeek</option></select><button class="chat-send-btn" id="btn-${item.id}">SEND</button></div></div>`;
-            const input = container.querySelector(`#input-${item.id}`), btn = container.querySelector(`#btn-${item.id}`), history = container.querySelector(`#history-${item.id}`), modelSelect = container.querySelector(`#model-${item.id}`);
-            const sendMsg = () => { const text = input.value.trim(); if(!text) return; const userDiv = document.createElement('div'); userDiv.className = 'chat-msg user'; userDiv.innerText = text; history.appendChild(userDiv); input.value = ''; history.scrollTop = history.scrollHeight; setTimeout(() => { const selectedModel = modelSelect.value === 'llama3' ? 'Llama 3' : 'DeepSeek'; const sysDiv = document.createElement('div'); sysDiv.className = 'chat-msg sys'; sysDiv.innerText = `[${selectedModel}] Processing request... Analysis complete. Market volatility is high.`; history.appendChild(sysDiv); history.scrollTop = history.scrollHeight; }, 800); };
-            btn.onclick = sendMsg; input.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMsg(); });
+            const container = item.el.querySelector('.content-container'); 
+            if(container.querySelector('.chat-layout')) return;
+            container.innerHTML = `
+                <div class="chat-layout">
+                    <div class="chat-header widget-header">
+                        <span>LLM CHAT</span>
+                        <span style="font-size:0.8em; opacity:0.7;">ONLINE</span>
+                    </div>
+                    <div class="chat-history" id="history-${item.id}">
+                        <div class="chat-msg sys">System initialized. Select model and type command.</div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" placeholder="Type command..." id="input-${item.id}">
+                        <select class="chat-model-select" id="model-${item.id}">
+                            <option value="llama3">Llama 3</option>
+                            <option value="deepseek">DeepSeek</option>
+                        </select>
+                        <button class="chat-send-btn" id="btn-${item.id}">SEND</button>
+                    </div>
+                </div>
+            `;
+            const input = container.querySelector(`#input-${item.id}`), 
+                  btn = container.querySelector(`#btn-${item.id}`), 
+                  history = container.querySelector(`#history-${item.id}`), 
+                  modelSelect = container.querySelector(`#model-${item.id}`);
+
+            const sendMsg = () => { 
+                const text = input.value.trim(); 
+                if(!text) return; 
+                const userDiv = document.createElement('div'); 
+                userDiv.className = 'chat-msg user'; 
+                userDiv.innerText = text; 
+                history.appendChild(userDiv); 
+                input.value = ''; 
+                history.scrollTop = history.scrollHeight; 
+                setTimeout(() => { 
+                    const selectedModel = modelSelect.value === 'llama3' ? 'Llama 3' : 'DeepSeek'; 
+                    const sysDiv = document.createElement('div'); 
+                    sysDiv.className = 'chat-msg sys'; 
+                    sysDiv.innerText = `[${selectedModel}] Processing request... Analysis complete. Market volatility is high.`; 
+                    history.appendChild(sysDiv); 
+                    history.scrollTop = history.scrollHeight; 
+                }, 800); 
+            };
+            btn.onclick = sendMsg; 
+            input.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMsg(); });
         }
+
         function renderCalcContent(item) {
-            const container = item.el.querySelector('.content-container'); if(container.querySelector('.calc-layout')) return;
-            container.innerHTML = `<div class="calc-layout"><div class="calc-header widget-header">CALC-8000</div><div class="calc-display" id="disp-${item.id}">0</div><div class="calc-keys" id="keys-${item.id}"></div></div>`;
-            const display = container.querySelector(`#disp-${item.id}`), keysContainer = container.querySelector(`#keys-${item.id}`);
-            const keys = ['7','8','9','/','4','5','6','*','1','2','3','-','C','0','=','+']; let currentExp = '';
+            const container = item.el.querySelector('.content-container'); 
+            if(container.querySelector('.calc-layout')) return;
+            container.innerHTML = `
+                <div class="calc-layout">
+                    <div class="calc-header widget-header">CALC-8000</div>
+                    <div class="calc-display" id="disp-${item.id}">0</div>
+                    <div class="calc-keys" id="keys-${item.id}"></div>
+                </div>
+            `;
+            const display = container.querySelector(`#disp-${item.id}`), 
+                  keysContainer = container.querySelector(`#keys-${item.id}`);
+            const keys = ['7','8','9','/','4','5','6','*','1','2','3','-','C','0','=','+']; 
+            let currentExp = '';
             keys.forEach(k => {
-                const btn = document.createElement('button'); btn.className = 'calc-key'; btn.innerText = k; if(['/','*','-','+'].includes(k)) btn.classList.add('op'); if(k === '=') btn.classList.add('eq');
-                btn.onclick = (e) => { e.stopPropagation(); if(k === 'C') { currentExp = ''; display.innerText = '0'; } else if(k === '=') { try { display.innerText = eval(currentExp) || '0'; currentExp = display.innerText; } catch { display.innerText = 'ERR'; currentExp = ''; } } else { currentExp += k; display.innerText = currentExp; } }; keysContainer.appendChild(btn);
+                const btn = document.createElement('button'); 
+                btn.className = 'calc-key'; 
+                btn.innerText = k; 
+                if(['/','*','-','+'].includes(k)) btn.classList.add('op'); 
+                if(k === '=') btn.classList.add('eq');
+                btn.onclick = (e) => { 
+                    e.stopPropagation(); 
+                    if(k === 'C') { 
+                        currentExp = ''; 
+                        display.innerText = '0'; 
+                    } else if(k === '=') { 
+                        try { 
+                            display.innerText = eval(currentExp) || '0'; 
+                            currentExp = display.innerText; 
+                        } catch { 
+                            display.innerText = 'ERR'; 
+                            currentExp = ''; 
+                        } 
+                    } else { 
+                        currentExp += k; 
+                        display.innerText = currentExp; 
+                    } 
+                }; 
+                keysContainer.appendChild(btn);
             });
         }
+
         function renderNoteContent(item) {
-            const container = item.el.querySelector('.content-container'); if(container.querySelector('.note-layout')) return;
-            container.innerHTML = `<div class="note-layout"><div class="note-header widget-header"><span>NOTES</span></div><div class="note-toolbar"><button class="note-btn" data-cmd="bold"><b>B</b></button><button class="note-btn" data-cmd="italic"><i>I</i></button><select class="note-select" data-cmd="fontSize"><option value="1">Tiny</option><option value="3" selected>Normal</option><option value="5">Large</option><option value="7">Huge</option></select></div><div class="note-content" contenteditable="true"></div></div>`;
-            const toolbar = container.querySelector('.note-toolbar'), content = container.querySelector('.note-content');
-            toolbar.addEventListener('mousedown', e => e.stopPropagation()); content.addEventListener('mousedown', e => e.stopPropagation());
-            toolbar.addEventListener('click', (e) => { if(e.target.classList.contains('note-btn') || e.target.parentElement.classList.contains('note-btn')) { const btn = e.target.classList.contains('note-btn') ? e.target : e.target.parentElement; document.execCommand(btn.dataset.cmd, false, null); content.focus(); }});
-            toolbar.querySelector('.note-select').addEventListener('change', (e) => { document.execCommand('fontSize', false, e.target.value); content.focus(); });
+            const container = item.el.querySelector('.content-container'); 
+            if(container.querySelector('.note-layout')) return;
+            container.innerHTML = `
+                <div class="note-layout">
+                    <div class="note-header widget-header">
+                        <span>NOTES</span>
+                    </div>
+                    <div class="note-toolbar">
+                        <button class="note-btn" data-cmd="bold"><b>B</b></button>
+                        <button class="note-btn" data-cmd="italic"><i>I</i></button>
+                        <select class="note-select" data-cmd="fontSize">
+                            <option value="1">Tiny</option>
+                            <option value="3" selected>Normal</option>
+                            <option value="5">Large</option>
+                            <option value="7">Huge</option>
+                        </select>
+                    </div>
+                    <div class="note-content" contenteditable="true"></div>
+                </div>
+            `;
+            const toolbar = container.querySelector('.note-toolbar'), 
+                  content = container.querySelector('.note-content');
+            toolbar.addEventListener('mousedown', e => e.stopPropagation()); 
+            content.addEventListener('mousedown', e => e.stopPropagation());
+            toolbar.addEventListener('click', (e) => { 
+                if(e.target.classList.contains('note-btn') || e.target.parentElement.classList.contains('note-btn')) { 
+                    const btn = e.target.classList.contains('note-btn') ? e.target : e.target.parentElement; 
+                    document.execCommand(btn.dataset.cmd, false, null); 
+                    content.focus(); 
+                }
+            });
+            toolbar.querySelector('.note-select').addEventListener('change', (e) => { 
+                document.execCommand('fontSize', false, e.target.value); 
+                content.focus(); 
+            });
         }
 
         function renderStockContent(item) {
@@ -676,66 +1035,283 @@
             const container = item.el.querySelector('.content-container'), data = item.stockData;
             let layout = container.querySelector('.stock-layout');
             if (!layout) {
-                const isUp = data.change >= 0; const trendClass = isUp ? 'up' : 'down';
+                const isUp = data.change >= 0; 
+                const trendClass = isUp ? 'up' : 'down';
                 const updateTimeHtml = item.showTime ? `<div class="stock-footer-info" id="time-${item.id}">Last: ${new Date().toLocaleTimeString()}</div>` : '';
-                container.innerHTML = `<div class="stock-layout ${trendClass}" id="layout-${item.id}"><div class="stock-header"><span>${data.symbol} ${data.name}</span><span id="change-${item.id}" style="font-size:0.8em">${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}</span></div><div class="stock-price-large ${trendClass}" id="price-${item.id}">${data.price.toFixed(2)}</div><svg class="stock-chart" id="chart-${item.id}" preserveAspectRatio="none" viewBox="0 0 ${item.w} ${item.h*0.4 + 20}"></svg>${updateTimeHtml}</div>`;
+                container.innerHTML = `
+                    <div class="stock-layout ${trendClass}" id="layout-${item.id}">
+                        <div class="stock-header">
+                            <span>${data.symbol} ${data.name}</span>
+                            <span id="change-${item.id}" style="font-size:0.8em">${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}</span>
+                        </div>
+                        <div class="stock-price-large ${trendClass}" id="price-${item.id}">${data.price.toFixed(2)}</div>
+                        <svg class="stock-chart" id="chart-${item.id}" preserveAspectRatio="none" viewBox="0 0 ${item.w} ${item.h*0.4 + 20}"></svg>
+                        ${updateTimeHtml}
+                    </div>
+                `;
                 layout = container.querySelector('.stock-layout');
             }
+
             if (data.isCrypto && !cryptoDataAvailable) {
-                const priceEl = container.querySelector(`#price-${item.id}`); if(priceEl) { priceEl.innerText = "暫時無資訊"; priceEl.style.fontSize = "1.2em"; priceEl.style.color = "var(--text-secondary)"; }
-                const changeEl = container.querySelector(`#change-${item.id}`); if(changeEl) changeEl.innerText = "";
-                const chartEl = container.querySelector(`#chart-${item.id}`); if(chartEl) chartEl.innerHTML = ""; 
+                const priceEl = container.querySelector(`#price-${item.id}`); 
+                if(priceEl) { 
+                    priceEl.innerText = "暫時無資訊"; 
+                    priceEl.style.fontSize = "1.2em"; 
+                    priceEl.style.color = "var(--text-secondary)"; 
+                }
+                const changeEl = container.querySelector(`#change-${item.id}`); 
+                if(changeEl) changeEl.innerText = "";
+                const chartEl = container.querySelector(`#chart-${item.id}`); 
+                if(chartEl) chartEl.innerHTML = ""; 
                 return;
             }
+
             const isUp = data.change >= 0, trendClass = isUp ? 'up' : 'down';
             layout.className = `stock-layout ${trendClass}`;
-            const priceEl = container.querySelector(`#price-${item.id}`); if(priceEl) { priceEl.className = `stock-price-large ${trendClass}`; priceEl.innerText = data.price.toFixed(2); priceEl.style.fontSize = ""; }
-            const changeEl = container.querySelector(`#change-${item.id}`); if(changeEl) changeEl.innerText = `${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}${data.isCrypto?'%':''}`;
+            const priceEl = container.querySelector(`#price-${item.id}`); 
+            if(priceEl) { 
+                priceEl.className = `stock-price-large ${trendClass}`; 
+                priceEl.innerText = data.price.toFixed(2); 
+                priceEl.style.fontSize = ""; 
+            }
+            const changeEl = container.querySelector(`#change-${item.id}`); 
+            if(changeEl) changeEl.innerText = `${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}${data.isCrypto?'%':''}`;
             const chartEl = container.querySelector(`#chart-${item.id}`);
             if(chartEl) {
                 let chartSVG = '', xAxisLabels = '', displayHistory = data.history;
-                if (item.viewMode === 'candle') { const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50; displayHistory = data.history.slice(-count); chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4); xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange); } 
-                else { const prices = data.history.map(d => d.close), pathD = generateSparkline(prices, item.w, item.h * 0.4); chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`; }
-                chartEl.innerHTML = chartSVG + xAxisLabels; chartEl.setAttribute('viewBox', `0 0 ${item.w} ${item.h*0.4 + 20}`);
+                if (item.viewMode === 'candle') { 
+                    const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50; 
+                    displayHistory = data.history.slice(-count); 
+                    chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4); 
+                    xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange); 
+                } else { 
+                    const prices = data.history.map(d => d.close), 
+                          pathD = generateSparkline(prices, item.w, item.h * 0.4); 
+                    chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`; 
+                }
+                chartEl.innerHTML = chartSVG + xAxisLabels; 
+                chartEl.setAttribute('viewBox', `0 0 ${item.w} ${item.h*0.4 + 20}`);
             }
             const timeEl = container.querySelector(`#time-${item.id}`);
-            if(timeEl) timeEl.innerText = `Last: ${new Date().toLocaleTimeString()}`; else if(item.showTime) { const footer = document.createElement('div'); footer.className = "stock-footer-info"; footer.id = `time-${item.id}`; footer.innerText = `Last: ${new Date().toLocaleTimeString()}`; layout.appendChild(footer); }
+            if(timeEl) timeEl.innerText = `Last: ${new Date().toLocaleTimeString()}`; 
+            else if(item.showTime) { 
+                const footer = document.createElement('div'); 
+                footer.className = "stock-footer-info"; 
+                footer.id = `time-${item.id}`; 
+                footer.innerText = `Last: ${new Date().toLocaleTimeString()}`; 
+                layout.appendChild(footer); 
+            }
         }
 
         function generateSparkline(data, w, h) {
-            if (!data.length) return ""; const max = Math.max(...data), min = Math.min(...data), range = max - min || 1, stepX = w / (data.length - 1); let d = `M 0 ${h - ((data[0] - min) / range * h)}`; for (let i = 1; i < data.length; i++) d += ` L ${i * stepX} ${h - ((data[i] - min) / range * h)}`; return d;
+            if (!data.length) return ""; 
+            const max = Math.max(...data), 
+                  min = Math.min(...data), 
+                  range = max - min || 1, 
+                  stepX = w / (data.length - 1); 
+            let d = `M 0 ${h - ((data[0] - min) / range * h)}`; 
+            for (let i = 1; i < data.length; i++) 
+                d += ` L ${i * stepX} ${h - ((data[i] - min) / range * h)}`; 
+            return d;
         }
+
         function generateCandleChart(history, w, h) {
-            if(!history.length) return ""; const max = Math.max(...history.map(d => d.high)), min = Math.min(...history.map(d => d.low)), rangeY = max - min || 1, stepX = w / history.length, candleW = Math.max(1, stepX * 0.6); let svg = '';
-            history.forEach((d, i) => { const x = i * stepX + (stepX - candleW)/2, yOpen = h - ((d.open - min) / rangeY * h), yClose = h - ((d.close - min) / rangeY * h), yHigh = h - ((d.high - min) / rangeY * h), yLow = h - ((d.low - min) / rangeY * h), colorClass = d.close >= d.open ? 'up' : 'down'; svg += `<line class="wick ${colorClass}" x1="${x+candleW/2}" y1="${yHigh}" x2="${x+candleW/2}" y2="${yLow}" /><rect class="candle ${colorClass}" x="${x}" y="${Math.min(yOpen, yClose)}" width="${candleW}" height="${Math.max(1, Math.abs(yClose - yOpen))}" />`; }); return svg;
+            if(!history.length) return ""; 
+            const max = Math.max(...history.map(d => d.high)), 
+                  min = Math.min(...history.map(d => d.low)), 
+                  rangeY = max - min || 1, 
+                  stepX = w / history.length, 
+                  candleW = Math.max(1, stepX * 0.6); 
+            let svg = '';
+            history.forEach((d, i) => { 
+                const x = i * stepX + (stepX - candleW)/2, 
+                      yOpen = h - ((d.open - min) / rangeY * h), 
+                      yClose = h - ((d.close - min) / rangeY * h), 
+                      yHigh = h - ((d.high - min) / rangeY * h), 
+                      yLow = h - ((d.low - min) / rangeY * h), 
+                      colorClass = d.close >= d.open ? 'up' : 'down'; 
+                svg += `
+                    <line class="wick ${colorClass}" x1="${x+candleW/2}" y1="${yHigh}" x2="${x+candleW/2}" y2="${yLow}" />
+                    <rect class="candle ${colorClass}" x="${x}" y="${Math.min(yOpen, yClose)}" width="${candleW}" height="${Math.max(1, Math.abs(yClose - yOpen))}" />
+                `;
+            }); 
+            return svg;
         }
+
         function generateXAxis(w, h, range) {
-            const y = h + 15, now = new Date(); let labels = [];
-            if (range === '1W') for(let i=6; i>=0; i-=2) { const d = new Date(now); d.setDate(d.getDate() - i); labels.push((d.getMonth()+1) + '/' + d.getDate()); }
-            else if (range === '1M') for(let i=3; i>=0; i--) { const d = new Date(now); d.setDate(d.getDate() - (i * 7)); labels.push((d.getMonth()+1) + '/' + d.getDate()); }
-            else for(let i=2; i>=0; i--) { const d = new Date(now); d.setMonth(d.getMonth() - i); labels.push(d.toLocaleString('default', { month: 'short' })); }
-            let svg = ''; const step = w / labels.length; labels.forEach((txt, i) => svg += `<text class="axis-text" x="${i * step + step/2}" y="${y}">${txt}</text>`); return svg;
+            const y = h + 15, now = new Date(); 
+            let labels = [];
+            if (range === '1W') 
+                for(let i=6; i>=0; i-=2) { 
+                    const d = new Date(now); 
+                    d.setDate(d.getDate() - i); 
+                    labels.push((d.getMonth()+1) + '/' + d.getDate()); 
+                }
+            else if (range === '1M') 
+                for(let i=3; i>=0; i--) { 
+                    const d = new Date(now); 
+                    d.setDate(d.getDate() - (i * 7)); 
+                    labels.push((d.getMonth()+1) + '/' + d.getDate()); 
+                }
+            else 
+                for(let i=2; i>=0; i--) { 
+                    const d = new Date(now); 
+                    d.setMonth(d.getMonth() - i); 
+                    labels.push(d.toLocaleString('default', { month: 'short' })); 
+                }
+            let svg = ''; 
+            const step = w / labels.length; 
+            labels.forEach((txt, i) => 
+                svg += `<text class="axis-text" x="${i * step + step/2}" y="${y}">${txt}</text>`
+            ); 
+            return svg;
         }
+
         function setupInteractions(item) {
-            const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
+            const { el } = item, 
+                  resizeHandle = el.querySelector('.item-resize'), 
+                  menu = el.querySelector('.context-menu'), 
+                  trigger = el.querySelector('.menu-trigger');
+
+            // 拖曳
             el.addEventListener('mousedown', (e) => {
-                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION'].includes(e.target.tagName)) return; if (['news', 'chat', 'calc', 'note'].includes(item.type) && !e.target.closest('.widget-header')) return;
-                e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
-                function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY); if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); else el.classList.remove('collision'); }
-                function onUp(ev) { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); el.style.zIndex = ''; const finalX = snap(parseInt(el.style.left)), finalY = snap(parseInt(el.style.top)); if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; } else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; } el.classList.remove('collision'); }
-                document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; 
+                if (['INPUT', 'BUTTON', 'SELECT', 'OPTION'].includes(e.target.tagName)) return; 
+                if (['news', 'chat', 'calc', 'note'].includes(item.type) && !e.target.closest('.widget-header')) return;
+
+                e.preventDefault(); 
+                const startX = e.clientX, 
+                      startY = e.clientY, 
+                      startLeft = item.x, 
+                      startTop = item.y; 
+
+                // ✅ 用實際 grid 尺寸限制邊界
+                const gridRect = gridCanvas.getBoundingClientRect();
+                const maxW = gridRect.width;
+                const maxH = gridRect.height;
+
+                el.style.zIndex = 999;
+
+                function onMove(ev) { 
+                    const dx = ev.clientX - startX, 
+                          dy = ev.clientY - startY; 
+                    let rawX = startLeft + dx, 
+                        rawY = startTop + dy; 
+
+                    if(rawX < 0) rawX = 0; 
+                    if(rawY < 0) rawY = 0; 
+                    if(rawX + item.w > maxW) rawX = maxW - item.w; 
+                    if(rawY + item.h > maxH) rawY = maxH - item.h; 
+
+                    el.style.left = rawX + 'px'; 
+                    el.style.top = rawY + 'px'; 
+
+                    const snapX = snap(rawX), 
+                          snapY = snap(rawY); 
+
+                    if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) 
+                        el.classList.add('collision'); 
+                    else 
+                        el.classList.remove('collision'); 
+                }
+
+                function onUp(ev) { 
+                    document.removeEventListener('mousemove', onMove); 
+                    document.removeEventListener('mouseup', onUp); 
+                    el.style.zIndex = ''; 
+
+                    const finalX = snap(parseInt(el.style.left)), 
+                          finalY = snap(parseInt(el.style.top)); 
+
+                    if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { 
+                        el.style.left = item.x + 'px'; 
+                        el.style.top = item.y + 'px'; 
+                    } else { 
+                        item.x = finalX; 
+                        item.y = finalY; 
+                        el.style.left = finalX + 'px'; 
+                        el.style.top = finalY + 'px'; 
+                    } 
+                    el.classList.remove('collision'); 
+                }
+
+                document.addEventListener('mousemove', onMove); 
+                document.addEventListener('mouseup', onUp);
             });
+
+            // 調整大小
             resizeHandle.addEventListener('mousedown', (e) => {
-                e.stopPropagation(); e.preventDefault(); const startX = e.clientX, startY = e.clientY, startW = item.w, startH = item.h;
-                function onResize(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let nw = snap(Math.max(MIN_W, startW + dx)), nh = snap(Math.max(MIN_H, startH + dy)); if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision'); else { el.classList.remove('collision'); el.style.width = nw + 'px'; el.style.height = nh + 'px'; item.w = nw; item.h = nh; if(item.type === 'stock') renderStockContent(item); if(item.type === 'clock') renderClockContent(item); } }
-                function onUp() { document.removeEventListener('mousemove', onResize); document.removeEventListener('mouseup', onUp); el.classList.remove('collision'); }
-                document.addEventListener('mousemove', onResize); document.addEventListener('mouseup', onUp);
+                e.stopPropagation(); 
+                e.preventDefault(); 
+                const startX = e.clientX, 
+                      startY = e.clientY, 
+                      startW = item.w, 
+                      startH = item.h;
+                function onResize(ev) { 
+                    const dx = ev.clientX - startX, 
+                          dy = ev.clientY - startY; 
+                    let nw = snap(Math.max(MIN_W, startW + dx)), 
+                        nh = snap(Math.max(MIN_H, startH + dy)); 
+                    if (checkCollision({ ...item, w: nw, h: nh }, item.id)) 
+                        el.classList.add('collision'); 
+                    else { 
+                        el.classList.remove('collision'); 
+                        el.style.width = nw + 'px'; 
+                        el.style.height = nh + 'px'; 
+                        item.w = nw; 
+                        item.h = nh; 
+                        if(item.type === 'stock') renderStockContent(item); 
+                        if(item.type === 'clock') renderClockContent(item); 
+                    } 
+                }
+                function onUp() { 
+                    document.removeEventListener('mousemove', onResize); 
+                    document.removeEventListener('mouseup', onUp); 
+                    el.classList.remove('collision'); 
+                }
+                document.addEventListener('mousemove', onResize); 
+                document.addEventListener('mouseup', onUp);
             });
         }
+
         function snap(v) { return Math.round(v / CELL_SIZE) * CELL_SIZE; }
-        function checkCollision(target, ignoreId) { return items.some(i => { if (i.id === ignoreId) return false; return (target.x < i.x + i.w && target.x + target.w > i.x && target.y < i.y + i.h && target.y + target.h > i.y); }); }
-        function hexToRgb(hex) { const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 }; }
-        gridResizer.addEventListener('mousedown', (e) => { e.stopPropagation(); const startX = e.clientX, startY = e.clientY, startW = parseInt(getComputedStyle(gridCanvas).width), startH = parseInt(getComputedStyle(gridCanvas).height); function resizeGrid(ev) { const nw = Math.max(600, startW + (ev.clientX - startX)), nh = Math.max(600, startH + (ev.clientY - startY)); gridCanvas.style.width = snap(nw) + 'px'; gridCanvas.style.height = snap(nh) + 'px'; } document.addEventListener('mousemove', resizeGrid); document.addEventListener('mouseup', () => document.removeEventListener('mousemove', resizeGrid), {once:true}); });
+
+        function checkCollision(target, ignoreId) { 
+            return items.some(i => { 
+                if (i.id === ignoreId) return false; 
+                return (
+                    target.x < i.x + i.w && 
+                    target.x + target.w > i.x && 
+                    target.y < i.y + i.h && 
+                    target.y + target.h > i.y
+                ); 
+            }); 
+        }
+
+        function hexToRgb(hex) { 
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); 
+            return result ? { 
+                r: parseInt(result[1], 16), 
+                g: parseInt(result[2], 16), 
+                b: parseInt(result[3], 16) 
+            } : { r: 0, g: 0, b: 0 }; 
+        }
+
+        gridResizer.addEventListener('mousedown', (e) => { 
+            e.stopPropagation(); 
+            const startX = e.clientX, 
+                  startY = e.clientY, 
+                  startW = parseInt(getComputedStyle(gridCanvas).width), 
+                  startH = parseInt(getComputedStyle(gridCanvas).height); 
+            function resizeGrid(ev) { 
+                const nw = Math.max(600, startW + (ev.clientX - startX)), 
+                      nh = Math.max(600, startH + (ev.clientY - startY)); 
+                gridCanvas.style.width = snap(nw) + 'px'; 
+                gridCanvas.style.height = snap(nh) + 'px'; 
+            } 
+            document.addEventListener('mousemove', resizeGrid); 
+            document.addEventListener('mouseup', () => document.removeEventListener('mousemove', resizeGrid), {once:true}); 
+        });
     </script>
 </body>
 </html>
