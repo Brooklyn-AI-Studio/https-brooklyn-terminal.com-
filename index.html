@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V4.1</title>
-    <!-- 引入科技感字體 -->
+    <title>BROOKLYN-TERMINAL // V4.9</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
+
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* --- 變數定義：深色模式 (Default / Sci-Fi) --- */
+            /* --- Variables --- */
             --bg-body: #050505;
             --bg-panel: #111111;
             --grid-bg: #0a0a0a;
-            --text-primary: #00ffcc; /* Cyan Neon */
+            --text-primary: #00ffcc;
             --text-secondary: #888;
             --border-color: #333;
             --accent-color: #00ffcc;
@@ -24,11 +28,12 @@
             --error-color: #ff0033;
             --stock-up: #00ffcc; 
             --stock-down: #ff0033; 
-            --input-bg: rgba(0,0,0,0.3);
+            --input-bg: rgba(0,0,0,0.5);
             --input-text: #00ffcc;
+            --msg-user-bg: rgba(0, 255, 204, 0.1);
+            --msg-sys-bg: rgba(255, 255, 255, 0.05);
         }
 
-        /* --- 淺色模式 (Laboratory Style) --- */
         [data-theme="light"] {
             --bg-body: #e8eef2;
             --bg-panel: #ffffff;
@@ -45,539 +50,381 @@
             --error-color: #e74c3c;
             --stock-up: #27ae60;
             --stock-down: #c0392b;
-            --input-bg: #ffffff;
+            --input-bg: #f0f2f5;
             --input-text: #333333;
+            --msg-user-bg: rgba(0, 102, 204, 0.1);
+            --msg-sys-bg: rgba(0, 0, 0, 0.03);
         }
 
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            font-family: 'Rajdhani', 'Orbitron', sans-serif;
-        }
+        * { box-sizing: border-box; user-select: none; font-family: 'Rajdhani', 'Orbitron', sans-serif; }
 
         body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-body);
-            color: var(--text-primary);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            margin: 0; padding: 0;
+            background-color: var(--bg-body); color: var(--text-primary);
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
             transition: background-color 0.3s, color 0.3s;
         }
 
         /* --- Header --- */
         header {
-            height: 60px;
-            background-color: var(--bg-panel);
+            height: 60px; background-color: var(--bg-panel);
             border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.5);
-            z-index: 20;
+            display: flex; align-items: center; padding: 0 20px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.5); z-index: 20;
             justify-content: space-between;
         }
-
         .brand {
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
-            letter-spacing: 3px;
-            font-size: 1.5rem;
-            text-transform: uppercase;
-            text-shadow: var(--shadow-glow);
-            display: flex;
-            align-items: center;
+            font-family: 'Orbitron', sans-serif; font-weight: 900;
+            letter-spacing: 3px; font-size: 1.5rem; text-transform: uppercase;
+            text-shadow: var(--shadow-glow); display: flex; align-items: center; gap: 10px;
         }
         .brand span { color: var(--handle-color); }
-        .brand::before {
-            content: '◈';
-            margin-right: 10px;
-            color: var(--accent-color);
-            font-size: 1.8rem;
+        
+        .beta-badge {
+            font-size: 0.7rem; background: var(--accent-color); color: #000;
+            padding: 2px 6px; border-radius: 4px; margin-left: 5px;
+            font-weight: bold; letter-spacing: 1px; transform: translateY(-2px);
+            box-shadow: 0 0 5px var(--accent-color);
+        }
+
+        .logo-icon {
+            width: 32px; height: 32px; fill: none; stroke: var(--accent-color);
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+            filter: drop-shadow(0 0 5px var(--accent-color));
         }
 
         /* --- Sidebar --- */
         .sidebar {
-            width: 300px;
-            min-width: 250px;
-            max-width: 500px;
-            background-color: var(--bg-panel);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            z-index: 10;
-            padding: 20px;
-            overflow-y: auto;
-            overflow-x: hidden; /* 防止內容溢出 */
+            width: 300px; min-width: 250px; max-width: 500px;
+            background-color: var(--bg-panel); border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; position: relative; z-index: 10;
+            padding: 20px; overflow-y: auto; overflow-x: hidden;
             transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
         }
-
-        /* Collapsed State Styles */
-        .sidebar.collapsed {
-            width: 70px;
-            min-width: 70px;
-            padding: 20px 10px;
-        }
-
-        /* Hide text elements when collapsed */
-        .sidebar.collapsed .sidebar-title,
-        .sidebar.collapsed .stock-selector, 
-        .sidebar.collapsed .color-picker-container span,
-        .sidebar.collapsed .tool-item span,
-        .sidebar.collapsed .stock-drag-item > div, /* Hide stock name container */
-        .sidebar.collapsed .sidebar-footer span,
-        .sidebar.collapsed .sidebar-footer .switch {
-            display: none;
-        }
-
-        /* Adjust layout for collapsed items to be centered icons */
-        .sidebar.collapsed .tool-item {
-            justify-content: center;
-            padding: 10px;
-        }
-        .sidebar.collapsed .stock-drag-item {
-            justify-content: center;
-            padding: 10px;
-            height: 50px;
-            overflow: hidden;
-        }
-        .sidebar.collapsed .stock-drag-item span#selectedStockPrice {
-            font-size: 0.8rem; /* Smaller font for collapsed view */
-        }
-        .sidebar.collapsed .sidebar-footer {
-            justify-content: center;
-        }
-        /* Show a mini icon for toggle when collapsed */
-        .sidebar.collapsed .sidebar-footer::after {
-            content: '☀/☾';
-            font-size: 10px;
-            opacity: 0.5;
-            cursor: pointer;
-        }
-
-        /* Toggle Button */
+        .sidebar.collapsed { width: 70px; min-width: 70px; padding: 20px 10px; }
+        .sidebar.collapsed .sidebar-title, .sidebar.collapsed .stock-selector, 
+        .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .tool-item span,
+        .sidebar.collapsed .stock-drag-item > div, .sidebar.collapsed .sidebar-footer span,
+        .sidebar.collapsed .sidebar-footer .switch, .sidebar.collapsed label { display: none; }
+        
+        .sidebar.collapsed .tool-item, .sidebar.collapsed .stock-drag-item { justify-content: center; padding: 10px; }
+        .sidebar.collapsed .stock-drag-item span#selectedStockPrice { font-size: 0.8rem; }
+        .sidebar.collapsed .sidebar-footer { justify-content: center; }
+        .sidebar.collapsed .sidebar-footer::after { content: '☀/☾'; font-size: 10px; opacity: 0.5; cursor: pointer; }
+        
         .sidebar-toggle-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 24px;
-            height: 24px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-panel);
-            color: var(--text-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            font-size: 12px;
-            transition: all 0.2s;
-            z-index: 20;
+            position: absolute; top: 10px; right: 10px; width: 24px; height: 24px;
+            border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            border-radius: 4px; font-size: 12px; transition: all 0.2s; z-index: 20;
         }
-        .sidebar-toggle-btn:hover {
-            background: var(--accent-color);
-            color: #000;
-        }
-        .sidebar.collapsed .sidebar-toggle-btn {
-            right: 50%;
-            transform: translateX(50%);
-            top: 10px;
-        }
+        .sidebar-toggle-btn:hover { background: var(--accent-color); color: #000; }
+        .sidebar.collapsed .sidebar-toggle-btn { right: 50%; transform: translateX(50%); top: 10px; }
 
         .sidebar-title {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-            margin-top: 20px;
-            border-bottom: 1px dashed var(--border-color);
-            padding-bottom: 5px;
-            text-transform: uppercase;
-            font-weight: 700;
-            white-space: nowrap; /* 防止文字斷行 */
+            font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px; margin-top: 20px;
+            border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;
+            text-transform: uppercase; font-weight: 700; white-space: nowrap;
         }
         .sidebar-title:first-child { margin-top: 0; }
 
-        /* Color Picker */
         .color-picker-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 5px;
-            background: var(--input-bg);
-            padding: 5px 10px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            width: fit-content;
-            transition: all 0.3s;
+            display: flex; align-items: center; gap: 10px; margin-bottom: 5px;
+            background: var(--input-bg); padding: 5px 10px; border-radius: 4px;
+            border: 1px solid var(--border-color); width: fit-content; transition: all 0.3s;
         }
-        .sidebar.collapsed .color-picker-container {
-            width: 100%;
-            justify-content: center;
-            padding: 5px;
-        }
-        
-        input[type="color"] {
-            -webkit-appearance: none;
-            border: none;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            background: none;
-        }
+        .sidebar.collapsed .color-picker-container { width: 100%; justify-content: center; padding: 5px; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 24px; height: 24px; cursor: pointer; background: none; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border-color); }
 
-        /* Library Tools */
         .tool-item {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            margin-bottom: 10px;
-            cursor: grab;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            white-space: nowrap;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);
+            padding: 15px; margin-bottom: 10px; cursor: grab; transition: all 0.2s;
+            display: flex; align-items: center; gap: 15px; white-space: nowrap;
         }
-        .tool-item:hover {
-            border-color: var(--accent-color);
-            box-shadow: var(--shadow-glow);
-            background: rgba(255,255,255,0.08);
+        .tool-item:hover { border-color: var(--accent-color); box-shadow: var(--shadow-glow); background: rgba(255,255,255,0.08); }
+        .tool-preview { width: 30px; height: 30px; border: 2px solid var(--text-primary); background: rgba(0, 255, 204, 0.1); flex-shrink: 0; }
+        
+        .tool-preview.clock-icon {
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; border-color: var(--handle-color);
         }
-        .tool-preview {
-            width: 30px;
-            height: 30px;
-            border: 2px solid var(--text-primary);
-            background: rgba(0, 255, 204, 0.1);
-            flex-shrink: 0;
+        .tool-preview.icon-only {
+            display: flex; align-items: center; justify-content: center; font-size: 16px;
         }
 
-        /* Stock Selector Styles */
-        .stock-selector {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+        .stock-selector { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .stock-selector label { font-size: 12px; color: var(--text-secondary); margin-bottom: -5px; }
         .stock-selector select, .stock-selector input {
-            background: var(--input-bg);
-            color: var(--input-text);
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            border-radius: 4px;
-            outline: none;
-            font-weight: 500;
-            transition: background 0.3s, color 0.3s, border 0.3s;
-            width: 100%;
+            background: var(--input-bg); color: var(--input-text); border: 1px solid var(--border-color);
+            padding: 10px; border-radius: 4px; outline: none; font-weight: 500;
+            transition: background 0.3s, color 0.3s, border 0.3s; width: 100%;
         }
-        .stock-selector select:focus, .stock-selector input:focus {
-            border-color: var(--accent-color);
-        }
+        .stock-selector select:focus, .stock-selector input:focus { border-color: var(--accent-color); }
 
         .stock-drag-item {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            cursor: grab;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 4px;
-            white-space: nowrap;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);
+            padding: 15px; cursor: grab; transition: all 0.2s; display: flex;
+            justify-content: space-between; align-items: center; border-radius: 4px; white-space: nowrap;
         }
-        .stock-drag-item:hover {
-            border-color: var(--accent-color);
-            box-shadow: var(--shadow-glow);
-        }
+        .stock-drag-item:hover { border-color: var(--accent-color); box-shadow: var(--shadow-glow); }
 
-        /* Sidebar Footer */
         .sidebar-footer {
-            margin-top: auto;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
         }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-        }
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #333;
-            transition: .4s;
-            border-radius: 20px;
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333; transition: .4s; border-radius: 20px;
         }
         .slider:before {
-            position: absolute;
-            content: "";
-            height: 14px;
-            width: 14px;
-            left: 3px;
-            bottom: 3px;
-            background-color: #fff;
-            transition: .4s;
-            border-radius: 50%;
+            position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+            background-color: #fff; transition: .4s; border-radius: 50%;
         }
         input:checked + .slider { background-color: var(--accent-color); }
         input:checked + .slider:before { transform: translateX(20px); }
 
         /* --- Workspace --- */
-        .main-container {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 60px);
-        }
+        .main-container { display: flex; flex: 1; height: calc(100vh - 60px); }
         .workspace {
-            flex: 1;
-            background-color: #000;
-            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
-            background-size: 20px 20px;
-            overflow: auto;
-            padding: 50px;
-            position: relative;
+            flex: 1; background-color: #000; background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-size: 20px 20px; overflow: auto; padding: 50px; position: relative;
         }
         #grid-canvas {
-            width: 1200px;
-            height: 1200px;
-            background-color: var(--grid-bg);
-            position: relative;
-            background-image: 
-                linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-            background-size: 20px 20px;
-            border: 1px solid var(--accent-color);
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            width: 1200px; height: 1200px; background-color: var(--grid-bg); position: relative;
+            background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+            background-size: 20px 20px; border: 1px solid var(--accent-color); box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
         #grid-canvas::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: 
-                linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
-            background-size: 100px 100px;
-            pointer-events: none;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+            background-size: 100px 100px; pointer-events: none;
         }
         .grid-resize-handle {
-            width: 20px;
-            height: 20px;
-            background: var(--accent-color);
-            position: absolute;
-            bottom: -10px;
-            right: -10px;
-            cursor: nwse-resize;
-            clip-path: polygon(100% 0, 100% 100%, 0 100%);
-            z-index: 5;
+            width: 20px; height: 20px; background: var(--accent-color); position: absolute;
+            bottom: -10px; right: -10px; cursor: nwse-resize; clip-path: polygon(100% 0, 100% 100%, 0 100%); z-index: 5;
         }
 
-        /* --- Grid Items & Stock Viz --- */
+        /* --- Grid Items --- */
         .grid-item {
-            position: absolute;
-            border: 1px solid rgba(255,255,255,0.3);
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; 
-            backdrop-filter: blur(5px);
-            transition: box-shadow 0.2s, border-color 0.2s; /* Remove left/top transition for smooth drag */
+            position: absolute; border: 1px solid rgba(255,255,255,0.3); box-sizing: border-box;
+            display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(5px);
+            transition: box-shadow 0.2s, border-color 0.2s;
         }
-        .grid-item:hover {
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
-            z-index: 100;
-            border-color: var(--accent-color);
-        }
-        .grid-item.collision {
-            background-color: rgba(255, 0, 51, 0.2) !important;
-            border-color: var(--error-color) !important;
-            box-shadow: 0 0 20px var(--error-color);
-        }
+        .grid-item:hover { box-shadow: 0 0 20px rgba(255,255,255,0.2); z-index: 100; border-color: var(--accent-color); }
+        .grid-item.collision { background-color: rgba(255, 0, 51, 0.2) !important; border-color: var(--error-color) !important; box-shadow: 0 0 20px var(--error-color); }
 
-        /* Stock Layout inside Grid */
+        /* --- Tool Layouts --- */
+        
+        /* Stock Layout */
         .stock-layout {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            padding: 5%;
-            pointer-events: none; 
-            position: relative;
+            display: flex; flex-direction: column; width: 100%; height: 100%; padding: 5%;
+            pointer-events: none; position: relative;
         }
-
-        .stock-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            font-size: 1em; 
-            margin-bottom: 2%;
-        }
-
-        .stock-price-large {
-            font-weight: 900;
-            font-size: 2.5em; 
-            line-height: 1;
-            margin: 5% 0;
-        }
+        .stock-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1em; margin-bottom: 2%; }
+        .stock-price-large { font-weight: 900; font-size: 2.5em; line-height: 1; margin: 2% 0; }
         .stock-price-large.up { color: var(--stock-up); }
         .stock-price-large.down { color: var(--stock-down); }
-
-        .stock-chart {
-            flex: 1;
-            width: 100%;
-            min-height: 0;
-            opacity: 0.8;
+        .stock-chart { flex: 1; width: 100%; min-height: 0; opacity: 0.9; }
+        
+        /* Clock Layout */
+        .clock-layout {
+            display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;
+            font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--text-primary);
+            pointer-events: none;
         }
+
+        /* News Layout */
+        .news-layout {
+            display: flex; flex-direction: column; width: 100%; height: 100%; padding: 10px;
+            overflow-y: auto; overflow-x: hidden; user-select: text; cursor: default;
+        }
+        .news-header { font-weight: bold; font-size: 1.1em; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; margin-bottom: 10px; color: var(--text-primary); cursor: move; }
+        .news-card {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);
+            padding: 10px; margin-bottom: 10px; border-radius: 4px;
+        }
+        .news-card:hover { border-color: var(--accent-color); }
+        .news-meta { display: flex; gap: 10px; font-size: 0.7em; color: var(--text-secondary); margin-bottom: 5px; align-items: center;}
+        .news-title { font-weight: bold; font-size: 0.9em; margin-bottom: 5px; color: var(--text-primary); line-height: 1.3; }
+        .news-summary { font-size: 0.8em; color: var(--text-secondary); line-height: 1.4; }
+
+        /* Chat Layout */
+        .chat-layout {
+            display: flex; flex-direction: column; width: 100%; height: 100%; 
+            cursor: default;
+        }
+        .chat-header {
+            padding: 8px; border-bottom: 1px solid var(--border-color); font-weight: bold; 
+            font-family: 'Orbitron'; font-size: 0.9em; display: flex; justify-content: space-between;
+            background: rgba(0,0,0,0.2); cursor: move;
+        }
+        .chat-history {
+            flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px;
+            user-select: text;
+        }
+        .chat-msg { padding: 8px; border-radius: 4px; font-size: 0.85em; max-width: 85%; word-wrap: break-word; }
+        .chat-msg.sys { align-self: flex-start; background: var(--msg-sys-bg); border-left: 2px solid var(--accent-color); color: var(--text-primary); }
+        .chat-msg.user { align-self: flex-end; background: var(--msg-user-bg); border-right: 2px solid var(--text-primary); color: #fff; }
+        .chat-input-area {
+            padding: 8px; border-top: 1px solid var(--border-color); display: flex; gap: 5px;
+            background: rgba(0,0,0,0.2);
+        }
+        .chat-input {
+            flex: 1; background: var(--input-bg); border: 1px solid var(--border-color);
+            color: var(--text-primary); padding: 5px; outline: none; font-family: 'Rajdhani';
+        }
+        .chat-input:focus { border-color: var(--accent-color); }
+        
+        /* Chat Model Selector Styles */
+        .chat-model-select {
+            background: var(--input-bg); border: 1px solid var(--border-color);
+            color: var(--text-primary); padding: 5px; outline: none; font-family: 'Rajdhani';
+            font-size: 0.8em; margin-right: 5px; cursor: pointer;
+        }
+        .chat-model-select:focus { border-color: var(--accent-color); }
+
+        .chat-send-btn {
+            background: var(--accent-color); color: #000; border: none; padding: 0 10px;
+            cursor: pointer; font-weight: bold; font-family: 'Orbitron'; font-size: 0.8em;
+        }
+        .chat-send-btn:hover { opacity: 0.8; }
 
         /* Controls */
         .item-resize {
-            width: 15px;
-            height: 15px;
-            background: transparent;
-            border-right: 2px solid var(--text-primary);
-            border-bottom: 2px solid var(--text-primary);
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            cursor: nwse-resize;
-            z-index: 101;
+            width: 15px; height: 15px; background: transparent;
+            border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary);
+            position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101;
         }
-
-        /* Three Dot Menu */
         .menu-trigger {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            z-index: 102;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: var(--text-secondary);
-            border-radius: 50%;
-            background: rgba(0,0,0,0.1);
-            opacity: 0; 
-            transition: opacity 0.2s;
+            position: absolute; top: 5px; right: 5px; width: 24px; height: 24px;
+            cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; color: var(--text-secondary); border-radius: 50%;
+            background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s;
         }
         .grid-item:hover .menu-trigger { opacity: 1; }
         .menu-trigger:hover { background: var(--accent-color); color: #000; }
 
+        /* Context Menu */
         .context-menu {
-            position: absolute;
-            top: 30px;
-            right: 5px;
-            background: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            border-radius: 4px;
-            z-index: 103;
-            display: none;
-            min-width: 100px;
+            position: absolute; top: 30px; right: 5px; background: var(--bg-panel);
+            border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            border-radius: 4px; z-index: 103; display: none; min-width: 140px;
         }
         .context-menu.show { display: block; }
         .context-menu-item {
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 12px;
-            color: var(--text-primary);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 8px 12px; cursor: pointer; font-size: 12px; color: var(--text-primary);
+            border-bottom: 1px solid rgba(255,255,255,0.05); position: relative;
         }
-        .context-menu-item:hover { background: var(--error-color); color: #fff; }
+        .context-menu-item:hover { background: rgba(255,255,255,0.1); }
         .context-menu-item:last-child { border-bottom: none; }
+        .context-menu-item.danger:hover { background: rgba(255,255,255,0.1); color: var(--error-color); }
 
-        /* Chart SVG Path */
-        .chart-path {
-            fill: none;
-            stroke-width: 2;
-            vector-effect: non-scaling-stroke;
-        }
-        .chart-area {
-            fill-opacity: 0.2;
-            stroke: none;
-        }
+        /* Chart Styles */
+        .chart-path { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
+        .chart-area { fill-opacity: 0.2; stroke: none; }
         .up .chart-path { stroke: var(--stock-up); }
         .up .chart-area { fill: var(--stock-up); }
         .down .chart-path { stroke: var(--stock-down); }
         .down .chart-area { fill: var(--stock-down); }
+        
+        /* Candle Styles */
+        .candle { stroke-width: 1; }
+        .candle.up { fill: var(--stock-up); stroke: var(--stock-up); }
+        .candle.down { fill: var(--stock-down); stroke: var(--stock-down); }
+        .wick { stroke-width: 1; }
+        .wick.up { stroke: var(--stock-up); }
+        .wick.down { stroke: var(--stock-down); }
+        
+        /* Axis Text */
+        .axis-text { font-size: 10px; fill: var(--text-secondary); text-anchor: middle; }
+        .stock-footer-info { font-size: 0.7em; opacity: 0.7; margin-top: auto; text-align: right; }
+
+        /* Widget Header Drag Handle Style */
+        .widget-header { cursor: move; }
 
     </style>
 </head>
 <body>
 
     <header>
-        <div class="brand">Brooklyn-<span>Terminal</span></div>
+        <div class="brand">
+            <svg class="logo-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            Brooklyn-<span>Terminal</span>
+            <span class="beta-badge">BETA</span>
+        </div>
         <div style="font-size: 12px; opacity: 0.7;">SYS.STATUS: ONLINE</div>
     </header>
 
     <div class="main-container">
-        <!-- Left Sidebar -->
         <div class="sidebar" id="sidebar">
-            <!-- Toggle Button -->
-            <button class="sidebar-toggle-btn" id="sidebarToggle" title="Collapse/Expand">
-                &lt;
-            </button>
+            <button class="sidebar-toggle-btn" id="sidebarToggle" title="Collapse/Expand">&lt;</button>
 
-            <!-- Library -->
             <div class="sidebar-title">Library</div>
             <div class="tool-item" draggable="true" id="tool-square">
                 <div class="tool-preview" style="background-color: rgba(0,123,255,0.3);"></div>
                 <span>Module 10x10</span>
             </div>
+            
+            <div class="sidebar-title">Tools</div>
+            <div class="tool-item" draggable="true" id="tool-clock">
+                <div class="tool-preview clock-icon">🕓</div>
+                <span>Digital Clock</span>
+            </div>
+            <!-- New Tools -->
+            <div class="tool-item" draggable="true" id="tool-news">
+                <div class="tool-preview icon-only">📰</div>
+                <span>Market</span>
+            </div>
+            <div class="tool-item" draggable="true" id="tool-chat">
+                <div class="tool-preview icon-only">🤖</div>
+                <span>LLM Chat</span>
+            </div>
 
-            <!-- Color Picker (Moved here) -->
+            <div class="sidebar-title">Stock Indicators</div>
+            <div class="stock-selector">
+                <!-- Asset Class Selector -->
+                <label>Asset Class:</label>
+                <select id="categoryList">
+                    <option value="US">US Stocks (美股)</option>
+                    <option value="TW">Taiwan Stocks (台股)</option>
+                    <option value="IDX">Indices (指數)</option>
+                    <option value="CRYPTO">Crypto (加密貨幣)</option>
+                </select>
+                
+                <!-- Stock List -->
+                <label>Instrument:</label>
+                <select id="stockList">
+                    <!-- Options populated by JS -->
+                </select>
+                
+                <!-- Search -->
+                <input type="text" id="stockSearch" placeholder="Search (e.g., AAPL)">
+            </div>
+            
+            <div class="stock-drag-item" draggable="true" id="stockDraggable">
+                <div style="display:flex; flex-direction:column;">
+                    <span id="selectedStockName" style="font-weight:bold; font-size:1rem;">AAPL Apple</span>
+                    <span style="font-size:0.8rem; opacity:0.7;">Drag to Grid</span>
+                </div>
+                <span id="selectedStockPrice" style="font-size:1.2rem; font-weight:bold; color:var(--stock-up);">175.00 ▲</span>
+            </div>
+
+            <div style="margin-top: auto;"></div> <!-- Spacer -->
+
+            <div class="sidebar-title">Controls</div>
             <div class="color-picker-container">
                 <input type="color" id="colorPicker" value="#007bff">
                 <span id="colorValue" style="font-size: 12px; opacity: 0.8;">#007bff</span>
             </div>
 
-            <!-- Stock Indicators -->
-            <div class="sidebar-title">Stock Indicators</div>
-            <div class="stock-selector">
-                <select id="stockList">
-                    <!-- 台股 -->
-                    <optgroup label="Taiwan Stocks">
-                        <option value="2330">2330 台積電</option>
-                        <option value="2317">2317 鴻海</option>
-                        <option value="2454">2454 聯發科</option>
-                        <option value="2303">2303 聯電</option>
-                        <option value="2881">2881 富邦金</option>
-                    </optgroup>
-                    <!-- 美股 -->
-                    <optgroup label="US Stocks">
-                        <option value="AAPL">AAPL Apple</option>
-                        <option value="TSLA">TSLA Tesla</option>
-                        <option value="NVDA">NVDA NVIDIA</option>
-                        <option value="MSFT">MSFT Microsoft</option>
-                        <option value="GOOGL">GOOGL Alphabet</option>
-                    </optgroup>
-                </select>
-                <input type="text" id="stockSearch" placeholder="Search (e.g., AAPL)">
-            </div>
-            
-            <!-- Draggable Stock Preview -->
-            <div class="stock-drag-item" draggable="true" id="stockDraggable">
-                <div style="display:flex; flex-direction:column;">
-                    <span id="selectedStockName" style="font-weight:bold; font-size:1rem;">2330 台積電</span>
-                    <span style="font-size:0.8rem; opacity:0.7;">Drag to Grid</span>
-                </div>
-                <span id="selectedStockPrice" style="font-size:1.2rem; font-weight:bold; color:var(--stock-up);">580.00 ▲</span>
-            </div>
-
-            <!-- Sidebar Footer -->
             <div class="sidebar-footer">
                 <span style="font-size: 12px;">THEME MODE</span>
                 <label class="switch">
@@ -587,26 +434,23 @@
             </div>
         </div>
 
-        <!-- Workspace -->
         <div class="workspace">
             <div id="grid-canvas">
                 <div class="grid-resize-handle" id="gridResizer"></div>
-                <!-- Dynamic Items -->
             </div>
         </div>
     </div>
 
     <script>
-        // --- Configuration ---
         const CELL_SIZE = 20;
         const MIN_W = CELL_SIZE * 4; 
         const MIN_H = CELL_SIZE * 4;
 
-        // --- DOM Elements ---
         const gridCanvas = document.getElementById('grid-canvas');
         const colorPicker = document.getElementById('colorPicker');
         const colorValue = document.getElementById('colorValue');
         const themeSwitch = document.getElementById('themeSwitch');
+        const categoryList = document.getElementById('categoryList');
         const stockList = document.getElementById('stockList');
         const stockSearch = document.getElementById('stockSearch');
         const stockDraggable = document.getElementById('stockDraggable');
@@ -616,64 +460,145 @@
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
 
-        // --- State ---
         let items = []; 
         let activeColor = '#007bff';
-        let currentStock = { symbol: '2330', name: '台積電', price: 580.00, change: 5.00, history: [] };
+        let currentStock = { symbol: 'AAPL', name: 'Apple Inc.', price: 175.00, change: 1.20, history: [], type: 'stock' };
         let isSidebarCollapsed = false;
 
-        // --- Mock Data & Chart Helpers ---
-        const mockStockData = {
-            // Taiwan
-            '2330': { name: '台積電', price: 580.00, change: 5.00 },
-            '2317': { name: '鴻海', price: 105.00, change: -0.50 },
-            '2454': { name: '聯發科', price: 950.00, change: 15.00 },
-            '2303': { name: '聯電', price: 48.50, change: 0.20 },
-            '2881': { name: '富邦金', price: 62.00, change: -0.10 },
-            // US
-            'AAPL': { name: 'Apple Inc.', price: 175.00, change: 1.20 },
-            'TSLA': { name: 'Tesla Inc.', price: 240.00, change: -3.50 },
-            'NVDA': { name: 'NVIDIA', price: 460.00, change: 8.00 },
-            'MSFT': { name: 'Microsoft', price: 330.00, change: 2.10 },
-            'GOOGL': { name: 'Alphabet', price: 135.00, change: -0.80 }
+        // --- Mock Data ---
+        const stockCategories = {
+            'US': [
+                { s: 'AAPL', n: 'Apple Inc.' }, { s: 'TSLA', n: 'Tesla Inc.' },
+                { s: 'NVDA', n: 'NVIDIA' }, { s: 'MSFT', n: 'Microsoft' },
+                { s: 'GOOGL', n: 'Alphabet' }, { s: 'AMZN', n: 'Amazon' }
+            ],
+            'TW': [
+                { s: '2330', n: '台積電' }, { s: '2317', n: '鴻海' },
+                { s: '2454', n: '聯發科' }, { s: '2303', n: '聯電' },
+                { s: '2881', n: '富邦金' }
+            ],
+            'IDX': [
+                { s: '^DJI', n: 'Dow Jones' }, { s: '^IXIC', n: 'Nasdaq' },
+                { s: '^GSPC', n: 'S&P 500' }, { s: '^TWII', n: 'TAIEX' }
+            ],
+            'CRYPTO': [
+                { s: 'BTC-USD', n: 'Bitcoin' }, { s: 'ETH-USD', n: 'Ethereum' },
+                { s: 'DOGE-USD', n: 'Dogecoin' }
+            ]
         };
 
-        function generateHistory(basePrice) {
+        const mockStockData = {};
+        Object.values(stockCategories).flat().forEach(item => {
+            mockStockData[item.s] = {
+                symbol: item.s, name: item.n,
+                price: Math.random() * 500 + 50,
+                change: 0,
+                history: generateHistory(Math.random() * 500 + 50, 60)
+            };
+        });
+
+        const mockNews = [
+            { title: "Wall Street Futures Swing Amid Volatility", time: "6m ago", source: "Bloomberg", summary: "US stock futures fluctuated as major indices faced weekly losses. The Nasdaq fell 3.6% through Thursday." },
+            { title: "Bitcoin Extends Decline To Lowest Since April", time: "12m ago", source: "CoinDesk", summary: "Bitcoin slipped below $28,000 Friday, marking its lowest level since April after a steady retreat." },
+            { title: "Oil Prices Fall As Global Supply Outlook Shifts", time: "26m ago", source: "Reuters", summary: "US crude futures dropped 2% to $78.85, pressured by expectations of increased global supply." },
+            { title: "Tech Sector Weighs Down Global Markets", time: "1h ago", source: "CNBC", summary: "Broad tech sell-off continues to pressure global indices as treasury yields rise." }
+        ];
+
+        function generateHistory(basePrice, count) {
             let history = [];
             let current = basePrice;
-            for(let i=0; i<20; i++) {
-                history.push(current);
-                current += (Math.random() - 0.5) * (basePrice * 0.03);
+            for(let i=0; i<count; i++) {
+                let open = current;
+                let close = current + (Math.random() - 0.5) * (basePrice * 0.02);
+                let high = Math.max(open, close) + Math.random() * (basePrice * 0.01);
+                let low = Math.min(open, close) - Math.random() * (basePrice * 0.01);
+                history.push({ open, high, low, close });
+                current = close;
             }
             return history;
         }
 
-        function getMockStockPrice(symbol) {
-            let base = mockStockData[symbol] || { name: symbol, price: 100.00, change: 0 };
-            // Simulate fluctuation
-            const change = (Math.random() - 0.5) * (base.price * 0.01);
-            base.price += change;
-            base.change = change; // Just showing instant change
-            if(!base.history) base.history = generateHistory(base.price);
-            
-            // Shift history
-            base.history.push(base.price);
-            base.history.shift();
-            
-            return base;
+        function simulateMarket() {
+            Object.keys(mockStockData).forEach(symbol => {
+                const data = mockStockData[symbol];
+                const change = (Math.random() - 0.5) * (data.price * 0.005); 
+                const newPrice = data.price + change;
+                let last = data.history[data.history.length - 1];
+                last.close = newPrice;
+                last.high = Math.max(last.high, newPrice);
+                last.low = Math.min(last.low, newPrice);
+                
+                if(Math.random() > 0.95) { 
+                   data.history.push({open: newPrice, high: newPrice, low: newPrice, close: newPrice});
+                   if(data.history.length > 100) data.history.shift();
+                }
+                data.price = newPrice;
+                data.change = change;
+            });
+
+            if (currentStock.symbol && mockStockData[currentStock.symbol]) {
+                updateStockDisplay(mockStockData[currentStock.symbol]);
+            }
+
+            items.forEach(item => {
+                if(item.type === 'stock') {
+                    const symbol = item.stockData.symbol;
+                    if(mockStockData[symbol]) {
+                        item.stockData = { ...item.stockData, ...mockStockData[symbol] };
+                        renderStockContent(item);
+                    }
+                } else if (item.type === 'clock') {
+                    renderClockContent(item);
+                }
+            });
         }
 
         function updateStockDisplay(stock) {
-            currentStock = stock;
             selectedStockName.innerText = `${stock.symbol} ${stock.name}`;
             const isUp = stock.change >= 0;
             selectedStockPrice.innerHTML = `${stock.price.toFixed(2)} ${isUp ? '▲' : '▼'}`;
             selectedStockPrice.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
+            currentStock = stock;
         }
 
-        // --- Initialization ---
-        
-        // Sidebar Toggle
+        function populateStockList(category) {
+            stockList.innerHTML = '';
+            const list = stockCategories[category] || [];
+            list.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.s;
+                opt.innerText = `${item.s} ${item.n}`;
+                stockList.appendChild(opt);
+            });
+            if(list.length > 0) {
+                stockList.value = list[0].s;
+                currentStock.symbol = list[0].s;
+                updateStockDisplay(mockStockData[list[0].s]);
+            }
+        }
+
+        categoryList.addEventListener('change', (e) => populateStockList(e.target.value));
+        populateStockList('US');
+
+        stockList.addEventListener('change', (e) => {
+            const symbol = e.target.value;
+            if(mockStockData[symbol]) {
+                currentStock.symbol = symbol;
+                updateStockDisplay(mockStockData[symbol]);
+            }
+        });
+
+        stockSearch.addEventListener('input', (e) => {
+            const val = e.target.value.toUpperCase();
+            const found = Object.values(mockStockData).find(d => d.symbol.includes(val) || d.name.toUpperCase().includes(val));
+            if(found) {
+                currentStock.symbol = found.symbol;
+                updateStockDisplay(found);
+            }
+        });
+
+        setInterval(simulateMarket, 1000);
+
         sidebarToggle.addEventListener('click', () => {
             isSidebarCollapsed = !isSidebarCollapsed;
             if (isSidebarCollapsed) {
@@ -684,73 +609,31 @@
                 sidebarToggle.innerHTML = '&lt;';
             }
         });
-
-        // Theme Toggle
         themeSwitch.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                document.documentElement.setAttribute('data-theme', 'light');
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-            }
+            if (e.target.checked) document.documentElement.setAttribute('data-theme', 'light');
+            else document.documentElement.removeAttribute('data-theme');
         });
-
-        // Color Picker
         colorPicker.addEventListener('input', (e) => {
             activeColor = e.target.value;
             colorValue.innerText = activeColor;
             document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D';
             document.querySelector('.tool-preview').style.borderColor = activeColor;
         });
-
-        // Stock Logic
-        stockList.addEventListener('change', (e) => updateStock(e.target.value));
-        stockSearch.addEventListener('input', (e) => {
-            const val = e.target.value.toUpperCase();
-            if(val.length >= 3) updateStock(val);
-        });
-
-        function updateStock(symbol) {
-            const data = getMockStockPrice(symbol);
-            updateStockDisplay({ symbol, ...data });
-        }
         
-        // Initialize default stock
-        updateStock('2330');
-
-        // Live Update Sim
-        setInterval(() => {
-            if (currentStock.symbol) {
-                updateStock(currentStock.symbol);
-                // Update grid items
-                items.forEach(item => {
-                    if(item.stockData && item.stockData.symbol === currentStock.symbol) {
-                        item.stockData = { ...item.stockData, ...currentStock }; 
-                        renderStockContent(item);
-                    }
-                });
-            }
-        }, 3000);
-
-        // Sidebar Footer click to toggle theme when collapsed
         document.querySelector('.sidebar-footer').addEventListener('click', (e) => {
-            if (isSidebarCollapsed && e.target === document.querySelector('.sidebar-footer')) {
-               themeSwitch.click();
-            }
+            if (isSidebarCollapsed && e.target === document.querySelector('.sidebar-footer')) themeSwitch.click();
         });
 
-        // --- Drag & Drop ---
-
-        document.getElementById('tool-square').addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('type', 'shape');
-        });
-
+        // Drag Listeners
+        document.getElementById('tool-square').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'shape'));
+        document.getElementById('tool-clock').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'clock'));
+        document.getElementById('tool-news').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'news'));
+        document.getElementById('tool-chat').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'chat'));
         stockDraggable.addEventListener('dragstart', (e) => {
             e.dataTransfer.setData('type', 'stock');
             e.dataTransfer.setData('symbol', currentStock.symbol);
         });
-
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
-
         gridCanvas.addEventListener('drop', (e) => {
             e.preventDefault();
             const type = e.dataTransfer.getData('type');
@@ -759,40 +642,32 @@
             const y = snap(e.clientY - rect.top);
 
             if (type === 'shape') {
-                if(!checkCollision({x, y, w: 200, h: 200})) {
-                    createItem(x, y, 200, 200, activeColor);
-                }
+                if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, activeColor, 'shape');
+            } else if (type === 'clock') {
+                if(!checkCollision({x, y, w: 200, h: 100})) createItem(x, y, 200, 100, '#ffffff', 'clock');
+            } else if (type === 'news') {
+                if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'news');
+            } else if (type === 'chat') {
+                if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat');
             } else if (type === 'stock') {
-                const dropX = e.clientX - rect.left;
-                const dropY = e.clientY - rect.top;
-                const target = items.find(i => dropX >= i.x && dropX <= i.x+i.w && dropY >= i.y && dropY <= i.y+i.h);
-                
-                if (target) {
-                    const symbol = e.dataTransfer.getData('symbol');
-                    target.stockData = { symbol, ...getMockStockPrice(symbol) };
-                    renderStockContent(target);
-                } else {
-                    if(!checkCollision({x, y, w: 300, h: 200})) {
-                        const symbol = e.dataTransfer.getData('symbol');
-                        const newItem = createItem(x, y, 300, 200, activeColor); 
-                        newItem.obj.stockData = { symbol, ...getMockStockPrice(symbol) };
+                const symbol = e.dataTransfer.getData('symbol');
+                if(!checkCollision({x, y, w: 300, h: 200})) {
+                    const newItem = createItem(x, y, 300, 200, activeColor, 'stock'); 
+                    if(mockStockData[symbol]) {
+                        newItem.obj.stockData = { symbol, ...mockStockData[symbol] };
                         renderStockContent(newItem.obj);
                     }
                 }
             }
         });
 
-        // --- Item Creation & Management ---
-
-        function createItem(x, y, w, h, color) {
+        function createItem(x, y, w, h, color, type) {
             const id = 'item_' + Date.now();
             const el = document.createElement('div');
             el.className = 'grid-item';
             el.id = id;
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
-            el.style.width = w + 'px';
-            el.style.height = h + 'px';
+            el.style.left = x + 'px'; el.style.top = y + 'px';
+            el.style.width = w + 'px'; el.style.height = h + 'px';
             
             const rgb = hexToRgb(color);
             el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
@@ -802,10 +677,54 @@
                 <div class="content-container" style="width:100%; height:100%;"></div>
                 <div class="menu-trigger">⋮</div>
                 <div class="context-menu">
-                    <div class="context-menu-item" onclick="deleteItem('${id}')">移除 (Remove)</div>
+                    <div class="context-menu-item danger" onclick="deleteItem('${id}')">移除 (Remove)</div>
                 </div>
                 <div class="item-resize"></div>
             `;
+
+            if (type === 'stock') {
+                const menu = el.querySelector('.context-menu');
+                const removeBtn = menu.querySelector('.context-menu-item');
+                
+                const timeBtn = document.createElement('div');
+                timeBtn.className = 'context-menu-item';
+                timeBtn.innerText = '顯示/隱藏 更新時間';
+                timeBtn.onclick = (e) => { 
+                    e.stopPropagation();
+                    const obj = items.find(i => i.id === id);
+                    if(obj) { obj.showTime = !obj.showTime; renderStockContent(obj); }
+                    menu.classList.remove('show');
+                };
+                menu.insertBefore(timeBtn, removeBtn);
+
+                ['K 線圖 (1W)', 'K 線圖 (1M)', 'K 線圖 (3M)'].forEach((label, idx) => {
+                    const itemBtn = document.createElement('div');
+                    itemBtn.className = 'context-menu-item';
+                    itemBtn.innerText = label;
+                    itemBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        const obj = items.find(i => i.id === id);
+                        if(obj) {
+                            obj.viewMode = 'candle';
+                            obj.timeRange = idx === 0 ? '1W' : idx === 1 ? '1M' : '3M';
+                            renderStockContent(obj);
+                        }
+                        menu.classList.remove('show');
+                    };
+                    menu.insertBefore(itemBtn, removeBtn);
+                });
+                
+                const lineBtn = document.createElement('div');
+                lineBtn.className = 'context-menu-item';
+                lineBtn.innerText = '即時走勢 (Live Trend)';
+                lineBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const obj = items.find(i => i.id === id);
+                    if(obj) { obj.viewMode = 'line'; renderStockContent(obj); }
+                    menu.classList.remove('show');
+                }
+                menu.insertBefore(lineBtn, removeBtn);
+            }
 
             const trigger = el.querySelector('.menu-trigger');
             const menu = el.querySelector('.context-menu');
@@ -816,25 +735,98 @@
             };
 
             gridCanvas.appendChild(el);
-            const itemObj = { id, x, y, w, h, el, stockData: null };
+            const itemObj = { id, x, y, w, h, el, type, stockData: null, showTime: false, viewMode: 'line', timeRange: '1M' };
             items.push(itemObj);
 
-            setupInteractions(itemObj);
-            
-            document.addEventListener('click', () => menu.classList.remove('show'));
+            if (type === 'clock') renderClockContent(itemObj);
+            if (type === 'news') renderNewsContent(itemObj);
+            if (type === 'chat') renderChatContent(itemObj);
 
+            setupInteractions(itemObj);
+            document.addEventListener('click', () => menu.classList.remove('show'));
             return { el, obj: itemObj };
         }
 
         function deleteItem(id) {
             const idx = items.findIndex(i => i.id === id);
-            if (idx > -1) {
-                items[idx].el.remove();
-                items.splice(idx, 1);
-            }
+            if (idx > -1) { items[idx].el.remove(); items.splice(idx, 1); }
         }
 
-        // --- Rendering Stock Data ---
+        function renderClockContent(item) {
+            const container = item.el.querySelector('.content-container');
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            const fontSize = item.w / 5;
+            container.innerHTML = `<div class="clock-layout" style="font-size:${fontSize}px">${timeStr}</div>`;
+        }
+
+        function renderNewsContent(item) {
+            const container = item.el.querySelector('.content-container');
+            let newsHTML = `<div class="news-layout"><div class="news-header widget-header">最新動態 (Market)</div>`;
+            mockNews.forEach(news => {
+                newsHTML += `
+                    <div class="news-card">
+                        <div class="news-meta"><span>${news.source}</span> • <span>${news.time}</span></div>
+                        <div class="news-title">${news.title}</div>
+                        <div class="news-summary">${news.summary}</div>
+                    </div>
+                `;
+            });
+            newsHTML += `</div>`;
+            container.innerHTML = newsHTML;
+        }
+
+        function renderChatContent(item) {
+            const container = item.el.querySelector('.content-container');
+            container.innerHTML = `
+                <div class="chat-layout">
+                    <div class="chat-header widget-header">
+                        <span>LLM CHAT</span>
+                        <span style="font-size:0.8em; opacity:0.7;">ONLINE</span>
+                    </div>
+                    <div class="chat-history" id="history-${item.id}">
+                        <div class="chat-msg sys">System initialized. Select model and type command.</div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" placeholder="Type command..." id="input-${item.id}">
+                        <select class="chat-model-select" id="model-${item.id}">
+                            <option value="llama3">Llama 3</option>
+                            <option value="deepseek">DeepSeek</option>
+                        </select>
+                        <button class="chat-send-btn" id="btn-${item.id}">SEND</button>
+                    </div>
+                </div>
+            `;
+
+            const input = container.querySelector(`#input-${item.id}`);
+            const btn = container.querySelector(`#btn-${item.id}`);
+            const history = container.querySelector(`#history-${item.id}`);
+            const modelSelect = container.querySelector(`#model-${item.id}`);
+            
+            const sendMsg = () => {
+                const text = input.value.trim();
+                if(!text) return;
+                
+                const userDiv = document.createElement('div');
+                userDiv.className = 'chat-msg user';
+                userDiv.innerText = text;
+                history.appendChild(userDiv);
+                input.value = '';
+                history.scrollTop = history.scrollHeight;
+
+                setTimeout(() => {
+                    const selectedModel = modelSelect.value === 'llama3' ? 'Llama 3' : 'DeepSeek';
+                    const sysDiv = document.createElement('div');
+                    sysDiv.className = 'chat-msg sys';
+                    sysDiv.innerText = `[${selectedModel}] Processing request... Analysis complete. Market volatility is high.`;
+                    history.appendChild(sysDiv);
+                    history.scrollTop = history.scrollHeight;
+                }, 800);
+            };
+
+            btn.onclick = sendMsg;
+            input.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMsg(); });
+        }
 
         function renderStockContent(item) {
             if (!item.stockData) return;
@@ -842,11 +834,26 @@
             const data = item.stockData;
             const isUp = data.change >= 0;
             const trendClass = isUp ? 'up' : 'down';
-            
             const fontSize = Math.max(10, item.w / 20); 
             item.el.style.fontSize = fontSize + 'px';
 
-            const pathD = generateSparkline(data.history, item.w, item.h * 0.4); 
+            let chartSVG = '';
+            let xAxisLabels = '';
+
+            let displayHistory = data.history;
+            if (item.viewMode === 'candle') {
+                const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50;
+                displayHistory = data.history.slice(-count);
+                chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4);
+                xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange);
+            } else {
+                const prices = data.history.map(d => d.close);
+                const pathD = generateSparkline(prices, item.w, item.h * 0.4);
+                chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`;
+            }
+
+            const updateTimeHtml = item.showTime ? 
+                `<div class="stock-footer-info">Last: ${new Date().toLocaleTimeString()}</div>` : '';
 
             container.innerHTML = `
                 <div class="stock-layout ${trendClass}">
@@ -857,32 +864,90 @@
                     <div class="stock-price-large ${trendClass}">
                         ${data.price.toFixed(2)}
                     </div>
-                    <svg class="stock-chart" preserveAspectRatio="none" viewBox="0 0 ${item.w} ${item.h*0.4}">
-                        <path class="chart-path" d="${pathD}" />
-                        <path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />
+                    <svg class="stock-chart" preserveAspectRatio="none" viewBox="0 0 ${item.w} ${item.h*0.4 + 20}">
+                        ${chartSVG}
+                        ${xAxisLabels}
                     </svg>
+                    ${updateTimeHtml}
                 </div>
             `;
         }
 
-        function generateSparkline(data, width, height) {
-            if (!data || data.length === 0) return "";
+        function generateSparkline(data, w, h) {
+            if (!data.length) return "";
             const max = Math.max(...data);
             const min = Math.min(...data);
             const range = max - min || 1;
-            
-            const stepX = width / (data.length - 1);
-            
-            let d = `M 0 ${height - ((data[0] - min) / range * height)}`;
+            const stepX = w / (data.length - 1);
+            let d = `M 0 ${h - ((data[0] - min) / range * h)}`;
             for (let i = 1; i < data.length; i++) {
-                const x = i * stepX;
-                const y = height - ((data[i] - min) / range * height);
-                d += ` L ${x} ${y}`;
+                d += ` L ${i * stepX} ${h - ((data[i] - min) / range * h)}`;
             }
             return d;
         }
 
-        // --- Interaction Logic (Move & Resize) ---
+        function generateCandleChart(history, w, h) {
+            if(!history.length) return "";
+            const max = Math.max(...history.map(d => d.high));
+            const min = Math.min(...history.map(d => d.low));
+            const rangeY = max - min || 1;
+            const stepX = w / history.length;
+            const candleW = Math.max(1, stepX * 0.6);
+
+            let svg = '';
+            history.forEach((d, i) => {
+                const x = i * stepX + (stepX - candleW)/2;
+                const yOpen = h - ((d.open - min) / rangeY * h);
+                const yClose = h - ((d.close - min) / rangeY * h);
+                const yHigh = h - ((d.high - min) / rangeY * h);
+                const yLow = h - ((d.low - min) / rangeY * h);
+                const isBullish = d.close >= d.open;
+                const colorClass = isBullish ? 'up' : 'down';
+                let bodyH = Math.abs(yClose - yOpen);
+                if(bodyH < 1) bodyH = 1;
+
+                svg += `<line class="wick ${colorClass}" x1="${x+candleW/2}" y1="${yHigh}" x2="${x+candleW/2}" y2="${yLow}" />`;
+                svg += `<rect class="candle ${colorClass}" x="${x}" y="${Math.min(yOpen, yClose)}" width="${candleW}" height="${bodyH}" />`;
+            });
+            return svg;
+        }
+
+        function generateXAxis(w, h, range) {
+            const y = h + 15; 
+            // Generate real-ish labels
+            const now = new Date();
+            let labels = [];
+            
+            if (range === '1W') {
+                // 7 Days
+                for(let i=6; i>=0; i-=2) {
+                   const d = new Date(now);
+                   d.setDate(d.getDate() - i);
+                   labels.push((d.getMonth()+1) + '/' + d.getDate());
+                }
+            } else if (range === '1M') {
+                // 4 Weeks
+                for(let i=3; i>=0; i--) {
+                   const d = new Date(now);
+                   d.setDate(d.getDate() - (i * 7));
+                   labels.push((d.getMonth()+1) + '/' + d.getDate());
+                }
+            } else {
+                 // 3 Months
+                for(let i=2; i>=0; i--) {
+                   const d = new Date(now);
+                   d.setMonth(d.getMonth() - i);
+                   labels.push(d.toLocaleString('default', { month: 'short' }));
+                }
+            }
+
+            let svg = '';
+            const step = w / labels.length;
+            labels.forEach((txt, i) => {
+                svg += `<text class="axis-text" x="${i * step + step/2}" y="${y}">${txt}</text>`;
+            });
+            return svg;
+        }
 
         function setupInteractions(item) {
             const { el } = item;
@@ -890,160 +955,81 @@
             const menu = el.querySelector('.context-menu');
             const trigger = el.querySelector('.menu-trigger');
 
-            // Move Logic (Updated: Smooth Drag)
             el.addEventListener('mousedown', (e) => {
                 if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return;
                 
-                e.preventDefault();
-                const startX = e.clientX;
-                const startY = e.clientY;
-                const startLeft = item.x;
-                const startTop = item.y;
+                // Allow normal interactions for inputs/buttons/selects
+                if (['INPUT', 'BUTTON', 'SELECT', 'OPTION'].includes(e.target.tagName)) return;
 
-                // Increase z-index while dragging
+                // For news/chat, drag only via header
+                if ((item.type === 'news' || item.type === 'chat') && !e.target.closest('.widget-header')) return;
+
+                e.preventDefault();
+                const startX = e.clientX; const startY = e.clientY;
+                const startLeft = item.x; const startTop = item.y;
                 el.style.zIndex = 999;
 
                 function onMove(ev) {
-                    const dx = ev.clientX - startX;
-                    const dy = ev.clientY - startY;
-                    
-                    // Raw position for smoothness
-                    let rawX = startLeft + dx;
-                    let rawY = startTop + dy;
-                    
-                    // Boundary (visual only for now)
-                    const maxW = parseInt(gridCanvas.style.width);
-                    const maxH = parseInt(gridCanvas.style.height);
-                    
-                    // Simple clamping
-                    if(rawX < 0) rawX = 0;
-                    if(rawY < 0) rawY = 0;
-                    if(rawX + item.w > maxW) rawX = maxW - item.w;
-                    if(rawY + item.h > maxH) rawY = maxH - item.h;
-
-                    // Apply smooth position
-                    el.style.left = rawX + 'px';
-                    el.style.top = rawY + 'px';
-
-                    // Visual feedback for collision (check snapped pos)
-                    const snapX = snap(rawX);
-                    const snapY = snap(rawY);
-                    if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) {
-                        el.classList.add('collision');
-                    } else {
-                        el.classList.remove('collision');
-                    }
+                    const dx = ev.clientX - startX; const dy = ev.clientY - startY;
+                    let rawX = startLeft + dx; let rawY = startTop + dy;
+                    const maxW = parseInt(gridCanvas.style.width); const maxH = parseInt(gridCanvas.style.height);
+                    if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0;
+                    if(rawX + item.w > maxW) rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h;
+                    el.style.left = rawX + 'px'; el.style.top = rawY + 'px';
+                    const snapX = snap(rawX); const snapY = snap(rawY);
+                    if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision');
+                    else el.classList.remove('collision');
                 }
-                
                 function onUp(ev) {
                     document.removeEventListener('mousemove', onMove);
                     document.removeEventListener('mouseup', onUp);
                     el.style.zIndex = '';
-
-                    // Final Snap
-                    const finalX = snap(parseInt(el.style.left));
-                    const finalY = snap(parseInt(el.style.top));
-
-                    // Validate collision on drop
-                    if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) {
-                        // Revert if collision
-                        el.style.left = item.x + 'px';
-                        el.style.top = item.y + 'px';
-                    } else {
-                        // Commit
-                        item.x = finalX;
-                        item.y = finalY;
-                        el.style.left = finalX + 'px';
-                        el.style.top = finalY + 'px';
-                    }
+                    const finalX = snap(parseInt(el.style.left)); const finalY = snap(parseInt(el.style.top));
+                    if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; } 
+                    else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; }
                     el.classList.remove('collision');
                 }
-
-                document.addEventListener('mousemove', onMove);
-                document.addEventListener('mouseup', onUp);
+                document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
             });
 
-            // Resize (Existing Logic)
             resizeHandle.addEventListener('mousedown', (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                const startX = e.clientX;
-                const startY = e.clientY;
-                const startW = item.w;
-                const startH = item.h;
-
+                e.stopPropagation(); e.preventDefault();
+                const startX = e.clientX; const startY = e.clientY;
+                const startW = item.w; const startH = item.h;
                 function onResize(ev) {
-                    const dx = ev.clientX - startX;
-                    const dy = ev.clientY - startY;
-                    let nw = snap(Math.max(MIN_W, startW + dx));
-                    let nh = snap(Math.max(MIN_H, startH + dy));
-
-                    if (checkCollision({ ...item, w: nw, h: nh }, item.id)) {
-                        el.classList.add('collision');
-                    } else {
-                        el.classList.remove('collision');
-                        el.style.width = nw + 'px';
-                        el.style.height = nh + 'px';
-                        item.w = nw;
-                        item.h = nh;
-                        renderStockContent(item);
-                    }
+                    const dx = ev.clientX - startX; const dy = ev.clientY - startY;
+                    let nw = snap(Math.max(MIN_W, startW + dx)); let nh = snap(Math.max(MIN_H, startH + dy));
+                    if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision');
+                    else { el.classList.remove('collision'); el.style.width = nw + 'px'; el.style.height = nh + 'px'; item.w = nw; item.h = nh; 
+                           if(item.type === 'stock') renderStockContent(item); 
+                           if(item.type === 'clock') renderClockContent(item); }
                 }
-
-                function onUp() {
-                    document.removeEventListener('mousemove', onResize);
-                    document.removeEventListener('mouseup', onUp);
-                    el.classList.remove('collision');
-                }
-
-                document.addEventListener('mousemove', onResize);
-                document.addEventListener('mouseup', onUp);
+                function onUp() { document.removeEventListener('mousemove', onResize); document.removeEventListener('mouseup', onUp); el.classList.remove('collision'); }
+                document.addEventListener('mousemove', onResize); document.addEventListener('mouseup', onUp);
             });
         }
 
-        // --- Helpers ---
-
         function snap(v) { return Math.round(v / CELL_SIZE) * CELL_SIZE; }
-
         function checkCollision(target, ignoreId) {
             return items.some(i => {
                 if (i.id === ignoreId) return false;
-                return (
-                    target.x < i.x + i.w &&
-                    target.x + target.w > i.x &&
-                    target.y < i.y + i.h &&
-                    target.y + target.h > i.y
-                );
+                return (target.x < i.x + i.w && target.x + target.w > i.x && target.y < i.y + i.h && target.y + target.h > i.y);
             });
         }
-
         function hexToRgb(hex) {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : { r: 0, g: 0, b: 0 };
+            return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 };
         }
-        
-        // Canvas Resizer Logic
         gridResizer.addEventListener('mousedown', (e) => {
             e.stopPropagation();
-            const startX = e.clientX;
-            const startY = e.clientY;
-            const startW = parseInt(getComputedStyle(gridCanvas).width);
-            const startH = parseInt(getComputedStyle(gridCanvas).height);
-
+            const startX = e.clientX; const startY = e.clientY;
+            const startW = parseInt(getComputedStyle(gridCanvas).width); const startH = parseInt(getComputedStyle(gridCanvas).height);
             function resizeGrid(ev) {
-                const nw = Math.max(600, startW + (ev.clientX - startX));
-                const nh = Math.max(600, startH + (ev.clientY - startY));
-                gridCanvas.style.width = snap(nw) + 'px';
-                gridCanvas.style.height = snap(nh) + 'px';
+                const nw = Math.max(600, startW + (ev.clientX - startX)); const nh = Math.max(600, startH + (ev.clientY - startY));
+                gridCanvas.style.width = snap(nw) + 'px'; gridCanvas.style.height = snap(nh) + 'px';
             }
-            document.addEventListener('mousemove', resizeGrid);
-            document.addEventListener('mouseup', () => document.removeEventListener('mousemove', resizeGrid), {once:true});
+            document.addEventListener('mousemove', resizeGrid); document.addEventListener('mouseup', () => document.removeEventListener('mousemove', resizeGrid), {once:true});
         });
-
     </script>
 </body>
 </html>
