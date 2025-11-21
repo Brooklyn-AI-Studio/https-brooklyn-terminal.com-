@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V3.0</title>
+    <title>BROOKLYN-TERMINAL // V4.1</title>
     <!-- 引入科技感字體 -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -20,10 +20,12 @@
             --grid-line-strong: rgba(0, 255, 204, 0.3);
             --handle-color: #ff0055;
             --shadow-glow: 0 0 10px rgba(0, 255, 204, 0.3);
-            --glass-bg: rgba(17, 17, 17, 0.9);
+            --glass-bg: rgba(17, 17, 17, 0.95);
             --error-color: #ff0033;
-            --stock-up: #00ffcc;
-            --stock-down: #ff0033;
+            --stock-up: #00ffcc; 
+            --stock-down: #ff0033; 
+            --input-bg: rgba(0,0,0,0.3);
+            --input-text: #00ffcc;
         }
 
         /* --- 淺色模式 (Laboratory Style) --- */
@@ -32,23 +34,24 @@
             --bg-panel: #ffffff;
             --grid-bg: #f4f7f9;
             --text-primary: #2c3e50;
-            --text-secondary: #666;
+            --text-secondary: #555;
             --border-color: #cbd5e0;
             --accent-color: #0066cc;
             --grid-line: rgba(0, 0, 0, 0.05);
             --grid-line-strong: rgba(0, 0, 0, 0.1);
             --handle-color: #ff9900;
             --shadow-glow: none;
-            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-bg: rgba(255, 255, 255, 0.98);
             --error-color: #e74c3c;
-            --stock-up: #0066cc;
-            --stock-down: #e74c3c;
+            --stock-up: #27ae60;
+            --stock-down: #c0392b;
+            --input-bg: #ffffff;
+            --input-text: #333333;
         }
 
         * {
             box-sizing: border-box;
             user-select: none;
-            /* 使用新的科技感字體 */
             font-family: 'Rajdhani', 'Orbitron', sans-serif;
         }
 
@@ -61,6 +64,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         /* --- Header --- */
@@ -76,7 +80,6 @@
             justify-content: space-between;
         }
 
-        /* 重新設計的 Logo */
         .brand {
             font-family: 'Orbitron', sans-serif;
             font-weight: 900;
@@ -95,17 +98,9 @@
             font-size: 1.8rem;
         }
 
-        /* --- Main Layout --- */
-        .main-container {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 60px);
-            position: relative;
-        }
-
         /* --- Sidebar --- */
         .sidebar {
-            width: 300px; /* 初始寬度 */
+            width: 300px;
             min-width: 250px;
             max-width: 500px;
             background-color: var(--bg-panel);
@@ -115,124 +110,192 @@
             position: relative;
             z-index: 10;
             padding: 20px;
-            overflow-y: auto; /* 允許側邊欄滾動 */
+            overflow-y: auto;
+            overflow-x: hidden; /* 防止內容溢出 */
+            transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
+        }
+
+        /* Collapsed State Styles */
+        .sidebar.collapsed {
+            width: 70px;
+            min-width: 70px;
+            padding: 20px 10px;
+        }
+
+        /* Hide text elements when collapsed */
+        .sidebar.collapsed .sidebar-title,
+        .sidebar.collapsed .stock-selector, 
+        .sidebar.collapsed .color-picker-container span,
+        .sidebar.collapsed .tool-item span,
+        .sidebar.collapsed .stock-drag-item > div, /* Hide stock name container */
+        .sidebar.collapsed .sidebar-footer span,
+        .sidebar.collapsed .sidebar-footer .switch {
+            display: none;
+        }
+
+        /* Adjust layout for collapsed items to be centered icons */
+        .sidebar.collapsed .tool-item {
+            justify-content: center;
+            padding: 10px;
+        }
+        .sidebar.collapsed .stock-drag-item {
+            justify-content: center;
+            padding: 10px;
+            height: 50px;
+            overflow: hidden;
+        }
+        .sidebar.collapsed .stock-drag-item span#selectedStockPrice {
+            font-size: 0.8rem; /* Smaller font for collapsed view */
+        }
+        .sidebar.collapsed .sidebar-footer {
+            justify-content: center;
+        }
+        /* Show a mini icon for toggle when collapsed */
+        .sidebar.collapsed .sidebar-footer::after {
+            content: '☀/☾';
+            font-size: 10px;
+            opacity: 0.5;
+            cursor: pointer;
+        }
+
+        /* Toggle Button */
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.2s;
+            z-index: 20;
+        }
+        .sidebar-toggle-btn:hover {
+            background: var(--accent-color);
+            color: #000;
+        }
+        .sidebar.collapsed .sidebar-toggle-btn {
+            right: 50%;
+            transform: translateX(50%);
+            top: 10px;
         }
 
         .sidebar-title {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
-            margin-bottom: 15px;
+            margin-bottom: 10px;
+            margin-top: 20px;
             border-bottom: 1px dashed var(--border-color);
             padding-bottom: 5px;
             text-transform: uppercase;
-            font-weight: 600;
+            font-weight: 700;
+            white-space: nowrap; /* 防止文字斷行 */
         }
+        .sidebar-title:first-child { margin-top: 0; }
 
-        /* Color Picker Style */
+        /* Color Picker */
         .color-picker-container {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 25px;
-            background: rgba(0,0,0,0.2);
-            padding: 10px;
+            margin-bottom: 5px;
+            background: var(--input-bg);
+            padding: 5px 10px;
             border-radius: 4px;
             border: 1px solid var(--border-color);
+            width: fit-content;
+            transition: all 0.3s;
+        }
+        .sidebar.collapsed .color-picker-container {
+            width: 100%;
+            justify-content: center;
+            padding: 5px;
         }
         
         input[type="color"] {
             -webkit-appearance: none;
             border: none;
-            width: 30px;
-            height: 30px;
+            width: 24px;
+            height: 24px;
             cursor: pointer;
             background: none;
         }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--text-primary); }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border-color); }
 
-        /* Draggable Tool */
+        /* Library Tools */
         .tool-item {
             background: rgba(255,255,255,0.05);
             border: 1px solid var(--border-color);
             padding: 15px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             cursor: grab;
             transition: all 0.2s;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 15px;
+            white-space: nowrap;
         }
-        
         .tool-item:hover {
             border-color: var(--accent-color);
             box-shadow: var(--shadow-glow);
             background: rgba(255,255,255,0.08);
         }
-
         .tool-preview {
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             border: 2px solid var(--text-primary);
             background: rgba(0, 255, 204, 0.1);
+            flex-shrink: 0;
         }
 
-        /* Stock Indicator Style */
+        /* Stock Selector Styles */
         .stock-selector {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         .stock-selector select, .stock-selector input {
-            background: rgba(0,0,0,0.2);
+            background: var(--input-bg);
+            color: var(--input-text);
             border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 8px;
+            padding: 10px;
             border-radius: 4px;
             outline: none;
+            font-weight: 500;
+            transition: background 0.3s, color 0.3s, border 0.3s;
+            width: 100%;
         }
         .stock-selector select:focus, .stock-selector input:focus {
             border-color: var(--accent-color);
         }
+
         .stock-drag-item {
             background: rgba(255,255,255,0.05);
             border: 1px solid var(--border-color);
-            padding: 10px;
+            padding: 15px;
             cursor: grab;
             transition: all 0.2s;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.9rem;
+            border-radius: 4px;
+            white-space: nowrap;
         }
         .stock-drag-item:hover {
             border-color: var(--accent-color);
             box-shadow: var(--shadow-glow);
-            background: rgba(255,255,255,0.08);
         }
-        .stock-price {
-            font-weight: bold;
-        }
-        .stock-price.up { color: var(--stock-up); }
-        .stock-price.down { color: var(--stock-down); }
 
-        /* Sidebar Resizer */
-        .sidebar-resizer {
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 5px;
-            height: 100%;
-            cursor: col-resize;
-            background: transparent;
-            z-index: 11;
-            transition: background 0.2s;
-        }
-        .sidebar-resizer:hover { background: var(--accent-color); }
-
-        /* Theme Switch (Bottom of Sidebar) */
+        /* Sidebar Footer */
         .sidebar-footer {
             margin-top: auto;
             padding-top: 20px;
@@ -241,13 +304,11 @@
             align-items: center;
             justify-content: space-between;
         }
-
-        /* Switch CSS */
         .switch {
             position: relative;
             display: inline-block;
-            width: 50px;
-            height: 24px;
+            width: 40px;
+            height: 20px;
         }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
@@ -256,52 +317,49 @@
             top: 0; left: 0; right: 0; bottom: 0;
             background-color: #333;
             transition: .4s;
-            border: 1px solid var(--border-color);
+            border-radius: 20px;
         }
         .slider:before {
             position: absolute;
             content: "";
-            height: 16px;
-            width: 16px;
+            height: 14px;
+            width: 14px;
             left: 3px;
             bottom: 3px;
-            background-color: var(--text-secondary);
+            background-color: #fff;
             transition: .4s;
+            border-radius: 50%;
         }
         input:checked + .slider { background-color: var(--accent-color); }
-        input:checked + .slider:before { transform: translateX(26px); background-color: #000; }
+        input:checked + .slider:before { transform: translateX(20px); }
 
         /* --- Workspace --- */
+        .main-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+        }
         .workspace {
             flex: 1;
             background-color: #000;
-            background-image: 
-                radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
             background-size: 20px 20px;
             overflow: auto;
             padding: 50px;
             position: relative;
         }
-
-        /* Grid Canvas */
         #grid-canvas {
-            /* Default 60x60 * 20px = 1200px */
             width: 1200px;
             height: 1200px;
             background-color: var(--grid-bg);
             position: relative;
-            
-            /* Grid Pattern */
             background-image: 
                 linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
                 linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
             background-size: 20px 20px;
-            
             border: 1px solid var(--accent-color);
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
-
-        /* Major Grid Lines (Every 100px / 5 cells) */
         #grid-canvas::after {
             content: '';
             position: absolute;
@@ -312,8 +370,6 @@
             background-size: 100px 100px;
             pointer-events: none;
         }
-
-        /* Grid Resize Handle */
         .grid-resize-handle {
             width: 20px;
             height: 20px;
@@ -322,96 +378,147 @@
             bottom: -10px;
             right: -10px;
             cursor: nwse-resize;
-            clip-path: polygon(100% 0, 100% 100%, 0 100%); /* Triangle shape */
+            clip-path: polygon(100% 0, 100% 100%, 0 100%);
             z-index: 5;
         }
 
-        /* --- Grid Items --- */
+        /* --- Grid Items & Stock Viz --- */
         .grid-item {
             position: absolute;
-            border: 2px solid rgba(255,255,255,0.5);
-            box-sizing: border-box; /* Important calculation fix */
-            cursor: move;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 10px;
-            font-weight: bold;
-            overflow: hidden;
-            backdrop-filter: blur(2px);
-            transition: box-shadow 0.2s, border-color 0.2s;
-            padding: 5px;
+            overflow: hidden; 
+            backdrop-filter: blur(5px);
+            transition: box-shadow 0.2s, border-color 0.2s; /* Remove left/top transition for smooth drag */
         }
-
         .grid-item:hover {
-            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
             z-index: 100;
-            border-color: #fff;
+            border-color: var(--accent-color);
+        }
+        .grid-item.collision {
+            background-color: rgba(255, 0, 51, 0.2) !important;
+            border-color: var(--error-color) !important;
+            box-shadow: 0 0 20px var(--error-color);
         }
 
-        /* Item Resize Handle */
+        /* Stock Layout inside Grid */
+        .stock-layout {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 5%;
+            pointer-events: none; 
+            position: relative;
+        }
+
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1em; 
+            margin-bottom: 2%;
+        }
+
+        .stock-price-large {
+            font-weight: 900;
+            font-size: 2.5em; 
+            line-height: 1;
+            margin: 5% 0;
+        }
+        .stock-price-large.up { color: var(--stock-up); }
+        .stock-price-large.down { color: var(--stock-down); }
+
+        .stock-chart {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            opacity: 0.8;
+        }
+
+        /* Controls */
         .item-resize {
-            width: 10px;
-            height: 10px;
-            background: #fff;
+            width: 15px;
+            height: 15px;
+            background: transparent;
+            border-right: 2px solid var(--text-primary);
+            border-bottom: 2px solid var(--text-primary);
             position: absolute;
-            bottom: 0;
-            right: 0;
+            bottom: 2px;
+            right: 2px;
             cursor: nwse-resize;
             z-index: 101;
         }
 
-        /* Delete Button */
-        .item-delete {
+        /* Three Dot Menu */
+        .menu-trigger {
             position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 16px;
-            height: 16px;
-            background: var(--error-color);
-            color: white;
-            text-align: center;
-            line-height: 14px;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
             cursor: pointer;
-            font-size: 10px;
-            display: none;
             z-index: 102;
-        }
-        .grid-item:hover .item-delete { display: block; }
-
-        /* Collision State */
-        .grid-item.collision {
-            background-color: rgba(255, 0, 51, 0.5) !important;
-            border-color: var(--error-color) !important;
-            box-shadow: 0 0 20px var(--error-color);
-        }
-        
-        /* Stock Info in Grid Item */
-        .stock-info-container {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            width: 100%;
-            height: 100%;
             justify-content: center;
-            pointer-events: none; /* 防止阻擋拖曳 */
+            font-size: 18px;
+            color: var(--text-secondary);
+            border-radius: 50%;
+            background: rgba(0,0,0,0.1);
+            opacity: 0; 
+            transition: opacity 0.2s;
         }
-        .stock-symbol {
-            font-size: 1.2em;
-            margin-bottom: 5px;
+        .grid-item:hover .menu-trigger { opacity: 1; }
+        .menu-trigger:hover { background: var(--accent-color); color: #000; }
+
+        .context-menu {
+            position: absolute;
+            top: 30px;
+            right: 5px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border-radius: 4px;
+            z-index: 103;
+            display: none;
+            min-width: 100px;
         }
-        .stock-data {
-            font-size: 1em;
+        .context-menu.show { display: block; }
+        .context-menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-primary);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
+        .context-menu-item:hover { background: var(--error-color); color: #fff; }
+        .context-menu-item:last-child { border-bottom: none; }
+
+        /* Chart SVG Path */
+        .chart-path {
+            fill: none;
+            stroke-width: 2;
+            vector-effect: non-scaling-stroke;
+        }
+        .chart-area {
+            fill-opacity: 0.2;
+            stroke: none;
+        }
+        .up .chart-path { stroke: var(--stock-up); }
+        .up .chart-area { fill: var(--stock-up); }
+        .down .chart-path { stroke: var(--stock-down); }
+        .down .chart-area { fill: var(--stock-down); }
 
     </style>
 </head>
 <body>
 
     <header>
-        <!-- 重新設計的 Logo -->
         <div class="brand">Brooklyn-<span>Terminal</span></div>
         <div style="font-size: 12px; opacity: 0.7;">SYS.STATUS: ONLINE</div>
     </header>
@@ -419,41 +526,58 @@
     <div class="main-container">
         <!-- Left Sidebar -->
         <div class="sidebar" id="sidebar">
-            <div class="sidebar-title">Object Controls</div>
-            
-            <!-- Color Picker -->
-            <div class="color-picker-container">
-                <label for="colorPicker" style="font-size: 12px;">COLOR:</label>
-                <input type="color" id="colorPicker" value="#007bff">
-                <span id="colorValue" style="font-size: 10px; opacity: 0.8;">#007bff</span>
-            </div>
+            <!-- Toggle Button -->
+            <button class="sidebar-toggle-btn" id="sidebarToggle" title="Collapse/Expand">
+                &lt;
+            </button>
 
             <!-- Library -->
             <div class="sidebar-title">Library</div>
             <div class="tool-item" draggable="true" id="tool-square">
                 <div class="tool-preview" style="background-color: rgba(0,123,255,0.3);"></div>
-                <span style="font-size: 12px;">Module 10x10</span>
+                <span>Module 10x10</span>
+            </div>
+
+            <!-- Color Picker (Moved here) -->
+            <div class="color-picker-container">
+                <input type="color" id="colorPicker" value="#007bff">
+                <span id="colorValue" style="font-size: 12px; opacity: 0.8;">#007bff</span>
             </div>
 
             <!-- Stock Indicators -->
             <div class="sidebar-title">Stock Indicators</div>
             <div class="stock-selector">
                 <select id="stockList">
-                    <option value="2330">2330 台積電</option>
-                    <option value="2317">2317 鴻海</option>
-                    <option value="2454">2454 聯發科</option>
-                    <option value="2303">2303 聯電</option>
-                    <option value="2881">2881 富邦金</option>
+                    <!-- 台股 -->
+                    <optgroup label="Taiwan Stocks">
+                        <option value="2330">2330 台積電</option>
+                        <option value="2317">2317 鴻海</option>
+                        <option value="2454">2454 聯發科</option>
+                        <option value="2303">2303 聯電</option>
+                        <option value="2881">2881 富邦金</option>
+                    </optgroup>
+                    <!-- 美股 -->
+                    <optgroup label="US Stocks">
+                        <option value="AAPL">AAPL Apple</option>
+                        <option value="TSLA">TSLA Tesla</option>
+                        <option value="NVDA">NVDA NVIDIA</option>
+                        <option value="MSFT">MSFT Microsoft</option>
+                        <option value="GOOGL">GOOGL Alphabet</option>
+                    </optgroup>
                 </select>
-                <input type="text" id="stockSearch" placeholder="Search Stock (e.g., 2330)">
+                <input type="text" id="stockSearch" placeholder="Search (e.g., AAPL)">
             </div>
+            
+            <!-- Draggable Stock Preview -->
             <div class="stock-drag-item" draggable="true" id="stockDraggable">
-                <span id="selectedStockName">2330 台積電</span>
-                <span id="selectedStockPrice" class="stock-price up">580.00</span>
+                <div style="display:flex; flex-direction:column;">
+                    <span id="selectedStockName" style="font-weight:bold; font-size:1rem;">2330 台積電</span>
+                    <span style="font-size:0.8rem; opacity:0.7;">Drag to Grid</span>
+                </div>
+                <span id="selectedStockPrice" style="font-size:1.2rem; font-weight:bold; color:var(--stock-up);">580.00 ▲</span>
             </div>
 
-
-            <!-- Sidebar Footer (Theme Switch) -->
+            <!-- Sidebar Footer -->
             <div class="sidebar-footer">
                 <span style="font-size: 12px;">THEME MODE</span>
                 <label class="switch">
@@ -461,16 +585,13 @@
                     <span class="slider"></span>
                 </label>
             </div>
-
-            <!-- Sidebar Resizer Handle -->
-            <div class="sidebar-resizer" id="sidebarResizer"></div>
         </div>
 
         <!-- Workspace -->
         <div class="workspace">
             <div id="grid-canvas">
                 <div class="grid-resize-handle" id="gridResizer"></div>
-                <!-- Dynamic Items Here -->
+                <!-- Dynamic Items -->
             </div>
         </div>
     </div>
@@ -478,59 +599,93 @@
     <script>
         // --- Configuration ---
         const CELL_SIZE = 20;
-        const MIN_W = CELL_SIZE;
-        const MIN_H = CELL_SIZE;
+        const MIN_W = CELL_SIZE * 4; 
+        const MIN_H = CELL_SIZE * 4;
 
         // --- DOM Elements ---
         const gridCanvas = document.getElementById('grid-canvas');
         const colorPicker = document.getElementById('colorPicker');
         const colorValue = document.getElementById('colorValue');
         const themeSwitch = document.getElementById('themeSwitch');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarResizer = document.getElementById('sidebarResizer');
-        const gridResizer = document.getElementById('gridResizer');
         const stockList = document.getElementById('stockList');
         const stockSearch = document.getElementById('stockSearch');
         const stockDraggable = document.getElementById('stockDraggable');
         const selectedStockName = document.getElementById('selectedStockName');
         const selectedStockPrice = document.getElementById('selectedStockPrice');
+        const gridResizer = document.getElementById('gridResizer');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
 
         // --- State ---
-        let items = []; // Stores item data {id, x, y, w, h, el, stockData}
+        let items = []; 
         let activeColor = '#007bff';
-        let currentStock = { symbol: '2330', name: '台積電', price: 580.00, change: 5.00 }; // Initial Mock Data
+        let currentStock = { symbol: '2330', name: '台積電', price: 580.00, change: 5.00, history: [] };
+        let isSidebarCollapsed = false;
 
-        // --- Mock Stock Data ---
+        // --- Mock Data & Chart Helpers ---
         const mockStockData = {
+            // Taiwan
             '2330': { name: '台積電', price: 580.00, change: 5.00 },
             '2317': { name: '鴻海', price: 105.00, change: -0.50 },
             '2454': { name: '聯發科', price: 950.00, change: 15.00 },
             '2303': { name: '聯電', price: 48.50, change: 0.20 },
-            '2881': { name: '富邦金', price: 62.00, change: -0.10 }
+            '2881': { name: '富邦金', price: 62.00, change: -0.10 },
+            // US
+            'AAPL': { name: 'Apple Inc.', price: 175.00, change: 1.20 },
+            'TSLA': { name: 'Tesla Inc.', price: 240.00, change: -3.50 },
+            'NVDA': { name: 'NVIDIA', price: 460.00, change: 8.00 },
+            'MSFT': { name: 'Microsoft', price: 330.00, change: 2.10 },
+            'GOOGL': { name: 'Alphabet', price: 135.00, change: -0.80 }
         };
 
-        function getMockStockPrice(symbol) {
-            if (mockStockData[symbol]) {
-                // Simulate price change
-                const change = (Math.random() - 0.5) * 2;
-                mockStockData[symbol].price += change;
-                mockStockData[symbol].change = change;
-                return mockStockData[symbol];
+        function generateHistory(basePrice) {
+            let history = [];
+            let current = basePrice;
+            for(let i=0; i<20; i++) {
+                history.push(current);
+                current += (Math.random() - 0.5) * (basePrice * 0.03);
             }
-            // Fallback for search
-            return { name: 'Unknown', price: (Math.random() * 1000).toFixed(2), change: (Math.random() - 0.5) * 10 };
+            return history;
+        }
+
+        function getMockStockPrice(symbol) {
+            let base = mockStockData[symbol] || { name: symbol, price: 100.00, change: 0 };
+            // Simulate fluctuation
+            const change = (Math.random() - 0.5) * (base.price * 0.01);
+            base.price += change;
+            base.change = change; // Just showing instant change
+            if(!base.history) base.history = generateHistory(base.price);
+            
+            // Shift history
+            base.history.push(base.price);
+            base.history.shift();
+            
+            return base;
         }
 
         function updateStockDisplay(stock) {
             currentStock = stock;
             selectedStockName.innerText = `${stock.symbol} ${stock.name}`;
-            selectedStockPrice.innerText = stock.price.toFixed(2);
-            selectedStockPrice.className = `stock-price ${stock.change >= 0 ? 'up' : 'down'}`;
+            const isUp = stock.change >= 0;
+            selectedStockPrice.innerHTML = `${stock.price.toFixed(2)} ${isUp ? '▲' : '▼'}`;
+            selectedStockPrice.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
         }
-        
+
         // --- Initialization ---
         
-        // 1. Theme Toggle
+        // Sidebar Toggle
+        sidebarToggle.addEventListener('click', () => {
+            isSidebarCollapsed = !isSidebarCollapsed;
+            if (isSidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                sidebarToggle.innerHTML = '&gt;';
+            } else {
+                sidebar.classList.remove('collapsed');
+                sidebarToggle.innerHTML = '&lt;';
+            }
+        });
+
+        // Theme Toggle
         themeSwitch.addEventListener('change', (e) => {
             if (e.target.checked) {
                 document.documentElement.setAttribute('data-theme', 'light');
@@ -539,192 +694,95 @@
             }
         });
 
-        // 2. Color Picker
+        // Color Picker
         colorPicker.addEventListener('input', (e) => {
             activeColor = e.target.value;
             colorValue.innerText = activeColor;
-            // Update tool preview color
-            document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D'; // 30% opacity
+            document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D';
             document.querySelector('.tool-preview').style.borderColor = activeColor;
         });
 
-        // 3. Sidebar Resizing
-        sidebarResizer.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            document.addEventListener('mousemove', resizeSidebar);
-            document.addEventListener('mouseup', stopResizeSidebar);
-        });
-
-        function resizeSidebar(e) {
-            let newWidth = e.clientX;
-            if(newWidth < 250) newWidth = 250;
-            if(newWidth > 500) newWidth = 500;
-            sidebar.style.width = newWidth + 'px';
-        }
-
-        function stopResizeSidebar() {
-            document.removeEventListener('mousemove', resizeSidebar);
-            document.removeEventListener('mouseup', stopResizeSidebar);
-        }
-
-        // 4. Grid Canvas Resizing
-        gridResizer.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const startX = e.clientX;
-            const startY = e.clientY;
-            const startW = parseInt(getComputedStyle(gridCanvas).width);
-            const startH = parseInt(getComputedStyle(gridCanvas).height);
-
-            function doGridResize(ev) {
-                const dx = ev.clientX - startX;
-                const dy = ev.clientY - startY;
-                
-                let newW = Math.max(600, Math.round((startW + dx) / CELL_SIZE) * CELL_SIZE);
-                let newH = Math.max(600, Math.round((startH + dy) / CELL_SIZE) * CELL_SIZE);
-
-                gridCanvas.style.width = newW + 'px';
-                gridCanvas.style.height = newH + 'px';
-            }
-
-            function stopGridResize() {
-                document.removeEventListener('mousemove', doGridResize);
-                document.removeEventListener('mouseup', stopGridResize);
-            }
-
-            document.addEventListener('mousemove', doGridResize);
-            document.addEventListener('mouseup', stopGridResize);
-        });
-
-        // 5. Stock Selection
-        stockList.addEventListener('change', (e) => {
-            const symbol = e.target.value;
-            const stockData = getMockStockPrice(symbol);
-            updateStockDisplay({ symbol, ...stockData });
-        });
-
+        // Stock Logic
+        stockList.addEventListener('change', (e) => updateStock(e.target.value));
         stockSearch.addEventListener('input', (e) => {
-            const symbol = e.target.value.trim();
-            if (symbol.length >= 4) {
-                const stockData = getMockStockPrice(symbol);
-                updateStockDisplay({ symbol, ...stockData });
-            }
+            const val = e.target.value.toUpperCase();
+            if(val.length >= 3) updateStock(val);
         });
 
-        // Simulate live stock price updates
+        function updateStock(symbol) {
+            const data = getMockStockPrice(symbol);
+            updateStockDisplay({ symbol, ...data });
+        }
+        
+        // Initialize default stock
+        updateStock('2330');
+
+        // Live Update Sim
         setInterval(() => {
             if (currentStock.symbol) {
-                const stockData = getMockStockPrice(currentStock.symbol);
-                updateStockDisplay({ symbol: currentStock.symbol, ...stockData });
-                
-                // Update stock data in grid items
+                updateStock(currentStock.symbol);
+                // Update grid items
                 items.forEach(item => {
-                    if (item.stockData && item.stockData.symbol === currentStock.symbol) {
-                        item.stockData = { symbol: currentStock.symbol, ...stockData };
-                        renderStockInfo(item.el, item.stockData);
+                    if(item.stockData && item.stockData.symbol === currentStock.symbol) {
+                        item.stockData = { ...item.stockData, ...currentStock }; 
+                        renderStockContent(item);
                     }
                 });
             }
-        }, 3000); // Update every 3 seconds
+        }, 3000);
 
+        // Sidebar Footer click to toggle theme when collapsed
+        document.querySelector('.sidebar-footer').addEventListener('click', (e) => {
+            if (isSidebarCollapsed && e.target === document.querySelector('.sidebar-footer')) {
+               themeSwitch.click();
+            }
+        });
 
-        // --- Drag & Drop (Creation & Stock Drop) ---
-        
+        // --- Drag & Drop ---
+
         document.getElementById('tool-square').addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('type', 'new-square');
+            e.dataTransfer.setData('type', 'shape');
         });
 
         stockDraggable.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('type', 'stock-data');
-            e.dataTransfer.setData('stock-symbol', currentStock.symbol);
+            e.dataTransfer.setData('type', 'stock');
+            e.dataTransfer.setData('symbol', currentStock.symbol);
         });
 
-        gridCanvas.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'copy';
-        });
+        gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
 
         gridCanvas.addEventListener('drop', (e) => {
             e.preventDefault();
             const type = e.dataTransfer.getData('type');
-            
-            if (type === 'new-square') {
-                const rect = gridCanvas.getBoundingClientRect();
-                const rawX = e.clientX - rect.left;
-                const rawY = e.clientY - rect.top;
+            const rect = gridCanvas.getBoundingClientRect();
+            const x = snap(e.clientX - rect.left);
+            const y = snap(e.clientY - rect.top);
 
-                const w = 10 * CELL_SIZE;
-                const h = 10 * CELL_SIZE;
-                
-                // Snap center
-                let x = snap(rawX - w/2);
-                let y = snap(rawY - h/2);
-
-                // Boundary Check
-                const maxW = parseInt(gridCanvas.style.width);
-                const maxH = parseInt(gridCanvas.style.height);
-                if(x < 0) x = 0;
-                if(y < 0) y = 0;
-                if(x + w > maxW) x = maxW - w;
-                if(y + h > maxH) y = maxH - h;
-
-                // Collision Check for New Item
-                if (checkCollision({id: 'temp', x, y, w, h})) {
-                    alert("ERROR: 空間重疊，無法生成物件 (Collision Detected)");
-                    return;
+            if (type === 'shape') {
+                if(!checkCollision({x, y, w: 200, h: 200})) {
+                    createItem(x, y, 200, 200, activeColor);
                 }
-
-                createItem(x, y, w, h, activeColor);
-            } else if (type === 'stock-data') {
-                const symbol = e.dataTransfer.getData('stock-symbol');
-                const stockData = { symbol, ...getMockStockPrice(symbol) };
-                
-                // Find which grid item was dropped on
-                const rect = gridCanvas.getBoundingClientRect();
+            } else if (type === 'stock') {
                 const dropX = e.clientX - rect.left;
                 const dropY = e.clientY - rect.top;
-
-                const targetItem = items.find(item => {
-                    return dropX >= item.x && dropX <= item.x + item.w &&
-                           dropY >= item.y && dropY <= item.y + item.h;
-                });
-
-                if (targetItem) {
-                    targetItem.stockData = stockData;
-                    renderStockInfo(targetItem.el, stockData);
+                const target = items.find(i => dropX >= i.x && dropX <= i.x+i.w && dropY >= i.y && dropY <= i.y+i.h);
+                
+                if (target) {
+                    const symbol = e.dataTransfer.getData('symbol');
+                    target.stockData = { symbol, ...getMockStockPrice(symbol) };
+                    renderStockContent(target);
+                } else {
+                    if(!checkCollision({x, y, w: 300, h: 200})) {
+                        const symbol = e.dataTransfer.getData('symbol');
+                        const newItem = createItem(x, y, 300, 200, activeColor); 
+                        newItem.obj.stockData = { symbol, ...getMockStockPrice(symbol) };
+                        renderStockContent(newItem.obj);
+                    }
                 }
             }
         });
 
-        function renderStockInfo(el, stockData) {
-            // Remove existing stock info if any
-            const existingInfo = el.querySelector('.stock-info-container');
-            if (existingInfo) existingInfo.remove();
-
-            const container = document.createElement('div');
-            container.className = 'stock-info-container';
-            
-            const symbolEl = document.createElement('div');
-            symbolEl.className = 'stock-symbol';
-            symbolEl.innerText = `${stockData.symbol} ${stockData.name}`;
-            
-            const dataEl = document.createElement('div');
-            dataEl.className = 'stock-data';
-            dataEl.innerText = stockData.price.toFixed(2);
-            dataEl.className += ` stock-price ${stockData.change >= 0 ? 'up' : 'down'}`;
-
-            container.appendChild(symbolEl);
-            container.appendChild(dataEl);
-            
-            // Insert before the resize handle
-            el.insertBefore(container, el.querySelector('.item-resize'));
-            
-            // Hide default label
-            el.querySelector('.label').style.display = 'none';
-        }
-
-
-        // --- Core Logic: Create Item ---
+        // --- Item Creation & Management ---
 
         function createItem(x, y, w, h, color) {
             const id = 'item_' + Date.now();
@@ -736,194 +794,206 @@
             el.style.width = w + 'px';
             el.style.height = h + 'px';
             
-            // Apply color style
-            // Use rgba for background to keep it semi-transparent
-            const r = parseInt(color.substr(1,2), 16);
-            const g = parseInt(color.substr(3,2), 16);
-            const b = parseInt(color.substr(5,2), 16);
-            el.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+            const rgb = hexToRgb(color);
+            el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
             el.style.borderColor = color;
-            el.style.color = color;
 
-            el.innerHTML = `<span class="label">${w/CELL_SIZE}x${h/CELL_SIZE}</span>`;
+            el.innerHTML = `
+                <div class="content-container" style="width:100%; height:100%;"></div>
+                <div class="menu-trigger">⋮</div>
+                <div class="context-menu">
+                    <div class="context-menu-item" onclick="deleteItem('${id}')">移除 (Remove)</div>
+                </div>
+                <div class="item-resize"></div>
+            `;
 
-            // Delete Btn
-            const btn = document.createElement('div');
-            btn.className = 'item-delete';
-            btn.innerHTML = 'X';
-            btn.onclick = (e) => {
+            const trigger = el.querySelector('.menu-trigger');
+            const menu = el.querySelector('.context-menu');
+            trigger.onclick = (e) => {
                 e.stopPropagation();
-                deleteItem(id);
+                document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); });
+                menu.classList.toggle('show');
             };
-            el.appendChild(btn);
-
-            // Resize Handle
-            const resizeHandle = document.createElement('div');
-            resizeHandle.className = 'item-resize';
-            el.appendChild(resizeHandle);
 
             gridCanvas.appendChild(el);
-
-            // Add to tracking array
             const itemObj = { id, x, y, w, h, el, stockData: null };
             items.push(itemObj);
 
-            // Bind Events
-            bindItemEvents(itemObj, resizeHandle);
+            setupInteractions(itemObj);
+            
+            document.addEventListener('click', () => menu.classList.remove('show'));
+
+            return { el, obj: itemObj };
         }
 
         function deleteItem(id) {
             const idx = items.findIndex(i => i.id === id);
-            if(idx > -1) {
+            if (idx > -1) {
                 items[idx].el.remove();
                 items.splice(idx, 1);
             }
         }
 
-        function bindItemEvents(item, resizeHandle) {
-            // Move Logic
-            item.el.addEventListener('mousedown', (e) => {
-                if(e.target === resizeHandle || e.target.className === 'item-delete') return;
-                e.preventDefault(); // Prevent native drag
+        // --- Rendering Stock Data ---
 
+        function renderStockContent(item) {
+            if (!item.stockData) return;
+            const container = item.el.querySelector('.content-container');
+            const data = item.stockData;
+            const isUp = data.change >= 0;
+            const trendClass = isUp ? 'up' : 'down';
+            
+            const fontSize = Math.max(10, item.w / 20); 
+            item.el.style.fontSize = fontSize + 'px';
+
+            const pathD = generateSparkline(data.history, item.w, item.h * 0.4); 
+
+            container.innerHTML = `
+                <div class="stock-layout ${trendClass}">
+                    <div class="stock-header">
+                        <span>${data.symbol} ${data.name}</span>
+                        <span style="font-size:0.8em">${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}</span>
+                    </div>
+                    <div class="stock-price-large ${trendClass}">
+                        ${data.price.toFixed(2)}
+                    </div>
+                    <svg class="stock-chart" preserveAspectRatio="none" viewBox="0 0 ${item.w} ${item.h*0.4}">
+                        <path class="chart-path" d="${pathD}" />
+                        <path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />
+                    </svg>
+                </div>
+            `;
+        }
+
+        function generateSparkline(data, width, height) {
+            if (!data || data.length === 0) return "";
+            const max = Math.max(...data);
+            const min = Math.min(...data);
+            const range = max - min || 1;
+            
+            const stepX = width / (data.length - 1);
+            
+            let d = `M 0 ${height - ((data[0] - min) / range * height)}`;
+            for (let i = 1; i < data.length; i++) {
+                const x = i * stepX;
+                const y = height - ((data[i] - min) / range * height);
+                d += ` L ${x} ${y}`;
+            }
+            return d;
+        }
+
+        // --- Interaction Logic (Move & Resize) ---
+
+        function setupInteractions(item) {
+            const { el } = item;
+            const resizeHandle = el.querySelector('.item-resize');
+            const menu = el.querySelector('.context-menu');
+            const trigger = el.querySelector('.menu-trigger');
+
+            // Move Logic (Updated: Smooth Drag)
+            el.addEventListener('mousedown', (e) => {
+                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return;
+                
+                e.preventDefault();
                 const startX = e.clientX;
                 const startY = e.clientY;
-                const origX = item.x;
-                const origY = item.y;
-                const maxW = parseInt(gridCanvas.style.width);
-                const maxH = parseInt(gridCanvas.style.height);
+                const startLeft = item.x;
+                const startTop = item.y;
 
-                item.el.style.zIndex = 999;
+                // Increase z-index while dragging
+                el.style.zIndex = 999;
 
                 function onMove(ev) {
                     const dx = ev.clientX - startX;
                     const dy = ev.clientY - startY;
                     
-                    // Raw Position for smoothness
-                    let rawX = origX + dx;
-                    let rawY = origY + dy;
+                    // Raw position for smoothness
+                    let rawX = startLeft + dx;
+                    let rawY = startTop + dy;
                     
-                    // Visual update (snapped visually for feedback?) 
-                    // Let's keep smooth move, snap on release
-                    item.el.style.left = rawX + 'px';
-                    item.el.style.top = rawY + 'px';
+                    // Boundary (visual only for now)
+                    const maxW = parseInt(gridCanvas.style.width);
+                    const maxH = parseInt(gridCanvas.style.height);
+                    
+                    // Simple clamping
+                    if(rawX < 0) rawX = 0;
+                    if(rawY < 0) rawY = 0;
+                    if(rawX + item.w > maxW) rawX = maxW - item.w;
+                    if(rawY + item.h > maxH) rawY = maxH - item.h;
 
-                    // Collision Preview
-                    const testX = snap(rawX);
-                    const testY = snap(rawY);
-                    
-                    // Check boundaries relative to grid
-                    const isOut = testX < 0 || testY < 0 || testX + item.w > maxW || testY + item.h > maxH;
-                    
-                    if (checkCollision({...item, x: testX, y: testY}, item.id) || isOut) {
-                        item.el.classList.add('collision');
+                    // Apply smooth position
+                    el.style.left = rawX + 'px';
+                    el.style.top = rawY + 'px';
+
+                    // Visual feedback for collision (check snapped pos)
+                    const snapX = snap(rawX);
+                    const snapY = snap(rawY);
+                    if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) {
+                        el.classList.add('collision');
                     } else {
-                        item.el.classList.remove('collision');
+                        el.classList.remove('collision');
                     }
                 }
-
+                
                 function onUp(ev) {
                     document.removeEventListener('mousemove', onMove);
                     document.removeEventListener('mouseup', onUp);
-                    item.el.style.zIndex = '';
+                    el.style.zIndex = '';
 
-                    const finalX = snap(parseInt(item.el.style.left));
-                    const finalY = snap(parseInt(item.el.style.top));
+                    // Final Snap
+                    const finalX = snap(parseInt(el.style.left));
+                    const finalY = snap(parseInt(el.style.top));
 
-                    // Validate Final Position
-                    const isOut = finalX < 0 || finalY < 0 || finalX + item.w > maxW || finalY + item.h > maxH;
-                    
-                    if (checkCollision({...item, x: finalX, y: finalY}, item.id) || isOut) {
-                        // Revert
-                        item.el.style.left = item.x + 'px';
-                        item.el.style.top = item.y + 'px';
-                        item.el.classList.remove('collision');
+                    // Validate collision on drop
+                    if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) {
+                        // Revert if collision
+                        el.style.left = item.x + 'px';
+                        el.style.top = item.y + 'px';
                     } else {
                         // Commit
                         item.x = finalX;
                         item.y = finalY;
-                        item.el.style.left = finalX + 'px';
-                        item.el.style.top = finalY + 'px';
+                        el.style.left = finalX + 'px';
+                        el.style.top = finalY + 'px';
                     }
+                    el.classList.remove('collision');
                 }
 
                 document.addEventListener('mousemove', onMove);
                 document.addEventListener('mouseup', onUp);
             });
 
-            // Resize Logic
+            // Resize (Existing Logic)
             resizeHandle.addEventListener('mousedown', (e) => {
-                e.preventDefault();
                 e.stopPropagation();
-                
+                e.preventDefault();
                 const startX = e.clientX;
                 const startY = e.clientY;
-                const origW = item.w;
-                const origH = item.h;
-                const maxGridW = parseInt(gridCanvas.style.width);
-                const maxGridH = parseInt(gridCanvas.style.height);
+                const startW = item.w;
+                const startH = item.h;
 
                 function onResize(ev) {
                     const dx = ev.clientX - startX;
                     const dy = ev.clientY - startY;
+                    let nw = snap(Math.max(MIN_W, startW + dx));
+                    let nh = snap(Math.max(MIN_H, startH + dy));
 
-                    let newW = Math.max(MIN_W, origW + dx);
-                    let newH = Math.max(MIN_H, origH + dy);
-
-                    item.el.style.width = newW + 'px';
-                    item.el.style.height = newH + 'px';
-                    
-                    const snappedW = snap(newW);
-                    const snappedH = snap(newH);
-
-                    // Update Label (if visible)
-                    const label = item.el.querySelector('.label');
-                    if (label && label.style.display !== 'none') {
-                         label.innerText = `${Math.round(snappedW/CELL_SIZE)}x${Math.round(snappedH/CELL_SIZE)}`;
-                    }
-
-                    // Check Collision
-                    const isOut = item.x + snappedW > maxGridW || item.y + snappedH > maxGridH;
-
-                    if (checkCollision({...item, w: snappedW, h: snappedH}, item.id) || isOut) {
-                        item.el.classList.add('collision');
+                    if (checkCollision({ ...item, w: nw, h: nh }, item.id)) {
+                        el.classList.add('collision');
                     } else {
-                        item.el.classList.remove('collision');
+                        el.classList.remove('collision');
+                        el.style.width = nw + 'px';
+                        el.style.height = nh + 'px';
+                        item.w = nw;
+                        item.h = nh;
+                        renderStockContent(item);
                     }
                 }
 
-                function onUp(ev) {
+                function onUp() {
                     document.removeEventListener('mousemove', onResize);
                     document.removeEventListener('mouseup', onUp);
-
-                    let finalW = snap(parseInt(item.el.style.width));
-                    let finalH = snap(parseInt(item.el.style.height));
-                    
-                    if (finalW < MIN_W) finalW = MIN_W;
-                    if (finalH < MIN_H) finalH = MIN_H;
-
-                    const isOut = item.x + finalW > maxGridW || item.y + finalH > maxGridH;
-
-                    if (checkCollision({...item, w: finalW, h: finalH}, item.id) || isOut) {
-                        // Revert
-                        item.el.style.width = item.w + 'px';
-                        item.el.style.height = item.h + 'px';
-                        const label = item.el.querySelector('.label');
-                        if (label && label.style.display !== 'none') {
-                             label.innerText = `${item.w/CELL_SIZE}x${item.h/CELL_SIZE}`;
-                        }
-                        item.el.classList.remove('collision');
-                    } else {
-                        // Commit
-                        item.w = finalW;
-                        item.h = finalH;
-                        item.el.style.width = finalW + 'px';
-                        item.el.style.height = finalH + 'px';
-                        const label = item.el.querySelector('.label');
-                        if (label && label.style.display !== 'none') {
-                            label.innerText = `${finalW/CELL_SIZE}x${finalH/CELL_SIZE}`;
-                        }
-                    }
+                    el.classList.remove('collision');
                 }
 
                 document.addEventListener('mousemove', onResize);
@@ -933,26 +1003,46 @@
 
         // --- Helpers ---
 
-        function snap(val) {
-            return Math.round(val / CELL_SIZE) * CELL_SIZE;
+        function snap(v) { return Math.round(v / CELL_SIZE) * CELL_SIZE; }
+
+        function checkCollision(target, ignoreId) {
+            return items.some(i => {
+                if (i.id === ignoreId) return false;
+                return (
+                    target.x < i.x + i.w &&
+                    target.x + target.w > i.x &&
+                    target.y < i.y + i.h &&
+                    target.y + target.h > i.y
+                );
+            });
         }
 
-        // AABB Collision Detection
-        function checkCollision(currentItem, ignoreId = null) {
-            for (let other of items) {
-                if (other.id === ignoreId) continue;
-                
-                if (
-                    currentItem.x < other.x + other.w &&
-                    currentItem.x + currentItem.w > other.x &&
-                    currentItem.y < other.y + other.h &&
-                    currentItem.y + currentItem.h > other.y
-                ) {
-                    return true;
-                }
-            }
-            return false;
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 0, g: 0, b: 0 };
         }
+        
+        // Canvas Resizer Logic
+        gridResizer.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const startW = parseInt(getComputedStyle(gridCanvas).width);
+            const startH = parseInt(getComputedStyle(gridCanvas).height);
+
+            function resizeGrid(ev) {
+                const nw = Math.max(600, startW + (ev.clientX - startX));
+                const nh = Math.max(600, startH + (ev.clientY - startY));
+                gridCanvas.style.width = snap(nw) + 'px';
+                gridCanvas.style.height = snap(nh) + 'px';
+            }
+            document.addEventListener('mousemove', resizeGrid);
+            document.addEventListener('mouseup', () => document.removeEventListener('mousemove', resizeGrid), {once:true});
+        });
 
     </script>
 </body>
