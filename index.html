@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V6.1</title>
+    <title>BROOKLYN-TERMINAL // V6.4</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -17,6 +17,7 @@
             --stock-up: #00ffcc; --stock-down: #ff0033;
             --input-bg: rgba(0,0,0,0.5); --input-text: #00ffcc;
             --msg-user-bg: rgba(0, 255, 204, 0.1); --msg-sys-bg: rgba(255, 255, 255, 0.05);
+            --btn-bg: rgba(0, 255, 204, 0.1);
         }
         [data-theme="light"] {
             --bg-body: #e8eef2; --bg-panel: #ffffff; --grid-bg: #f4f7f9;
@@ -27,6 +28,7 @@
             --error-color: #e74c3c; --stock-up: #27ae60; --stock-down: #c0392b;
             --input-bg: #f0f2f5; --input-text: #333333;
             --msg-user-bg: rgba(0, 102, 204, 0.1); --msg-sys-bg: rgba(0, 0, 0, 0.03);
+            --btn-bg: rgba(0, 0, 0, 0.05);
         }
         * { box-sizing: border-box; user-select: none; font-family: 'Rajdhani', 'Orbitron', sans-serif; }
         body { margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-primary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
@@ -38,7 +40,7 @@
         
         .sidebar { width: 300px; min-width: 250px; max-width: 500px; background-color: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: relative; z-index: 10; padding: 20px; overflow-y: auto; overflow-x: hidden; transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease; }
         .sidebar.collapsed { width: 70px; min-width: 70px; padding: 20px 10px; }
-        .sidebar.collapsed .sidebar-title, .sidebar.collapsed .stock-selector, .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .tool-item span, .sidebar.collapsed .stock-drag-item > div, .sidebar.collapsed .sidebar-footer span, .sidebar.collapsed .sidebar-footer .switch, .sidebar.collapsed label { display: none; }
+        .sidebar.collapsed .sidebar-title, .sidebar.collapsed .stock-selector, .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .tool-item span, .sidebar.collapsed .stock-drag-item > div, .sidebar.collapsed .sidebar-footer span, .sidebar.collapsed .sidebar-footer .switch, .sidebar.collapsed label, .sidebar.collapsed .control-btn-group span { display: none; }
         .sidebar.collapsed .tool-item, .sidebar.collapsed .stock-drag-item { justify-content: center; padding: 10px; }
         .sidebar.collapsed .stock-drag-item span#selectedStockPrice { font-size: 0.8rem; }
         .sidebar.collapsed .sidebar-footer { justify-content: center; }
@@ -46,18 +48,28 @@
         .sidebar-toggle-btn { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 12px; transition: all 0.2s; z-index: 20; }
         .sidebar-toggle-btn:hover { background: var(--accent-color); color: #000; }
         .sidebar.collapsed .sidebar-toggle-btn { right: 50%; transform: translateX(50%); top: 10px; }
+        
         .sidebar-title { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px; margin-top: 20px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px; text-transform: uppercase; font-weight: 700; white-space: nowrap; }
         .sidebar-title:first-child { margin-top: 0; }
-        .color-picker-container { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; background: var(--input-bg); padding: 5px 10px; border-radius: 4px; border: 1px solid var(--border-color); width: fit-content; transition: all 0.3s; }
+        
+        .color-picker-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: var(--input-bg); padding: 5px 10px; border-radius: 4px; border: 1px solid var(--border-color); width: fit-content; transition: all 0.3s; }
         .sidebar.collapsed .color-picker-container { width: 100%; justify-content: center; padding: 5px; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 24px; height: 24px; cursor: pointer; background: none; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border-color); }
+
+        .control-btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 20px; }
+        .control-btn { background: var(--btn-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; font-family: 'Rajdhani'; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
+        .control-btn:hover { border-color: var(--accent-color); background: rgba(0, 255, 204, 0.2); }
+        .control-btn:active { transform: translateY(1px); }
+        .sidebar.collapsed .control-btn { padding: 8px 0; }
+
         .tool-item { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 15px; margin-bottom: 10px; cursor: grab; transition: all 0.2s; display: flex; align-items: center; gap: 15px; white-space: nowrap; }
         .tool-item:hover { border-color: var(--accent-color); box-shadow: var(--shadow-glow); background: rgba(255,255,255,0.08); }
         .tool-preview { width: 30px; height: 30px; border: 2px solid var(--text-primary); background: rgba(0, 255, 204, 0.1); flex-shrink: 0; }
         .tool-preview.clock-icon { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border-color: var(--handle-color); }
         .tool-preview.icon-only { display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        
         .stock-selector { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         .stock-selector label { font-size: 12px; color: var(--text-secondary); margin-bottom: -5px; }
         .stock-selector select, .stock-selector input { background: var(--input-bg); color: var(--input-text); border: 1px solid var(--border-color); padding: 10px; border-radius: 4px; outline: none; font-weight: 500; transition: background 0.3s, color 0.3s, border 0.3s; width: 100%; }
@@ -89,7 +101,8 @@
         .stock-price-large.up { color: var(--stock-up); }
         .stock-price-large.down { color: var(--stock-down); }
         .stock-chart { flex: 1; width: 100%; min-height: 0; opacity: 0.9; }
-        .clock-layout { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--text-primary); pointer-events: none; }
+        .clock-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--text-primary); pointer-events: none; }
+        .clock-city { margin-top: 5px; font-size: 0.3em; opacity: 0.7; text-transform: uppercase; }
         .news-layout { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 10px; overflow-y: auto; overflow-x: hidden; user-select: text; cursor: default; }
         .news-header { font-weight: bold; font-size: 1.1em; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; margin-bottom: 10px; color: var(--text-primary); cursor: move; }
         .news-card { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 10px; margin-bottom: 10px; border-radius: 4px; }
@@ -111,7 +124,6 @@
         .chat-send-btn { background: var(--accent-color); color: #000; border: none; padding: 0 10px; cursor: pointer; font-weight: bold; font-family: 'Orbitron'; font-size: 0.8em; }
         .chat-send-btn:hover { opacity: 0.8; }
         
-        /* Calculator Styles */
         .calc-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; }
         .calc-header { padding: 5px 10px; font-size: 0.8em; opacity: 0.7; border-bottom: 1px solid var(--border-color); cursor: move; }
         .calc-display { flex: 1; background: rgba(0,0,0,0.3); color: var(--text-primary); font-family: 'Orbitron'; font-size: 1.5em; text-align: right; padding: 10px; display: flex; align-items: flex-end; justify-content: flex-end; overflow: hidden; }
@@ -121,7 +133,6 @@
         .calc-key.op { color: var(--accent-color); font-weight: bold; }
         .calc-key.eq { background: var(--accent-color); color: #000; }
         
-        /* Note Styles */
         .note-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; }
         .note-header { padding: 5px 10px; font-size: 0.8em; opacity: 0.7; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.2); cursor: move; display: flex; justify-content: space-between; }
         .note-content { flex: 1; background: transparent; border: none; color: var(--text-primary); padding: 10px; font-family: 'Rajdhani'; font-size: 1em; overflow-y: auto; outline: none; white-space: pre-wrap; }
@@ -129,6 +140,18 @@
         .note-btn { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; font-family: 'Rajdhani'; padding: 2px 8px; font-size: 0.8em; }
         .note-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
         .note-select { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); font-family: 'Rajdhani'; font-size: 0.8em; cursor: pointer; }
+
+        /* System Monitor Styles */
+        .sys-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; overflow: hidden; }
+        .sys-header { padding: 5px 10px; font-size: 0.8em; opacity: 0.7; border-bottom: 1px solid var(--border-color); cursor: move; }
+        .sys-content { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 10px; font-family: 'Orbitron'; font-size: 0.8em; }
+        .sys-row { display: flex; align-items: center; gap: 10px; }
+        .sys-label { width: 40px; }
+        .sys-bar-container { flex: 1; height: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); position: relative; }
+        .sys-bar { height: 100%; background: var(--accent-color); transition: width 0.5s; }
+        .sys-val { width: 30px; text-align: right; }
+        .sys-graph-container { flex: 1; border: 1px solid var(--border-color); position: relative; overflow: hidden; background: rgba(0,0,0,0.2); }
+        .sys-canvas { width: 100%; height: 100%; display: block; }
 
         .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
         .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
@@ -140,6 +163,10 @@
         .context-menu-item:hover { background: rgba(255,255,255,0.1); }
         .context-menu-item:last-child { border-bottom: none; }
         .context-menu-item.danger:hover { background: rgba(255,255,255,0.1); color: var(--error-color); }
+        
+        .context-menu-item .submenu { display: none; position: absolute; right: 100%; top: 0; background: var(--bg-panel); border: 1px solid var(--border-color); min-width: 120px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+        .context-menu-item:hover .submenu { display: block; }
+
         .chart-path { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
         .chart-area { fill-opacity: 0.2; stroke: none; }
         .up .chart-path { stroke: var(--stock-up); }
@@ -176,6 +203,7 @@
             <div class="tool-item" draggable="true" id="tool-chat"><div class="tool-preview icon-only">🤖</div><span>LLM Chat</span></div>
             <div class="tool-item" draggable="true" id="tool-calc"><div class="tool-preview icon-only">🧮</div><span>Calculator</span></div>
             <div class="tool-item" draggable="true" id="tool-note"><div class="tool-preview icon-only">📝</div><span>Notes</span></div>
+            <div class="tool-item" draggable="true" id="tool-sys"><div class="tool-preview icon-only">📊</div><span>System Mon</span></div>
             <div class="sidebar-title">Stock Indicators</div>
             <div class="stock-selector">
                 <label>Asset Class:</label>
@@ -192,13 +220,17 @@
             <div class="stock-drag-item" draggable="true" id="stockDraggable">
                 <div style="display:flex; flex-direction:column;"><span id="selectedStockName" style="font-weight:bold; font-size:1rem;">AAPL Apple</span><span style="font-size:0.8rem; opacity:0.7;">Drag to Grid</span></div>
                 <span id="selectedStockPrice" style="display:flex; flex-direction:column; align-items:end;">
-                    <!-- Placeholders for targeted updates -->
                     <div id="preview-price" style="font-size:1.2rem; font-weight:bold; color:var(--stock-up);">175.00</div>
                     <div id="preview-change" style="font-size:0.6em; color:var(--stock-up);">▲ 1.20</div>
                 </span>
             </div>
             <div style="margin-top: auto;"></div>
             <div class="sidebar-title">Controls</div>
+            <div class="control-btn-group">
+                <button class="control-btn" onclick="saveLayout()">💾 SAVE</button>
+                <button class="control-btn" onclick="loadLayout()">📂 LOAD</button>
+                <button class="control-btn" onclick="clearGrid()">🗑️ CLEAR</button>
+            </div>
             <div class="color-picker-container"><input type="color" id="colorPicker" value="#007bff"><span id="colorValue" style="font-size: 12px; opacity: 0.8;">#007bff</span></div>
             <div class="sidebar-footer"><span style="font-size: 12px;">THEME MODE</span><label class="switch"><input type="checkbox" id="themeSwitch"><span class="slider"></span></label></div>
         </div>
@@ -301,11 +333,9 @@
         function updateLocalCryptoData(symbol, price, change) {
             if (symbol && mockStockData[symbol]) {
                 const data = mockStockData[symbol];
-                // If first time or drastic change (reconnection), regen history
                 if (data.history.length === 0 || Math.abs(data.price - price) / (data.price || 1) > 0.5) {
                     data.history = generateHistory(price, 60);
                 } else {
-                    // Smooth update
                     let last = data.history[data.history.length - 1];
                     last.close = price; last.high = Math.max(last.high, price); last.low = Math.min(last.low, price);
                     if (Math.random() > 0.9) { data.history.push({open: price, high: price, low: price, close: price}); if(data.history.length > 100) data.history.shift(); }
@@ -317,7 +347,6 @@
         function simulateMarket() {
             Object.keys(mockStockData).forEach(symbol => {
                 const data = mockStockData[symbol];
-                // Only simulate stocks/indices. NEVER simulate crypto.
                 if (!data.isCrypto) {
                     const change = (Math.random() - 0.5) * (data.price * 0.005), newPrice = data.price + change;
                     let last = data.history[data.history.length - 1];
@@ -327,59 +356,42 @@
                 }
             });
             
-            // Update Sidebar Preview (Targeted DOM update)
             if (currentStock.symbol && mockStockData[currentStock.symbol]) updateSidebarPreview(mockStockData[currentStock.symbol]);
 
-            // Update Grid Items
             items.forEach(item => {
                 if(item.type === 'stock' && item.stockData) {
                     const symbol = item.stockData.symbol;
                     if(mockStockData[symbol]) {
-                        // Sync data from source of truth
                         item.stockData.price = mockStockData[symbol].price; 
                         item.stockData.change = mockStockData[symbol].change; 
                         item.stockData.history = mockStockData[symbol].history;
-                        // Targeted re-render
                         renderStockContent(item);
                     }
                 } else if (item.type === 'clock') renderClockContent(item);
+                else if (item.type === 'sys') renderSysContent(item);
             });
         }
 
         function updateSidebarPreview(stock) {
             selectedStockName.innerText = `${stock.symbol} ${stock.name}`;
-            
             const pPrice = document.getElementById('preview-price');
             const pChange = document.getElementById('preview-change');
-            
             if (stock.isCrypto && !cryptoDataAvailable) {
-                pPrice.innerText = "No Data";
-                pChange.innerText = "Temporarily Unavailable";
-                pPrice.style.color = 'var(--text-secondary)';
-                pChange.style.color = 'var(--text-secondary)';
+                pPrice.innerText = "No Data"; pChange.innerText = "Temporarily Unavailable"; pPrice.style.color = 'var(--text-secondary)'; pChange.style.color = 'var(--text-secondary)';
             } else {
                 const isUp = stock.change >= 0;
                 const suffix = stock.isCrypto ? '%' : '';
                 const liveTag = (stock.isCrypto && cryptoDataAvailable) ? ' [LIVE]' : '';
-                
-                pPrice.innerText = `${stock.price.toFixed(2)}${liveTag}`;
-                pPrice.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
-                
-                pChange.innerText = `${isUp ? '▲' : '▼'} ${Math.abs(stock.change).toFixed(2)}${suffix}`;
-                pChange.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
+                pPrice.innerText = `${stock.price.toFixed(2)}${liveTag}`; pPrice.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
+                pChange.innerText = `${isUp ? '▲' : '▼'} ${Math.abs(stock.change).toFixed(2)}${suffix}`; pChange.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
             }
-            currentStock = stock; // Sync reference
+            currentStock = stock; 
         }
 
         function populateStockList(category) {
             stockList.innerHTML = ''; const list = stockCategories[category] || [];
             list.forEach(item => { const opt = document.createElement('option'); opt.value = item.s; opt.innerText = `${item.s} ${item.n}`; stockList.appendChild(opt); });
-            if(list.length > 0) { 
-                stockList.value = list[0].s; 
-                currentStock.symbol = list[0].s; 
-                // Force initial update
-                updateSidebarPreview(mockStockData[list[0].s]); 
-            }
+            if(list.length > 0) { stockList.value = list[0].s; currentStock.symbol = list[0].s; updateSidebarPreview(mockStockData[list[0].s]); }
         }
 
         categoryList.addEventListener('change', (e) => populateStockList(e.target.value)); populateStockList('US');
@@ -395,6 +407,66 @@
         colorPicker.addEventListener('input', (e) => { activeColor = e.target.value; colorValue.innerText = activeColor; document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D'; document.querySelector('.tool-preview').style.borderColor = activeColor; });
         document.querySelector('.sidebar-footer').addEventListener('click', (e) => { if (isSidebarCollapsed && e.target === document.querySelector('.sidebar-footer')) themeSwitch.click(); });
 
+        // Save/Load Logic
+        function saveLayout() {
+            const layoutData = items.map(i => {
+                const el = document.getElementById(i.id);
+                // Save note content specifically
+                let noteContent = '';
+                if(i.type === 'note') {
+                    const contentDiv = el.querySelector('.note-content');
+                    if(contentDiv) noteContent = contentDiv.innerHTML;
+                }
+                return {
+                    type: i.type,
+                    x: i.x, y: i.y, w: i.w, h: i.h,
+                    stockSymbol: i.stockData ? i.stockData.symbol : null,
+                    viewMode: i.viewMode, timeRange: i.timeRange, showTime: i.showTime,
+                    timeZone: i.timeZone, cityLabel: i.cityLabel,
+                    noteContent: noteContent
+                };
+            });
+            localStorage.setItem('brooklyn_layout', JSON.stringify(layoutData));
+            alert('Layout Saved!');
+        }
+
+        function loadLayout() {
+            const saved = localStorage.getItem('brooklyn_layout');
+            if(!saved) { alert('No saved layout found.'); return; }
+            clearGrid();
+            const layoutData = JSON.parse(saved);
+            layoutData.forEach(data => {
+                let color = '#007bff'; // Default blue
+                if(data.type === 'clock' || data.type === 'news' || data.type === 'chat' || data.type === 'calc' || data.type === 'note' || data.type === 'sys') color = '#ffffff';
+                
+                const newItem = createItem(data.x, data.y, data.w, data.h, color, data.type);
+                // Restore State
+                if(data.type === 'stock' && data.stockSymbol && mockStockData[data.stockSymbol]) {
+                    newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[data.stockSymbol]));
+                    newItem.obj.viewMode = data.viewMode;
+                    newItem.obj.timeRange = data.timeRange;
+                    newItem.obj.showTime = data.showTime;
+                    renderStockContent(newItem.obj);
+                } else if (data.type === 'clock') {
+                    newItem.obj.timeZone = data.timeZone;
+                    newItem.obj.cityLabel = data.cityLabel;
+                    renderClockContent(newItem.obj);
+                } else if (data.type === 'note') {
+                    const el = document.getElementById(newItem.obj.id);
+                    const contentDiv = el.querySelector('.note-content');
+                    if(contentDiv && data.noteContent) contentDiv.innerHTML = data.noteContent;
+                }
+            });
+        }
+
+        function clearGrid() {
+            items.forEach(i => {
+                const el = document.getElementById(i.id);
+                if(el) el.remove();
+            });
+            items = [];
+        }
+
         // Drag Listeners
         document.getElementById('tool-square').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'shape'));
         document.getElementById('tool-clock').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'clock'));
@@ -402,6 +474,7 @@
         document.getElementById('tool-chat').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'chat'));
         document.getElementById('tool-calc').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'calc'));
         document.getElementById('tool-note').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'note'));
+        document.getElementById('tool-sys').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'sys'));
         stockDraggable.addEventListener('dragstart', (e) => { e.dataTransfer.setData('type', 'stock'); e.dataTransfer.setData('symbol', currentStock.symbol); });
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
         gridCanvas.addEventListener('drop', (e) => {
@@ -412,6 +485,7 @@
             else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
             else if (type === 'calc') { if(!checkCollision({x, y, w: 200, h: 300})) createItem(x, y, 200, 300, '#ffffff', 'calc'); }
             else if (type === 'note') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, '#ffffff', 'note'); }
+            else if (type === 'sys') { if(!checkCollision({x, y, w: 300, h: 200})) createItem(x, y, 300, 200, '#ffffff', 'sys'); }
             else if (type === 'stock') {
                 const symbol = e.dataTransfer.getData('symbol');
                 if(!checkCollision({x, y, w: 300, h: 200})) { const newItem = createItem(x, y, 300, 200, activeColor, 'stock'); if(mockStockData[symbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[symbol])); renderStockContent(newItem.obj); } }
@@ -428,16 +502,32 @@
                 ['K 線圖 (1W)', 'K 線圖 (1M)', 'K 線圖 (3M)'].forEach((label, idx) => { const itemBtn = document.createElement('div'); itemBtn.className = 'context-menu-item'; itemBtn.innerText = label; itemBtn.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.viewMode = 'candle'; obj.timeRange = idx === 0 ? '1W' : idx === 1 ? '1M' : '3M'; renderStockContent(obj); } menu.classList.remove('show'); }; menu.insertBefore(itemBtn, removeBtn); });
                 const lineBtn = document.createElement('div'); lineBtn.className = 'context-menu-item'; lineBtn.innerText = '即時走勢 (Live Trend)'; lineBtn.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.viewMode = 'line'; renderStockContent(obj); } menu.classList.remove('show'); }; menu.insertBefore(lineBtn, removeBtn);
             }
+            // Clock Context Menu
+            if (type === 'clock') {
+                const menu = el.querySelector('.context-menu'); const removeBtn = menu.querySelector('.context-menu-item');
+                const worldBtn = document.createElement('div'); worldBtn.className = 'context-menu-item'; worldBtn.innerHTML = '世界時鐘 (World Clock) <div class="submenu"></div>';
+                const submenu = document.createElement('div'); submenu.className = 'submenu'; worldBtn.appendChild(submenu);
+                const zones = [{ label: '本地時間 (Local)', tz: 'local', display: 'LOCAL' }, { label: '紐約 (New York)', tz: 'America/New_York', display: 'NEW YORK' }, { label: '倫敦 (London)', tz: 'Europe/London', display: 'LONDON' }, { label: '東京 (Tokyo)', tz: 'Asia/Tokyo', display: 'TOKYO' }, { label: '台北 (Taipei)', tz: 'Asia/Taipei', display: 'TAIPEI' }, { label: '雪梨 (Sydney)', tz: 'Australia/Sydney', display: 'SYDNEY' }];
+                zones.forEach(z => { const subItem = document.createElement('div'); subItem.className = 'context-menu-item'; subItem.innerText = z.label; subItem.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.timeZone = z.tz; obj.cityLabel = z.display; renderClockContent(obj); } menu.classList.remove('show'); }; submenu.appendChild(subItem); });
+                menu.insertBefore(worldBtn, removeBtn);
+            }
+
             const trigger = el.querySelector('.menu-trigger'), menu = el.querySelector('.context-menu'); trigger.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); menu.classList.toggle('show'); };
             gridCanvas.appendChild(el);
-            const itemObj = { id, x, y, w, h, el, type, stockData: null, showTime: false, viewMode: 'line', timeRange: '1M' }; items.push(itemObj);
+            const itemObj = { id, x, y, w, h, el, type, stockData: null, showTime: false, viewMode: 'line', timeRange: '1M', timeZone: 'local', cityLabel: 'LOCAL' }; items.push(itemObj);
             if (type === 'clock') renderClockContent(itemObj); if (type === 'news') renderNewsContent(itemObj); if (type === 'chat') renderChatContent(itemObj);
-            if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj);
+            if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj); if (type === 'sys') renderSysContent(itemObj);
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
         }
 
         function deleteItem(id) { const idx = items.findIndex(i => i.id === id); if (idx > -1) { items[idx].el.remove(); items.splice(idx, 1); } }
-        function renderClockContent(item) { const container = item.el.querySelector('.content-container'), now = new Date(), fontSize = item.w / 6.5; container.innerHTML = `<div class="clock-layout" style="font-size:${fontSize}px">${now.toLocaleTimeString('en-US', { hour12: false })}</div>`; }
+        function renderClockContent(item) { 
+            const container = item.el.querySelector('.content-container'); const now = new Date(); let timeStr;
+            if (!item.timeZone || item.timeZone === 'local') { timeStr = now.toLocaleTimeString('en-US', { hour12: false }); } 
+            else { try { timeStr = now.toLocaleTimeString('en-US', { hour12: false, timeZone: item.timeZone }); } catch(e) { timeStr = "Invalid TZ"; } }
+            const fontSize = item.w / 5; const adjustedFontSize = item.timeZone && item.timeZone !== 'local' ? fontSize * 0.8 : fontSize; const labelSize = adjustedFontSize * 0.3;
+            container.innerHTML = `<div class="clock-layout"><div style="font-size:${adjustedFontSize}px; line-height: 1;">${timeStr}</div><div class="clock-city" style="font-size:${labelSize}px;">${item.cityLabel || 'LOCAL'}</div></div>`; 
+        }
         function renderNewsContent(item) { const container = item.el.querySelector('.content-container'); if(container.querySelector('.news-layout')) return; let newsHTML = `<div class="news-layout"><div class="news-header widget-header">最新動態 (Market)</div>`; mockNews.forEach(news => { newsHTML += `<div class="news-card"><div class="news-meta"><span>${news.source}</span> • <span>${news.time}</span></div><div class="news-title">${news.title}</div><div class="news-summary">${news.summary}</div></div>`; }); newsHTML += `</div>`; container.innerHTML = newsHTML; }
         function renderChatContent(item) {
             const container = item.el.querySelector('.content-container'); if(container.querySelector('.chat-layout')) return;
@@ -450,132 +540,90 @@
             const container = item.el.querySelector('.content-container'); if(container.querySelector('.calc-layout')) return;
             container.innerHTML = `<div class="calc-layout"><div class="calc-header widget-header">CALC-8000</div><div class="calc-display" id="disp-${item.id}">0</div><div class="calc-keys" id="keys-${item.id}"></div></div>`;
             const display = container.querySelector(`#disp-${item.id}`), keysContainer = container.querySelector(`#keys-${item.id}`);
-            const keys = ['7','8','9','/','4','5','6','*','1','2','3','-','C','0','=','+'];
-            let currentExp = '';
+            const keys = ['7','8','9','/','4','5','6','*','1','2','3','-','C','0','=','+']; let currentExp = '';
             keys.forEach(k => {
-                const btn = document.createElement('button'); btn.className = 'calc-key'; btn.innerText = k;
-                if(['/','*','-','+'].includes(k)) btn.classList.add('op'); if(k === '=') btn.classList.add('eq');
-                btn.onclick = (e) => {
-                    e.stopPropagation();
-                    if(k === 'C') { currentExp = ''; display.innerText = '0'; }
-                    else if(k === '=') { try { display.innerText = eval(currentExp) || '0'; currentExp = display.innerText; } catch { display.innerText = 'ERR'; currentExp = ''; } }
-                    else { currentExp += k; display.innerText = currentExp; }
-                };
-                keysContainer.appendChild(btn);
+                const btn = document.createElement('button'); btn.className = 'calc-key'; btn.innerText = k; if(['/','*','-','+'].includes(k)) btn.classList.add('op'); if(k === '=') btn.classList.add('eq');
+                btn.onclick = (e) => { e.stopPropagation(); if(k === 'C') { currentExp = ''; display.innerText = '0'; } else if(k === '=') { try { display.innerText = eval(currentExp) || '0'; currentExp = display.innerText; } catch { display.innerText = 'ERR'; currentExp = ''; } } else { currentExp += k; display.innerText = currentExp; } }; keysContainer.appendChild(btn);
             });
         }
         function renderNoteContent(item) {
             const container = item.el.querySelector('.content-container'); if(container.querySelector('.note-layout')) return;
-            container.innerHTML = `<div class="note-layout">
-                <div class="note-header widget-header"><span>NOTES</span></div>
-                <div class="note-toolbar">
-                    <button class="note-btn" data-cmd="bold"><b>B</b></button>
-                    <button class="note-btn" data-cmd="italic"><i>I</i></button>
-                    <select class="note-select" data-cmd="fontSize">
-                        <option value="1">Tiny</option>
-                        <option value="3" selected>Normal</option>
-                        <option value="5">Large</option>
-                        <option value="7">Huge</option>
-                    </select>
-                </div>
-                <div class="note-content" contenteditable="true"></div>
-            </div>`;
-            
-            const toolbar = container.querySelector('.note-toolbar');
-            const content = container.querySelector('.note-content');
-            
-            // Prevent drag
-            toolbar.addEventListener('mousedown', e => e.stopPropagation());
-            content.addEventListener('mousedown', e => e.stopPropagation());
+            container.innerHTML = `<div class="note-layout"><div class="note-header widget-header"><span>NOTES</span></div><div class="note-toolbar"><button class="note-btn" data-cmd="bold"><b>B</b></button><button class="note-btn" data-cmd="italic"><i>I</i></button><select class="note-select" data-cmd="fontSize"><option value="1">Tiny</option><option value="3" selected>Normal</option><option value="5">Large</option><option value="7">Huge</option></select></div><div class="note-content" contenteditable="true"></div></div>`;
+            const toolbar = container.querySelector('.note-toolbar'), content = container.querySelector('.note-content');
+            toolbar.addEventListener('mousedown', e => e.stopPropagation()); content.addEventListener('mousedown', e => e.stopPropagation());
+            toolbar.addEventListener('click', (e) => { if(e.target.classList.contains('note-btn') || e.target.parentElement.classList.contains('note-btn')) { const btn = e.target.classList.contains('note-btn') ? e.target : e.target.parentElement; document.execCommand(btn.dataset.cmd, false, null); content.focus(); }});
+            toolbar.querySelector('.note-select').addEventListener('change', (e) => { document.execCommand('fontSize', false, e.target.value); content.focus(); });
+        }
+        function renderSysContent(item) {
+            const container = item.el.querySelector('.content-container'); 
+            // Update values continuously
+            const cpu = Math.floor(Math.random() * 100);
+            const ram = Math.floor(Math.random() * 100);
+            const net = Math.floor(Math.random() * 500);
 
-            // Toolbar Logic
-            toolbar.addEventListener('click', (e) => {
-                if(e.target.classList.contains('note-btn') || e.target.parentElement.classList.contains('note-btn')) {
-                    const btn = e.target.classList.contains('note-btn') ? e.target : e.target.parentElement;
-                    const cmd = btn.dataset.cmd;
-                    document.execCommand(cmd, false, null);
-                    content.focus(); // Keep focus
+            let layout = container.querySelector('.sys-layout');
+            if(!layout) {
+                container.innerHTML = `<div class="sys-layout"><div class="sys-header widget-header">SYSTEM MON</div><div class="sys-content">
+                <div class="sys-row"><div class="sys-label">CPU</div><div class="sys-bar-container"><div class="sys-bar" id="bar-cpu-${item.id}" style="width:0%"></div></div><div class="sys-val" id="val-cpu-${item.id}">0%</div></div>
+                <div class="sys-row"><div class="sys-label">RAM</div><div class="sys-bar-container"><div class="sys-bar" id="bar-ram-${item.id}" style="width:0%"></div></div><div class="sys-val" id="val-ram-${item.id}">0%</div></div>
+                <div class="sys-row"><div class="sys-label">NET</div><div class="sys-graph-container" id="graph-net-${item.id}"><canvas class="sys-canvas"></canvas></div><div class="sys-val" id="val-net-${item.id}">0ms</div></div>
+                </div></div>`;
+                layout = container.querySelector('.sys-layout');
+            }
+            
+            // Update DOM
+            container.querySelector(`#bar-cpu-${item.id}`).style.width = `${cpu}%`;
+            container.querySelector(`#val-cpu-${item.id}`).innerText = `${cpu}%`;
+            container.querySelector(`#bar-ram-${item.id}`).style.width = `${ram}%`;
+            container.querySelector(`#val-ram-${item.id}`).innerText = `${ram}%`;
+            container.querySelector(`#val-net-${item.id}`).innerText = `${net}ms`;
+            
+            // Draw simple graph for NET
+            const canvas = container.querySelector('canvas');
+            if(canvas) {
+                canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                // Random wave
+                for(let i=0; i<canvas.width; i+=10) {
+                    const y = Math.random() * canvas.height;
+                    if(i===0) ctx.moveTo(i, y); else ctx.lineTo(i, y);
                 }
-            });
-
-            toolbar.querySelector('.note-select').addEventListener('change', (e) => {
-                document.execCommand('fontSize', false, e.target.value);
-                content.focus();
-            });
+                ctx.stroke();
+            }
         }
 
         function renderStockContent(item) {
             if (!item.stockData) return;
             const container = item.el.querySelector('.content-container'), data = item.stockData;
-            
-            // --- Targeted DOM Update Implementation ---
-            // Instead of replacing innerHTML every time, check if structure exists
             let layout = container.querySelector('.stock-layout');
             if (!layout) {
-                // Initial Render
-                const isUp = data.change >= 0;
-                const trendClass = isUp ? 'up' : 'down';
+                const isUp = data.change >= 0; const trendClass = isUp ? 'up' : 'down';
                 const updateTimeHtml = item.showTime ? `<div class="stock-footer-info" id="time-${item.id}">Last: ${new Date().toLocaleTimeString()}</div>` : '';
                 container.innerHTML = `<div class="stock-layout ${trendClass}" id="layout-${item.id}"><div class="stock-header"><span>${data.symbol} ${data.name}</span><span id="change-${item.id}" style="font-size:0.8em">${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}</span></div><div class="stock-price-large ${trendClass}" id="price-${item.id}">${data.price.toFixed(2)}</div><svg class="stock-chart" id="chart-${item.id}" preserveAspectRatio="none" viewBox="0 0 ${item.w} ${item.h*0.4 + 20}"></svg>${updateTimeHtml}</div>`;
                 layout = container.querySelector('.stock-layout');
             }
-
-            // Check No Data state for Crypto
             if (data.isCrypto && !cryptoDataAvailable) {
-                const priceEl = container.querySelector(`#price-${item.id}`);
-                if(priceEl) {
-                    priceEl.innerText = "暫時無資訊";
-                    priceEl.style.fontSize = "1.2em";
-                    priceEl.style.color = "var(--text-secondary)";
-                }
-                const changeEl = container.querySelector(`#change-${item.id}`);
-                if(changeEl) changeEl.innerText = "";
-                const chartEl = container.querySelector(`#chart-${item.id}`);
-                if(chartEl) chartEl.innerHTML = ""; // Clear chart
+                const priceEl = container.querySelector(`#price-${item.id}`); if(priceEl) { priceEl.innerText = "暫時無資訊"; priceEl.style.fontSize = "1.2em"; priceEl.style.color = "var(--text-secondary)"; }
+                const changeEl = container.querySelector(`#change-${item.id}`); if(changeEl) changeEl.innerText = "";
+                const chartEl = container.querySelector(`#chart-${item.id}`); if(chartEl) chartEl.innerHTML = ""; 
                 return;
             }
-
-            // Normal Update
-            const isUp = data.change >= 0;
-            const trendClass = isUp ? 'up' : 'down';
-            
-            // Update classes
+            const isUp = data.change >= 0, trendClass = isUp ? 'up' : 'down';
             layout.className = `stock-layout ${trendClass}`;
-            const priceEl = container.querySelector(`#price-${item.id}`);
-            if(priceEl) {
-                priceEl.className = `stock-price-large ${trendClass}`;
-                priceEl.innerText = data.price.toFixed(2);
-                priceEl.style.fontSize = ""; // Reset if previously No Data
-            }
-            const changeEl = container.querySelector(`#change-${item.id}`);
-            if(changeEl) changeEl.innerText = `${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}${data.isCrypto?'%':''}`;
-
-            // Re-draw Chart (SVG requires redraw)
+            const priceEl = container.querySelector(`#price-${item.id}`); if(priceEl) { priceEl.className = `stock-price-large ${trendClass}`; priceEl.innerText = data.price.toFixed(2); priceEl.style.fontSize = ""; }
+            const changeEl = container.querySelector(`#change-${item.id}`); if(changeEl) changeEl.innerText = `${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}${data.isCrypto?'%':''}`;
             const chartEl = container.querySelector(`#chart-${item.id}`);
             if(chartEl) {
                 let chartSVG = '', xAxisLabels = '', displayHistory = data.history;
-                if (item.viewMode === 'candle') {
-                    const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50; displayHistory = data.history.slice(-count);
-                    chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4); xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange);
-                } else {
-                    const prices = data.history.map(d => d.close), pathD = generateSparkline(prices, item.w, item.h * 0.4);
-                    chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`;
-                }
-                chartEl.innerHTML = chartSVG + xAxisLabels;
-                chartEl.setAttribute('viewBox', `0 0 ${item.w} ${item.h*0.4 + 20}`);
+                if (item.viewMode === 'candle') { const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50; displayHistory = data.history.slice(-count); chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4); xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange); } 
+                else { const prices = data.history.map(d => d.close), pathD = generateSparkline(prices, item.w, item.h * 0.4); chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`; }
+                chartEl.innerHTML = chartSVG + xAxisLabels; chartEl.setAttribute('viewBox', `0 0 ${item.w} ${item.h*0.4 + 20}`);
             }
-            
-            // Update time if exists
             const timeEl = container.querySelector(`#time-${item.id}`);
-            if(timeEl) timeEl.innerText = `Last: ${new Date().toLocaleTimeString()}`;
-            else if(item.showTime) {
-                 // Handle case where toggled on
-                 const footer = document.createElement('div');
-                 footer.className = "stock-footer-info";
-                 footer.id = `time-${item.id}`;
-                 footer.innerText = `Last: ${new Date().toLocaleTimeString()}`;
-                 layout.appendChild(footer);
-            }
+            if(timeEl) timeEl.innerText = `Last: ${new Date().toLocaleTimeString()}`; else if(item.showTime) { const footer = document.createElement('div'); footer.className = "stock-footer-info"; footer.id = `time-${item.id}`; footer.innerText = `Last: ${new Date().toLocaleTimeString()}`; layout.appendChild(footer); }
         }
 
         function generateSparkline(data, w, h) {
@@ -595,7 +643,7 @@
         function setupInteractions(item) {
             const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
             el.addEventListener('mousedown', (e) => {
-                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION'].includes(e.target.tagName)) return; if (['news', 'chat', 'calc', 'note'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION'].includes(e.target.tagName)) return; if (['news', 'chat', 'calc', 'note', 'sys'].includes(item.type) && !e.target.closest('.widget-header')) return;
                 e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
                 function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY); if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); else el.classList.remove('collision'); }
                 function onUp(ev) { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); el.style.zIndex = ''; const finalX = snap(parseInt(el.style.left)), finalY = snap(parseInt(el.style.top)); if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; } else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; } el.classList.remove('collision'); }
