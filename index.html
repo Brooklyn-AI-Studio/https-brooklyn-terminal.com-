@@ -213,6 +213,23 @@
         }
         .nav-btn:hover { background: rgba(255,255,255,0.1); }
 
+        /* Weather Layout Styles */
+        .weather-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; color: var(--text-primary); position: relative; }
+        .weather-header { 
+            padding: 5px 10px; font-size: 0.8em; border-bottom: 1px solid var(--border-color); 
+            background: rgba(0,0,0,0.2); cursor: move; display: flex; justify-content: space-between; align-items: center; 
+        }
+        .weather-main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .weather-temp { font-size: 3em; font-weight: 900; line-height: 1; margin: 5px 0; }
+        .weather-icon { font-size: 4em; margin-bottom: 5px; filter: drop-shadow(0 0 10px var(--accent-color)); }
+        .weather-condition { font-size: 1em; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; margin-bottom: 10px; }
+        .weather-details { display: grid; grid-template-columns: 1fr 1fr; width: 80%; gap: 5px; border-top: 1px solid var(--border-color); padding-top: 10px; }
+        .weather-detail-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7em; }
+        .weather-detail-label { opacity: 0.6; margin-bottom: 2px; }
+        .weather-input-container { position: absolute; bottom: 5px; right: 5px; opacity: 0; transition: opacity 0.3s; width: 120px; }
+        .weather-layout:hover .weather-input-container { opacity: 1; }
+        .weather-city-input { width: 100%; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 2px 5px; font-size: 0.7em; text-align: center; border-radius: var(--border-radius); outline: none; }
+        
         .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
         .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
         .grid-item:hover .menu-trigger { opacity: 1; }
@@ -267,7 +284,7 @@
                     <span>Library</span><span class="arrow">▼</span>
                 </div>
                 <div class="sidebar-content-wrapper">
-                     <div class="tool-item" draggable="true" id="tool-square"><div class="tool-preview" style="background-color: rgba(0,123,255,0.3);"></div><span>Module 10x10</span></div>
+                      <div class="tool-item" draggable="true" id="tool-square"><div class="tool-preview" style="background-color: rgba(0,123,255,0.3);"></div><span>Module 10x10</span></div>
                 </div>
             </div>
 
@@ -277,6 +294,7 @@
                 </div>
                 <div class="sidebar-content-wrapper">
                     <div class="tool-item" draggable="true" id="tool-clock"><div class="tool-preview clock-icon">🕓</div><span>Digital Clock</span></div>
+                    <div class="tool-item" draggable="true" id="tool-weather"><div class="tool-preview icon-only">☁️</div><span>Weather Station</span></div>
                     <div class="tool-item" draggable="true" id="tool-news"><div class="tool-preview icon-only">📰</div><span>Market</span></div>
                     <div class="tool-item" draggable="true" id="tool-chat"><div class="tool-preview icon-only">🤖</div><span>LLM Chat</span></div>
                     <div class="tool-item" draggable="true" id="tool-calc"><div class="tool-preview icon-only">🧮</div><span>Calculator</span></div>
@@ -320,7 +338,7 @@
                     <span>Controls</span><span class="arrow">▼</span>
                 </div>
                  <div class="sidebar-content-wrapper">
-                     <div class="control-btn-group">
+                      <div class="control-btn-group">
                         <button class="control-btn" onclick="saveLayout()">💾 SAVE</button>
                         <button class="control-btn" onclick="loadLayout()">📂 LOAD</button>
                         <button class="control-btn" onclick="clearGrid()">🗑️ CLEAR</button>
@@ -509,7 +527,8 @@
                 const el = document.getElementById(i.id);
                 let noteContent = ''; if(i.type === 'note') { const contentDiv = el.querySelector('.note-content'); if(contentDiv) noteContent = contentDiv.innerHTML; }
                 let webUrl = ''; if (i.type === 'browser' || i.type === 'llama') { const iframe = el.querySelector('.browser-frame'); if (iframe) webUrl = iframe.src; }
-                return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, stockSymbol: i.stockData ? i.stockData.symbol : null, viewMode: i.viewMode, timeRange: i.timeRange, showTime: i.showTime, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent, webUrl: webUrl };
+                let weatherCity = ''; if(i.type === 'weather') weatherCity = i.cityLabel;
+                return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, stockSymbol: i.stockData ? i.stockData.symbol : null, viewMode: i.viewMode, timeRange: i.timeRange, showTime: i.showTime, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent, webUrl: webUrl, weatherCity: weatherCity };
             });
             localStorage.setItem('brooklyn_layout', JSON.stringify(layoutData)); alert('Layout Saved!');
         }
@@ -519,12 +538,13 @@
             clearGrid();
             const layoutData = JSON.parse(saved);
             layoutData.forEach(data => {
-                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama'].includes(data.type)) color = '#ffffff';
+                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama','weather'].includes(data.type)) color = '#ffffff';
                 const newItem = createItem(data.x, data.y, data.w, data.h, color, data.type);
                 if(data.type === 'stock' && data.stockSymbol && mockStockData[data.stockSymbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[data.stockSymbol])); newItem.obj.viewMode = data.viewMode; newItem.obj.timeRange = data.timeRange; newItem.obj.showTime = data.showTime; renderStockContent(newItem.obj); } 
                 else if (data.type === 'clock') { newItem.obj.timeZone = data.timeZone; newItem.obj.cityLabel = data.cityLabel; renderClockContent(newItem.obj); } 
                 else if (data.type === 'note') { const el = document.getElementById(newItem.obj.id); const contentDiv = el.querySelector('.note-content'); if(contentDiv && data.noteContent) contentDiv.innerHTML = data.noteContent; } 
                 else if ((data.type === 'browser' || data.type === 'llama') && data.webUrl) { const el = document.getElementById(newItem.obj.id); const iframe = el.querySelector('.browser-frame'); const input = el.querySelector('.browser-input'); if (iframe && input) { iframe.src = data.webUrl; input.value = data.webUrl; } }
+                else if (data.type === 'weather') { newItem.obj.cityLabel = data.weatherCity || 'Taipei'; renderWeatherContent(newItem.obj); }
             });
         }
 
@@ -532,6 +552,7 @@
 
         document.getElementById('tool-square').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'shape'));
         document.getElementById('tool-clock').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'clock'));
+        document.getElementById('tool-weather').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'weather'));
         document.getElementById('tool-news').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'news'));
         document.getElementById('tool-chat').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'chat'));
         document.getElementById('tool-calc').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'calc'));
@@ -545,6 +566,7 @@
             e.preventDefault(); const type = e.dataTransfer.getData('type'); const rect = gridCanvas.getBoundingClientRect(); const x = snap(e.clientX - rect.left); const y = snap(e.clientY - rect.top);
             if (type === 'shape') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, activeColor, 'shape'); }
             else if (type === 'clock') { if(!checkCollision({x, y, w: 200, h: 100})) createItem(x, y, 200, 100, '#ffffff', 'clock'); }
+            else if (type === 'weather') { if(!checkCollision({x, y, w: 240, h: 260})) createItem(x, y, 240, 260, '#ffffff', 'weather'); }
             else if (type === 'news') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'news'); }
             else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
             else if (type === 'calc') { if(!checkCollision({x, y, w: 200, h: 300})) createItem(x, y, 200, 300, '#ffffff', 'calc'); }
@@ -581,11 +603,101 @@
             if (type === 'clock') renderClockContent(itemObj); if (type === 'news') renderNewsContent(itemObj); if (type === 'chat') renderChatContent(itemObj);
             if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj); 
             if (type === 'browser') renderBrowserContent(itemObj);
+            if (type === 'weather') { itemObj.cityLabel = 'Taipei'; renderWeatherContent(itemObj); }
             if (type === 'llama') renderBrowserContent(itemObj, 'https://llama.online/chat', 'LLAMA ONLINE');
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
         }
 
         function deleteItem(id) { const idx = items.findIndex(i => i.id === id); if (idx > -1) { items[idx].el.remove(); items.splice(idx, 1); } }
+        
+        // --- Weather Functionality ---
+        async function fetchWeather(city) {
+            try {
+                // 1. Geocoding
+                const geoResp = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+                const geoData = await geoResp.json();
+                if(!geoData.results || geoData.results.length === 0) return null;
+                const { latitude, longitude, name } = geoData.results[0];
+
+                // 2. Weather Data
+                const weatherResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m`);
+                const weatherData = await weatherResp.json();
+                return { name, ...weatherData.current };
+            } catch(e) { console.error(e); return null; }
+        }
+
+        function getWeatherIcon(code) {
+            if (code === 0) return '☀️';
+            if (code >= 1 && code <= 3) return '☁️';
+            if (code >= 45 && code <= 48) return '🌫️';
+            if (code >= 51 && code <= 67) return '🌧️';
+            if (code >= 71 && code <= 77) return '❄️';
+            if (code >= 80 && code <= 82) return '🌧️';
+            if (code >= 95 && code <= 99) return '⛈️';
+            return '❓';
+        }
+        
+        function getWeatherDesc(code) {
+             const codes = {0: 'Clear', 1: 'Cloudy', 2: 'Cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Fog', 51: 'Drizzle', 61: 'Rain', 71: 'Snow', 95: 'Storm'};
+             return codes[code] || 'Unknown';
+        }
+
+        async function renderWeatherContent(item) {
+            const container = item.el.querySelector('.content-container');
+            if(!container.querySelector('.weather-layout')) {
+                container.innerHTML = `
+                    <div class="weather-layout">
+                        <div class="weather-header widget-header">
+                            <span id="w-city-${item.id}">LOADING...</span>
+                            <span style="font-size:0.8em; opacity:0.6;">API</span>
+                        </div>
+                        <div class="weather-main">
+                            <div class="weather-icon" id="w-icon-${item.id}">⏳</div>
+                            <div class="weather-temp" id="w-temp-${item.id}">--</div>
+                            <div class="weather-condition" id="w-cond-${item.id}">Scanning</div>
+                            <div class="weather-details">
+                                <div class="weather-detail-item"><span class="weather-detail-label">HUMIDITY</span><span id="w-hum-${item.id}">--%</span></div>
+                                <div class="weather-detail-item"><span class="weather-detail-label">WIND</span><span id="w-wind-${item.id}">-- km/h</span></div>
+                            </div>
+                            <div class="weather-input-container">
+                                <input type="text" class="weather-city-input" id="w-input-${item.id}" placeholder="Change City" value="${item.cityLabel}">
+                            </div>
+                        </div>
+                    </div>`;
+                
+                const input = container.querySelector(`#w-input-${item.id}`);
+                input.addEventListener('keypress', async (e) => {
+                    if(e.key === 'Enter') {
+                        const val = input.value.trim();
+                        if(val) {
+                            item.cityLabel = val;
+                            container.querySelector(`#w-city-${item.id}`).innerText = "SEARCHING...";
+                            await updateWeatherData(item, val);
+                        }
+                    }
+                });
+                 input.addEventListener('mousedown', e => e.stopPropagation());
+            }
+            await updateWeatherData(item, item.cityLabel);
+        }
+
+        async function updateWeatherData(item, city) {
+            const data = await fetchWeather(city);
+            const container = item.el.querySelector('.content-container');
+            if(data) {
+                container.querySelector(`#w-city-${item.id}`).innerText = data.name.toUpperCase();
+                container.querySelector(`#w-temp-${item.id}`).innerText = Math.round(data.temperature_2m) + '°';
+                container.querySelector(`#w-icon-${item.id}`).innerText = getWeatherIcon(data.weather_code);
+                container.querySelector(`#w-cond-${item.id}`).innerText = getWeatherDesc(data.weather_code);
+                container.querySelector(`#w-hum-${item.id}`).innerText = data.relative_humidity_2m + '%';
+                container.querySelector(`#w-wind-${item.id}`).innerText = data.wind_speed_10m + ' km/h';
+                item.cityLabel = data.name; // Update to official name
+            } else {
+                 container.querySelector(`#w-city-${item.id}`).innerText = "NOT FOUND";
+                 container.querySelector(`#w-cond-${item.id}`).innerText = "ERROR";
+            }
+        }
+
         function renderClockContent(item) { 
             const container = item.el.querySelector('.content-container'); const now = new Date(); let timeStr;
             if (!item.timeZone || item.timeZone === 'local') { timeStr = now.toLocaleTimeString('en-US', { hour12: false }); } 
@@ -729,7 +841,9 @@
         function setupInteractions(item) {
             const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
             el.addEventListener('mousedown', (e) => {
-                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; if (['news', 'chat', 'calc', 'note', 'browser', 'llama'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; 
+                if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; 
+                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'weather'].includes(item.type) && !e.target.closest('.widget-header')) return;
                 e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
                 function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY); if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); else el.classList.remove('collision'); }
                 function onUp(ev) { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); el.style.zIndex = ''; const finalX = snap(parseInt(el.style.left)), finalY = snap(parseInt(el.style.top)); if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; } else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; } el.classList.remove('collision'); }
@@ -737,7 +851,7 @@
             });
             resizeHandle.addEventListener('mousedown', (e) => {
                 e.stopPropagation(); e.preventDefault(); const startX = e.clientX, startY = e.clientY, startW = item.w, startH = item.h;
-                function onResize(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let nw = snap(Math.max(MIN_W, startW + dx)), nh = snap(Math.max(MIN_H, startH + dy)); if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision'); else { el.classList.remove('collision'); el.style.width = nw + 'px'; el.style.height = nh + 'px'; item.w = nw; item.h = nh; if(item.type === 'stock') renderStockContent(item); if(item.type === 'clock') renderClockContent(item); } }
+                function onResize(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let nw = snap(Math.max(MIN_W, startW + dx)), nh = snap(Math.max(MIN_H, startH + dy)); if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision'); else { el.classList.remove('collision'); el.style.width = nw + 'px'; el.style.height = nh + 'px'; item.w = nw; item.h = nh; if(item.type === 'stock') renderStockContent(item); if(item.type === 'clock') renderClockContent(item); if(item.type === 'weather') renderWeatherContent(item); } }
                 function onUp() { document.removeEventListener('mousemove', onResize); document.removeEventListener('mouseup', onUp); el.classList.remove('collision'); }
                 document.addEventListener('mousemove', onResize); document.addEventListener('mouseup', onUp);
             });
