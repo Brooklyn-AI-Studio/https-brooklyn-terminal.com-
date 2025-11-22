@@ -21,6 +21,9 @@
             --btn-bg: rgba(0, 255, 204, 0.1);
             --font-main: 'Rajdhani', 'Orbitron', sans-serif;
             --border-radius: 4px;
+            --z-base: 10;
+            --z-active: 1000;
+            --z-menu: 9999;
         }
         [data-theme="light"] {
             --bg-body: #e8eef2; --bg-panel: #ffffff; --grid-bg: #f4f7f9;
@@ -584,7 +587,38 @@
                 // Fallback logic omitted for brevity but kept existing structure in mind
             }
         }
+// --- 新增：Open-Meteo API 串接 ---
+async function fetchWeather(city) {
+    if (!city) return null;
+    try {
+        // 1. Geocoding API: 將城市名稱轉為經緯度
+        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`;
+        const geoResp = await fetch(geoUrl);
+        const geoData = await geoResp.json();
 
+        if (!geoData.results || geoData.results.length === 0) {
+            console.warn("City not found:", city);
+            return null;
+        }
+
+        const { latitude, longitude, name } = geoData.results[0];
+
+        // 2. Weather API: 取得當前與預報天氣
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
+        const weatherResp = await fetch(weatherUrl);
+        const weatherData = await weatherResp.json();
+
+        // 回傳符合 renderWeatherContent 預期的資料結構 [cite: 573]
+        return {
+            name: name,
+            current: weatherData.current,
+            daily: weatherData.daily
+        };
+    } catch (e) {
+        console.error("Weather Fetch Error:", e);
+        return null;
+    }
+}
         function simulateMarket() {
             Object.keys(mockStockData).forEach(symbol => {
                 const data = mockStockData[symbol];
@@ -739,30 +773,30 @@
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
         }
 
-        function deleteItem(id) { const idx = items.findIndex(i => i.id === id); if (idx > -1) { items[idx].el.remove(); items.splice(idx, 1); } }
+       // --- 修改：加入清除計時器的 deleteItem ---
+function deleteItem(id) {
+    const idx = items.findIndex(i => i.id === id);
+    if (idx > -1) {
+        const item = items[idx];
         
-        // --- Helper: Fetch Binance History ---
-        async function fetchBinanceHistory(symbol, interval) {
-            // Map symbol e.g. BTC-USD to BTCUSDT
-            const binanceSymbol = symbol.replace('-USD', 'USDT').replace('-', '').toUpperCase();
-            try {
-                const resp = await fetch(`https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=${interval}&limit=200`);
-                if (!resp.ok) throw new Error('Binance fetch failed');
-                const data = await resp.json();
-                // Binance format: [time, open, high, low, close, volume, ...]
-                return data.map(d => ({
-                    time: d[0],
-                    open: parseFloat(d[1]),
-                    high: parseFloat(d[2]),
-                    low: parseFloat(d[3]),
-                    close: parseFloat(d[4]),
-                    vol: parseFloat(d[5])
-                }));
-            } catch (e) {
-                console.warn("History fetch error:", e);
-                return null;
-            }
+        // 1. 清除 Finance Widget 的計時器 [cite: 559]
+        if (item.financeInterval) {
+            clearInterval(item.financeInterval);
         }
+        
+        // 2. 如果有其他 Widget 使用了自定義的 updateInterval，也可以在這裡清除
+        if (item.updateInterval) {
+            clearInterval(item.updateInterval);
+        }
+
+        // 3. 移除 DOM 並從陣列刪除
+        if (item.el && item.el.parentNode) {
+            item.el.remove();
+        }
+        items.splice(idx, 1);
+        console.log(`Item ${id} deleted and resources freed.`);
+    }
+}
 
         // --- Finance Pro Functionality (Real Crypto Only) ---
         function renderFinanceContent(item) {
@@ -1788,34 +1822,171 @@
             else for(let i=2; i>=0; i--) { const d = new Date(now); d.setMonth(d.getMonth() - i); labels.push(d.toLocaleString('default', { month: 'short' })); }
             let svg = ''; const step = w / labels.length; labels.forEach((txt, i) => svg += `<text class="axis-text" x="${i * step + step/2}" y="${y}">${txt}</text>`); return svg;
         }
-        function setupInteractions(item) {
-            const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
-            el.addEventListener('mousedown', (e) => {
-                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; 
-                if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; 
-                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews', 'finance'].includes(item.type) && !e.target.closest('.widget-header')) return;
-                if (item.type === 'finance' && !e.target.closest('.finance-header-bar')) return;
-                e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
-                function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY); if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); else el.classList.remove('collision'); }
-                function onUp(ev) { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); el.style.zIndex = ''; const finalX = snap(parseInt(el.style.left)), finalY = snap(parseInt(el.style.top)); if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; } else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; } el.classList.remove('collision'); }
-                document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
-            });
-            resizeHandle.addEventListener('mousedown', (e) => {
-                e.stopPropagation(); e.preventDefault(); const startX = e.clientX, startY = e.clientY, startW = item.w, startH = item.h;
-                function onResize(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let nw = snap(Math.max(MIN_W, startW + dx)), nh = snap(Math.max(MIN_H, startH + dy)); if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision'); else { el.classList.remove('collision'); el.style.width = nw + 'px'; el.style.height = nh + 'px'; item.w = nw; item.h = nh; 
-                    if(item.type === 'stock') renderStockContent(item); 
-                    if(item.type === 'clock') renderClockContent(item); 
-                    if(item.type === 'weather') updateWeatherScale(item);
-                    if(item.type === 'quote') updateQuoteScale(item);
-                } }
-                function onUp() { document.removeEventListener('mousemove', onResize); document.removeEventListener('mouseup', onUp); el.classList.remove('collision'); }
-                document.addEventListener('mousemove', onResize); document.addEventListener('mouseup', onUp);
-            });
+        // --- 重寫：支援觸控與 Z-Index 管理的 setupInteractions ---
+function setupInteractions(item) {
+    const { el } = item;
+    const resizeHandle = el.querySelector('.item-resize');
+    const menu = el.querySelector('.context-menu');
+    const trigger = el.querySelector('.menu-trigger');
+
+    // 輔助：取得事件座標 (相容 Mouse 與 Touch)
+    const getCoords = (e) => {
+        if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
         }
-        function snap(v) { return Math.round(v / CELL_SIZE) * CELL_SIZE; }
-        function checkCollision(target, ignoreId) { return items.some(i => { if (i.id === ignoreId) return false; return (target.x < i.x + i.w && target.x + target.w > i.x && target.y < i.y + i.h && target.y + target.h > i.y); }); }
-        function hexToRgb(hex) { const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 }; }
-        gridResizer.addEventListener('mousedown', (e) => { e.stopPropagation(); const startX = e.clientX, startY = e.clientY, startW = parseInt(getComputedStyle(gridCanvas).width), startH = parseInt(getComputedStyle(gridCanvas).height); function resizeGrid(ev) { const nw = Math.max(600, startW + (ev.clientX - startX)), nh = Math.max(600, startH + (ev.clientY - startY)); gridCanvas.style.width = snap(nw) + 'px'; gridCanvas.style.height = snap(nh) + 'px'; } document.addEventListener('mousemove', resizeGrid); document.addEventListener('mouseup', () => document.removeEventListener('mousemove', resizeGrid), {once:true}); });
+        return { x: e.clientX, y: e.clientY };
+    };
+
+    // 輔助：提升 Z-Index (點擊或拖曳時)
+    const bringToFront = () => {
+        // 重置所有 item 的 z-index
+        items.forEach(i => i.el.style.zIndex = 'var(--z-base)');
+        // 設定當前 item 為高層級
+        el.style.zIndex = 'var(--z-active)';
+    };
+
+    // --- 拖曳邏輯 (Drag) ---
+    const startDrag = (e) => {
+        // 排除條件：點擊到縮放手柄、選單觸發器、選單本身
+        if (e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return;
+        // 排除條件：輸入框等互動元件
+        if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return;
+        // 排除條件：特定 Widget 只能按 Header 拖曳 [cite: 809, 810]
+        if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews', 'finance', 'weather', 'quote', 'number'].includes(item.type) && !e.target.closest('.widget-header')) return;
+
+        // 如果是觸控，防止畫面捲動
+        if(e.type === 'touchstart') document.body.style.overflow = 'hidden';
+
+        bringToFront(); // 優化 Z-Index
+
+        const coords = getCoords(e);
+        const startX = coords.x;
+        const startY = coords.y;
+        const startLeft = item.x;
+        const startTop = item.y;
+
+        function onMove(ev) {
+            const curr = getCoords(ev);
+            const dx = curr.x - startX;
+            const dy = curr.y - startY;
+            
+            let rawX = startLeft + dx;
+            let rawY = startTop + dy;
+
+            // 邊界檢查 [cite: 810]
+            const maxW = parseInt(getComputedStyle(gridCanvas).width);
+            const maxH = parseInt(getComputedStyle(gridCanvas).height);
+            
+            if (rawX < 0) rawX = 0;
+            if (rawY < 0) rawY = 0;
+            if (rawX + item.w > maxW) rawX = maxW - item.w;
+            if (rawY + item.h > maxH) rawY = maxH - item.h;
+
+            el.style.left = rawX + 'px';
+            el.style.top = rawY + 'px';
+
+            const snapX = snap(rawX);
+            const snapY = snap(rawY);
+
+            if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) {
+                el.classList.add('collision');
+            } else {
+                el.classList.remove('collision');
+            }
+        }
+
+        function onEnd(ev) {
+            // 恢復捲動
+            document.body.style.overflow = '';
+            
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onEnd);
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('touchend', onEnd);
+
+            const finalX = snap(parseInt(el.style.left));
+            const finalY = snap(parseInt(el.style.top));
+
+            if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) {
+                // 碰撞發生，彈回原位
+                el.style.left = item.x + 'px';
+                el.style.top = item.y + 'px';
+            } else {
+                // 更新位置
+                item.x = finalX;
+                item.y = finalY;
+                el.style.left = finalX + 'px';
+                el.style.top = finalY + 'px';
+            }
+            el.classList.remove('collision');
+        }
+
+        // 綁定移動與結束事件 (同時支援 Mouse 與 Touch)
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onEnd);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('touchend', onEnd);
+    };
+
+    // --- 縮放邏輯 (Resize) ---
+    const startResize = (e) => {
+        e.stopPropagation();
+        e.preventDefault(); // 防止縮放時選取文字
+        
+        bringToFront();
+
+        const coords = getCoords(e);
+        const startX = coords.x;
+        const startY = coords.y;
+        const startW = item.w;
+        const startH = item.h;
+
+        function onResize(ev) {
+            const curr = getCoords(ev);
+            const dx = curr.x - startX;
+            const dy = curr.y - startY;
+            
+            let nw = snap(Math.max(MIN_W, startW + dx));
+            let nh = snap(Math.max(MIN_H, startH + dy));
+
+            if (checkCollision({ ...item, w: nw, h: nh }, item.id)) {
+                el.classList.add('collision');
+            } else {
+                el.classList.remove('collision');
+                el.style.width = nw + 'px';
+                el.style.height = nh + 'px';
+                item.w = nw;
+                item.h = nh;
+
+                // 重繪內容 [cite: 820]
+                if(item.type === 'stock') renderStockContent(item);
+                if(item.type === 'clock') renderClockContent(item);
+                if(item.type === 'weather') updateWeatherScale(item);
+                if(item.type === 'quote') updateQuoteScale(item);
+            }
+        }
+
+        function onUp() {
+            document.removeEventListener('mousemove', onResize);
+            document.removeEventListener('mouseup', onUp);
+            document.removeEventListener('touchmove', onResize);
+            document.removeEventListener('touchend', onUp);
+            el.classList.remove('collision');
+        }
+
+        document.addEventListener('mousemove', onResize);
+        document.addEventListener('mouseup', onUp);
+        document.addEventListener('touchmove', onResize, { passive: false });
+        document.addEventListener('touchend', onUp);
+    };
+
+    // 綁定初始事件
+    el.addEventListener('mousedown', startDrag);
+    el.addEventListener('touchstart', startDrag, { passive: false });
+    
+    resizeHandle.addEventListener('mousedown', startResize);
+    resizeHandle.addEventListener('touchstart', startResize, { passive: false });
+}
     </script>
 </body>
 </html>
