@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V9.7 CHART</title>
+    <title>BROOKLYN-TERMINAL // V9.8 LITE</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -17,8 +17,6 @@
             --handle-color: #ff0055; --shadow-glow: 0 0 10px rgba(0, 255, 204, 0.3);
             --glass-bg: rgba(17, 17, 17, 0.95);
             --error-color: #ff0033;
-            --stock-up: #00ffcc; --stock-down: #ff0033;
-            --stock-blue: #2962ff;
             --input-bg: rgba(0,0,0,0.5);
             --input-text: #00ffcc;
             --msg-user-bg: rgba(0, 255, 204, 0.1); --msg-sys-bg: rgba(255, 255, 255, 0.05);
@@ -34,8 +32,7 @@
             --grid-line: rgba(0, 0, 0, 0.05);
             --grid-line-strong: rgba(0, 0, 0, 0.1);
             --handle-color: #ff9900; --shadow-glow: none; --glass-bg: rgba(255, 255, 255, 0.98);
-            --error-color: #e74c3c; --stock-up: #27ae60; --stock-down: #c0392b;
-            --stock-blue: #2962ff;
+            --error-color: #e74c3c;
             --input-bg: #f0f2f5; --input-text: #333333;
             --msg-user-bg: rgba(0, 102, 204, 0.1); --msg-sys-bg: rgba(0, 0, 0, 0.03);
             --btn-bg: rgba(0, 0, 0, 0.05);
@@ -48,8 +45,7 @@
             --grid-line: rgba(255, 152, 0, 0.15);
             --grid-line-strong: rgba(255, 152, 0, 0.3);
             --handle-color: #ffffff; --shadow-glow: none; --glass-bg: #000000; 
-            --error-color: #ff3333; --stock-up: #00ff00; --stock-down: #ff3333;
-            --stock-blue: #ff9800;
+            --error-color: #ff3333;
             --input-bg: #000000; --input-text: #ff9800;
             --msg-user-bg: #331a00; --msg-sys-bg: #1a1a1a; --btn-bg: #331a00;
             --font-main: 'Consolas', 'Monaco', 'Courier New', monospace;
@@ -60,8 +56,7 @@
         [data-pro="true"] .grid-item { border: 1px solid var(--border-color) !important; }
         [data-pro="true"] .sidebar { border-right: 2px solid var(--border-color); }
         [data-pro="true"] header { border-bottom: 2px solid var(--border-color); }
-        [data-pro="true"] .stock-price-large { font-family: 'Consolas', monospace; }
-
+        
         body { margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-primary); height: 100vh;
             display: flex; flex-direction: column; overflow: hidden; transition: background-color 0.3s, color 0.3s;
         }
@@ -103,10 +98,9 @@
         .sidebar.collapsed .sidebar-section-header { display: none; }
         .sidebar.collapsed .sidebar-content-wrapper { display: block !important; }
         .sidebar.collapsed .sidebar-section { margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
-        .sidebar.collapsed .stock-selector, .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .stock-drag-item > div, .sidebar.collapsed .sidebar-footer-content label, .sidebar.collapsed .control-btn-group span { display: none; }
-        .sidebar.collapsed .tool-item, .sidebar.collapsed .stock-drag-item { justify-content: center; padding: 15px 0; }
+        .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .sidebar-footer-content label, .sidebar.collapsed .control-btn-group span { display: none; }
+        .sidebar.collapsed .tool-item { justify-content: center; padding: 15px 0; }
         .sidebar.collapsed .tool-item span { display: none; }
-        .sidebar.collapsed .stock-drag-item span#selectedStockPrice { font-size: 0.8rem; }
         .sidebar.collapsed .sidebar-footer-content { justify-content: center; }
         .sidebar.collapsed .sidebar-footer-content::after { content: '⚙'; font-size: 12px; opacity: 0.5; cursor: pointer; }
         .sidebar.collapsed .color-picker-container { width: 100%; justify-content: center; padding: 5px; }
@@ -142,18 +136,6 @@
         .tool-preview.clock-icon { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border-color: var(--handle-color); }
         [data-pro="true"] .tool-preview.clock-icon { border-radius: 0; border-color: var(--accent-color); }
         .tool-preview.icon-only { display: flex; align-items: center; justify-content: center; font-size: 16px; }
-        
-        .stock-selector { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        .stock-selector label { font-size: 12px; color: var(--text-secondary); margin-bottom: -5px; }
-        .stock-selector select, .stock-selector input { background: var(--input-bg);
-            color: var(--input-text); border: 1px solid var(--border-color); padding: 10px; border-radius: var(--border-radius); outline: none; font-weight: 500;
-            transition: background 0.3s, color 0.3s, border 0.3s; width: 100%; font-family: var(--font-main);
-        }
-        .stock-selector select:focus, .stock-selector input:focus { border-color: var(--accent-color); }
-        .stock-drag-item { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 15px; cursor: grab;
-            transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; border-radius: var(--border-radius); white-space: nowrap;
-        }
-        .stock-drag-item:hover { border-color: var(--accent-color); box-shadow: var(--shadow-glow); }
         
         .sidebar-footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
         .sidebar-footer-content { display: flex; align-items: center; justify-content: space-between; width: 100%; }
@@ -194,13 +176,6 @@
             box-shadow: 0 0 20px var(--error-color); }
         .content-container { width: 100%; height: 100%; overflow: hidden; position: relative; }
 
-        .stock-layout { display: flex; flex-direction: column; width: 100%;
-            height: 100%; padding: 5%; pointer-events: none; position: relative; }
-        .stock-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1em; margin-bottom: 2%; }
-        .stock-price-large { font-weight: 900; font-size: 2.5em; line-height: 1; margin: 2% 0; }
-        .stock-price-large.up { color: var(--stock-up); }
-        .stock-price-large.down { color: var(--stock-down); }
-        .stock-chart { flex: 1; width: 100%; min-height: 0; opacity: 0.9; }
         .clock-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;
             height: 100%; font-family: var(--font-main); font-weight: bold; color: var(--text-primary); pointer-events: none;
         }
@@ -326,44 +301,6 @@
         .tv-news-header { padding: 5px 10px; font-size: 0.8em; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); color: var(--text-primary); cursor: move; display: flex; justify-content: space-between; }
         .tv-news-container { flex: 1; width: 100%; height: 100%; overflow: hidden; }
 
-        .finance-layout { display: flex; flex-direction: column; width: 100%; height: 100%; background: #0b0e11; color: #fff; padding: 15px; position: relative; overflow: auto; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        .finance-header-bar.widget-header { position: absolute; top: 0; left: 0; right: 0; height: 30px; cursor: move; z-index: 20; background: rgba(255,255,255,0.02); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; padding: 0 10px; justify-content: space-between; font-size: 0.8em; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .finance-layout:hover .finance-header-bar.widget-header { opacity: 1; }
-        .finance-search-bar { display: flex; gap: 8px; margin-bottom: 15px; margin-top: 20px; position: relative; }
-        .finance-search-input { flex: 1; background: #1e222d; border: 1px solid #2a2e39; color: #d1d4dc; padding: 6px 12px; border-radius: 4px; outline: none; font-size: 0.9em; text-transform: uppercase; }
-        .finance-search-input:focus { border-color: var(--stock-blue); }
-        .finance-search-btn { background: var(--stock-blue); border: none; color: #fff; cursor: pointer; padding: 6px 15px; border-radius: 4px; font-weight: 600; font-size: 0.9em; }
-        .finance-search-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #1e222d; border: 1px solid #2a2e39; border-top: none; border-radius: 0 0 4px 4px; z-index: 30; max-height: 300px; overflow-y: auto; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .finance-dropdown-item { padding: 8px 12px; display: flex; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #2a2e39; font-size: 0.85em; transition: background 0.2s; }
-        .finance-dropdown-item:hover { background: #2a2e39; }
-        .finance-dropdown-item:last-child { border-bottom: none; }
-        .finance-dropdown-symbol { font-weight: bold; color: #fff; }
-        .finance-dropdown-price { color: #d1d4dc; }
-        .finance-dropdown-change { font-size: 0.9em; }
-        .finance-tabs { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; border-bottom: 1px solid #2a2e39; padding-bottom: 0px; }
-        .finance-tab { padding: 8px 12px; color: #787b86; cursor: pointer; font-size: 0.9em; font-weight: 600; border-bottom: 2px solid transparent; transition: color 0.2s; white-space: nowrap; }
-        .finance-tab:hover { color: #d1d4dc; }
-        .finance-tab.active { color: var(--stock-blue); border-bottom-color: var(--stock-blue); }
-        .finance-main-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        .finance-price-block { display: flex; flex-direction: column; }
-        .finance-symbol { font-size: 1.5em; font-weight: 700; color: #fff; line-height: 1.2; display: flex; align-items: center; gap: 8px; }
-        .finance-exchange { font-size: 0.7em; color: #787b86; font-weight: normal; background: #2a2e39; padding: 2px 4px; border-radius: 3px; }
-        .finance-main-price { font-size: 2.2em; font-weight: 700; color: #fff; line-height: 1; margin: 5px 0; }
-        .finance-main-change { font-size: 1em; font-weight: 600; }
-        .finance-sub-price-block { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
-        .finance-sub-label { font-size: 0.8em; color: #787b86; margin-bottom: 2px; }
-        .finance-sub-price { font-size: 1.1em; color: #d1d4dc; font-weight: 600; }
-        .finance-chart-controls { display: flex; gap: 5px; margin-bottom: 10px; overflow-x: auto; }
-        .finance-time-btn { background: transparent; border: none; color: #787b86; padding: 4px 8px; font-size: 0.8em; font-weight: 600; cursor: pointer; border-radius: 4px; transition: background 0.2s; }
-        .finance-time-btn:hover { background: #2a2e39; color: #d1d4dc; }
-        .finance-time-btn.active { background: #2a2e39; color: var(--stock-blue); }
-        .finance-chart-container { width: 100%; height: 250px; position: relative; margin-bottom: 20px; border-bottom: 1px solid #2a2e39; padding-bottom: 10px; }
-        .finance-chart-svg { width: 100%; height: 100%; overflow: visible; }
-        .finance-stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1px; background: #2a2e39; border: 1px solid #2a2e39; border-radius: 4px; overflow: hidden; }
-        .finance-stat-item { background: #0b0e11; padding: 10px; display: flex; flex-direction: column; justify-content: center; }
-        .stat-label { font-size: 0.75em; color: #787b86; margin-bottom: 4px; }
-        .stat-val { font-size: 0.95em; font-weight: 600; color: #d1d4dc; }
-
         .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
         .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
         .grid-item:hover .menu-trigger { opacity: 1; }
@@ -378,21 +315,6 @@
         .context-menu-item.danger:hover { background: rgba(255,255,255,0.1); color: var(--error-color); }
         .context-menu-item .submenu { display: none; position: absolute; right: 100%; top: 0; background: var(--bg-panel); border: 1px solid var(--border-color); min-width: 120px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .context-menu-item:hover .submenu { display: block; }
-
-        .chart-path { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
-        .chart-area { fill-opacity: 0.2; stroke: none; }
-        .up .chart-path { stroke: var(--stock-up); }
-        .up .chart-area { fill: var(--stock-up); }
-        .down .chart-path { stroke: var(--stock-down); }
-        .down .chart-area { fill: var(--stock-down); }
-        .candle { stroke-width: 1; }
-        .candle.up { fill: var(--stock-up); stroke: var(--stock-up); }
-        .candle.down { fill: var(--stock-down); stroke: var(--stock-down); }
-        .wick { stroke-width: 1; }
-        .wick.up { stroke: var(--stock-up); }
-        .wick.down { stroke: var(--stock-down); }
-        .axis-text { font-size: 10px; fill: var(--text-secondary); text-anchor: middle; }
-        .stock-footer-info { font-size: 0.7em; opacity: 0.7; margin-top: auto; text-align: right; }
         .widget-header { cursor: move; }
     </style>
 </head>
@@ -430,7 +352,6 @@
                     <div class="tool-item" draggable="true" id="tool-clock"><div class="tool-preview clock-icon">🕓</div><span>Digital Clock</span></div>
                     <div class="tool-item" draggable="true" id="tool-weather"><div class="tool-preview icon-only">☁️</div><span>Weather Station</span></div>
                     <div class="tool-item" draggable="true" id="tool-tvnews"><div class="tool-preview icon-only">🌐</div><span>Global News</span></div>
-                    <div class="tool-item" draggable="true" id="tool-finance"><div class="tool-preview icon-only">💹</div><span>Finance Pro</span></div>
                     <div class="tool-item" draggable="true" id="tool-tvchart"><div class="tool-preview icon-only">📈</div><span>Advanced Chart</span></div>
                     <div class="tool-item" draggable="true" id="tool-quote"><div class="tool-preview icon-only">❝</div><span>Daily Insight</span></div>
                     <div class="tool-item" draggable="true" id="tool-number"><div class="tool-preview icon-only">#</div><span>Data Fact</span></div>
@@ -439,33 +360,6 @@
                     <div class="tool-item" draggable="true" id="tool-note"><div class="tool-preview icon-only">📝</div><span>Notes</span></div>
                     <div class="tool-item" draggable="true" id="tool-browser"><div class="tool-preview icon-only">🌐</div><span>Web Portal</span></div>
                     <div class="tool-item" draggable="true" id="tool-llama"><div class="tool-preview icon-only">🦙</div><span>Llama Online</span></div>
-                </div>
-            </div>
-
-            <div class="sidebar-section" id="sec-stock">
-                <div class="sidebar-section-header" onclick="toggleSection('sec-stock')">
-                    <span>Market Data</span><span class="arrow">▼</span>
-                </div>
-                <div class="sidebar-content-wrapper">
-                    <div class="stock-selector">
-                        <label>Asset Class:</label>
-                        <select id="categoryList">
-                            <option value="US">US Stocks (美股)</option>
-                            <option value="TW">Taiwan Stocks (台股)</option>
-                            <option value="IDX">Indices (指數)</option>
-                            <option value="CRYPTO">Crypto (加密貨幣)</option>
-                        </select>
-                        <label>Instrument:</label>
-                        <select id="stockList"></select>
-                        <input type="text" id="stockSearch" placeholder="Search (e.g., AAPL)">
-                    </div>
-                    <div class="stock-drag-item" draggable="true" id="stockDraggable">
-                        <div style="display:flex; flex-direction:column;"><span id="selectedStockName" style="font-weight:bold; font-size:1rem;">AAPL Apple</span><span style="font-size:0.8rem; opacity:0.7;">Drag to Grid</span></div>
-                        <span id="selectedStockPrice" style="display:flex; flex-direction:column; align-items:end;">
-                            <div id="preview-price" style="font-size:1.2rem; font-weight:bold; color:var(--stock-up);">175.00</div>
-                            <div id="preview-change" style="font-size:0.6em; color:var(--stock-up);">▲ 1.20</div>
-                        </span>
-                    </div>
                 </div>
             </div>
 
@@ -504,11 +398,10 @@
         const CELL_SIZE = 20, MIN_W = CELL_SIZE * 4, MIN_H = CELL_SIZE * 4;
         const gridCanvas = document.getElementById('grid-canvas'), colorPicker = document.getElementById('colorPicker'), colorValue = document.getElementById('colorValue');
         const themeSwitch = document.getElementById('themeSwitch'), proSwitch = document.getElementById('proSwitch'), modeLabel = document.getElementById('mode-label');
-        const categoryList = document.getElementById('categoryList'), stockList = document.getElementById('stockList'), stockSearch = document.getElementById('stockSearch'), stockDraggable = document.getElementById('stockDraggable');
-        const selectedStockName = document.getElementById('selectedStockName'), selectedStockPrice = document.getElementById('selectedStockPrice'), gridResizer = document.getElementById('gridResizer');
+        const gridResizer = document.getElementById('gridResizer');
         const sidebar = document.getElementById('sidebar'), sidebarToggle = document.getElementById('sidebarToggle');
-        let items = [], activeColor = '#007bff', currentStock = { symbol: 'AAPL', name: 'Apple Inc.', price: 175.00, change: 1.20, history: [], type: 'stock' };
-        let isSidebarCollapsed = false, isLiveConnectionFailed = false, cryptoDataAvailable = false;
+        let items = [], activeColor = '#007bff';
+        let isSidebarCollapsed = false;
         
         // Toggle Section Logic
         window.toggleSection = function(id) {
@@ -527,131 +420,6 @@
         }
         initVisitorCounter();
 
-        const stockCategories = {
-            'US': [{ s: 'AAPL', n: 'Apple Inc.' }, { s: 'TSLA', n: 'Tesla Inc.' }, { s: 'NVDA', n: 'NVIDIA' }, { s: 'MSFT', n: 'Microsoft' }, { s: 'GOOGL', n: 'Alphabet' }, { s: 'AMZN', n: 'Amazon' }],
-            'TW': [{ s: '2330', n: '台積電' }, { s: '2317', n: '鴻海' }, { s: '2454', n: '聯發科' }, { s: '2303', n: '聯電' }, { s: '2881', n: '富邦金' }],
-            'IDX': [{ s: '^DJI', n: 'Dow Jones' }, { s: '^IXIC', n: 'Nasdaq' }, { s: '^GSPC', n: 'S&P 500' }, { s: '^TWII', n: 'TAIEX' }],
-            'CRYPTO': [{ s: 'BTC-USD', n: 'Bitcoin' }, { s: 'ETH-USD', n: 'Ethereum' }, { s: 'DOGE-USD', n: 'Dogecoin' }, { s: 'SOL-USD', n: 'Solana' }, { s: 'ADA-USD', n: 'Cardano' }, { s: 'XRP-USD', n: 'XRP' }, { s: 'DOT-USD', n: 'Polkadot' }]
-        };
-        const cryptoMapping = { 'BTC-USD': 'bitcoin', 'ETH-USD': 'ethereum', 'DOGE-USD': 'dogecoin', 'SOL-USD': 'solana', 'ADA-USD': 'cardano', 'XRP-USD': 'xrp', 'DOT-USD': 'polkadot' };
-        const mockStockData = {};
-        Object.values(stockCategories).flat().forEach(item => {
-            const isCrypto = !!cryptoMapping[item.s];
-            mockStockData[item.s] = { symbol: item.s, name: item.n, price: isCrypto ? 0 : Math.random() * 500 + 50, change: 0, isCrypto: isCrypto, history: isCrypto ? [] : generateHistory(Math.random() * 500 + 50, 60) };
-        });
-        function generateHistory(basePrice, count) {
-            let history = [], current = basePrice;
-            for(let i=0; i<count; i++) {
-                let open = current, close = current + (Math.random() - 0.5) * (basePrice * 0.02);
-                history.push({ open, high: Math.max(open, close) + Math.random()*(basePrice*0.01), low: Math.min(open, close) - Math.random()*(basePrice*0.01), close });
-                current = close;
-            }
-            return history;
-        }
-
-        // Sidebar uses this simpler update loop
-        async function updateCryptoPrices() {
-            const ids = Object.values(cryptoMapping).join(',');
-            try {
-                const response = await fetch(`https://api.coincap.io/v2/assets?ids=${ids}`);
-                if (!response.ok) throw new Error("CoinCap failed");
-                const result = await response.json();
-                if (result.data) {
-                    let hasData = false;
-                    result.data.forEach(coin => {
-                        const symbol = Object.keys(cryptoMapping).find(key => cryptoMapping[key] === coin.id);
-                        if(symbol) { updateLocalCryptoData(symbol, parseFloat(coin.priceUsd), parseFloat(coin.changePercent24Hr)); hasData = true; }
-                    });
-                    cryptoDataAvailable = hasData; isLiveConnectionFailed = false;
-                }
-            } catch (e) {
-                try {
-                    const cgIds = ids.replace('binance-coin', 'binancecoin').replace('xrp', 'ripple');
-                    const response2 = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cgIds}&vs_currencies=usd&include_24hr_change=true`);
-                    if (!response2.ok) throw new Error("CoinGecko failed");
-                    const result2 = await response2.json();
-                    let hasData = false;
-                    Object.keys(result2).forEach(id => {
-                        const symbol = Object.keys(cryptoMapping).find(key => cryptoMapping[key] === id || (id==='ripple' && cryptoMapping[key]==='xrp'));
-                        if(symbol) { updateLocalCryptoData(symbol, result2[id].usd, result2[id].usd_24h_change); hasData = true; }
-                    });
-                    cryptoDataAvailable = hasData; isLiveConnectionFailed = false;
-                } catch (e2) {
-                    cryptoDataAvailable = false; isLiveConnectionFailed = true;
-                }
-            }
-        }
-
-        function updateLocalCryptoData(symbol, price, change) {
-            if (symbol && mockStockData[symbol]) {
-                const data = mockStockData[symbol];
-                if (data.history.length === 0 || Math.abs(data.price - price) / (data.price || 1) > 0.5) { data.history = generateHistory(price, 60); } 
-                else {
-                    let last = data.history[data.history.length - 1];
-                    last.close = price; last.high = Math.max(last.high, price); last.low = Math.min(last.low, price);
-                    if (Math.random() > 0.9) { data.history.push({open: price, high: price, low: price, close: price}); if(data.history.length > 100) data.history.shift(); }
-                }
-                data.price = price;
-                data.change = change;
-            }
-        }
-
-        function simulateMarket() {
-            Object.keys(mockStockData).forEach(symbol => {
-                const data = mockStockData[symbol];
-                if (!data.isCrypto) {
-                    const change = (Math.random() - 0.5) * (data.price * 0.005), newPrice = data.price + change;
-                    let last = data.history[data.history.length - 1];
-                    last.close = newPrice; last.high = Math.max(last.high, newPrice); last.low = Math.min(last.low, newPrice);
-                    if(Math.random() > 0.95) { data.history.push({open: newPrice, high: newPrice, low: newPrice, close: newPrice}); if(data.history.length > 100) data.history.shift(); }
-                    data.price = newPrice; data.change = change;
-                }
-            });
-            if (currentStock.symbol && mockStockData[currentStock.symbol]) updateSidebarPreview(mockStockData[currentStock.symbol]);
-
-            items.forEach(item => {
-                if(item.type === 'stock' && item.stockData) {
-                    const symbol = item.stockData.symbol;
-                    if(mockStockData[symbol]) {
-                        item.stockData.price = mockStockData[symbol].price; item.stockData.change = mockStockData[symbol].change; item.stockData.history = mockStockData[symbol].history;
-                        renderStockContent(item);
-                    }
-                } else if (item.type === 'clock') renderClockContent(item);
-                // Finance Pro updates itself now
-            });
-        }
-
-        function updateSidebarPreview(stock) {
-            selectedStockName.innerText = `${stock.symbol} ${stock.name}`;
-            const pPrice = document.getElementById('preview-price');
-            const pChange = document.getElementById('preview-change');
-            if (stock.isCrypto && !cryptoDataAvailable) {
-                pPrice.innerText = "No Data";
-                pChange.innerText = "Temporarily Unavailable"; pPrice.style.color = 'var(--text-secondary)'; pChange.style.color = 'var(--text-secondary)';
-            } else {
-                const isUp = stock.change >= 0;
-                const suffix = stock.isCrypto ? '%' : '';
-                const liveTag = (stock.isCrypto && cryptoDataAvailable) ? ' [LIVE]' : '';
-                pPrice.innerText = `${stock.price.toFixed(2)}${liveTag}`; pPrice.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
-                pChange.innerText = `${isUp ? '▲' : '▼'} ${Math.abs(stock.change).toFixed(2)}${suffix}`;
-                pChange.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
-            }
-            currentStock = stock;
-        }
-
-        function populateStockList(category) {
-            stockList.innerHTML = '';
-            const list = stockCategories[category] || [];
-            list.forEach(item => { const opt = document.createElement('option'); opt.value = item.s; opt.innerText = `${item.s} ${item.n}`; stockList.appendChild(opt); });
-            if(list.length > 0) { stockList.value = list[0].s; currentStock.symbol = list[0].s; updateSidebarPreview(mockStockData[list[0].s]); }
-        }
-
-        categoryList.addEventListener('change', (e) => populateStockList(e.target.value));
-        populateStockList('US');
-        stockList.addEventListener('change', (e) => { const symbol = e.target.value; if(mockStockData[symbol]) { currentStock.symbol = symbol; updateSidebarPreview(mockStockData[symbol]); }});
-        stockSearch.addEventListener('input', (e) => { const val = e.target.value.toUpperCase(); const found = Object.values(mockStockData).find(d => d.symbol.includes(val) || d.name.toUpperCase().includes(val)); if(found) { currentStock.symbol = found.symbol; updateSidebarPreview(found); }});
-        setInterval(simulateMarket, 1000); setInterval(updateCryptoPrices, 30000); updateCryptoPrices();
-
         sidebarToggle.addEventListener('click', () => { isSidebarCollapsed = !isSidebarCollapsed; if (isSidebarCollapsed) { sidebar.classList.add('collapsed'); sidebarToggle.innerHTML = '&gt;'; } else { sidebar.classList.remove('collapsed'); sidebarToggle.innerHTML = '&lt;'; }});
         themeSwitch.addEventListener('change', (e) => { if (e.target.checked) { document.documentElement.setAttribute('data-theme', 'light'); modeLabel.innerText = "MODE: LIGHT"; } else { document.documentElement.removeAttribute('data-theme'); modeLabel.innerText = "MODE: DARK"; }});
         proSwitch.addEventListener('change', (e) => { if (e.target.checked) document.documentElement.setAttribute('data-pro', 'true'); else document.documentElement.removeAttribute('data-pro'); });
@@ -662,28 +430,26 @@
                 let noteContent = ''; if(i.type === 'note') { const contentDiv = el.querySelector('.note-content'); if(contentDiv) noteContent = contentDiv.innerHTML; }
                 let webUrl = ''; if (i.type === 'browser' || i.type === 'llama') { const iframe = el.querySelector('.browser-frame'); if (iframe) webUrl = iframe.src; }
                 let weatherCity = ''; if(i.type === 'weather') weatherCity = i.cityLabel;
-                return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, stockSymbol: i.stockData ? i.stockData.symbol : null, viewMode: i.viewMode, timeRange: i.timeRange, showTime: i.showTime, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent, webUrl: webUrl, weatherCity: weatherCity };
+                return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent, webUrl: webUrl, weatherCity: weatherCity };
             });
-            localStorage.setItem('brooklyn_layout', JSON.stringify(layoutData)); alert('Layout Saved!');
+            localStorage.setItem('brooklyn_layout_v98', JSON.stringify(layoutData)); alert('Layout Saved!');
         }
 
         function loadLayout() {
-            const saved = localStorage.getItem('brooklyn_layout');
+            const saved = localStorage.getItem('brooklyn_layout_v98');
             if(!saved) { alert('No saved layout found.'); return; }
             clearGrid();
             const layoutData = JSON.parse(saved);
             layoutData.forEach(data => {
-                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama','weather','quote','number','tvnews','finance','tvchart'].includes(data.type)) color = '#ffffff';
+                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama','weather','quote','number','tvnews','tvchart'].includes(data.type)) color = '#ffffff';
                 const newItem = createItem(data.x, data.y, data.w, data.h, color, data.type);
-                if(data.type === 'stock' && data.stockSymbol && mockStockData[data.stockSymbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[data.stockSymbol])); newItem.obj.viewMode = data.viewMode; newItem.obj.timeRange = data.timeRange; newItem.obj.showTime = data.showTime; renderStockContent(newItem.obj); } 
-                else if (data.type === 'clock') { newItem.obj.timeZone = data.timeZone; newItem.obj.cityLabel = data.cityLabel; renderClockContent(newItem.obj); } 
+                if (data.type === 'clock') { newItem.obj.timeZone = data.timeZone; newItem.obj.cityLabel = data.cityLabel; renderClockContent(newItem.obj); } 
                 else if (data.type === 'note') { const el = document.getElementById(newItem.obj.id); const contentDiv = el.querySelector('.note-content'); if(contentDiv && data.noteContent) contentDiv.innerHTML = data.noteContent; } 
                 else if ((data.type === 'browser' || data.type === 'llama') && data.webUrl) { const el = document.getElementById(newItem.obj.id); const iframe = el.querySelector('.browser-frame'); const input = el.querySelector('.browser-input'); if (iframe && input) { iframe.src = data.webUrl; input.value = data.webUrl; } }
                 else if (data.type === 'weather') { newItem.obj.cityLabel = data.weatherCity || 'Taipei'; renderWeatherContent(newItem.obj); }
                 else if (data.type === 'quote') renderQuoteContent(newItem.obj);
                 else if (data.type === 'number') renderNumberContent(newItem.obj);
                 else if (data.type === 'tvnews') renderGlobalNewsContent(newItem.obj);
-                else if (data.type === 'finance') renderFinanceContent(newItem.obj);
                 else if (data.type === 'tvchart') renderTradingViewContent(newItem.obj);
             });
         }
@@ -694,7 +460,6 @@
         document.getElementById('tool-clock').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'clock'));
         document.getElementById('tool-weather').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'weather'));
         document.getElementById('tool-tvnews').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'tvnews'));
-        document.getElementById('tool-finance').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'finance'));
         document.getElementById('tool-tvchart').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'tvchart'));
         document.getElementById('tool-quote').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'quote'));
         document.getElementById('tool-number').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'number'));
@@ -703,7 +468,6 @@
         document.getElementById('tool-note').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'note'));
         document.getElementById('tool-browser').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'browser'));
         document.getElementById('tool-llama').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'llama'));
-        stockDraggable.addEventListener('dragstart', (e) => { e.dataTransfer.setData('type', 'stock'); e.dataTransfer.setData('symbol', currentStock.symbol); });
         
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
         gridCanvas.addEventListener('drop', (e) => {
@@ -712,8 +476,7 @@
             else if (type === 'clock') { if(!checkCollision({x, y, w: 200, h: 100})) createItem(x, y, 200, 100, '#ffffff', 'clock'); }
             else if (type === 'weather') { if(!checkCollision({x, y, w: 280, h: 180})) createItem(x, y, 280, 180, '#ffffff', 'weather'); }
             else if (type === 'tvnews') { if(!checkCollision({x, y, w: 500, h: 400})) createItem(x, y, 500, 400, '#ffffff', 'tvnews'); }
-            else if (type === 'finance') { if(!checkCollision({x, y, w: 600, h: 500})) createItem(x, y, 600, 500, '#ffffff', 'finance'); }
-            else if (type === 'tvchart') { if(!checkCollision({x, y, w: 600, h: 400})) createItem(x, y, 600, 400, '#ffffff', 'tvchart'); }
+            else if (type === 'tvchart') { if(!checkCollision({x, y, w: 600, h: 450})) createItem(x, y, 600, 450, '#ffffff', 'tvchart'); }
             else if (type === 'quote') { if(!checkCollision({x, y, w: 300, h: 160})) createItem(x, y, 300, 160, '#ffffff', 'quote'); }
             else if (type === 'number') { if(!checkCollision({x, y, w: 240, h: 200})) createItem(x, y, 240, 200, '#ffffff', 'number'); }
             else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
@@ -721,11 +484,6 @@
             else if (type === 'note') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, '#ffffff', 'note'); }
             else if (type === 'browser') { if(!checkCollision({x, y, w: 400, h: 300})) createItem(x, y, 400, 300, '#ffffff', 'browser'); }
             else if (type === 'llama') { if(!checkCollision({x, y, w: 400, h: 500})) createItem(x, y, 400, 500, '#ffffff', 'llama'); }
-            else if (type === 'stock') {
-                const symbol = e.dataTransfer.getData('symbol');
-                if(!checkCollision({x, y, w: 300, h: 200})) { const newItem = createItem(x, y, 300, 200, activeColor, 'stock');
-                if(mockStockData[symbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[symbol])); renderStockContent(newItem.obj); } }
-            }
         });
         function createItem(x, y, w, h, color, type) {
             const id = 'item_' + Date.now();
@@ -738,14 +496,6 @@
             const menu = el.querySelector('.context-menu');
             const removeBtn = menu.querySelector('.context-menu-item');
 
-            if (type === 'stock') {
-                const timeBtn = document.createElement('div');
-                timeBtn.className = 'context-menu-item'; timeBtn.innerText = '顯示/隱藏 更新時間'; timeBtn.onclick = (e) => { e.stopPropagation();
-                const obj = items.find(i => i.id === id); if(obj) { obj.showTime = !obj.showTime; renderStockContent(obj); } menu.classList.remove('show'); }; menu.insertBefore(timeBtn, removeBtn);
-                ['K 線圖 (1W)', 'K 線圖 (1M)', 'K 線圖 (3M)'].forEach((label, idx) => { const itemBtn = document.createElement('div'); itemBtn.className = 'context-menu-item'; itemBtn.innerText = label; itemBtn.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.viewMode = 'candle'; obj.timeRange = idx === 0 ? '1W' : idx === 1 ? '1M' : '3M'; renderStockContent(obj); } menu.classList.remove('show'); }; menu.insertBefore(itemBtn, removeBtn); });
-                const lineBtn = document.createElement('div'); lineBtn.className = 'context-menu-item'; lineBtn.innerText = '即時走勢 (Live Trend)'; lineBtn.onclick = (e) => { e.stopPropagation();
-                const obj = items.find(i => i.id === id); if(obj) { obj.viewMode = 'line'; renderStockContent(obj); } menu.classList.remove('show'); }; menu.insertBefore(lineBtn, removeBtn);
-            }
             if (type === 'clock') {
                 const worldBtn = document.createElement('div');
                 worldBtn.className = 'context-menu-item'; worldBtn.innerHTML = '世界時鐘 (World Clock) <div class="submenu"></div>';
@@ -783,7 +533,7 @@
             const trigger = el.querySelector('.menu-trigger');
             trigger.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); menu.classList.toggle('show'); };
             gridCanvas.appendChild(el);
-            const itemObj = { id, x, y, w, h, el, type, stockData: null, showTime: false, viewMode: 'line', timeRange: '1M', timeZone: 'local', cityLabel: 'LOCAL' };
+            const itemObj = { id, x, y, w, h, el, type, timeZone: 'local', cityLabel: 'LOCAL' };
             items.push(itemObj);
             if (type === 'clock') renderClockContent(itemObj); if (type === 'chat') renderChatContent(itemObj);
             if (type === 'calc') renderCalcContent(itemObj);
@@ -793,7 +543,6 @@
             if (type === 'quote') renderQuoteContent(itemObj);
             if (type === 'number') renderNumberContent(itemObj);
             if (type === 'tvnews') renderGlobalNewsContent(itemObj);
-            if (type === 'finance') renderFinanceContent(itemObj);
             if (type === 'tvchart') renderTradingViewContent(itemObj);
             if (type === 'llama') renderBrowserContent(itemObj, 'https://llama.online/chat', 'LLAMA ONLINE');
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
@@ -807,23 +556,31 @@
             const container = item.el.querySelector('.content-container');
             if(container.querySelector('.tradingview-widget-container')) return;
             
-            const wrapper = document.createElement('div');
-            wrapper.className = 'tradingview-widget-container';
-            wrapper.style.height = '100%';
-            wrapper.style.width = '100%';
+            // 建立一個包含標題列的容器，讓使用者可以拖曳
+            container.innerHTML = `
+                <div style="display:flex; flex-direction:column; width:100%; height:100%;">
+                    <div class="widget-header" style="padding:5px 10px; background:var(--bg-panel); border-bottom:1px solid var(--border-color); cursor:move; font-size:0.8em; color:var(--text-primary); display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:bold;">ADVANCED CHART</span>
+                        <span style="opacity:0.5; font-size:0.8em;">TRADINGVIEW</span>
+                    </div>
+                    <div class="tv-embed-wrapper" style="flex:1; position:relative; overflow:hidden;"></div>
+                </div>
+            `;
+            
+            const wrapper = container.querySelector('.tv-embed-wrapper');
+            
+            const widgetContainer = document.createElement('div');
+            widgetContainer.className = 'tradingview-widget-container';
+            widgetContainer.style.height = '100%';
+            widgetContainer.style.width = '100%';
             
             const widgetDiv = document.createElement('div');
             widgetDiv.className = 'tradingview-widget-container__widget';
-            widgetDiv.style.height = 'calc(100% - 32px)';
+            widgetDiv.style.height = '100%';
             widgetDiv.style.width = '100%';
             
-            const copyright = document.createElement('div');
-            copyright.className = 'tradingview-widget-copyright';
-            copyright.innerHTML = '<a href="https://tw.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a>';
-            
-            wrapper.appendChild(widgetDiv);
-            wrapper.appendChild(copyright);
-            container.appendChild(wrapper);
+            widgetContainer.appendChild(widgetDiv);
+            wrapper.appendChild(widgetContainer);
 
             const script = document.createElement('script');
             script.type = 'text/javascript';
@@ -853,7 +610,7 @@
                 "studies": [],
                 "autosize": true
             });
-            wrapper.appendChild(script);
+            widgetContainer.appendChild(script);
         }
 
         // --- Weather Functionality ---
@@ -1132,189 +889,6 @@
             }
         }
 
-        // --- Finance Pro Functionality (REAL DATA) ---
-        const binanceMap = {
-            'BTC-USD': 'BTCUSDT',
-            'ETH-USD': 'ETHUSDT',
-            'DOGE-USD': 'DOGEUSDT',
-            'SOL-USD': 'SOLUSDT',
-            'ADA-USD': 'ADAUSDT',
-            'XRP-USD': 'XRPUSDT',
-            'DOT-USD': 'DOTUSDT'
-        };
-        const timeMap = {
-            '1D': { interval: '15m', limit: 96 },
-            '5D': { interval: '1h', limit: 120 },
-            '1M': { interval: '4h', limit: 180 },
-            '6M': { interval: '1d', limit: 180 },
-            'YTD': { interval: '1w', limit: 52 },
-            '1Y': { interval: '1w', limit: 52 },
-            '5Y': { interval: '1M', limit: 60 },
-            'MAX': { interval: '1M', limit: 100 }
-        };
-
-        async function fetchBinanceHistory(symbolKey, range) {
-            const binanceSymbol = binanceMap[symbolKey];
-            if (!binanceSymbol) return null;
-            const config = timeMap[range] || timeMap['1D'];
-            const url = `https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=${config.interval}&limit=${config.limit}`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                return data.map(d => ({
-                    time: d[0],
-                    open: parseFloat(d[1]),
-                    high: parseFloat(d[2]),
-                    low: parseFloat(d[3]),
-                    close: parseFloat(d[4]),
-                    vol: parseFloat(d[5])
-                }));
-            } catch (e) {
-                console.error("Binance API Error:", e);
-                return null;
-            }
-        }
-
-        function renderFinanceContent(item) {
-            const container = item.el.querySelector('.content-container');
-            if (!container.querySelector('.finance-layout')) {
-                container.innerHTML = `
-                    <div class="finance-layout">
-                        <div class="finance-header-bar widget-header">
-                            <span>FINANCE PRO // REAL-TIME</span>
-                        </div>
-                        <div class="finance-search-bar">
-                            <input type="text" class="finance-search-input" id="f-input-${item.id}" placeholder="Search Crypto (e.g. BTC-USD)">
-                            <button class="finance-search-btn" id="f-btn-${item.id}">SEARCH</button>
-                            <div class="finance-search-dropdown" id="f-drop-${item.id}"></div>
-                        </div>
-                        <div class="finance-tabs">
-                            <div class="finance-tab active">Overview</div>
-                            <div class="finance-tab">History</div>
-                            <div class="finance-tab">Financials</div>
-                        </div>
-                        <div id="f-content-${item.id}" style="height: calc(100% - 100px); display: flex; flex-direction: column;">
-                            <div style="margin:auto; color: #666;">LOADING MARKET DATA...</div>
-                        </div>
-                    </div>`;
-
-                const input = container.querySelector(`#f-input-${item.id}`);
-                const btn = container.querySelector(`#f-btn-${item.id}`);
-                const dropdown = container.querySelector(`#f-drop-${item.id}`);
-                item.currentSymbol = 'BTC-USD';
-                item.currentRange = '1D';
-
-                const cryptoKeys = Object.keys(binanceMap);
-                const renderDropdown = () => {
-                    let html = '';
-                    cryptoKeys.forEach(key => {
-                        html += `<div class="finance-dropdown-item" data-sym="${key}">
-                                    <span class="finance-dropdown-symbol">${key}</span>
-                                    <span class="finance-dropdown-exchange">BINANCE</span>
-                                 </div>`;
-                    });
-                    dropdown.innerHTML = html;
-                    dropdown.querySelectorAll('.finance-dropdown-item').forEach(el => {
-                        el.onclick = (e) => {
-                            e.stopPropagation();
-                            item.currentSymbol = el.dataset.sym;
-                            input.value = item.currentSymbol;
-                            updateUI();
-                            dropdown.style.display = 'none';
-                        }
-                    });
-                };
-                btn.onclick = (e) => { e.stopPropagation(); if(input.value) { item.currentSymbol = input.value; updateUI(); }};
-                input.addEventListener('mousedown', e => e.stopPropagation());
-                input.addEventListener('focus', () => { renderDropdown(); dropdown.style.display = 'block'; });
-                container.addEventListener('mouseleave', () => { dropdown.style.display = 'none'; });
-                updateUI();
-                item.financeInterval = setInterval(() => {
-                    if (document.contains(item.el) && item.type === 'finance') {
-                        updateUI(true);
-                    } else {
-                        clearInterval(item.financeInterval);
-                    }
-                }, 5000);
-            }
-
-            async function updateUI(silent = false) {
-                const contentArea = container.querySelector(`#f-content-${item.id}`);
-                if (!silent) contentArea.style.opacity = '0.5';
-                const historyData = await fetchBinanceHistory(item.currentSymbol, item.currentRange);
-                if (!historyData || historyData.length === 0) {
-                    contentArea.innerHTML = `<div style="margin:auto; text-align:center;">OFFLINE / NO DATA<br><span style="font-size:0.8em;color:#666">Check Network or API</span></div>`;
-                    contentArea.style.opacity = '1';
-                    return;
-                }
-                const lastCandle = historyData[historyData.length - 1];
-                const prevClose = historyData[0].open;
-                const currentPrice = lastCandle.close;
-                const changeAmount = currentPrice - prevClose;
-                const changePercent = (changeAmount / prevClose) * 100;
-                const isUp = changeAmount >= 0;
-                const colorClass = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
-                const arrow = isUp ? '▲' : '▼';
-                const chartH = 220; 
-                const chartW = item.w - 40; 
-                const prices = historyData.map(d => d.close);
-                const min = Math.min(...prices) * 0.999; 
-                const max = Math.max(...prices) * 1.001;
-                const range = max - min;
-                const step = chartW / (prices.length - 1);
-                let d = `M 0 ${chartH - ((prices[0] - min) / range * chartH)}`;
-                prices.forEach((p, i) => {
-                    const y = chartH - ((p - min) / range * chartH);
-                    d += ` L ${i * step} ${y}`;
-                });
-                const fillD = d + ` V ${chartH} H 0 Z`;
-                const timeRanges = ['1D','5D','1M','6M','YTD','1Y'];
-                
-                contentArea.innerHTML = `
-                    <div class="finance-main-info">
-                        <div class="finance-price-block">
-                            <div class="finance-symbol">${item.currentSymbol} <span class="finance-exchange">BINANCE</span></div>
-                            <div class="finance-main-price" style="color:${colorClass}">${currentPrice.toFixed(2)}</div>
-                            <div class="finance-main-change" style="color:${colorClass}">${arrow} ${Math.abs(changeAmount).toFixed(2)} (${changePercent.toFixed(2)}%)</div>
-                        </div>
-                        <div class="finance-sub-price-block">
-                            <div class="finance-sub-label">24H High: ${Math.max(...historyData.map(h=>h.high)).toFixed(2)}</div>
-                            <div class="finance-sub-label">24H Low: ${Math.min(...historyData.map(h=>h.low)).toFixed(2)}</div>
-                            <div class="finance-sub-label">Vol: ${parseInt(lastCandle.vol).toLocaleString()}</div>
-                        </div>
-                    </div>
-                    <div class="finance-chart-controls" id="f-ranges-${item.id}">
-                        ${timeRanges.map(r => `<button class="finance-time-btn ${r === item.currentRange ? 'active' : ''}" data-range="${r}">${r}</button>`).join('')}
-                    </div>
-                    <div class="finance-chart-container" style="flex:1; border:none; margin-bottom:0;">
-                        <svg class="finance-chart-svg" viewBox="0 0 ${chartW} ${chartH}" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="grad-${item.id}" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:${isUp ? '#00ffcc' : '#ff0033'};stop-opacity:0.2" />
-                                    <stop offset="100%" style="stop-color:${isUp ? '#00ffcc' : '#ff0033'};stop-opacity:0" />
-                                </linearGradient>
-                            </defs>
-                            <line x1="0" y1="${chartH/2}" x2="${chartW}" y2="${chartH/2}" stroke="#333" stroke-dasharray="4" />
-                            <path d="${fillD}" fill="url(#grad-${item.id})" stroke="none" />
-                            <path d="${d}" fill="none" stroke="${isUp ? '#00ffcc' : '#ff0033'}" stroke-width="2" vector-effect="non-scaling-stroke" />
-                        </svg>
-                    </div>
-                    <div style="font-size:10px; color:#444; text-align:right; margin-top:5px;">
-                        DATA SOURCE: BINANCE PUBLIC API
-                    </div>
-                `;
-                const rangeBtns = contentArea.querySelectorAll(`#f-ranges-${item.id} .finance-time-btn`);
-                rangeBtns.forEach(b => {
-                    b.onclick = (e) => {
-                        e.stopPropagation();
-                        item.currentRange = b.dataset.range;
-                        updateUI();
-                    };
-                });
-                contentArea.style.opacity = '1';
-            }
-        }
-
         function renderClockContent(item) { 
             const container = item.el.querySelector('.content-container');
             const now = new Date(); let timeStr;
@@ -1418,72 +992,12 @@
             if(item.historyIndex < item.history.length - 1) { item.historyIndex++; const url = item.history[item.historyIndex]; frame.src = url; input.value = url; } };
             refBtn.onclick = (e) => { e.stopPropagation(); frame.src = frame.src; };
         }
-
-        function renderStockContent(item) {
-            if (!item.stockData) return;
-            const container = item.el.querySelector('.content-container'), data = item.stockData;
-            let layout = container.querySelector('.stock-layout');
-            if (!layout) {
-                const isUp = data.change >= 0;
-                const trendClass = isUp ? 'up' : 'down';
-                const updateTimeHtml = item.showTime ? `<div class="stock-footer-info" id="time-${item.id}">Last: ${new Date().toLocaleTimeString()}</div>` : '';
-                container.innerHTML = `<div class="stock-layout ${trendClass}" id="layout-${item.id}"><div class="stock-header"><span>${data.symbol} ${data.name}</span><span id="change-${item.id}" style="font-size:0.8em">${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}</span></div><div class="stock-price-large ${trendClass}" id="price-${item.id}">${data.price.toFixed(2)}</div><svg class="stock-chart" id="chart-${item.id}" preserveAspectRatio="none" viewBox="0 0 ${item.w} ${item.h*0.4 + 20}"></svg>${updateTimeHtml}</div>`;
-                layout = container.querySelector('.stock-layout');
-            }
-            if (data.isCrypto && !cryptoDataAvailable) {
-                const priceEl = container.querySelector(`#price-${item.id}`);
-                if(priceEl) { priceEl.innerText = "暫時無資訊"; priceEl.style.fontSize = "1.2em"; priceEl.style.color = "var(--text-secondary)"; }
-                const changeEl = container.querySelector(`#change-${item.id}`);
-                if(changeEl) changeEl.innerText = "";
-                const chartEl = container.querySelector(`#chart-${item.id}`); if(chartEl) chartEl.innerHTML = ""; 
-                return;
-            }
-            const isUp = data.change >= 0, trendClass = isUp ? 'up' : 'down';
-            layout.className = `stock-layout ${trendClass}`;
-            const priceEl = container.querySelector(`#price-${item.id}`); if(priceEl) { priceEl.className = `stock-price-large ${trendClass}`; priceEl.innerText = data.price.toFixed(2); priceEl.style.fontSize = ""; }
-            const changeEl = container.querySelector(`#change-${item.id}`);
-            if(changeEl) changeEl.innerText = `${isUp?'▲':'▼'} ${Math.abs(data.change).toFixed(2)}${data.isCrypto?'%':''}`;
-            const chartEl = container.querySelector(`#chart-${item.id}`);
-            if(chartEl) {
-                let chartSVG = '', xAxisLabels = '', displayHistory = data.history;
-                if (item.viewMode === 'candle') { const count = item.timeRange === '1W' ? 7 : item.timeRange === '1M' ? 20 : 50; displayHistory = data.history.slice(-count); chartSVG = generateCandleChart(displayHistory, item.w, item.h * 0.4); xAxisLabels = generateXAxis(item.w, item.h * 0.4, item.timeRange); } 
-                else { const prices = data.history.map(d => d.close), pathD = generateSparkline(prices, item.w, item.h * 0.4); chartSVG = `<path class="chart-path" d="${pathD}" /><path class="chart-area" d="${pathD} V ${item.h*0.4} H 0 Z" />`; }
-                chartEl.innerHTML = chartSVG + xAxisLabels;
-                chartEl.setAttribute('viewBox', `0 0 ${item.w} ${item.h*0.4 + 20}`);
-            }
-            const timeEl = container.querySelector(`#time-${item.id}`);
-            if(timeEl) timeEl.innerText = `Last: ${new Date().toLocaleTimeString()}`; else if(item.showTime) { const footer = document.createElement('div'); footer.className = "stock-footer-info"; footer.id = `time-${item.id}`; footer.innerText = `Last: ${new Date().toLocaleTimeString()}`; layout.appendChild(footer); }
-        }
-
-        function generateSparkline(data, w, h) {
-            if (!data.length) return "";
-            const max = Math.max(...data), min = Math.min(...data), range = max - min || 1, stepX = w / (data.length - 1); let d = `M 0 ${h - ((data[0] - min) / range * h)}`;
-            for (let i = 1; i < data.length; i++) d += ` L ${i * stepX} ${h - ((data[i] - min) / range * h)}`;
-            return d;
-        }
-        function generateCandleChart(history, w, h) {
-            if(!history.length) return "";
-            const max = Math.max(...history.map(d => d.high)), min = Math.min(...history.map(d => d.low)), rangeY = max - min || 1, stepX = w / history.length, candleW = Math.max(1, stepX * 0.6); let svg = '';
-            history.forEach((d, i) => { const x = i * stepX + (stepX - candleW)/2, yOpen = h - ((d.open - min) / rangeY * h), yClose = h - ((d.close - min) / rangeY * h), yHigh = h - ((d.high - min) / rangeY * h), yLow = h - ((d.low - min) / rangeY * h), colorClass = d.close >= d.open ? 'up' : 'down'; svg += `<line class="wick ${colorClass}" x1="${x+candleW/2}" y1="${yHigh}" x2="${x+candleW/2}" y2="${yLow}" /><rect class="candle ${colorClass}" x="${x}" y="${Math.min(yOpen, yClose)}" width="${candleW}" height="${Math.max(1, Math.abs(yClose - yOpen))}" />`; });
-            return svg;
-        }
-        function generateXAxis(w, h, range) {
-            const y = h + 15, now = new Date();
-            let labels = [];
-            if (range === '1W') for(let i=6; i>=0; i-=2) { const d = new Date(now); d.setDate(d.getDate() - i); labels.push((d.getMonth()+1) + '/' + d.getDate()); }
-            else if (range === '1M') for(let i=3; i>=0; i--) { const d = new Date(now); d.setDate(d.getDate() - (i * 7)); labels.push((d.getMonth()+1) + '/' + d.getDate()); }
-            else for(let i=2; i>=0; i--) { const d = new Date(now); d.setMonth(d.getMonth() - i); labels.push(d.toLocaleString('default', { month: 'short' })); }
-            let svg = '';
-            const step = w / labels.length; labels.forEach((txt, i) => svg += `<text class="axis-text" x="${i * step + step/2}" y="${y}">${txt}</text>`);
-            return svg;
-        }
         function setupInteractions(item) {
             const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
             el.addEventListener('mousedown', (e) => {
                 if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; 
                 if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; 
-                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews', 'finance', 'tvchart'].includes(item.type) && !e.target.closest('.widget-header')) return;
-                if (item.type === 'finance' && !e.target.closest('.finance-header-bar')) return;
+                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews', 'tvchart'].includes(item.type) && !e.target.closest('.widget-header')) return;
                 e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
                 function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) 
                 rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY);
@@ -1500,7 +1014,6 @@
                 e.stopPropagation(); e.preventDefault(); const startX = e.clientX, startY = e.clientY, startW = item.w, startH = item.h;
                 function onResize(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let nw = snap(Math.max(MIN_W, startW + dx)), nh = snap(Math.max(MIN_H, startH + dy)); if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision'); else { el.classList.remove('collision'); el.style.width = nw + 'px'; el.style.height = nh 
                 + 'px'; item.w = nw; item.h = nh; 
-                    if(item.type === 'stock') renderStockContent(item); 
                     if(item.type === 'clock') renderClockContent(item); 
                     if(item.type === 'weather') updateWeatherScale(item);
                     if(item.type === 'quote') updateQuoteScale(item);
