@@ -862,9 +862,14 @@
             const container = item.el.querySelector('.content-container');
             if(container.querySelector('.kanban-layout')) return;
             
-           container.innerHTML = `
+            // --- New Workstation Tools ---
+        function renderKanbanContent(item) {
+            const container = item.el.querySelector('.content-container');
+            if(container.querySelector('.kanban-layout')) return;
+            
+            container.innerHTML = `
                 <div class="kanban-layout">
-                    <div class="kanban-header widget-header"><span>OPS BOARD</span><span style="opacity:0.5">V2.0</span></div>
+                    <div class="kanban-header widget-header"><span>OPS BOARD</span><span style="opacity:0.5">PROJECTS</span></div>
                     <div class="kanban-board">
                         <div class="kanban-col" id="col-todo-${item.id}">
                             <div class="kanban-col-title">TO DO</div>
@@ -882,126 +887,38 @@
                             <button class="kanban-add-btn" onclick="addKanbanCard('${item.id}', 'col-done-${item.id}')">+ ADD</button>
                         </div>
                     </div>
-                    <div class="k-overlay" id="k-editor-${item.id}">
-                        <div class="k-editor-head">
-                            <span class="k-editor-title">CARD DETAILS</span>
-                            <span style="cursor:pointer" onclick="closeKanbanEditor('${item.id}')">✕</span>
-                        </div>
-                        <input type="hidden" id="k-edit-id-${item.id}">
-                        <textarea class="k-editor-area" id="k-edit-text-${item.id}" placeholder="Details / Notes..."></textarea>
-                        <div class="k-editor-btn-row">
-                            <button class="k-btn" onclick="closeKanbanEditor('${item.id}')">CANCEL</button>
-                            <button class="k-btn primary" onclick="saveKanbanEditor('${item.id}')">SAVE</button>
-                        </div>
-                    </div>
                 </div>
             `;
-            // Only add default cards if creating fresh (not loading)
-            if(!localStorage.getItem('brooklyn_layout_v11')) {
-                addKanbanCard(item.id, `col-todo-${item.id}`, 'Research NVDA', 'Check earnings report.');
-            }
+            // Pre-fill some sample tasks
+            addKanbanCard(item.id, `col-todo-${item.id}`, 'Research NVDA Earnings');
+            addKanbanCard(item.id, `col-prog-${item.id}`, 'Update Stop-Loss');
         }
 
-        function addKanbanCard(widgetId, colId, text = null, details = '') {
+        function addKanbanCard(itemId, colId, text = null) {
             const col = document.getElementById(colId).querySelector('.kanban-items');
             const cardText = text || prompt("Enter task:");
             if(!cardText) return;
             
-            const cardId = 'k-card-' + Date.now() + Math.floor(Math.random()*1000);
             const card = document.createElement('div');
             card.className = 'kanban-card';
-            card.id = cardId;
+            card.innerText = cardText;
             card.draggable = true;
-            card.setAttribute('data-details', details);
-
-            // New Card Structure with 3-dot menu
-            card.innerHTML = `
-                <div class="k-card-main">
-                    <span class="k-card-text">${cardText}</span>
-                    <span class="k-dots" onclick="toggleKanbanMenu(event, '${cardId}')">⋮</span>
-                </div>
-                <div class="k-menu" id="k-menu-${cardId}">
-                    <div class="k-menu-item" onclick="openKanbanEditor('${widgetId}', '${cardId}')">📝 詳細資料 (Details)</div>
-                    <div class="k-menu-item" onclick="moveKanbanCard('${widgetId}', '${cardId}', 'col-todo-${widgetId}')">→ To Do</div>
-                    <div class="k-menu-item" onclick="moveKanbanCard('${widgetId}', '${cardId}', 'col-prog-${widgetId}')">→ In Progress</div>
-                    <div class="k-menu-item" onclick="moveKanbanCard('${widgetId}', '${cardId}', 'col-done-${widgetId}')">→ Done</div>
-                    <div class="k-menu-item" style="color:var(--error-color)" onclick="removeKanbanCard('${cardId}')">🗑️ 刪除 (Delete)</div>
-                </div>
-            `;
             
-            // Drag Events
             card.addEventListener('dragstart', (e) => {
                 e.dataTransfer.setData('text/plain', card.id);
                 e.dataTransfer.effectAllowed = 'move';
                 setTimeout(() => card.style.opacity = '0.5', 0);
             });
             card.addEventListener('dragend', () => card.style.opacity = '1');
+            card.addEventListener('dblclick', () => card.remove()); // Delete on double click
+            
+            // Simple drag logic for cards within columns
+            // Note: Full D&D logic for columns usually requires more complex event handling on columns
+            // For simplicity in this massive file, we use basic append.
             
             col.appendChild(card);
-            
-            // Global click to close card menus
-            setTimeout(() => {
-                document.addEventListener('click', function closeMenu(e) {
-                    const menu = document.getElementById(`k-menu-${cardId}`);
-                    if(menu && !menu.contains(e.target) && e.target.className !== 'k-dots') {
-                        menu.classList.remove('show');
-                    }
-                });
-            }, 100);
         }
 
-        // Kanban Helper Functions
-        window.toggleKanbanMenu = function(e, cardId) {
-            e.stopPropagation();
-            // Close all other open kanban menus first
-            document.querySelectorAll('.k-menu.show').forEach(m => m.classList.remove('show'));
-            const menu = document.getElementById(`k-menu-${cardId}`);
-            if(menu) menu.classList.toggle('show');
-        }
-
-        window.moveKanbanCard = function(widgetId, cardId, targetColId) {
-            const card = document.getElementById(cardId);
-            const targetCol = document.getElementById(targetColId).querySelector('.kanban-items');
-            if(card && targetCol) {
-                targetCol.appendChild(card);
-            }
-        }
-
-        window.removeKanbanCard = function(cardId) {
-            const card = document.getElementById(cardId);
-            if(card) card.remove();
-        }
-
-        window.openKanbanEditor = function(widgetId, cardId) {
-            const overlay = document.getElementById(`k-editor-${widgetId}`);
-            const card = document.getElementById(cardId);
-            const textArea = document.getElementById(`k-edit-text-${widgetId}`);
-            const hiddenId = document.getElementById(`k-edit-id-${widgetId}`);
-            
-            if(overlay && card) {
-                hiddenId.value = cardId;
-                textArea.value = card.getAttribute('data-details') || '';
-                overlay.classList.add('active');
-            }
-        }
-
-        window.closeKanbanEditor = function(widgetId) {
-            const overlay = document.getElementById(`k-editor-${widgetId}`);
-            if(overlay) overlay.classList.remove('active');
-        }
-
-        window.saveKanbanEditor = function(widgetId) {
-            const cardId = document.getElementById(`k-edit-id-${widgetId}`).value;
-            const newDetails = document.getElementById(`k-edit-text-${widgetId}`).value;
-            const card = document.getElementById(cardId);
-            
-            if(card) {
-                card.setAttribute('data-details', newDetails);
-                // Optional: visual indicator that card has notes? 
-                // Currently keeping it hidden until opened as per request "notebook style"
-            }
-            closeKanbanEditor(widgetId);
-        }
 
         // --- Other Render Functions (Abbreviated, assuming they exist from previous context) ---
         // (Include renderAudioContent, renderPomodoroContent, etc. from original code here)
