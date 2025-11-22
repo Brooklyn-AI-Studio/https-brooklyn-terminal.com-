@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V7.6 PRO</title>
+    <title>BROOKLYN-TERMINAL // V8.1 PRO</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -152,7 +152,6 @@
         .chat-send-btn:hover { opacity: 0.8; }
         .chat-upload-btn { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; padding: 5px 10px; border-radius: var(--border-radius); display: flex; align-items: center; justify-content: center; }
         .chat-upload-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
-
         .calc-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; }
         .calc-header { padding: 5px 10px; font-size: 0.8em; opacity: 0.7; border-bottom: 1px solid var(--border-color); cursor: move; }
         .calc-display { flex: 1; background: rgba(0,0,0,0.3); color: var(--text-primary); font-family: var(--font-main); font-size: 1.5em; text-align: right; padding: 10px; display: flex; align-items: flex-end; justify-content: flex-end; overflow: hidden; }
@@ -161,7 +160,6 @@
         .calc-key:hover { background: rgba(255,255,255,0.1); }
         .calc-key.op { color: var(--accent-color); font-weight: bold; }
         .calc-key.eq { background: var(--accent-color); color: #000; }
-        
         .note-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; }
         .note-header { padding: 5px 10px; font-size: 0.8em; opacity: 0.7; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.2); cursor: move; display: flex; justify-content: space-between; }
         .note-content { flex: 1; background: transparent; border: none; color: var(--text-primary); padding: 10px; font-family: var(--font-main); font-size: 1em; overflow-y: auto; outline: none; white-space: pre-wrap; }
@@ -169,6 +167,43 @@
         .note-btn { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; font-family: var(--font-main); padding: 2px 8px; font-size: 0.8em; border-radius: var(--border-radius); }
         .note-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
         .note-select { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); font-family: var(--font-main); font-size: 0.8em; cursor: pointer; border-radius: var(--border-radius); }
+        
+        /* Web Browser Styles */
+        .browser-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; background: #fff; }
+        /* UPDATED: New Header Style to prevent overlap and improve visibility */
+        .browser-header { 
+            padding: 5px 35px 5px 10px; /* Extra right padding for menu trigger */
+            background: var(--bg-panel); 
+            display: flex; 
+            gap: 5px; 
+            align-items: center; 
+            cursor: move; 
+            border-bottom: 1px solid var(--border-color); 
+            color: var(--text-primary);
+        }
+        /* UPDATED: Input and Button styles that adapt to theme */
+        .browser-input { 
+            flex: 1; 
+            background: var(--input-bg); 
+            color: var(--text-primary); 
+            border: 1px solid var(--border-color); 
+            padding: 2px 8px; 
+            font-family: var(--font-main); 
+            border-radius: var(--border-radius); 
+            outline: none;
+        }
+        .browser-btn { 
+            background: var(--accent-color); 
+            color: #000; 
+            border: none; 
+            padding: 2px 12px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border-radius: var(--border-radius); 
+            transition: opacity 0.2s;
+        }
+        .browser-btn:hover { opacity: 0.8; }
+        .browser-frame { flex: 1; border: none; width: 100%; background: #fff; }
 
         .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
         .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
@@ -182,10 +217,8 @@
         [data-pro="true"] .context-menu-item:hover { background: var(--accent-color); color: #000; }
         .context-menu-item:last-child { border-bottom: none; }
         .context-menu-item.danger:hover { background: rgba(255,255,255,0.1); color: var(--error-color); }
-        
         .context-menu-item .submenu { display: none; position: absolute; right: 100%; top: 0; background: var(--bg-panel); border: 1px solid var(--border-color); min-width: 120px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .context-menu-item:hover .submenu { display: block; }
-
         .chart-path { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
         .chart-area { fill-opacity: 0.2; stroke: none; }
         .up .chart-path { stroke: var(--stock-up); }
@@ -227,6 +260,7 @@
             <div class="tool-item" draggable="true" id="tool-chat"><div class="tool-preview icon-only">🤖</div><span>LLM Chat</span></div>
             <div class="tool-item" draggable="true" id="tool-calc"><div class="tool-preview icon-only">🧮</div><span>Calculator</span></div>
             <div class="tool-item" draggable="true" id="tool-note"><div class="tool-preview icon-only">📝</div><span>Notes</span></div>
+            <div class="tool-item" draggable="true" id="tool-browser"><div class="tool-preview icon-only">🌐</div><span>Web Portal</span></div>
             <div class="sidebar-title">Stock Indicators</div>
             <div class="stock-selector">
                 <label>Asset Class:</label>
@@ -424,12 +458,9 @@
         function saveLayout() {
             const layoutData = items.map(i => {
                 const el = document.getElementById(i.id);
-                let noteContent = '';
-                if(i.type === 'note') {
-                    const contentDiv = el.querySelector('.note-content');
-                    if(contentDiv) noteContent = contentDiv.innerHTML;
-                }
-                return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, stockSymbol: i.stockData ? i.stockData.symbol : null, viewMode: i.viewMode, timeRange: i.timeRange, showTime: i.showTime, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent };
+                let noteContent = ''; if(i.type === 'note') { const contentDiv = el.querySelector('.note-content'); if(contentDiv) noteContent = contentDiv.innerHTML; }
+                let webUrl = ''; if (i.type === 'browser') { const iframe = el.querySelector('.browser-frame'); if (iframe) webUrl = iframe.src; }
+                return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, stockSymbol: i.stockData ? i.stockData.symbol : null, viewMode: i.viewMode, timeRange: i.timeRange, showTime: i.showTime, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent, webUrl: webUrl };
             });
             localStorage.setItem('brooklyn_layout', JSON.stringify(layoutData)); alert('Layout Saved!');
         }
@@ -439,13 +470,12 @@
             clearGrid();
             const layoutData = JSON.parse(saved);
             layoutData.forEach(data => {
-                let color = '#007bff'; 
-                if(data.type === 'clock' || data.type === 'news' || data.type === 'chat' || data.type === 'calc' || data.type === 'note') color = '#ffffff';
+                let color = '#007bff'; if(['clock','news','chat','calc','note','browser'].includes(data.type)) color = '#ffffff';
                 const newItem = createItem(data.x, data.y, data.w, data.h, color, data.type);
-                if(data.type === 'stock' && data.stockSymbol && mockStockData[data.stockSymbol]) {
-                    newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[data.stockSymbol])); newItem.obj.viewMode = data.viewMode; newItem.obj.timeRange = data.timeRange; newItem.obj.showTime = data.showTime; renderStockContent(newItem.obj);
-                } else if (data.type === 'clock') { newItem.obj.timeZone = data.timeZone; newItem.obj.cityLabel = data.cityLabel; renderClockContent(newItem.obj);
-                } else if (data.type === 'note') { const el = document.getElementById(newItem.obj.id); const contentDiv = el.querySelector('.note-content'); if(contentDiv && data.noteContent) contentDiv.innerHTML = data.noteContent; }
+                if(data.type === 'stock' && data.stockSymbol && mockStockData[data.stockSymbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[data.stockSymbol])); newItem.obj.viewMode = data.viewMode; newItem.obj.timeRange = data.timeRange; newItem.obj.showTime = data.showTime; renderStockContent(newItem.obj); } 
+                else if (data.type === 'clock') { newItem.obj.timeZone = data.timeZone; newItem.obj.cityLabel = data.cityLabel; renderClockContent(newItem.obj); } 
+                else if (data.type === 'note') { const el = document.getElementById(newItem.obj.id); const contentDiv = el.querySelector('.note-content'); if(contentDiv && data.noteContent) contentDiv.innerHTML = data.noteContent; } 
+                else if (data.type === 'browser' && data.webUrl) { const el = document.getElementById(newItem.obj.id); const iframe = el.querySelector('.browser-frame'); const input = el.querySelector('.browser-input'); if (iframe && input) { iframe.src = data.webUrl; input.value = data.webUrl; } }
             });
         }
 
@@ -457,6 +487,7 @@
         document.getElementById('tool-chat').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'chat'));
         document.getElementById('tool-calc').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'calc'));
         document.getElementById('tool-note').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'note'));
+        document.getElementById('tool-browser').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'browser'));
         stockDraggable.addEventListener('dragstart', (e) => { e.dataTransfer.setData('type', 'stock'); e.dataTransfer.setData('symbol', currentStock.symbol); });
         
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
@@ -468,6 +499,7 @@
             else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
             else if (type === 'calc') { if(!checkCollision({x, y, w: 200, h: 300})) createItem(x, y, 200, 300, '#ffffff', 'calc'); }
             else if (type === 'note') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, '#ffffff', 'note'); }
+            else if (type === 'browser') { if(!checkCollision({x, y, w: 400, h: 300})) createItem(x, y, 400, 300, '#ffffff', 'browser'); }
             else if (type === 'stock') {
                 const symbol = e.dataTransfer.getData('symbol');
                 if(!checkCollision({x, y, w: 300, h: 200})) { const newItem = createItem(x, y, 300, 200, activeColor, 'stock'); if(mockStockData[symbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[symbol])); renderStockContent(newItem.obj); } }
@@ -496,7 +528,7 @@
             gridCanvas.appendChild(el);
             const itemObj = { id, x, y, w, h, el, type, stockData: null, showTime: false, viewMode: 'line', timeRange: '1M', timeZone: 'local', cityLabel: 'LOCAL' }; items.push(itemObj);
             if (type === 'clock') renderClockContent(itemObj); if (type === 'news') renderNewsContent(itemObj); if (type === 'chat') renderChatContent(itemObj);
-            if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj);
+            if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj); if (type === 'browser') renderBrowserContent(itemObj);
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
         }
 
@@ -516,19 +548,17 @@
                     <div class="chat-header widget-header"><span>LLM CHAT</span><span style="font-size:0.8em; opacity:0.7;">ONLINE</span></div>
                     <div class="chat-history" id="history-${item.id}"><div class="chat-msg sys">System initialized. Select model and type command.</div></div>
                     <div class="chat-input-area">
-                        <input type="file" id="file-${item.id}" style="display:none">
-                        <button class="chat-upload-btn" onclick="document.getElementById('file-${item.id}').click()">📁</button>
+                        <div style="position:relative; display:inline-block;">
+                            <button class="chat-upload-btn" title="Upload File" onclick="document.getElementById('file-${item.id}').click()">📁</button>
+                            <input type="file" id="file-${item.id}" style="display:none">
+                        </div>
                         <input type="text" class="chat-input" placeholder="Type command..." id="input-${item.id}">
                         <select class="chat-model-select" id="model-${item.id}"><option value="llama3">Llama 3</option><option value="deepseek">DeepSeek</option></select>
                         <button class="chat-send-btn" id="btn-${item.id}">SEND</button>
                     </div>
                 </div>`;
             const input = container.querySelector(`#input-${item.id}`), btn = container.querySelector(`#btn-${item.id}`), history = container.querySelector(`#history-${item.id}`), modelSelect = container.querySelector(`#model-${item.id}`), fileInput = container.querySelector(`#file-${item.id}`);
-            fileInput.addEventListener('change', (e) => {
-                if(e.target.files.length > 0) {
-                    const userDiv = document.createElement('div'); userDiv.className = 'chat-msg user'; userDiv.innerText = `Uploading ${e.target.files[0].name}...`; history.appendChild(userDiv); history.scrollTop = history.scrollHeight;
-                }
-            });
+            fileInput.addEventListener('change', (e) => { if(e.target.files.length > 0) { const userDiv = document.createElement('div'); userDiv.className = 'chat-msg user'; userDiv.innerText = `Uploading ${e.target.files[0].name}...`; history.appendChild(userDiv); history.scrollTop = history.scrollHeight; } });
             const sendMsg = () => { const text = input.value.trim(); if(!text) return; const userDiv = document.createElement('div'); userDiv.className = 'chat-msg user'; userDiv.innerText = text; history.appendChild(userDiv); input.value = ''; history.scrollTop = history.scrollHeight; setTimeout(() => { const selectedModel = modelSelect.value === 'llama3' ? 'Llama 3' : 'DeepSeek'; const sysDiv = document.createElement('div'); sysDiv.className = 'chat-msg sys'; sysDiv.innerText = `[${selectedModel}] Processing request... Analysis complete. Market volatility is high.`; history.appendChild(sysDiv); history.scrollTop = history.scrollHeight; }, 800); };
             btn.onclick = sendMsg; input.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMsg(); });
         }
@@ -549,6 +579,14 @@
             toolbar.addEventListener('mousedown', e => e.stopPropagation()); content.addEventListener('mousedown', e => e.stopPropagation());
             toolbar.addEventListener('click', (e) => { if(e.target.classList.contains('note-btn') || e.target.parentElement.classList.contains('note-btn')) { const btn = e.target.classList.contains('note-btn') ? e.target : e.target.parentElement; document.execCommand(btn.dataset.cmd, false, null); content.focus(); }});
             toolbar.querySelector('.note-select').addEventListener('change', (e) => { document.execCommand('fontSize', false, e.target.value); content.focus(); });
+        }
+        function renderBrowserContent(item) {
+            const container = item.el.querySelector('.content-container'); if(container.querySelector('.browser-layout')) return;
+            container.innerHTML = `<div class="browser-layout"><div class="browser-header widget-header"><span>WEB</span><input type="text" class="browser-input" placeholder="https://" id="url-${item.id}"><button class="browser-btn" id="go-${item.id}">GO</button></div><iframe class="browser-frame" id="frame-${item.id}"></iframe></div>`;
+            const input = container.querySelector(`#url-${item.id}`), btn = container.querySelector(`#go-${item.id}`), frame = container.querySelector(`#frame-${item.id}`);
+            const loadUrl = () => { let url = input.value.trim(); if(!url.startsWith('http')) url = 'https://' + url; frame.src = url; };
+            btn.onclick = (e) => { e.stopPropagation(); loadUrl(); }; input.addEventListener('keypress', (e) => { if(e.key === 'Enter') loadUrl(); });
+            input.addEventListener('mousedown', e => e.stopPropagation());
         }
 
         function renderStockContent(item) {
@@ -599,7 +637,7 @@
         function setupInteractions(item) {
             const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
             el.addEventListener('mousedown', (e) => {
-                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; if (['news', 'chat', 'calc', 'note'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; if (['news', 'chat', 'calc', 'note', 'browser'].includes(item.type) && !e.target.closest('.widget-header')) return;
                 e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
                 function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY); if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); else el.classList.remove('collision'); }
                 function onUp(ev) { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); el.style.zIndex = ''; const finalX = snap(parseInt(el.style.left)), finalY = snap(parseInt(el.style.top)); if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; } else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; } el.classList.remove('collision'); }
