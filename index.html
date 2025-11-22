@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V8.1 PRO</title>
+    <title>BROOKLYN-TERMINAL // V8.3 PRO</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -62,29 +62,53 @@
         .visitor-count { display: flex; align-items: center; gap: 5px; }
         .visitor-num { font-family: 'Orbitron', monospace; color: var(--accent-color); font-weight: bold; letter-spacing: 1px; }
 
+        /* Sidebar Updates for Collapsible Sections */
         .sidebar { width: 300px; min-width: 250px; max-width: 500px; background-color: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: relative; z-index: 10; padding: 20px; overflow-y: auto; overflow-x: hidden; transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease; }
         .sidebar.collapsed { width: 70px; min-width: 70px; padding: 20px 10px; }
-        .sidebar.collapsed .sidebar-title, .sidebar.collapsed .stock-selector, .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .tool-item span, .sidebar.collapsed .stock-drag-item > div, .sidebar.collapsed .sidebar-footer-content label, .sidebar.collapsed .control-btn-group span { display: none; }
+        
+        /* Collapsible Section Styles */
+        .sidebar-section { margin-bottom: 15px; }
+        .sidebar-section-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 8px 0; font-size: 0.8rem; color: var(--text-secondary); 
+            cursor: pointer; border-bottom: 1px dashed var(--border-color); 
+            margin-bottom: 10px; text-transform: uppercase; font-weight: 700; 
+            user-select: none; transition: color 0.2s;
+        }
+        .sidebar-section-header:hover { color: var(--text-primary); }
+        .sidebar-section-header .arrow { font-size: 0.7em; transition: transform 0.3s; }
+        
+        /* Closed State */
+        .sidebar-section.closed .sidebar-content-wrapper { display: none; }
+        .sidebar-section.closed .arrow { transform: rotate(-90deg); }
+
+        /* Sidebar Collapsed State (Mini Mode) overrides */
+        .sidebar.collapsed .sidebar-section-header { display: none; }
+        .sidebar.collapsed .sidebar-content-wrapper { display: block !important; } /* Always show content (icons) when sidebar is mini */
+        .sidebar.collapsed .sidebar-section { margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+        .sidebar.collapsed .stock-selector, .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .stock-drag-item > div, .sidebar.collapsed .sidebar-footer-content label, .sidebar.collapsed .control-btn-group span { display: none; }
         .sidebar.collapsed .tool-item, .sidebar.collapsed .stock-drag-item { justify-content: center; padding: 10px; }
         .sidebar.collapsed .stock-drag-item span#selectedStockPrice { font-size: 0.8rem; }
         .sidebar.collapsed .sidebar-footer-content { justify-content: center; }
         .sidebar.collapsed .sidebar-footer-content::after { content: '⚙'; font-size: 12px; opacity: 0.5; cursor: pointer; }
+        .sidebar.collapsed .color-picker-container { width: 100%; justify-content: center; padding: 5px; }
+        .sidebar.collapsed .control-btn { padding: 8px 0; }
+
         .sidebar-toggle-btn { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: var(--border-radius); font-size: 12px; transition: all 0.2s; z-index: 20; }
         .sidebar-toggle-btn:hover { background: var(--accent-color); color: #000; }
         .sidebar.collapsed .sidebar-toggle-btn { right: 50%; transform: translateX(50%); top: 10px; }
-        .sidebar-title { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px; margin-top: 20px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px; text-transform: uppercase; font-weight: 700; white-space: nowrap; }
-        .sidebar-title:first-child { margin-top: 0; }
+        
         .color-picker-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: var(--input-bg); padding: 5px 10px; border-radius: var(--border-radius); border: 1px solid var(--border-color); width: fit-content; transition: all 0.3s; }
-        .sidebar.collapsed .color-picker-container { width: 100%; justify-content: center; padding: 5px; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 24px; height: 24px; cursor: pointer; background: none; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border-color); }
+
         .control-btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 20px; }
         .control-btn { background: var(--btn-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; font-family: var(--font-main); font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; border-radius: var(--border-radius); }
         .control-btn:hover { border-color: var(--accent-color); background: rgba(0, 255, 204, 0.2); }
         [data-pro="true"] .control-btn:hover { background: var(--accent-color); color: #000; }
         .control-btn:active { transform: translateY(1px); }
-        .sidebar.collapsed .control-btn { padding: 8px 0; }
+
         .tool-item { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 15px; margin-bottom: 10px; cursor: grab; transition: all 0.2s; display: flex; align-items: center; gap: 15px; white-space: nowrap; border-radius: var(--border-radius); }
         .tool-item:hover { border-color: var(--accent-color); box-shadow: var(--shadow-glow); background: rgba(255,255,255,0.08); }
         .tool-preview { width: 30px; height: 30px; border: 2px solid var(--text-primary); background: rgba(0, 255, 204, 0.1); flex-shrink: 0; border-radius: var(--border-radius); }
@@ -92,12 +116,14 @@
         .tool-preview.clock-icon { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border-color: var(--handle-color); }
         [data-pro="true"] .tool-preview.clock-icon { border-radius: 0; border-color: var(--accent-color); }
         .tool-preview.icon-only { display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        
         .stock-selector { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         .stock-selector label { font-size: 12px; color: var(--text-secondary); margin-bottom: -5px; }
         .stock-selector select, .stock-selector input { background: var(--input-bg); color: var(--input-text); border: 1px solid var(--border-color); padding: 10px; border-radius: var(--border-radius); outline: none; font-weight: 500; transition: background 0.3s, color 0.3s, border 0.3s; width: 100%; font-family: var(--font-main); }
         .stock-selector select:focus, .stock-selector input:focus { border-color: var(--accent-color); }
         .stock-drag-item { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 15px; cursor: grab; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; border-radius: var(--border-radius); white-space: nowrap; }
         .stock-drag-item:hover { border-color: var(--accent-color); box-shadow: var(--shadow-glow); }
+        
         .sidebar-footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
         .sidebar-footer-content { display: flex; align-items: center; justify-content: space-between; width: 100%; }
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
@@ -168,42 +194,24 @@
         .note-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
         .note-select { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); font-family: var(--font-main); font-size: 0.8em; cursor: pointer; border-radius: var(--border-radius); }
         
-        /* Web Browser Styles */
         .browser-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; background: #fff; }
-        /* UPDATED: New Header Style to prevent overlap and improve visibility */
         .browser-header { 
-            padding: 5px 35px 5px 10px; /* Extra right padding for menu trigger */
-            background: var(--bg-panel); 
-            display: flex; 
-            gap: 5px; 
-            align-items: center; 
-            cursor: move; 
-            border-bottom: 1px solid var(--border-color); 
-            color: var(--text-primary);
+            padding: 5px 35px 5px 10px; background: var(--bg-panel); display: flex; gap: 5px; align-items: center; cursor: move; border-bottom: 1px solid var(--border-color); color: var(--text-primary);
         }
-        /* UPDATED: Input and Button styles that adapt to theme */
         .browser-input { 
-            flex: 1; 
-            background: var(--input-bg); 
-            color: var(--text-primary); 
-            border: 1px solid var(--border-color); 
-            padding: 2px 8px; 
-            font-family: var(--font-main); 
-            border-radius: var(--border-radius); 
-            outline: none;
+            flex: 1; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); padding: 2px 8px; font-family: var(--font-main); border-radius: var(--border-radius); outline: none;
         }
         .browser-btn { 
-            background: var(--accent-color); 
-            color: #000; 
-            border: none; 
-            padding: 2px 12px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            border-radius: var(--border-radius); 
-            transition: opacity 0.2s;
+            background: var(--accent-color); color: #000; border: none; padding: 2px 10px; cursor: pointer; font-weight: bold; border-radius: var(--border-radius); transition: opacity 0.2s; font-size: 0.8em;
         }
         .browser-btn:hover { opacity: 0.8; }
         .browser-frame { flex: 1; border: none; width: 100%; background: #fff; }
+        
+        .nav-group { display: flex; gap: 2px; margin-right: 5px; }
+        .nav-btn {
+            background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); padding: 2px 6px; cursor: pointer; font-family: var(--font-main); border-radius: var(--border-radius); font-size: 0.8em;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.1); }
 
         .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
         .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
@@ -219,6 +227,7 @@
         .context-menu-item.danger:hover { background: rgba(255,255,255,0.1); color: var(--error-color); }
         .context-menu-item .submenu { display: none; position: absolute; right: 100%; top: 0; background: var(--bg-panel); border: 1px solid var(--border-color); min-width: 120px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .context-menu-item:hover .submenu { display: block; }
+
         .chart-path { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
         .chart-area { fill-opacity: 0.2; stroke: none; }
         .up .chart-path { stroke: var(--stock-up); }
@@ -252,43 +261,74 @@
     <div class="main-container">
         <div class="sidebar" id="sidebar">
             <button class="sidebar-toggle-btn" id="sidebarToggle" title="Collapse/Expand">&lt;</button>
-            <div class="sidebar-title">Library</div>
-            <div class="tool-item" draggable="true" id="tool-square"><div class="tool-preview" style="background-color: rgba(0,123,255,0.3);"></div><span>Module 10x10</span></div>
-            <div class="sidebar-title">Tools</div>
-            <div class="tool-item" draggable="true" id="tool-clock"><div class="tool-preview clock-icon">🕓</div><span>Digital Clock</span></div>
-            <div class="tool-item" draggable="true" id="tool-news"><div class="tool-preview icon-only">📰</div><span>Market</span></div>
-            <div class="tool-item" draggable="true" id="tool-chat"><div class="tool-preview icon-only">🤖</div><span>LLM Chat</span></div>
-            <div class="tool-item" draggable="true" id="tool-calc"><div class="tool-preview icon-only">🧮</div><span>Calculator</span></div>
-            <div class="tool-item" draggable="true" id="tool-note"><div class="tool-preview icon-only">📝</div><span>Notes</span></div>
-            <div class="tool-item" draggable="true" id="tool-browser"><div class="tool-preview icon-only">🌐</div><span>Web Portal</span></div>
-            <div class="sidebar-title">Stock Indicators</div>
-            <div class="stock-selector">
-                <label>Asset Class:</label>
-                <select id="categoryList">
-                    <option value="US">US Stocks (美股)</option>
-                    <option value="TW">Taiwan Stocks (台股)</option>
-                    <option value="IDX">Indices (指數)</option>
-                    <option value="CRYPTO">Crypto (加密貨幣)</option>
-                </select>
-                <label>Instrument:</label>
-                <select id="stockList"></select>
-                <input type="text" id="stockSearch" placeholder="Search (e.g., AAPL)">
+            
+            <div class="sidebar-section" id="sec-library">
+                <div class="sidebar-section-header" onclick="toggleSection('sec-library')">
+                    <span>Library</span><span class="arrow">▼</span>
+                </div>
+                <div class="sidebar-content-wrapper">
+                     <div class="tool-item" draggable="true" id="tool-square"><div class="tool-preview" style="background-color: rgba(0,123,255,0.3);"></div><span>Module 10x10</span></div>
+                </div>
             </div>
-            <div class="stock-drag-item" draggable="true" id="stockDraggable">
-                <div style="display:flex; flex-direction:column;"><span id="selectedStockName" style="font-weight:bold; font-size:1rem;">AAPL Apple</span><span style="font-size:0.8rem; opacity:0.7;">Drag to Grid</span></div>
-                <span id="selectedStockPrice" style="display:flex; flex-direction:column; align-items:end;">
-                    <div id="preview-price" style="font-size:1.2rem; font-weight:bold; color:var(--stock-up);">175.00</div>
-                    <div id="preview-change" style="font-size:0.6em; color:var(--stock-up);">▲ 1.20</div>
-                </span>
+
+            <div class="sidebar-section" id="sec-tools">
+                <div class="sidebar-section-header" onclick="toggleSection('sec-tools')">
+                    <span>Tools</span><span class="arrow">▼</span>
+                </div>
+                <div class="sidebar-content-wrapper">
+                    <div class="tool-item" draggable="true" id="tool-clock"><div class="tool-preview clock-icon">🕓</div><span>Digital Clock</span></div>
+                    <div class="tool-item" draggable="true" id="tool-news"><div class="tool-preview icon-only">📰</div><span>Market</span></div>
+                    <div class="tool-item" draggable="true" id="tool-chat"><div class="tool-preview icon-only">🤖</div><span>LLM Chat</span></div>
+                    <div class="tool-item" draggable="true" id="tool-calc"><div class="tool-preview icon-only">🧮</div><span>Calculator</span></div>
+                    <div class="tool-item" draggable="true" id="tool-note"><div class="tool-preview icon-only">📝</div><span>Notes</span></div>
+                    <div class="tool-item" draggable="true" id="tool-browser"><div class="tool-preview icon-only">🌐</div><span>Web Portal</span></div>
+                    <div class="tool-item" draggable="true" id="tool-llama"><div class="tool-preview icon-only">🦙</div><span>Llama Online</span></div>
+                </div>
             </div>
+
+            <div class="sidebar-section" id="sec-stock">
+                <div class="sidebar-section-header" onclick="toggleSection('sec-stock')">
+                    <span>Market Data</span><span class="arrow">▼</span>
+                </div>
+                <div class="sidebar-content-wrapper">
+                    <div class="stock-selector">
+                        <label>Asset Class:</label>
+                        <select id="categoryList">
+                            <option value="US">US Stocks (美股)</option>
+                            <option value="TW">Taiwan Stocks (台股)</option>
+                            <option value="IDX">Indices (指數)</option>
+                            <option value="CRYPTO">Crypto (加密貨幣)</option>
+                        </select>
+                        <label>Instrument:</label>
+                        <select id="stockList"></select>
+                        <input type="text" id="stockSearch" placeholder="Search (e.g., AAPL)">
+                    </div>
+                    <div class="stock-drag-item" draggable="true" id="stockDraggable">
+                        <div style="display:flex; flex-direction:column;"><span id="selectedStockName" style="font-weight:bold; font-size:1rem;">AAPL Apple</span><span style="font-size:0.8rem; opacity:0.7;">Drag to Grid</span></div>
+                        <span id="selectedStockPrice" style="display:flex; flex-direction:column; align-items:end;">
+                            <div id="preview-price" style="font-size:1.2rem; font-weight:bold; color:var(--stock-up);">175.00</div>
+                            <div id="preview-change" style="font-size:0.6em; color:var(--stock-up);">▲ 1.20</div>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
             <div style="margin-top: auto;"></div>
-            <div class="sidebar-title">Controls</div>
-            <div class="control-btn-group">
-                <button class="control-btn" onclick="saveLayout()">💾 SAVE</button>
-                <button class="control-btn" onclick="loadLayout()">📂 LOAD</button>
-                <button class="control-btn" onclick="clearGrid()">🗑️ CLEAR</button>
+            
+            <div class="sidebar-section" id="sec-controls">
+                 <div class="sidebar-section-header" onclick="toggleSection('sec-controls')">
+                    <span>Controls</span><span class="arrow">▼</span>
+                </div>
+                 <div class="sidebar-content-wrapper">
+                     <div class="control-btn-group">
+                        <button class="control-btn" onclick="saveLayout()">💾 SAVE</button>
+                        <button class="control-btn" onclick="loadLayout()">📂 LOAD</button>
+                        <button class="control-btn" onclick="clearGrid()">🗑️ CLEAR</button>
+                    </div>
+                    <div class="color-picker-container"><input type="color" id="colorPicker" value="#007bff"><span id="colorValue" style="font-size: 12px; opacity: 0.8;">#007bff</span></div>
+                 </div>
             </div>
-            <div class="color-picker-container"><input type="color" id="colorPicker" value="#007bff"><span id="colorValue" style="font-size: 12px; opacity: 0.8;">#007bff</span></div>
+
             <div class="sidebar-footer">
                 <div class="sidebar-footer-content">
                     <span id="mode-label">MODE: DARK</span>
@@ -313,6 +353,12 @@
         const sidebar = document.getElementById('sidebar'), sidebarToggle = document.getElementById('sidebarToggle');
         let items = [], activeColor = '#007bff', currentStock = { symbol: 'AAPL', name: 'Apple Inc.', price: 175.00, change: 1.20, history: [], type: 'stock' };
         let isSidebarCollapsed = false, isLiveConnectionFailed = false, cryptoDataAvailable = false;
+
+        // Toggle Section Logic
+        window.toggleSection = function(id) {
+            const sec = document.getElementById(id);
+            if(sec) sec.classList.toggle('closed');
+        }
 
         function initVisitorCounter() {
             const visitorEl = document.getElementById('visitor-num');
@@ -411,7 +457,9 @@
                     data.price = newPrice; data.change = change;
                 }
             });
+            
             if (currentStock.symbol && mockStockData[currentStock.symbol]) updateSidebarPreview(mockStockData[currentStock.symbol]);
+
             items.forEach(item => {
                 if(item.type === 'stock' && item.stockData) {
                     const symbol = item.stockData.symbol;
@@ -430,7 +478,9 @@
             if (stock.isCrypto && !cryptoDataAvailable) {
                 pPrice.innerText = "No Data"; pChange.innerText = "Temporarily Unavailable"; pPrice.style.color = 'var(--text-secondary)'; pChange.style.color = 'var(--text-secondary)';
             } else {
-                const isUp = stock.change >= 0; const suffix = stock.isCrypto ? '%' : ''; const liveTag = (stock.isCrypto && cryptoDataAvailable) ? ' [LIVE]' : '';
+                const isUp = stock.change >= 0;
+                const suffix = stock.isCrypto ? '%' : '';
+                const liveTag = (stock.isCrypto && cryptoDataAvailable) ? ' [LIVE]' : '';
                 pPrice.innerText = `${stock.price.toFixed(2)}${liveTag}`; pPrice.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
                 pChange.innerText = `${isUp ? '▲' : '▼'} ${Math.abs(stock.change).toFixed(2)}${suffix}`; pChange.style.color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
             }
@@ -453,13 +503,12 @@
         themeSwitch.addEventListener('change', (e) => { if (e.target.checked) { document.documentElement.setAttribute('data-theme', 'light'); modeLabel.innerText = "MODE: LIGHT"; } else { document.documentElement.removeAttribute('data-theme'); modeLabel.innerText = "MODE: DARK"; }});
         proSwitch.addEventListener('change', (e) => { if (e.target.checked) document.documentElement.setAttribute('data-pro', 'true'); else document.documentElement.removeAttribute('data-pro'); });
         colorPicker.addEventListener('input', (e) => { activeColor = e.target.value; colorValue.innerText = activeColor; document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D'; document.querySelector('.tool-preview').style.borderColor = activeColor; });
-        document.querySelector('.sidebar-footer').addEventListener('click', (e) => { if (isSidebarCollapsed && e.target === document.querySelector('.sidebar-footer')) themeSwitch.click(); });
-
+        
         function saveLayout() {
             const layoutData = items.map(i => {
                 const el = document.getElementById(i.id);
                 let noteContent = ''; if(i.type === 'note') { const contentDiv = el.querySelector('.note-content'); if(contentDiv) noteContent = contentDiv.innerHTML; }
-                let webUrl = ''; if (i.type === 'browser') { const iframe = el.querySelector('.browser-frame'); if (iframe) webUrl = iframe.src; }
+                let webUrl = ''; if (i.type === 'browser' || i.type === 'llama') { const iframe = el.querySelector('.browser-frame'); if (iframe) webUrl = iframe.src; }
                 return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, stockSymbol: i.stockData ? i.stockData.symbol : null, viewMode: i.viewMode, timeRange: i.timeRange, showTime: i.showTime, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent, webUrl: webUrl };
             });
             localStorage.setItem('brooklyn_layout', JSON.stringify(layoutData)); alert('Layout Saved!');
@@ -470,12 +519,12 @@
             clearGrid();
             const layoutData = JSON.parse(saved);
             layoutData.forEach(data => {
-                let color = '#007bff'; if(['clock','news','chat','calc','note','browser'].includes(data.type)) color = '#ffffff';
+                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama'].includes(data.type)) color = '#ffffff';
                 const newItem = createItem(data.x, data.y, data.w, data.h, color, data.type);
                 if(data.type === 'stock' && data.stockSymbol && mockStockData[data.stockSymbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[data.stockSymbol])); newItem.obj.viewMode = data.viewMode; newItem.obj.timeRange = data.timeRange; newItem.obj.showTime = data.showTime; renderStockContent(newItem.obj); } 
                 else if (data.type === 'clock') { newItem.obj.timeZone = data.timeZone; newItem.obj.cityLabel = data.cityLabel; renderClockContent(newItem.obj); } 
                 else if (data.type === 'note') { const el = document.getElementById(newItem.obj.id); const contentDiv = el.querySelector('.note-content'); if(contentDiv && data.noteContent) contentDiv.innerHTML = data.noteContent; } 
-                else if (data.type === 'browser' && data.webUrl) { const el = document.getElementById(newItem.obj.id); const iframe = el.querySelector('.browser-frame'); const input = el.querySelector('.browser-input'); if (iframe && input) { iframe.src = data.webUrl; input.value = data.webUrl; } }
+                else if ((data.type === 'browser' || data.type === 'llama') && data.webUrl) { const el = document.getElementById(newItem.obj.id); const iframe = el.querySelector('.browser-frame'); const input = el.querySelector('.browser-input'); if (iframe && input) { iframe.src = data.webUrl; input.value = data.webUrl; } }
             });
         }
 
@@ -488,6 +537,7 @@
         document.getElementById('tool-calc').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'calc'));
         document.getElementById('tool-note').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'note'));
         document.getElementById('tool-browser').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'browser'));
+        document.getElementById('tool-llama').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'llama'));
         stockDraggable.addEventListener('dragstart', (e) => { e.dataTransfer.setData('type', 'stock'); e.dataTransfer.setData('symbol', currentStock.symbol); });
         
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
@@ -500,6 +550,7 @@
             else if (type === 'calc') { if(!checkCollision({x, y, w: 200, h: 300})) createItem(x, y, 200, 300, '#ffffff', 'calc'); }
             else if (type === 'note') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, '#ffffff', 'note'); }
             else if (type === 'browser') { if(!checkCollision({x, y, w: 400, h: 300})) createItem(x, y, 400, 300, '#ffffff', 'browser'); }
+            else if (type === 'llama') { if(!checkCollision({x, y, w: 400, h: 500})) createItem(x, y, 400, 500, '#ffffff', 'llama'); }
             else if (type === 'stock') {
                 const symbol = e.dataTransfer.getData('symbol');
                 if(!checkCollision({x, y, w: 300, h: 200})) { const newItem = createItem(x, y, 300, 200, activeColor, 'stock'); if(mockStockData[symbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[symbol])); renderStockContent(newItem.obj); } }
@@ -528,7 +579,9 @@
             gridCanvas.appendChild(el);
             const itemObj = { id, x, y, w, h, el, type, stockData: null, showTime: false, viewMode: 'line', timeRange: '1M', timeZone: 'local', cityLabel: 'LOCAL' }; items.push(itemObj);
             if (type === 'clock') renderClockContent(itemObj); if (type === 'news') renderNewsContent(itemObj); if (type === 'chat') renderChatContent(itemObj);
-            if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj); if (type === 'browser') renderBrowserContent(itemObj);
+            if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj); 
+            if (type === 'browser') renderBrowserContent(itemObj);
+            if (type === 'llama') renderBrowserContent(itemObj, 'https://llama.online/chat', 'LLAMA ONLINE');
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
         }
 
@@ -580,13 +633,52 @@
             toolbar.addEventListener('click', (e) => { if(e.target.classList.contains('note-btn') || e.target.parentElement.classList.contains('note-btn')) { const btn = e.target.classList.contains('note-btn') ? e.target : e.target.parentElement; document.execCommand(btn.dataset.cmd, false, null); content.focus(); }});
             toolbar.querySelector('.note-select').addEventListener('change', (e) => { document.execCommand('fontSize', false, e.target.value); content.focus(); });
         }
-        function renderBrowserContent(item) {
+        function renderBrowserContent(item, initialUrl = '', title = 'WEB') {
             const container = item.el.querySelector('.content-container'); if(container.querySelector('.browser-layout')) return;
-            container.innerHTML = `<div class="browser-layout"><div class="browser-header widget-header"><span>WEB</span><input type="text" class="browser-input" placeholder="https://" id="url-${item.id}"><button class="browser-btn" id="go-${item.id}">GO</button></div><iframe class="browser-frame" id="frame-${item.id}"></iframe></div>`;
-            const input = container.querySelector(`#url-${item.id}`), btn = container.querySelector(`#go-${item.id}`), frame = container.querySelector(`#frame-${item.id}`);
-            const loadUrl = () => { let url = input.value.trim(); if(!url.startsWith('http')) url = 'https://' + url; frame.src = url; };
-            btn.onclick = (e) => { e.stopPropagation(); loadUrl(); }; input.addEventListener('keypress', (e) => { if(e.key === 'Enter') loadUrl(); });
+            container.innerHTML = `
+                <div class="browser-layout">
+                    <div class="browser-header widget-header">
+                        <span style="font-weight:bold;">${title}</span>
+                        <div class="nav-group">
+                            <button class="nav-btn" id="back-${item.id}"> &lt; </button>
+                            <button class="nav-btn" id="fwd-${item.id}"> &gt; </button>
+                            <button class="nav-btn" id="ref-${item.id}"> ↻ </button>
+                        </div>
+                        <input type="text" class="browser-input" placeholder="https://" id="url-${item.id}" value="${initialUrl}">
+                        <button class="browser-btn" id="go-${item.id}">GO</button>
+                    </div>
+                    <iframe class="browser-frame" id="frame-${item.id}" src="${initialUrl}"></iframe>
+                </div>
+            `;
+            const input = container.querySelector(`#url-${item.id}`), 
+                  btn = container.querySelector(`#go-${item.id}`), 
+                  frame = container.querySelector(`#frame-${item.id}`),
+                  backBtn = container.querySelector(`#back-${item.id}`),
+                  fwdBtn = container.querySelector(`#fwd-${item.id}`),
+                  refBtn = container.querySelector(`#ref-${item.id}`);
+            
+            item.history = initialUrl ? [initialUrl] : [];
+            item.historyIndex = initialUrl ? 0 : -1;
+
+            const loadUrl = (url) => {
+                if(!url) return;
+                if(!url.startsWith('http')) url = 'https://' + url;
+                frame.src = url;
+                input.value = url;
+                if(item.history[item.historyIndex] !== url) {
+                    item.history = item.history.slice(0, item.historyIndex + 1);
+                    item.history.push(url);
+                    item.historyIndex++;
+                }
+            };
+
+            btn.onclick = (e) => { e.stopPropagation(); loadUrl(input.value.trim()); }; 
+            input.addEventListener('keypress', (e) => { if(e.key === 'Enter') loadUrl(input.value.trim()); });
             input.addEventListener('mousedown', e => e.stopPropagation());
+            
+            backBtn.onclick = (e) => { e.stopPropagation(); if(item.historyIndex > 0) { item.historyIndex--; const url = item.history[item.historyIndex]; frame.src = url; input.value = url; } };
+            fwdBtn.onclick = (e) => { e.stopPropagation(); if(item.historyIndex < item.history.length - 1) { item.historyIndex++; const url = item.history[item.historyIndex]; frame.src = url; input.value = url; } };
+            refBtn.onclick = (e) => { e.stopPropagation(); frame.src = frame.src; };
         }
 
         function renderStockContent(item) {
@@ -637,7 +729,7 @@
         function setupInteractions(item) {
             const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
             el.addEventListener('mousedown', (e) => {
-                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; if (['news', 'chat', 'calc', 'note', 'browser'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; if (['news', 'chat', 'calc', 'note', 'browser', 'llama'].includes(item.type) && !e.target.closest('.widget-header')) return;
                 e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
                 function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY); if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); else el.classList.remove('collision'); }
                 function onUp(ev) { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); el.style.zIndex = ''; const finalX = snap(parseInt(el.style.left)), finalY = snap(parseInt(el.style.top)); if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; } else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; } el.classList.remove('collision'); }
