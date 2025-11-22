@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BROOKLYN-TERMINAL // V11.01 test1</title>
+    <title>BROOKLYN-TERMINAL // V11.0 WORKSTATION</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -574,7 +574,7 @@
 
                     <div class="tool-item" draggable="true" id="tool-llama"><div class="tool-preview icon-only">🦙</div><span>Llama Online <span class="rec-badge">推薦</span></span></div>
                     <div class="tool-item" draggable="true" id="tool-browser"><div class="tool-preview icon-only">🌐</div><span>Web Portal <span class="rec-badge">推薦</span></span></div>
-	            <div class="tool-item" draggable="true" id="tool-yt-video"><div class="tool-preview icon-only">▶️</div><span>YouTube Player</span></div>
+
                     <div class="tool-item" draggable="true" id="tool-tvnews"><div class="tool-preview icon-only">🌐</div><span>Global News</span></div>
                     <div class="tool-item" draggable="true" id="tool-clock"><div class="tool-preview clock-icon">🕓</div><span>Digital Clock</span></div>
                     <div class="tool-item" draggable="true" id="tool-weather"><div class="tool-preview icon-only">☁️</div><span>Weather Station</span></div>
@@ -730,7 +730,6 @@
                 else if (data.type === 'kanban') renderKanbanContent(newItem.obj);
                 else if (data.type === 'audio') renderAudioContent(newItem.obj);
                 else if (data.type === 'pomodoro') renderPomodoroContent(newItem.obj);
-                else if (data.type === 'yt-video') renderYouTubeVideo(newItem.obj);
             });
         }
 
@@ -757,7 +756,6 @@
         document.getElementById('tool-note').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'note'));
         document.getElementById('tool-browser').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'browser'));
         document.getElementById('tool-llama').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'llama'));
-        document.getElementById('tool-yt-video').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'yt-video'));
         
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
         gridCanvas.addEventListener('drop', (e) => {
@@ -783,7 +781,6 @@
             else if (type === 'note') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, '#ffffff', 'note'); }
             else if (type === 'browser') { if(!checkCollision({x, y, w: 400, h: 300})) createItem(x, y, 400, 300, '#ffffff', 'browser'); }
             else if (type === 'llama') { if(!checkCollision({x, y, w: 400, h: 500})) createItem(x, y, 400, 500, '#ffffff', 'llama'); }
-            else if (type === 'yt-video') { if(!checkCollision({x, y, w: 400, h: 300})) createItem(x, y, 400, 300, '#ff0000', 'yt-video'); }
         });
         function createItem(x, y, w, h, color, type) {
             const id = 'item_' + Date.now();
@@ -804,7 +801,6 @@
                 zones.forEach(z => { const subItem = document.createElement('div'); subItem.className = 'context-menu-item'; subItem.innerText = z.label; subItem.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.timeZone = z.tz; obj.cityLabel = z.display; renderClockContent(obj); } menu.classList.remove('show'); }; submenu.appendChild(subItem); });
                 menu.insertBefore(worldBtn, removeBtn);
             }
-            if (type === 'yt-video') renderYouTubeVideo(itemObj);
             if (type === 'weather') {
                 const cityBtn = document.createElement('div');
                 cityBtn.className = 'context-menu-item'; cityBtn.innerHTML = '切換城市 (Switch City) <div class="submenu"></div>';
@@ -919,140 +915,94 @@
         }
 
         function renderAudioContent(item) {
-           // 1. 定義您的音樂電台清單 (您可以隨意新增 YouTube Video ID)
-const musicStations = [
-    { name: "Lofi Girl (Study)", id: "jfKfPfyJRdk" },
-    { name: "Synthwave (Chill)", id: "4xDzrJKXOOY" },
-    { name: "Jazz (Relax)", id: "Dx5qFachd3A" },
-    { name: "Dark Techno (Focus)", id: "S19Aucw7Jks" },
-    { name: "Rain Sounds", id: "mPZkdNFkNps" }
-];
-
-// 2. 修改後的 renderAudioContent
-function renderAudioContent(item) {
-    const container = item.el.querySelector('.content-container');
-    if(container.querySelector('.audio-layout')) return;
-
-    // 建立下拉選單的 HTML 選項
-    const optionsHTML = musicStations.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-
-    container.innerHTML = `
-        <div class="audio-layout">
-            <div class="audio-header widget-header">
-                <span>NEURAL AUDIO</span>
-                <select class="chat-model-select" style="font-size:0.7em; padding:0;" onchange="changeStation('${item.id}', this.value)">
-                    ${optionsHTML}
-                </select>
-            </div>
+            const container = item.el.querySelector('.content-container');
+            if(container.querySelector('.audio-layout')) return;
             
-            <div class="audio-visualizer">
-                <div class="audio-bar" style="height:40%; animation-delay:0s"></div>
-                <div class="audio-bar" style="height:70%; animation-delay:0.2s"></div>
-                <div class="audio-bar" style="height:30%; animation-delay:0.4s"></div>
-                <div class="audio-bar" style="height:80%; animation-delay:0.1s"></div>
-                <div class="audio-bar" style="height:50%; animation-delay:0.3s"></div>
-                <div class="audio-bar" style="height:90%; animation-delay:0.5s"></div>
-                <div class="audio-bar" style="height:20%; animation-delay:0s"></div>
-            </div>
+            container.innerHTML = `
+                <div class="audio-layout">
+                    <div class="audio-header widget-header"><span>NEURAL AUDIO</span><span>LOFI.RADIO</span></div>
+                    
+                    <div class="audio-visualizer">
+                        <div class="audio-bar" style="height:40%; animation-delay:0s"></div>
+                        <div class="audio-bar" style="height:70%; animation-delay:0.2s"></div>
+                        <div class="audio-bar" style="height:30%; animation-delay:0.4s"></div>
+                        <div class="audio-bar" style="height:80%; animation-delay:0.1s"></div>
+                        <div class="audio-bar" style="height:50%; animation-delay:0.3s"></div>
+                        <div class="audio-bar" style="height:90%; animation-delay:0.5s"></div>
+                        <div class="audio-bar" style="height:20%; animation-delay:0s"></div>
+                    </div>
 
-            <div class="audio-controls">
-                <button class="audio-btn" onclick="toggleAudio('${item.id}')">⏯</button>
-            </div>
-            
-            <iframe id="yt-${item.id}" width="0" height="0" 
-                src="https://www.youtube.com/embed/${musicStations[0].id}?enablejsapi=1" 
-                frameborder="0" allow="autoplay"></iframe>
-        </div>
-    `;
-    item.isPlaying = false;
-}
-
-// 3. 新增切換電台的功能
-window.changeStation = function(itemId, videoId) {
-    const item = items.find(i => i.id === itemId);
-    const iframe = document.getElementById(`yt-${itemId}`);
-    
-    // 切換來源
-    let newSrc = `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
-    
-    // 如果原本正在播放，切換後要直接開始播
-    if(item.isPlaying) {
-        newSrc += "&autoplay=1";
-    }
-    
-    iframe.src = newSrc;
-}
-
-// 4. toggleAudio 維持原本邏輯 (微調以適應切換)
-window.toggleAudio = function(itemId) {
-    const item = items.find(i => i.id === itemId);
-    const iframe = document.getElementById(`yt-${itemId}`);
-    
-    // 取得當前 iframe 的 src (不包含 autoplay 參數的部分)
-    let currentSrc = iframe.src.replace("&autoplay=1", "");
-
-    if(!item.isPlaying) {
-        iframe.src = currentSrc + "&autoplay=1";
-        item.isPlaying = true;
-        item.el.querySelector('.audio-visualizer').style.opacity = '1';
-    } else {
-        iframe.src = currentSrc; // 移除 autoplay 參數會停止播放
-        item.isPlaying = false;
-        item.el.querySelector('.audio-visualizer').style.opacity = '0.5';
-    }
-}
-// 用來從網址提取 Video ID 的輔助函數
-function getYouTubeID(url) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-}
-
-function renderYouTubeVideo(item) {
-    const container = item.el.querySelector('.content-container');
-    if(container.querySelector('.yt-layout')) return;
-
-    container.innerHTML = `
-        <div style="display:flex; flex-direction:column; width:100%; height:100%; background:#000;">
-            <div class="widget-header" style="padding:5px 10px; display:flex; gap:5px; background:var(--bg-panel); border-bottom:1px solid var(--border-color);">
-                <input type="text" id="yt-input-${item.id}" placeholder="貼上 YouTube 網址..." 
-                    style="flex:1; background:var(--input-bg); border:1px solid var(--border-color); color:var(--text-primary); font-size:0.8em; padding:2px 5px;">
-                <button id="yt-btn-${item.id}" 
-                    style="background:var(--accent-color); color:#000; border:none; cursor:pointer; font-weight:bold; font-size:0.8em;">LOAD</button>
-            </div>
-            <div style="flex:1; position:relative;">
-                <iframe id="yt-frame-${item.id}" 
-                    style="position:absolute; top:0; left:0; width:100%; height:100%;" 
-                    src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-                </iframe>
-                <div id="yt-placeholder-${item.id}" style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#333; pointer-events:none;">
-                    NO SIGNAL
+                    <div class="audio-controls">
+                        <button class="audio-btn" onclick="toggleAudio('${item.id}')">⏯</button>
+                    </div>
+                    
+                    <iframe id="yt-${item.id}" width="0" height="0" src="https://www.youtube.com/embed/jfKfPfyJRdk?enablejsapi=1" frameborder="0" allow="autoplay"></iframe>
                 </div>
-            </div>
-        </div>
-    `;
-
-    const input = document.getElementById(`yt-input-${item.id}`);
-    const btn = document.getElementById(`yt-btn-${item.id}`);
-    const frame = document.getElementById(`yt-frame-${item.id}`);
-    const placeholder = document.getElementById(`yt-placeholder-${item.id}`);
-
-    // 載入影片的邏輯
-    const loadVideo = () => {
-        const val = input.value.trim();
-        const vidId = getYouTubeID(val);
-        if(vidId) {
-            frame.src = `https://www.youtube.com/embed/${vidId}`;
-            placeholder.style.display = 'none';
-        } else {
-            alert("無效的 YouTube 網址 (Invalid URL)");
+            `;
+            item.isPlaying = false;
         }
-    };
+        
+        window.toggleAudio = function(itemId) {
+            const item = items.find(i => i.id === itemId);
+            const iframe = document.getElementById(`yt-${itemId}`);
+            if(!item.isPlaying) {
+                // Trick to play: reload src with autoplay (since we can't easily access YT API without script loading)
+                // Or use postMessage if API was loaded. Simple reload method for standalone HTML:
+                iframe.src = iframe.src + "&autoplay=1";
+                item.isPlaying = true;
+                item.el.querySelector('.audio-visualizer').style.opacity = '1';
+            } else {
+                iframe.src = iframe.src.replace("&autoplay=1", "");
+                item.isPlaying = false;
+                item.el.querySelector('.audio-visualizer').style.opacity = '0.5';
+            }
+        }
 
-    btn.onclick = (e) => { e.stopPropagation(); loadVideo(); };
-    input.addEventListener('mousedown', e => e.stopPropagation()); // 防止拖曳干擾
-    input.addEventListener('keypress', (e) => { if(e.key === 'Enter') loadVideo(); });
-}
+        function renderPomodoroContent(item) {
+            const container = item.el.querySelector('.content-container');
+            if(container.querySelector('.pomo-layout')) return;
+            
+            container.innerHTML = `
+                <div class="pomo-layout">
+                    <div class="pomo-header widget-header"><span>CHRONO SYNC</span></div>
+                    <div class="pomo-status" id="pomo-status-${item.id}">FOCUS</div>
+                    <div class="pomo-time" id="pomo-time-${item.id}">25:00</div>
+                    <div class="pomo-controls">
+                        <button class="pomo-btn" onclick="startPomo('${item.id}')">START</button>
+                        <button class="pomo-btn" onclick="resetPomo('${item.id}')">RESET</button>
+                    </div>
+                </div>
+            `;
+            item.pomoTime = 25 * 60;
+            item.pomoInterval = null;
+        }
+
+        window.startPomo = function(itemId) {
+            const item = items.find(i => i.id === itemId);
+            if(item.pomoInterval) return;
+            
+            item.pomoInterval = setInterval(() => {
+                item.pomoTime--;
+                if(item.pomoTime < 0) {
+                    clearInterval(item.pomoInterval);
+                    item.pomoInterval = null;
+                    alert("Session Complete");
+                    return;
+                }
+                const m = Math.floor(item.pomoTime / 60).toString().padStart(2, '0');
+                const s = (item.pomoTime % 60).toString().padStart(2, '0');
+                document.getElementById(`pomo-time-${itemId}`).innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        window.resetPomo = function(itemId) {
+            const item = items.find(i => i.id === itemId);
+            if(item.pomoInterval) clearInterval(item.pomoInterval);
+            item.pomoInterval = null;
+            item.pomoTime = 25 * 60;
+            document.getElementById(`pomo-time-${itemId}`).innerText = "25:00";
+        }
+
         // --- TradingView Functionalities ---
         function renderTradingViewContent(item) {
             const container = item.el.querySelector('.content-container');
