@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V10.2 PRO</title>
+    <title>BROOKLYN-TERMINAL // V10.3 TUTORIAL</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -137,24 +137,11 @@
         [data-pro="true"] .tool-preview.clock-icon { border-radius: 0; border-color: var(--accent-color); }
         .tool-preview.icon-only { display: flex; align-items: center; justify-content: center; font-size: 16px; }
         
-        /* Recommendation Badge Style */
         .rec-badge {
-            font-size: 0.6em;
-            background-color: var(--accent-color);
-            color: #000;
-            padding: 2px 5px;
-            border-radius: 2px;
-            margin-left: 6px;
-            font-weight: 900;
-            vertical-align: middle;
-            letter-spacing: 0;
-            box-shadow: 0 0 5px rgba(0, 255, 204, 0.4);
+            font-size: 0.6em; background-color: var(--accent-color); color: #000; padding: 2px 5px;
+            border-radius: 2px; margin-left: 6px; font-weight: 900; vertical-align: middle; letter-spacing: 0; box-shadow: 0 0 5px rgba(0, 255, 204, 0.4);
         }
-        [data-pro="true"] .rec-badge {
-            background-color: var(--text-primary);
-            color: #000;
-            box-shadow: none;
-        }
+        [data-pro="true"] .rec-badge { background-color: var(--text-primary); color: #000; box-shadow: none; }
 
         .sidebar-footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
         .sidebar-footer-content { display: flex; align-items: center; justify-content: space-between; width: 100%; }
@@ -335,9 +322,120 @@
         .context-menu-item .submenu { display: none; position: absolute; right: 100%; top: 0; background: var(--bg-panel); border: 1px solid var(--border-color); min-width: 120px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .context-menu-item:hover .submenu { display: block; }
         .widget-header { cursor: move; }
+
+        /* Tutorial Styles */
+        #tutorial-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 99999;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        #tutorial-overlay.active { opacity: 1; pointer-events: auto; }
+        .tutorial-card {
+            width: 500px; max-width: 90%;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid var(--accent-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        .tutorial-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem; color: var(--accent-color);
+            margin-bottom: 20px; letter-spacing: 2px;
+        }
+        .tutorial-anim-box {
+            width: 100%; height: 180px;
+            background: #000; border: 1px dashed var(--border-color);
+            margin: 20px 0; position: relative; overflow: hidden;
+            border-radius: 4px;
+        }
+        /* Animation Elements */
+        .demo-sidebar { position: absolute; left: 0; top: 0; width: 80px; height: 100%; background: #111; border-right: 1px solid #333; display: flex; justify-content: center; padding-top: 40px; }
+        .demo-item { width: 40px; height: 40px; background: rgba(0,255,204,0.1); border: 1px solid var(--accent-color); border-radius: 4px; }
+        .demo-cursor { 
+            position: absolute; top: 55px; left: 30px; 
+            width: 20px; height: 20px; 
+            background: white; clip-path: polygon(0 0, 0% 100%, 100% 50%);
+            transform: rotate(-15deg);
+            animation: dragDemo 3s infinite ease-in-out;
+            z-index: 10;
+        }
+        .demo-ghost-item {
+            position: absolute; top: 50px; left: 20px;
+            width: 40px; height: 40px; 
+            background: rgba(0,255,204,0.3); border: 1px solid var(--accent-color);
+            opacity: 0;
+            animation: itemMove 3s infinite ease-in-out;
+        }
+        .demo-target {
+            position: absolute; top: 50px; right: 50px;
+            width: 120px; height: 80px;
+            border: 2px dashed #444;
+            display: flex; justify-content: center; align-items: center;
+            color: #444; font-size: 0.8em;
+        }
+        
+        @keyframes dragDemo {
+            0% { top: 55px; left: 30px; transform: scale(1); }
+            20% { top: 55px; left: 30px; transform: scale(0.8); } /* Click */
+            60% { top: 80px; left: 280px; transform: scale(0.8); } /* Drag */
+            80% { top: 80px; left: 280px; transform: scale(1); } /* Release */
+            100% { top: 55px; left: 30px; transform: scale(1); } /* Reset */
+        }
+        @keyframes itemMove {
+            0%, 20% { opacity: 0; top: 50px; left: 20px; }
+            21% { opacity: 1; }
+            60% { top: 75px; left: 270px; opacity: 1; }
+            80% { top: 75px; left: 270px; opacity: 0; } /* Dropped */
+            100% { opacity: 0; }
+        }
+
+        .tutorial-text { font-size: 0.9rem; color: #aaa; margin-bottom: 10px; line-height: 1.5; }
+        .tutorial-highlight { color: var(--text-primary); font-weight: bold; }
+        .tutorial-btn {
+            background: var(--accent-color); color: #000;
+            border: none; padding: 10px 30px;
+            font-family: 'Rajdhani', sans-serif; font-weight: bold; font-size: 1rem;
+            cursor: pointer; margin-top: 10px;
+            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+            transition: transform 0.1s;
+        }
+        .tutorial-btn:hover { opacity: 0.9; }
+        .tutorial-btn:active { transform: translateY(2px); }
+
+        .helper-btn {
+            width: 30px; height: 30px; border: 1px solid var(--border-color);
+            color: var(--text-secondary); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-weight: bold; font-family: monospace;
+            transition: all 0.2s;
+        }
+        .helper-btn:hover { color: var(--accent-color); border-color: var(--accent-color); background: rgba(0,255,204,0.1); }
     </style>
 </head>
 <body>
+    <div id="tutorial-overlay">
+        <div class="tutorial-card">
+            <div class="tutorial-title">SYSTEM INITIATED</div>
+            <div class="tutorial-text">
+                <span class="tutorial-highlight">Drag & Drop</span> tools from the sidebar to the workspace.<br>
+                從左側工具列 <span class="tutorial-highlight">拖曳 (Drag)</span> 並放置到操作區。
+            </div>
+            <div class="tutorial-anim-box">
+                <div class="demo-sidebar"><div class="demo-item"></div></div>
+                <div class="demo-target">DROP ZONE</div>
+                <div class="demo-ghost-item"></div>
+                <div class="demo-cursor"></div>
+            </div>
+            <button class="tutorial-btn" onclick="closeTutorial()">INITIALIZE</button>
+        </div>
+    </div>
+
     <header>
         <div class="brand">
             <svg class="logo-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
@@ -415,6 +513,9 @@
                     <span>PRO MODE</span>
                     <label class="switch"><input type="checkbox" id="proSwitch"><span class="slider"></span></label>
                 </div>
+                <div style="display:flex; justify-content:flex-end; margin-top:5px;">
+                    <div class="helper-btn" onclick="showTutorial()" title="Show Tutorial">?</div>
+                </div>
             </div>
         </div>
         <div class="workspace">
@@ -430,6 +531,18 @@
         let items = [], activeColor = '#007bff';
         let isSidebarCollapsed = false;
         
+        // Tutorial Logic
+        function showTutorial() {
+            document.getElementById('tutorial-overlay').classList.add('active');
+        }
+        function closeTutorial() {
+            document.getElementById('tutorial-overlay').classList.remove('active');
+        }
+        // Auto-show tutorial on first load (simulated by just running it once)
+        window.onload = function() {
+            setTimeout(showTutorial, 500);
+        };
+
         // Toggle Section Logic
         window.toggleSection = function(id) {
             const sec = document.getElementById(id);
@@ -459,11 +572,11 @@
                 let weatherCity = ''; if(i.type === 'weather') weatherCity = i.cityLabel;
                 return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent, webUrl: webUrl, weatherCity: weatherCity };
             });
-            localStorage.setItem('brooklyn_layout_v10_2', JSON.stringify(layoutData)); alert('Layout Saved!');
+            localStorage.setItem('brooklyn_layout_v10_3', JSON.stringify(layoutData)); alert('Layout Saved!');
         }
 
         function loadLayout() {
-            const saved = localStorage.getItem('brooklyn_layout_v10_2');
+            const saved = localStorage.getItem('brooklyn_layout_v10_3');
             if(!saved) { alert('No saved layout found.'); return; }
             clearGrid();
             const layoutData = JSON.parse(saved);
