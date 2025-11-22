@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V9.0 PRO</title>
+    <title>BROOKLYN-TERMINAL // V9.5 PRO</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -15,6 +15,7 @@
             --handle-color: #ff0055; --shadow-glow: 0 0 10px rgba(0, 255, 204, 0.3);
             --glass-bg: rgba(17, 17, 17, 0.95); --error-color: #ff0033;
             --stock-up: #00ffcc; --stock-down: #ff0033;
+            --stock-blue: #2962ff; /* TradingView Blue */
             --input-bg: rgba(0,0,0,0.5); --input-text: #00ffcc;
             --msg-user-bg: rgba(0, 255, 204, 0.1); --msg-sys-bg: rgba(255, 255, 255, 0.05);
             --btn-bg: rgba(0, 255, 204, 0.1);
@@ -28,6 +29,7 @@
             --grid-line: rgba(0, 0, 0, 0.05); --grid-line-strong: rgba(0, 0, 0, 0.1);
             --handle-color: #ff9900; --shadow-glow: none; --glass-bg: rgba(255, 255, 255, 0.98);
             --error-color: #e74c3c; --stock-up: #27ae60; --stock-down: #c0392b;
+            --stock-blue: #2962ff;
             --input-bg: #f0f2f5; --input-text: #333333;
             --msg-user-bg: rgba(0, 102, 204, 0.1); --msg-sys-bg: rgba(0, 0, 0, 0.03);
             --btn-bg: rgba(0, 0, 0, 0.05);
@@ -39,6 +41,7 @@
             --grid-line: rgba(255, 152, 0, 0.15); --grid-line-strong: rgba(255, 152, 0, 0.3);
             --handle-color: #ffffff; --shadow-glow: none; --glass-bg: #000000; 
             --error-color: #ff3333; --stock-up: #00ff00; --stock-down: #ff3333;
+            --stock-blue: #ff9800;
             --input-bg: #000000; --input-text: #ff9800;
             --msg-user-bg: #331a00; --msg-sys-bg: #1a1a1a; --btn-bg: #331a00;
             --font-main: 'Consolas', 'Monaco', 'Courier New', monospace;
@@ -87,7 +90,8 @@
         .sidebar.collapsed .sidebar-content-wrapper { display: block !important; }
         .sidebar.collapsed .sidebar-section { margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
         .sidebar.collapsed .stock-selector, .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .stock-drag-item > div, .sidebar.collapsed .sidebar-footer-content label, .sidebar.collapsed .control-btn-group span { display: none; }
-        .sidebar.collapsed .tool-item, .sidebar.collapsed .stock-drag-item { justify-content: center; padding: 10px; }
+        .sidebar.collapsed .tool-item, .sidebar.collapsed .stock-drag-item { justify-content: center; padding: 15px 0; }
+        .sidebar.collapsed .tool-item span { display: none; }
         .sidebar.collapsed .stock-drag-item span#selectedStockPrice { font-size: 0.8rem; }
         .sidebar.collapsed .sidebar-footer-content { justify-content: center; }
         .sidebar.collapsed .sidebar-footer-content::after { content: '⚙'; font-size: 12px; opacity: 0.5; cursor: pointer; }
@@ -299,6 +303,65 @@
         .tv-news-header { padding: 5px 10px; font-size: 0.8em; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); color: var(--text-primary); cursor: move; display: flex; justify-content: space-between; }
         .tv-news-container { flex: 1; width: 100%; height: 100%; overflow: hidden; }
 
+        /* Finance Pro Widget Styles - Redesigned */
+        .finance-layout { display: flex; flex-direction: column; width: 100%; height: 100%; background: #0b0e11; color: #fff; padding: 15px; position: relative; overflow: auto; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        /* Added proper header class for dragging */
+        .finance-header-bar.widget-header { position: absolute; top: 0; left: 0; right: 0; height: 30px; cursor: move; z-index: 20; background: rgba(255,255,255,0.02); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; padding: 0 10px; justify-content: space-between; font-size: 0.8em; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .finance-layout:hover .finance-header-bar.widget-header { opacity: 1; }
+        
+        .finance-search-bar { display: flex; gap: 8px; margin-bottom: 15px; margin-top: 20px; position: relative; }
+        .finance-search-input { flex: 1; background: #1e222d; border: 1px solid #2a2e39; color: #d1d4dc; padding: 6px 12px; border-radius: 4px; outline: none; font-size: 0.9em; text-transform: uppercase; }
+        .finance-search-input:focus { border-color: var(--stock-blue); }
+        .finance-search-btn { background: var(--stock-blue); border: none; color: #fff; cursor: pointer; padding: 6px 15px; border-radius: 4px; font-weight: 600; font-size: 0.9em; }
+        
+        /* Search Dropdown */
+        .finance-search-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: #1e222d; border: 1px solid #2a2e39;
+            border-top: none; border-radius: 0 0 4px 4px;
+            z-index: 30; max-height: 300px; overflow-y: auto;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .finance-dropdown-item {
+            padding: 8px 12px; display: flex; justify-content: space-between;
+            cursor: pointer; border-bottom: 1px solid #2a2e39; font-size: 0.85em;
+            transition: background 0.2s;
+        }
+        .finance-dropdown-item:hover { background: #2a2e39; }
+        .finance-dropdown-item:last-child { border-bottom: none; }
+        .finance-dropdown-symbol { font-weight: bold; color: #fff; }
+        .finance-dropdown-price { color: #d1d4dc; }
+        .finance-dropdown-change { font-size: 0.9em; }
+
+        .finance-tabs { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; border-bottom: 1px solid #2a2e39; padding-bottom: 0px; }
+        .finance-tab { padding: 8px 12px; color: #787b86; cursor: pointer; font-size: 0.9em; font-weight: 600; border-bottom: 2px solid transparent; transition: color 0.2s; white-space: nowrap; }
+        .finance-tab:hover { color: #d1d4dc; }
+        .finance-tab.active { color: var(--stock-blue); border-bottom-color: var(--stock-blue); }
+
+        .finance-main-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .finance-price-block { display: flex; flex-direction: column; }
+        .finance-symbol { font-size: 1.5em; font-weight: 700; color: #fff; line-height: 1.2; display: flex; align-items: center; gap: 8px; }
+        .finance-exchange { font-size: 0.7em; color: #787b86; font-weight: normal; background: #2a2e39; padding: 2px 4px; border-radius: 3px; }
+        .finance-main-price { font-size: 2.2em; font-weight: 700; color: #fff; line-height: 1; margin: 5px 0; }
+        .finance-main-change { font-size: 1em; font-weight: 600; }
+        .finance-sub-price-block { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+        .finance-sub-label { font-size: 0.8em; color: #787b86; margin-bottom: 2px; }
+        .finance-sub-price { font-size: 1.1em; color: #d1d4dc; font-weight: 600; }
+        
+        .finance-chart-controls { display: flex; gap: 5px; margin-bottom: 10px; overflow-x: auto; }
+        .finance-time-btn { background: transparent; border: none; color: #787b86; padding: 4px 8px; font-size: 0.8em; font-weight: 600; cursor: pointer; border-radius: 4px; transition: background 0.2s; }
+        .finance-time-btn:hover { background: #2a2e39; color: #d1d4dc; }
+        .finance-time-btn.active { background: #2a2e39; color: var(--stock-blue); }
+
+        .finance-chart-container { width: 100%; height: 250px; position: relative; margin-bottom: 20px; border-bottom: 1px solid #2a2e39; padding-bottom: 10px; }
+        .finance-chart-svg { width: 100%; height: 100%; overflow: visible; }
+
+        .finance-stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1px; background: #2a2e39; border: 1px solid #2a2e39; border-radius: 4px; overflow: hidden; }
+        .finance-stat-item { background: #0b0e11; padding: 10px; display: flex; flex-direction: column; justify-content: center; }
+        .stat-label { font-size: 0.75em; color: #787b86; margin-bottom: 4px; }
+        .stat-val { font-size: 0.95em; font-weight: 600; color: #d1d4dc; }
+
         .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
         .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
         .grid-item:hover .menu-trigger { opacity: 1; }
@@ -365,6 +428,7 @@
                     <div class="tool-item" draggable="true" id="tool-clock"><div class="tool-preview clock-icon">🕓</div><span>Digital Clock</span></div>
                     <div class="tool-item" draggable="true" id="tool-weather"><div class="tool-preview icon-only">☁️</div><span>Weather Station</span></div>
                     <div class="tool-item" draggable="true" id="tool-tvnews"><div class="tool-preview icon-only">🌐</div><span>Global News</span></div>
+                    <div class="tool-item" draggable="true" id="tool-finance"><div class="tool-preview icon-only">💹</div><span>Finance Pro</span></div>
                     <div class="tool-item" draggable="true" id="tool-quote"><div class="tool-preview icon-only">❝</div><span>Daily Insight</span></div>
                     <div class="tool-item" draggable="true" id="tool-number"><div class="tool-preview icon-only">#</div><span>Data Fact</span></div>
                     <div class="tool-item" draggable="true" id="tool-chat"><div class="tool-preview icon-only">🤖</div><span>LLM Chat</span></div>
@@ -551,6 +615,7 @@
                         renderStockContent(item);
                     }
                 } else if (item.type === 'clock') renderClockContent(item);
+                else if (item.type === 'finance') renderFinanceContent(item); // Add live update for finance
             });
         }
 
@@ -603,7 +668,7 @@
             clearGrid();
             const layoutData = JSON.parse(saved);
             layoutData.forEach(data => {
-                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama','weather','quote','number','tvnews'].includes(data.type)) color = '#ffffff';
+                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama','weather','quote','number','tvnews','finance'].includes(data.type)) color = '#ffffff';
                 const newItem = createItem(data.x, data.y, data.w, data.h, color, data.type);
                 if(data.type === 'stock' && data.stockSymbol && mockStockData[data.stockSymbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[data.stockSymbol])); newItem.obj.viewMode = data.viewMode; newItem.obj.timeRange = data.timeRange; newItem.obj.showTime = data.showTime; renderStockContent(newItem.obj); } 
                 else if (data.type === 'clock') { newItem.obj.timeZone = data.timeZone; newItem.obj.cityLabel = data.cityLabel; renderClockContent(newItem.obj); } 
@@ -613,6 +678,7 @@
                 else if (data.type === 'quote') renderQuoteContent(newItem.obj);
                 else if (data.type === 'number') renderNumberContent(newItem.obj);
                 else if (data.type === 'tvnews') renderGlobalNewsContent(newItem.obj);
+                else if (data.type === 'finance') renderFinanceContent(newItem.obj);
             });
         }
 
@@ -622,6 +688,7 @@
         document.getElementById('tool-clock').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'clock'));
         document.getElementById('tool-weather').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'weather'));
         document.getElementById('tool-tvnews').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'tvnews'));
+        document.getElementById('tool-finance').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'finance'));
         document.getElementById('tool-quote').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'quote'));
         document.getElementById('tool-number').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'number'));
         document.getElementById('tool-chat').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'chat'));
@@ -638,6 +705,7 @@
             else if (type === 'clock') { if(!checkCollision({x, y, w: 200, h: 100})) createItem(x, y, 200, 100, '#ffffff', 'clock'); }
             else if (type === 'weather') { if(!checkCollision({x, y, w: 280, h: 180})) createItem(x, y, 280, 180, '#ffffff', 'weather'); }
             else if (type === 'tvnews') { if(!checkCollision({x, y, w: 500, h: 400})) createItem(x, y, 500, 400, '#ffffff', 'tvnews'); }
+            else if (type === 'finance') { if(!checkCollision({x, y, w: 600, h: 500})) createItem(x, y, 600, 500, '#ffffff', 'finance'); }
             else if (type === 'quote') { if(!checkCollision({x, y, w: 300, h: 160})) createItem(x, y, 300, 160, '#ffffff', 'quote'); }
             else if (type === 'number') { if(!checkCollision({x, y, w: 240, h: 200})) createItem(x, y, 240, 200, '#ffffff', 'number'); }
             else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
@@ -707,6 +775,7 @@
             if (type === 'quote') renderQuoteContent(itemObj);
             if (type === 'number') renderNumberContent(itemObj);
             if (type === 'tvnews') renderGlobalNewsContent(itemObj);
+            if (type === 'finance') renderFinanceContent(itemObj);
             if (type === 'llama') renderBrowserContent(itemObj, 'https://llama.online/chat', 'LLAMA ONLINE');
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
         }
@@ -1003,6 +1072,229 @@
             }
         }
 
+        // --- Finance Pro Functionality (Crypto Only) ---
+        function renderFinanceContent(item) {
+            const container = item.el.querySelector('.content-container');
+            
+            // Initial Render Structure
+            if(!container.querySelector('.finance-layout')) {
+                container.innerHTML = `
+                    <div class="finance-layout">
+                        <div class="finance-header-bar widget-header">
+                            <span>FINANCE PRO // TERMINAL</span>
+                        </div>
+                        
+                        <div class="finance-search-bar">
+                            <input type="text" class="finance-search-input" id="f-input-${item.id}" placeholder="Search Crypto (e.g. BTC-USD)">
+                            <button class="finance-search-btn" id="f-btn-${item.id}">SEARCH</button>
+                            <div class="finance-search-dropdown" id="f-drop-${item.id}"></div>
+                        </div>
+
+                        <div class="finance-tabs">
+                            <div class="finance-tab active">Overview</div>
+                            <div class="finance-tab">History</div>
+                            <div class="finance-tab">Financials</div>
+                            <div class="finance-tab">Holders</div>
+                        </div>
+
+                        <div id="f-content-${item.id}">
+                            <!-- Dynamic Content -->
+                        </div>
+                    </div>`;
+                
+                const input = container.querySelector(`#f-input-${item.id}`);
+                const btn = container.querySelector(`#f-btn-${item.id}`);
+                const dropdown = container.querySelector(`#f-drop-${item.id}`);
+                const contentArea = container.querySelector(`#f-content-${item.id}`);
+
+                // Internal state
+                item.currentSymbol = 'BTC-USD';
+                item.currentRange = '1D';
+
+                // Crypto list for dropdown
+                const cryptoKeys = ['BTC-USD', 'ETH-USD', 'DOGE-USD', 'SOL-USD', 'ADA-USD', 'XRP-USD', 'DOT-USD'];
+
+                const renderDropdown = () => {
+                    let html = '';
+                    cryptoKeys.forEach(key => {
+                        const data = mockStockData[key];
+                        if(data) {
+                            const isUp = data.change >= 0;
+                            const color = isUp ? 'var(--stock-up)' : 'var(--stock-down)';
+                            html += `
+                                <div class="finance-dropdown-item" onclick="this.getRootNode().host.selectCrypto('${item.id}', '${key}')">
+                                    <span class="finance-dropdown-symbol">${data.symbol}</span>
+                                    <span class="finance-dropdown-price">${data.price.toFixed(2)} <span class="finance-dropdown-change" style="color:${color}">${isUp?'+':''}${data.change.toFixed(2)}%</span></span>
+                                </div>
+                            `;
+                        }
+                    });
+                    dropdown.innerHTML = html;
+                    
+                    // Bind clicks manually since inline onclick scope issue
+                    dropdown.querySelectorAll('.finance-dropdown-item').forEach((el, idx) => {
+                        el.onclick = (e) => {
+                            e.stopPropagation();
+                            input.value = cryptoKeys[idx];
+                            item.currentSymbol = cryptoKeys[idx];
+                            updateUI();
+                            dropdown.style.display = 'none';
+                        }
+                    });
+                };
+
+                const updateUI = () => {
+                    let data;
+                    const searchKey = item.currentSymbol.toUpperCase();
+                    const cryptoKey = Object.keys(mockStockData).find(k => k === searchKey || k.replace('-USD','') === searchKey);
+                    const cryptoData = mockStockData[cryptoKey];
+
+                    if (cryptoData && cryptoData.isCrypto) {
+                        if (!cryptoDataAvailable && cryptoData.price === 0) {
+                             contentArea.innerHTML = `<div style="display:flex;justify-content:center;align-items:center;height:100%;color:var(--text-secondary);">API 忙碌中 (API BUSY)</div>`;
+                             return;
+                        }
+                        const basePrice = cryptoData.price;
+                        const changeAmount = basePrice * (cryptoData.change / 100);
+                        const isUp = cryptoData.change >= 0;
+                        const history = cryptoData.history.length > 0 ? cryptoData.history : generateHistory(basePrice, 50); 
+
+                        data = {
+                            symbol: cryptoData.symbol,
+                            name: cryptoData.name,
+                            exchange: "CRYPTO",
+                            flag: "🪙",
+                            price: basePrice.toFixed(2),
+                            change: (isUp ? "+" : "") + changeAmount.toFixed(2),
+                            changeP: (isUp ? "+" : "") + cryptoData.change.toFixed(2) + "%",
+                            isUp: isUp,
+                            afterHours: { price: "No Data", change: "No Data" },
+                            stats: {
+                                prevClose: (basePrice / (1 + cryptoData.change/100)).toFixed(2),
+                                open: history[0].open.toFixed(2),
+                                range: `${Math.min(...history.map(h=>h.low)).toFixed(2)} - ${Math.max(...history.map(h=>h.high)).toFixed(2)}`,
+                                week52: "No Data", vol: "No Data", cap: "No Data", pe: "No Data", eps: "No Data", yield: "No Data", beta: "No Data"
+                            },
+                            history: history
+                        };
+                    } else {
+                        // Rejected
+                         contentArea.innerHTML = `<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100%;color:var(--text-secondary);text-align:center;">
+                            <div style="font-size:3em;margin-bottom:10px;">🔒</div>
+                            <div style="font-size:1.2em;font-weight:bold;">SYSTEM LOCKED: CRYPTO ONLY</div>
+                            <div style="font-size:0.8em;opacity:0.7;margin-top:5px;">Access restricted to cryptocurrency assets.</div>
+                        </div>`;
+                        return;
+                    }
+
+                    const colorClass = data.isUp ? '#00ffcc' : '#ff0033'; 
+                    const cssColorClass = data.isUp ? 'var(--stock-up)' : 'var(--stock-down)';
+                    
+                    const chartH = 200; const chartW = 800;
+                    const prices = data.history.map(d => d.close);
+                    const min = Math.min(...prices) * 0.99; const max = Math.max(...prices) * 1.01;
+                    const range = max - min;
+                    
+                    let d = `M 0 ${chartH}`;
+                    const step = chartW / (prices.length - 1);
+                    prices.forEach((p, i) => {
+                        const y = chartH - ((p - min) / range * chartH);
+                        d += ` L ${i * step} ${y}`;
+                    });
+                    d += ` V ${chartH} Z`;
+                    
+                    const lineD = d.replace(/M 0 200/, `M 0 ${chartH - ((prices[0]-min)/range*chartH)}`).replace(/ V 200 Z/, '');
+
+                    let volSVG = '';
+                    const maxVol = 100; 
+                    data.history.forEach((h, i) => {
+                        const hVol = Math.random() * 50; 
+                        const color = h.close > h.open ? 'var(--stock-up)' : 'var(--stock-down)';
+                        volSVG += `<rect x="${i*step}" y="${chartH - hVol}" width="${Math.max(1, step-1)}" height="${hVol}" fill="${color}" opacity="0.3" />`;
+                    });
+
+                    const timeRanges = ['1D','5D','1M','6M','YTD','1Y','5Y','MAX'];
+
+                    contentArea.innerHTML = `
+                        <div class="finance-main-info">
+                            <div class="finance-price-block">
+                                <div class="finance-symbol">${data.symbol} <span class="finance-exchange">${data.exchange}</span> ${data.flag}</div>
+                                <div class="finance-main-price" style="color:${cssColorClass}">${data.price}</div>
+                                <div class="finance-main-change" style="color:${cssColorClass}">${data.change} (${data.changeP})</div>
+                            </div>
+                            <div class="finance-sub-price-block">
+                                <div class="finance-sub-label">After Hours</div>
+                                <div class="finance-sub-price">${data.afterHours.price} <span style="font-size:0.8em; color:${data.isUp?'var(--stock-up)':'var(--stock-down)'}">${data.afterHours.change}</span></div>
+                                <div class="finance-sub-label" style="margin-top:5px">Prev Close: ${data.stats.prevClose}</div>
+                            </div>
+                        </div>
+
+                        <div class="finance-chart-controls" id="f-ranges-${item.id}">
+                            ${timeRanges.map(r => `<button class="finance-time-btn ${r === item.currentRange ? 'active' : ''}" data-range="${r}">${r}</button>`).join('')}
+                        </div>
+
+                        <div class="finance-chart-container">
+                            <svg class="finance-chart-svg" viewBox="0 0 ${chartW} ${chartH}" preserveAspectRatio="none">
+                                <defs>
+                                    <linearGradient id="grad-${item.id}" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" style="stop-color:var(--stock-blue);stop-opacity:0.3" />
+                                        <stop offset="100%" style="stop-color:var(--stock-blue);stop-opacity:0" />
+                                    </linearGradient>
+                                </defs>
+                                <line x1="0" y1="${chartH - ((data.stats.prevClose - min) / range * chartH)}" x2="${chartW}" y2="${chartH - ((data.stats.prevClose - min) / range * chartH)}" stroke="#787b86" stroke-dasharray="4" opacity="0.5" />
+                                ${volSVG}
+                                <path d="${d}" fill="url(#grad-${item.id})" stroke="none" />
+                                <path d="${lineD}" fill="none" stroke="var(--stock-blue)" stroke-width="2" />
+                            </svg>
+                        </div>
+
+                        <div class="finance-stats-grid">
+                            <div class="finance-stat-item"><span class="stat-label">OPEN</span><span class="stat-val">${data.stats.open}</span></div>
+                            <div class="finance-stat-item"><span class="stat-label">PREV CLOSE</span><span class="stat-val">${data.stats.prevClose}</span></div>
+                            <div class="finance-stat-item"><span class="stat-label">DAY RANGE</span><span class="stat-val">${data.stats.range}</span></div>
+                            <div class="finance-stat-item"><span class="stat-label">52WK RANGE</span><span class="stat-val">${data.stats.week52}</span></div>
+                            <div class="finance-stat-item"><span class="stat-label">VOLUME</span><span class="stat-val">${data.stats.vol}</span></div>
+                            <div class="finance-stat-item"><span class="stat-label">MKT CAP</span><span class="stat-val">${data.stats.cap}</span></div>
+                            <div class="finance-stat-item"><span class="stat-label">P/E</span><span class="stat-val">${data.stats.pe}</span></div>
+                            <div class="finance-stat-item"><span class="stat-label">EPS</span><span class="stat-val">${data.stats.eps}</span></div>
+                            <div class="finance-stat-item"><span class="stat-label">YIELD</span><span class="stat-val">${data.stats.yield}</span></div>
+                            <div class="finance-stat-item"><span class="stat-label">BETA</span><span class="stat-val">${data.stats.beta}</span></div>
+                        </div>
+                    `;
+
+                    const rangeBtns = container.querySelectorAll(`#f-ranges-${item.id} .finance-time-btn`);
+                    rangeBtns.forEach(b => {
+                        b.onclick = (e) => {
+                            e.stopPropagation();
+                            item.currentRange = b.dataset.range;
+                            updateUI();
+                        };
+                    });
+                };
+
+                // Events
+                btn.onclick = (e) => { e.stopPropagation(); if(input.value) { item.currentSymbol = input.value; updateUI(); } };
+                input.addEventListener('keydown', (e) => { if(e.key === 'Enter' && input.value) { item.currentSymbol = input.value; updateUI(); dropdown.style.display='none'; } });
+                input.addEventListener('mousedown', e => e.stopPropagation());
+                
+                // Dropdown events
+                input.addEventListener('mouseenter', () => { renderDropdown(); dropdown.style.display = 'block'; });
+                container.addEventListener('mouseleave', () => { dropdown.style.display = 'none'; });
+
+                // Initial Load
+                updateUI();
+                
+                // Live update
+                item.financeInterval = setInterval(() => {
+                     if(document.contains(item.el) && item.type === 'finance') {
+                         updateUI();
+                         if(dropdown.style.display === 'block') renderDropdown(); // Update dropdown prices too
+                     }
+                     else clearInterval(item.financeInterval);
+                }, 2000);
+            }
+        }
+
         function renderClockContent(item) { 
             const container = item.el.querySelector('.content-container'); const now = new Date(); let timeStr;
             if (!item.timeZone || item.timeZone === 'local') { timeStr = now.toLocaleTimeString('en-US', { hour12: false }); } 
@@ -1147,7 +1439,8 @@
             el.addEventListener('mousedown', (e) => {
                 if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; 
                 if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; 
-                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews', 'finance'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                if (item.type === 'finance' && !e.target.closest('.finance-header-bar')) return;
                 e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
                 function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY); if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); else el.classList.remove('collision'); }
                 function onUp(ev) { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); el.style.zIndex = ''; const finalX = snap(parseInt(el.style.left)), finalY = snap(parseInt(el.style.top)); if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; } else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; } el.classList.remove('collision'); }
