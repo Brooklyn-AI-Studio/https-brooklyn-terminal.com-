@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V8.5 PRO</title>
+    <title>BROOKLYN-TERMINAL // V8.7 PRO</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -220,24 +220,31 @@
             padding: 20px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: #fff; /* Force white for weather card like image */
+            font-size: 12px; /* Base size, JS will update */
         }
+        .weather-header { 
+            padding: 5px 10px; 
+            position: absolute; top: 0; left: 0; right: 0; height: 25px; 
+            background: rgba(255,255,255,0.05); cursor: move; opacity: 0; transition: opacity 0.2s; z-index: 10;
+        }
+        .weather-layout:hover .weather-header { opacity: 1; }
         
         /* Top Section: Icon, Temp, Condition */
-        .weather-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .weather-top-left { display: flex; align-items: center; gap: 10px; }
+        .weather-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8em; margin-top: 0.8em;}
+        .weather-top-left { display: flex; align-items: center; gap: 0.5em; }
         .weather-main-icon { font-size: 2.5em; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
         .weather-main-temp { font-size: 3em; font-weight: 300; line-height: 1; }
-        .weather-unit { font-size: 1em; opacity: 0.6; margin-left: 5px; font-weight: 400; }
-        .weather-condition-text { font-size: 1em; opacity: 0.9; text-align: right; margin-top: 10px;}
+        .weather-unit { font-size: 1em; opacity: 0.6; margin-left: 0.2em; font-weight: 400; }
+        .weather-condition-text { font-size: 1em; opacity: 0.9; text-align: right; margin-top: 0.5em;}
 
         /* Middle Section: Location, High/Low */
-        .weather-middle { margin-bottom: 20px; }
-        .weather-location-text { font-size: 1em; margin-bottom: 5px; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .weather-middle { margin-bottom: 1.5em; }
+        .weather-location-text { font-size: 1em; margin-bottom: 0.4em; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .weather-hl { font-size: 0.8em; opacity: 0.7; }
 
         /* Bottom Section: 5-Day Forecast */
-        .weather-forecast { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-top: auto; }
-        .forecast-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 0.8em; }
+        .weather-forecast { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1em; margin-top: auto; }
+        .forecast-item { display: flex; flex-direction: column; align-items: center; gap: 0.4em; font-size: 0.8em; }
         .forecast-icon { font-size: 1.2em; }
         .forecast-temp { font-weight: 500; }
         .forecast-day { opacity: 0.7; font-size: 0.9em; }
@@ -247,6 +254,29 @@
         .weather-search-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 4px 8px; font-size: 0.7em; text-align: right; outline: none; transition: all 0.3s; opacity: 0.6; }
         .weather-search-input:focus, .weather-search-input:hover { opacity: 1; border-bottom-color: var(--accent-color); width: 160px; background: rgba(0,0,0,0.5); }
         .weather-search-input::placeholder { color: rgba(255,255,255,0.5); font-style: italic; font-size: 0.9em; }
+
+        /* Quote Layout */
+        .quote-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; padding: 20px; position: relative; justify-content: center; text-align: center; background: linear-gradient(45deg, #1a1a1a, #000); font-size: 12px; }
+        .quote-header { position: absolute; top: 0; left: 0; right: 0; padding: 5px 10px; background: rgba(255,255,255,0.05); font-size: 0.8em; cursor: move; display: flex; justify-content: space-between; color: var(--text-secondary); }
+        .quote-content { font-size: 1.2em; font-style: italic; margin-bottom: 1em; line-height: 1.4; }
+        .quote-author { font-weight: bold; color: var(--accent-color); font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }
+        .quote-refresh { position: absolute; bottom: 10px; right: 10px; cursor: pointer; opacity: 0.5; transition: opacity 0.2s; font-size: 1.5em; z-index: 10; }
+        .quote-refresh:hover { opacity: 1; }
+
+        /* Number Layout */
+        .number-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; padding: 20px; position: relative; align-items: center; justify-content: center; text-align: center; background: #000; border: 1px dashed var(--border-color); }
+        .number-header { position: absolute; top: 0; left: 0; right: 0; padding: 5px 10px; background: rgba(255,255,255,0.05); font-size: 0.8em; cursor: move; display: flex; justify-content: space-between; color: var(--text-secondary); }
+        .number-val { font-size: 4em; font-weight: 900; color: var(--text-primary); line-height: 1; margin-bottom: 10px; font-family: 'Orbitron', sans-serif; }
+        .number-fact { font-size: 0.9em; opacity: 0.8; line-height: 1.4; max-height: 100px; overflow-y: auto; padding: 0 10px; }
+        .number-controls { position: absolute; bottom: 10px; display: flex; gap: 5px; width: 80%; }
+        .number-input { flex: 1; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 2px 5px; font-size: 0.8em; outline: none; text-align: center; }
+        .number-btn { background: var(--btn-bg); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; font-size: 0.8em; padding: 2px 8px; }
+        .number-btn:hover { border-color: var(--accent-color); }
+
+        /* TV News Layout */
+        .tv-news-layout { display: flex; flex-direction: column; width: 100%; height: 100%; background: #000; position: relative; }
+        .tv-news-header { padding: 5px 10px; font-size: 0.8em; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); color: var(--text-primary); cursor: move; display: flex; justify-content: space-between; }
+        .tv-news-container { flex: 1; width: 100%; height: 100%; overflow: hidden; }
 
         .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
         .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
@@ -313,7 +343,10 @@
                 <div class="sidebar-content-wrapper">
                     <div class="tool-item" draggable="true" id="tool-clock"><div class="tool-preview clock-icon">🕓</div><span>Digital Clock</span></div>
                     <div class="tool-item" draggable="true" id="tool-weather"><div class="tool-preview icon-only">☁️</div><span>Weather Station</span></div>
+                    <div class="tool-item" draggable="true" id="tool-tvnews"><div class="tool-preview icon-only">🌐</div><span>Global News</span></div>
                     <div class="tool-item" draggable="true" id="tool-news"><div class="tool-preview icon-only">📰</div><span>Market</span></div>
+                    <div class="tool-item" draggable="true" id="tool-quote"><div class="tool-preview icon-only">❝</div><span>Daily Insight</span></div>
+                    <div class="tool-item" draggable="true" id="tool-number"><div class="tool-preview icon-only">#</div><span>Data Fact</span></div>
                     <div class="tool-item" draggable="true" id="tool-chat"><div class="tool-preview icon-only">🤖</div><span>LLM Chat</span></div>
                     <div class="tool-item" draggable="true" id="tool-calc"><div class="tool-preview icon-only">🧮</div><span>Calculator</span></div>
                     <div class="tool-item" draggable="true" id="tool-note"><div class="tool-preview icon-only">📝</div><span>Notes</span></div>
@@ -556,13 +589,16 @@
             clearGrid();
             const layoutData = JSON.parse(saved);
             layoutData.forEach(data => {
-                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama','weather'].includes(data.type)) color = '#ffffff';
+                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama','weather','quote','number','tvnews'].includes(data.type)) color = '#ffffff';
                 const newItem = createItem(data.x, data.y, data.w, data.h, color, data.type);
                 if(data.type === 'stock' && data.stockSymbol && mockStockData[data.stockSymbol]) { newItem.obj.stockData = JSON.parse(JSON.stringify(mockStockData[data.stockSymbol])); newItem.obj.viewMode = data.viewMode; newItem.obj.timeRange = data.timeRange; newItem.obj.showTime = data.showTime; renderStockContent(newItem.obj); } 
                 else if (data.type === 'clock') { newItem.obj.timeZone = data.timeZone; newItem.obj.cityLabel = data.cityLabel; renderClockContent(newItem.obj); } 
                 else if (data.type === 'note') { const el = document.getElementById(newItem.obj.id); const contentDiv = el.querySelector('.note-content'); if(contentDiv && data.noteContent) contentDiv.innerHTML = data.noteContent; } 
                 else if ((data.type === 'browser' || data.type === 'llama') && data.webUrl) { const el = document.getElementById(newItem.obj.id); const iframe = el.querySelector('.browser-frame'); const input = el.querySelector('.browser-input'); if (iframe && input) { iframe.src = data.webUrl; input.value = data.webUrl; } }
                 else if (data.type === 'weather') { newItem.obj.cityLabel = data.weatherCity || 'Taipei'; renderWeatherContent(newItem.obj); }
+                else if (data.type === 'quote') renderQuoteContent(newItem.obj);
+                else if (data.type === 'number') renderNumberContent(newItem.obj);
+                else if (data.type === 'tvnews') renderTVNewsContent(newItem.obj);
             });
         }
 
@@ -571,6 +607,9 @@
         document.getElementById('tool-square').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'shape'));
         document.getElementById('tool-clock').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'clock'));
         document.getElementById('tool-weather').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'weather'));
+        document.getElementById('tool-tvnews').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'tvnews'));
+        document.getElementById('tool-quote').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'quote'));
+        document.getElementById('tool-number').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'number'));
         document.getElementById('tool-news').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'news'));
         document.getElementById('tool-chat').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'chat'));
         document.getElementById('tool-calc').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'calc'));
@@ -585,6 +624,9 @@
             if (type === 'shape') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, activeColor, 'shape'); }
             else if (type === 'clock') { if(!checkCollision({x, y, w: 200, h: 100})) createItem(x, y, 200, 100, '#ffffff', 'clock'); }
             else if (type === 'weather') { if(!checkCollision({x, y, w: 280, h: 180})) createItem(x, y, 280, 180, '#ffffff', 'weather'); }
+            else if (type === 'tvnews') { if(!checkCollision({x, y, w: 400, h: 500})) createItem(x, y, 400, 500, '#ffffff', 'tvnews'); }
+            else if (type === 'quote') { if(!checkCollision({x, y, w: 300, h: 160})) createItem(x, y, 300, 160, '#ffffff', 'quote'); }
+            else if (type === 'number') { if(!checkCollision({x, y, w: 240, h: 200})) createItem(x, y, 240, 200, '#ffffff', 'number'); }
             else if (type === 'news') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'news'); }
             else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
             else if (type === 'calc') { if(!checkCollision({x, y, w: 200, h: 300})) createItem(x, y, 200, 300, '#ffffff', 'calc'); }
@@ -650,6 +692,9 @@
             if (type === 'calc') renderCalcContent(itemObj); if (type === 'note') renderNoteContent(itemObj); 
             if (type === 'browser') renderBrowserContent(itemObj);
             if (type === 'weather') { itemObj.cityLabel = 'Taipei'; renderWeatherContent(itemObj); }
+            if (type === 'quote') renderQuoteContent(itemObj);
+            if (type === 'number') renderNumberContent(itemObj);
+            if (type === 'tvnews') renderTVNewsContent(itemObj);
             if (type === 'llama') renderBrowserContent(itemObj, 'https://llama.online/chat', 'LLAMA ONLINE');
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
         }
@@ -659,13 +704,10 @@
         // --- Weather Functionality ---
         async function fetchWeather(city) {
             try {
-                // 1. Geocoding
                 const geoResp = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
                 const geoData = await geoResp.json();
                 if(!geoData.results || geoData.results.length === 0) return null;
                 const { latitude, longitude, name } = geoData.results[0];
-
-                // 2. Weather Data (Current + Daily)
                 const weatherResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`);
                 const weatherData = await weatherResp.json();
                 return { name, current: weatherData.current, daily: weatherData.daily };
@@ -673,14 +715,9 @@
         }
 
         function getWeatherIcon(code) {
-            if (code === 0) return '☀️';
-            if (code >= 1 && code <= 3) return '☁️';
-            if (code >= 45 && code <= 48) return '🌫️';
-            if (code >= 51 && code <= 67) return '🌧️';
-            if (code >= 71 && code <= 77) return '❄️';
-            if (code >= 80 && code <= 82) return '🌧️';
-            if (code >= 95 && code <= 99) return '⛈️';
-            return '❓';
+            if (code === 0) return '☀️'; if (code >= 1 && code <= 3) return '☁️'; if (code >= 45 && code <= 48) return '🌫️';
+            if (code >= 51 && code <= 67) return '🌧️'; if (code >= 71 && code <= 77) return '❄️'; if (code >= 80 && code <= 82) return '🌧️';
+            if (code >= 95 && code <= 99) return '⛈️'; return '❓';
         }
         
         function getWeatherDesc(code) {
@@ -689,8 +726,7 @@
         }
 
         function getDayName(dateStr) {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', { weekday: 'short' });
+            const date = new Date(dateStr); return date.toLocaleDateString('en-US', { weekday: 'short' });
         }
 
         async function renderWeatherContent(item) {
@@ -698,26 +734,18 @@
             if(!container.querySelector('.weather-layout')) {
                 container.innerHTML = `
                     <div class="weather-layout">
+                        <div class="weather-header widget-header"><span>WEATHER</span></div>
                         <div class="weather-top">
-                            <div class="weather-top-left">
-                                <div class="weather-main-icon" id="w-icon-${item.id}">☀️</div>
-                                <div class="weather-main-temp" id="w-temp-${item.id}">--</div>
-                                <div class="weather-unit">°C</div>
-                            </div>
+                            <div class="weather-top-left"><div class="weather-main-icon" id="w-icon-${item.id}">☀️</div><div class="weather-main-temp" id="w-temp-${item.id}">--</div><div class="weather-unit">°C</div></div>
                             <div class="weather-condition-text" id="w-cond-${item.id}">Clear</div>
                         </div>
                         <div class="weather-middle">
                             <div class="weather-location-text" id="w-city-name-${item.id}">LOADING</div>
                             <div class="weather-hl">H:<span id="w-high-${item.id}">--</span>° L:<span id="w-low-${item.id}">--</span>°</div>
                         </div>
-                        <div class="weather-forecast" id="w-forecast-${item.id}">
-                            <!-- Forecast items generated here -->
-                        </div>
-                        <div class="weather-search-container">
-                            <input type="text" class="weather-search-input" id="w-input-${item.id}" placeholder="請在此搜尋城市" value="">
-                        </div>
+                        <div class="weather-forecast" id="w-forecast-${item.id}"></div>
+                        <div class="weather-search-container"><input type="text" class="weather-search-input" id="w-input-${item.id}" placeholder="請在此搜尋城市" value=""></div>
                     </div>`;
-                
                 const input = container.querySelector(`#w-input-${item.id}`);
                 input.addEventListener('keypress', async (e) => {
                     if(e.key === 'Enter') {
@@ -726,11 +754,12 @@
                             item.cityLabel = val;
                             container.querySelector(`#w-city-name-${item.id}`).innerText = "SEARCHING";
                             await updateWeatherData(item, val);
-                            input.value = ''; // Clear input after search
+                            input.value = '';
                         }
                     }
                 });
                  input.addEventListener('mousedown', e => e.stopPropagation());
+                 updateWeatherScale(item);
             }
             await updateWeatherData(item, item.cityLabel);
         }
@@ -739,40 +768,139 @@
             const data = await fetchWeather(city);
             const container = item.el.querySelector('.content-container');
             if(data) {
-                // Update Current Weather
                 container.querySelector(`#w-city-name-${item.id}`).innerText = data.name;
                 container.querySelector(`#w-temp-${item.id}`).innerText = Math.round(data.current.temperature_2m);
                 container.querySelector(`#w-icon-${item.id}`).innerText = getWeatherIcon(data.current.weather_code);
                 container.querySelector(`#w-cond-${item.id}`).innerText = getWeatherDesc(data.current.weather_code);
-                
-                // Update High/Low for today (index 0)
                 if(data.daily) {
                     container.querySelector(`#w-high-${item.id}`).innerText = Math.round(data.daily.temperature_2m_max[0]);
                     container.querySelector(`#w-low-${item.id}`).innerText = Math.round(data.daily.temperature_2m_min[0]);
                 }
-
-                // Update Forecast Row (Next 5 days, index 1-5)
                 const forecastContainer = container.querySelector(`#w-forecast-${item.id}`);
                 if(data.daily && forecastContainer) {
                     let forecastHTML = '';
-                    for(let i=1; i<=5; i++) { // Show next 5 days
+                    for(let i=1; i<=5; i++) {
                         if(data.daily.time[i]) {
-                             forecastHTML += `
-                                <div class="forecast-item">
-                                    <div class="forecast-day">${getDayName(data.daily.time[i])}</div>
-                                    <div class="forecast-icon">${getWeatherIcon(data.daily.weather_code[i])}</div>
-                                    <div class="forecast-temp">${Math.round(data.daily.temperature_2m_max[i])}°</div>
-                                </div>
-                             `;
+                             forecastHTML += `<div class="forecast-item"><div class="forecast-day">${getDayName(data.daily.time[i])}</div><div class="forecast-icon">${getWeatherIcon(data.daily.weather_code[i])}</div><div class="forecast-temp">${Math.round(data.daily.temperature_2m_max[i])}°</div></div>`;
                         }
                     }
                     forecastContainer.innerHTML = forecastHTML;
                 }
-
                 item.cityLabel = data.name; 
-            } else {
-                 const cityEl = container.querySelector(`#w-city-name-${item.id}`);
-                 if(cityEl) cityEl.innerText = "NOT FOUND";
+            } else { const cityEl = container.querySelector(`#w-city-name-${item.id}`); if(cityEl) cityEl.innerText = "NOT FOUND"; }
+        }
+
+        function updateWeatherScale(item) {
+            const layout = item.el.querySelector('.weather-layout');
+            if(layout) layout.style.fontSize = `${item.w / 25}px`;
+        }
+
+        // --- Quote Functionality ---
+        async function fetchQuote() {
+            try {
+                const resp = await fetch('https://api.quotable.io/random');
+                return await resp.json();
+            } catch(e) { return { content: "Knowledge is power.", author: "Francis Bacon" }; }
+        }
+
+        async function renderQuoteContent(item) {
+            const container = item.el.querySelector('.content-container');
+            if(!container.querySelector('.quote-layout')) {
+                container.innerHTML = `
+                    <div class="quote-layout">
+                        <div class="quote-header widget-header"><span>DAILY INSIGHT</span></div>
+                        <div class="quote-content" id="q-text-${item.id}">Loading...</div>
+                        <div class="quote-author" id="q-auth-${item.id}"></div>
+                        <div class="quote-refresh" id="q-btn-${item.id}">↻</div>
+                    </div>`;
+                const btn = container.querySelector(`#q-btn-${item.id}`);
+                if(btn) btn.onclick = (e) => { e.stopPropagation(); updateQuote(item); };
+                updateQuoteScale(item);
+                await updateQuote(item);
+            }
+        }
+
+        async function updateQuote(item) {
+            const container = item.el.querySelector('.content-container');
+            const contentEl = container.querySelector(`#q-text-${item.id}`);
+            if(contentEl) contentEl.innerText = "Fetching...";
+            const q = await fetchQuote();
+            if(contentEl) contentEl.innerText = `"${q.content}"`;
+            container.querySelector(`#q-auth-${item.id}`).innerText = `- ${q.author}`;
+        }
+
+        function updateQuoteScale(item) {
+            const layout = item.el.querySelector('.quote-layout');
+            if(layout) layout.style.fontSize = `${item.w / 20}px`;
+        }
+
+        // --- Number Fact Functionality ---
+        async function fetchNumberFact(num = 'random') {
+            try {
+                // Try HTTPS mock/proxy first or fallback to static
+                const facts = ["42 is the answer to life, the universe, and everything.", "73 is the 21st prime number.", "0 is the additive identity.", "1 is the only number that is neither prime nor composite."];
+                try { const resp = await fetch(`https://numbersapi.com/${num}/math?json`); if(resp.ok) return await resp.json(); } catch(e) {}
+                return { text: facts[Math.floor(Math.random() * facts.length)], number: num === 'random' ? Math.floor(Math.random()*100) : num };
+            } catch(e) { return { text: "Could not fetch fact.", number: "ERR" }; }
+        }
+
+        async function renderNumberContent(item) {
+            const container = item.el.querySelector('.content-container');
+            if(!container.querySelector('.number-layout')) {
+                container.innerHTML = `
+                    <div class="number-layout">
+                        <div class="number-header widget-header"><span>DATA FACT</span></div>
+                        <div class="number-val" id="n-val-${item.id}">#</div>
+                        <div class="number-fact" id="n-fact-${item.id}">Ready to process...</div>
+                        <div class="number-controls">
+                            <input type="number" class="number-input" id="n-input-${item.id}" placeholder="Num">
+                            <button class="number-btn" id="n-go-${item.id}">GO</button>
+                            <button class="number-btn" id="n-rnd-${item.id}">RND</button>
+                        </div>
+                    </div>`;
+                const input = container.querySelector(`#n-input-${item.id}`);
+                const goBtn = container.querySelector(`#n-go-${item.id}`);
+                const rndBtn = container.querySelector(`#n-rnd-${item.id}`);
+                const update = async (val) => {
+                    container.querySelector(`#n-fact-${item.id}`).innerText = "Processing...";
+                    const data = await fetchNumberFact(val);
+                    container.querySelector(`#n-val-${item.id}`).innerText = data.number;
+                    container.querySelector(`#n-fact-${item.id}`).innerText = data.text;
+                };
+                goBtn.onclick = (e) => { e.stopPropagation(); if(input.value) update(input.value); };
+                rndBtn.onclick = (e) => { e.stopPropagation(); update('random'); };
+                input.addEventListener('mousedown', e => e.stopPropagation());
+            }
+        }
+
+        // --- TradingView News Functionality ---
+        function renderTVNewsContent(item) {
+            const container = item.el.querySelector('.content-container');
+            if(!container.querySelector('.tv-news-layout')) {
+                container.innerHTML = `
+                    <div class="tv-news-layout">
+                        <div class="tv-news-header widget-header">
+                            <span>GLOBAL NEWS</span>
+                            <span style="opacity:0.6">LIVE</span>
+                        </div>
+                        <div class="tv-news-container" id="tv-news-${item.id}"></div>
+                    </div>`;
+                
+                // Manually create script to ensure execution
+                const script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js';
+                script.async = true;
+                script.innerHTML = JSON.stringify({
+                    "feedMode": "all_symbols",
+                    "colorTheme": "dark",
+                    "isTransparent": false,
+                    "displayMode": "regular",
+                    "width": "100%",
+                    "height": "100%",
+                    "locale": "en"
+                });
+                container.querySelector(`#tv-news-${item.id}`).appendChild(script);
             }
         }
 
@@ -921,7 +1049,7 @@
             el.addEventListener('mousedown', (e) => {
                 if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; 
                 if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; 
-                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'weather'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews'].includes(item.type) && !e.target.closest('.widget-header')) return;
                 e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
                 function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY); if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); else el.classList.remove('collision'); }
                 function onUp(ev) { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); el.style.zIndex = ''; const finalX = snap(parseInt(el.style.left)), finalY = snap(parseInt(el.style.top)); if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px'; } else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; } el.classList.remove('collision'); }
@@ -929,7 +1057,12 @@
             });
             resizeHandle.addEventListener('mousedown', (e) => {
                 e.stopPropagation(); e.preventDefault(); const startX = e.clientX, startY = e.clientY, startW = item.w, startH = item.h;
-                function onResize(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let nw = snap(Math.max(MIN_W, startW + dx)), nh = snap(Math.max(MIN_H, startH + dy)); if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision'); else { el.classList.remove('collision'); el.style.width = nw + 'px'; el.style.height = nh + 'px'; item.w = nw; item.h = nh; if(item.type === 'stock') renderStockContent(item); if(item.type === 'clock') renderClockContent(item); if(item.type === 'weather') renderWeatherContent(item); } }
+                function onResize(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let nw = snap(Math.max(MIN_W, startW + dx)), nh = snap(Math.max(MIN_H, startH + dy)); if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision'); else { el.classList.remove('collision'); el.style.width = nw + 'px'; el.style.height = nh + 'px'; item.w = nw; item.h = nh; 
+                    if(item.type === 'stock') renderStockContent(item); 
+                    if(item.type === 'clock') renderClockContent(item); 
+                    if(item.type === 'weather') updateWeatherScale(item);
+                    if(item.type === 'quote') updateQuoteScale(item);
+                } }
                 function onUp() { document.removeEventListener('mousemove', onResize); document.removeEventListener('mouseup', onUp); el.classList.remove('collision'); }
                 document.addEventListener('mousemove', onResize); document.addEventListener('mouseup', onUp);
             });
