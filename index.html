@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BROOKLYN-TERMINAL // V10.5 SHOWCASE</title>
+    <title>BROOKLYN-TERMINAL // V11.0 WORKSTATION</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -307,6 +307,38 @@
         .tv-news-header { padding: 5px 10px; font-size: 0.8em; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); color: var(--text-primary); cursor: move; display: flex; justify-content: space-between; }
         .tv-news-container { flex: 1; width: 100%; height: 100%; overflow: hidden; }
 
+        /* Workstation Tools Styles */
+        /* Kanban */
+        .kanban-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; background: var(--bg-panel); padding: 5px; }
+        .kanban-header { padding: 5px 10px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); font-size: 0.8em; color: var(--text-primary); cursor: move; display: flex; justify-content: space-between; }
+        .kanban-board { display: flex; flex: 1; gap: 5px; overflow-x: auto; padding: 10px 0; }
+        .kanban-col { flex: 1; min-width: 120px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 4px; display: flex; flex-direction: column; }
+        .kanban-col-title { padding: 5px; font-size: 0.8em; font-weight: bold; text-align: center; border-bottom: 1px dashed var(--border-color); color: var(--text-secondary); }
+        .kanban-items { flex: 1; padding: 5px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+        .kanban-card { background: var(--input-bg); padding: 8px; border-radius: 2px; font-size: 0.8em; border-left: 2px solid var(--accent-color); cursor: grab; word-wrap: break-word; position: relative; }
+        .kanban-card:active { cursor: grabbing; }
+        .kanban-add-btn { background: transparent; border: 1px dashed var(--text-secondary); color: var(--text-secondary); margin: 5px; cursor: pointer; font-size: 0.8em; padding: 2px; }
+        .kanban-add-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+        
+        /* Audio Player */
+        .audio-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; background: #000; position: relative; overflow: hidden; }
+        .audio-header { position: absolute; top: 0; left: 0; right: 0; padding: 5px 10px; background: rgba(0,0,0,0.8); z-index: 10; font-size: 0.8em; color: var(--text-primary); cursor: move; border-bottom: 1px solid var(--border-color); }
+        .audio-visualizer { flex: 1; display: flex; align-items: flex-end; justify-content: center; gap: 2px; padding-bottom: 20px; opacity: 0.5; }
+        .audio-bar { width: 10px; background: var(--accent-color); animation: bounce 1s infinite ease-in-out; }
+        @keyframes bounce { 0%, 100% { height: 10%; } 50% { height: 80%; } }
+        .audio-controls { height: 60px; background: #111; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 15px; z-index: 10; }
+        .audio-btn { background: transparent; border: 1px solid var(--text-secondary); color: var(--text-primary); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .audio-btn:hover { border-color: var(--accent-color); background: rgba(0,255,204,0.1); }
+        
+        /* Pomodoro */
+        .pomo-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; background: #080808; align-items: center; justify-content: center; position: relative; }
+        .pomo-header { position: absolute; top: 0; left: 0; right: 0; padding: 5px 10px; font-size: 0.8em; color: var(--text-secondary); cursor: move; background: rgba(255,255,255,0.05); }
+        .pomo-time { font-size: 3em; font-family: 'Orbitron', monospace; color: var(--accent-color); font-weight: bold; }
+        .pomo-status { font-size: 0.8em; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+        .pomo-controls { display: flex; gap: 10px; }
+        .pomo-btn { background: var(--btn-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 5px 15px; cursor: pointer; font-family: var(--font-main); font-size: 0.9em; }
+        .pomo-btn:hover { border-color: var(--accent-color); background: rgba(0,255,204,0.2); }
+
         .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
         .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
         .grid-item:hover .menu-trigger { opacity: 1; }
@@ -535,6 +567,10 @@
                     <div class="tool-item" draggable="true" id="tool-tv-news"><div class="tool-preview icon-only">📰</div><span>Top Stories <span class="rec-badge">推薦</span></span></div>
                     <div class="tool-item" draggable="true" id="tool-tv-eco"><div class="tool-preview icon-only">📅</div><span>Eco Calendar <span class="rec-badge">推薦</span></span></div>
                     
+                    <div class="tool-item" draggable="true" id="tool-kanban"><div class="tool-preview icon-only">📋</div><span>Ops Board <span class="rec-badge">NEW</span></span></div>
+                    <div class="tool-item" draggable="true" id="tool-audio"><div class="tool-preview icon-only">🎧</div><span>Neural Audio <span class="rec-badge">NEW</span></span></div>
+                    <div class="tool-item" draggable="true" id="tool-pomodoro"><div class="tool-preview icon-only">⏱️</div><span>Chrono Sync <span class="rec-badge">NEW</span></span></div>
+
                     <div class="tool-item" draggable="true" id="tool-llama"><div class="tool-preview icon-only">🦙</div><span>Llama Online <span class="rec-badge">推薦</span></span></div>
                     <div class="tool-item" draggable="true" id="tool-browser"><div class="tool-preview icon-only">🌐</div><span>Web Portal <span class="rec-badge">推薦</span></span></div>
 
@@ -624,8 +660,8 @@
             updateSlideClasses();
         }
         function startSlideShow() {
-            stopSlideShow(); // Clear existing
-            slideInterval = setInterval(nextSlide, 4000); // 4 seconds per slide
+            stopSlideShow(); 
+            slideInterval = setInterval(nextSlide, 4000);
         }
         function stopSlideShow() {
             if(slideInterval) clearInterval(slideInterval);
@@ -665,16 +701,16 @@
                 let weatherCity = ''; if(i.type === 'weather') weatherCity = i.cityLabel;
                 return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent, webUrl: webUrl, weatherCity: weatherCity };
             });
-            localStorage.setItem('brooklyn_layout_v10_5', JSON.stringify(layoutData)); alert('Layout Saved!');
+            localStorage.setItem('brooklyn_layout_v11', JSON.stringify(layoutData)); alert('Layout Saved!');
         }
 
         function loadLayout() {
-            const saved = localStorage.getItem('brooklyn_layout_v10_5');
+            const saved = localStorage.getItem('brooklyn_layout_v11');
             if(!saved) { alert('No saved layout found.'); return; }
             clearGrid();
             const layoutData = JSON.parse(saved);
             layoutData.forEach(data => {
-                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama','weather','quote','number','tvnews','tvchart','tv-news','tv-eco','heatmap-stock','heatmap-crypto','heatmap-etf','ticker-tape'].includes(data.type)) color = '#ffffff';
+                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama','weather','quote','number','tvnews','tvchart','tv-news','tv-eco','heatmap-stock','heatmap-crypto','heatmap-etf','ticker-tape','kanban','audio','pomodoro'].includes(data.type)) color = '#ffffff';
                 const newItem = createItem(data.x, data.y, data.w, data.h, color, data.type);
                 if (data.type === 'clock') { newItem.obj.timeZone = data.timeZone; newItem.obj.cityLabel = data.cityLabel; renderClockContent(newItem.obj); } 
                 else if (data.type === 'note') { const el = document.getElementById(newItem.obj.id); const contentDiv = el.querySelector('.note-content'); if(contentDiv && data.noteContent) contentDiv.innerHTML = data.noteContent; } 
@@ -690,6 +726,9 @@
                 else if (data.type === 'heatmap-crypto') renderCryptoHeatmap(newItem.obj);
                 else if (data.type === 'heatmap-etf') renderETFHeatmap(newItem.obj);
                 else if (data.type === 'ticker-tape') renderTickerTapeContent(newItem.obj);
+                else if (data.type === 'kanban') renderKanbanContent(newItem.obj);
+                else if (data.type === 'audio') renderAudioContent(newItem.obj);
+                else if (data.type === 'pomodoro') renderPomodoroContent(newItem.obj);
             });
         }
 
@@ -706,6 +745,9 @@
         document.getElementById('tool-heatmap-crypto').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'heatmap-crypto'));
         document.getElementById('tool-heatmap-etf').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'heatmap-etf'));
         document.getElementById('tool-ticker-tape').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'ticker-tape'));
+        document.getElementById('tool-kanban').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'kanban'));
+        document.getElementById('tool-audio').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'audio'));
+        document.getElementById('tool-pomodoro').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'pomodoro'));
         document.getElementById('tool-quote').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'quote'));
         document.getElementById('tool-number').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'number'));
         document.getElementById('tool-chat').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'chat'));
@@ -728,6 +770,9 @@
             else if (type === 'heatmap-crypto') { if(!checkCollision({x, y, w: 600, h: 500})) createItem(x, y, 600, 500, '#ffffff', 'heatmap-crypto'); }
             else if (type === 'heatmap-etf') { if(!checkCollision({x, y, w: 600, h: 500})) createItem(x, y, 600, 500, '#ffffff', 'heatmap-etf'); }
             else if (type === 'ticker-tape') { if(!checkCollision({x, y, w: 1000, h: 110})) createItem(x, y, 1000, 110, '#ffffff', 'ticker-tape'); }
+            else if (type === 'kanban') { if(!checkCollision({x, y, w: 400, h: 300})) createItem(x, y, 400, 300, '#ffffff', 'kanban'); }
+            else if (type === 'audio') { if(!checkCollision({x, y, w: 300, h: 150})) createItem(x, y, 300, 150, '#ffffff', 'audio'); }
+            else if (type === 'pomodoro') { if(!checkCollision({x, y, w: 250, h: 150})) createItem(x, y, 250, 150, '#ffffff', 'pomodoro'); }
             else if (type === 'quote') { if(!checkCollision({x, y, w: 300, h: 160})) createItem(x, y, 300, 160, '#ffffff', 'quote'); }
             else if (type === 'number') { if(!checkCollision({x, y, w: 240, h: 200})) createItem(x, y, 240, 200, '#ffffff', 'number'); }
             else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
@@ -801,6 +846,9 @@
             if (type === 'heatmap-crypto') renderCryptoHeatmap(itemObj);
             if (type === 'heatmap-etf') renderETFHeatmap(itemObj);
             if (type === 'ticker-tape') renderTickerTapeContent(itemObj);
+            if (type === 'kanban') renderKanbanContent(itemObj);
+            if (type === 'audio') renderAudioContent(itemObj);
+            if (type === 'pomodoro') renderPomodoroContent(itemObj);
             if (type === 'llama') renderBrowserContent(itemObj, 'https://llama.online/chat', 'LLAMA ONLINE');
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
         }
@@ -808,6 +856,152 @@
         function deleteItem(id) { const idx = items.findIndex(i => i.id === id);
             if (idx > -1) { items[idx].el.remove(); items.splice(idx, 1); } }
         
+        // --- New Workstation Tools ---
+        function renderKanbanContent(item) {
+            const container = item.el.querySelector('.content-container');
+            if(container.querySelector('.kanban-layout')) return;
+            
+            container.innerHTML = `
+                <div class="kanban-layout">
+                    <div class="kanban-header widget-header"><span>OPS BOARD</span><span style="opacity:0.5">PROJECTS</span></div>
+                    <div class="kanban-board">
+                        <div class="kanban-col" id="col-todo-${item.id}">
+                            <div class="kanban-col-title">TO DO</div>
+                            <div class="kanban-items"></div>
+                            <button class="kanban-add-btn" onclick="addKanbanCard('${item.id}', 'col-todo-${item.id}')">+ ADD</button>
+                        </div>
+                        <div class="kanban-col" id="col-prog-${item.id}">
+                            <div class="kanban-col-title">IN PROGRESS</div>
+                            <div class="kanban-items"></div>
+                            <button class="kanban-add-btn" onclick="addKanbanCard('${item.id}', 'col-prog-${item.id}')">+ ADD</button>
+                        </div>
+                        <div class="kanban-col" id="col-done-${item.id}">
+                            <div class="kanban-col-title">DONE</div>
+                            <div class="kanban-items"></div>
+                            <button class="kanban-add-btn" onclick="addKanbanCard('${item.id}', 'col-done-${item.id}')">+ ADD</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Pre-fill some sample tasks
+            addKanbanCard(item.id, `col-todo-${item.id}`, 'Research NVDA Earnings');
+            addKanbanCard(item.id, `col-prog-${item.id}`, 'Update Stop-Loss');
+        }
+
+        function addKanbanCard(itemId, colId, text = null) {
+            const col = document.getElementById(colId).querySelector('.kanban-items');
+            const cardText = text || prompt("Enter task:");
+            if(!cardText) return;
+            
+            const card = document.createElement('div');
+            card.className = 'kanban-card';
+            card.innerText = cardText;
+            card.draggable = true;
+            
+            card.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', card.id);
+                e.dataTransfer.effectAllowed = 'move';
+                setTimeout(() => card.style.opacity = '0.5', 0);
+            });
+            card.addEventListener('dragend', () => card.style.opacity = '1');
+            card.addEventListener('dblclick', () => card.remove()); // Delete on double click
+            
+            // Simple drag logic for cards within columns
+            // Note: Full D&D logic for columns usually requires more complex event handling on columns
+            // For simplicity in this massive file, we use basic append.
+            
+            col.appendChild(card);
+        }
+
+        function renderAudioContent(item) {
+            const container = item.el.querySelector('.content-container');
+            if(container.querySelector('.audio-layout')) return;
+            
+            container.innerHTML = `
+                <div class="audio-layout">
+                    <div class="audio-header widget-header"><span>NEURAL AUDIO</span><span>LOFI.RADIO</span></div>
+                    
+                    <div class="audio-visualizer">
+                        <div class="audio-bar" style="height:40%; animation-delay:0s"></div>
+                        <div class="audio-bar" style="height:70%; animation-delay:0.2s"></div>
+                        <div class="audio-bar" style="height:30%; animation-delay:0.4s"></div>
+                        <div class="audio-bar" style="height:80%; animation-delay:0.1s"></div>
+                        <div class="audio-bar" style="height:50%; animation-delay:0.3s"></div>
+                        <div class="audio-bar" style="height:90%; animation-delay:0.5s"></div>
+                        <div class="audio-bar" style="height:20%; animation-delay:0s"></div>
+                    </div>
+
+                    <div class="audio-controls">
+                        <button class="audio-btn" onclick="toggleAudio('${item.id}')">⏯</button>
+                    </div>
+                    
+                    <iframe id="yt-${item.id}" width="0" height="0" src="https://www.youtube.com/embed/jfKfPfyJRdk?enablejsapi=1" frameborder="0" allow="autoplay"></iframe>
+                </div>
+            `;
+            item.isPlaying = false;
+        }
+        
+        window.toggleAudio = function(itemId) {
+            const item = items.find(i => i.id === itemId);
+            const iframe = document.getElementById(`yt-${itemId}`);
+            if(!item.isPlaying) {
+                // Trick to play: reload src with autoplay (since we can't easily access YT API without script loading)
+                // Or use postMessage if API was loaded. Simple reload method for standalone HTML:
+                iframe.src = iframe.src + "&autoplay=1";
+                item.isPlaying = true;
+                item.el.querySelector('.audio-visualizer').style.opacity = '1';
+            } else {
+                iframe.src = iframe.src.replace("&autoplay=1", "");
+                item.isPlaying = false;
+                item.el.querySelector('.audio-visualizer').style.opacity = '0.5';
+            }
+        }
+
+        function renderPomodoroContent(item) {
+            const container = item.el.querySelector('.content-container');
+            if(container.querySelector('.pomo-layout')) return;
+            
+            container.innerHTML = `
+                <div class="pomo-layout">
+                    <div class="pomo-header widget-header"><span>CHRONO SYNC</span></div>
+                    <div class="pomo-status" id="pomo-status-${item.id}">FOCUS</div>
+                    <div class="pomo-time" id="pomo-time-${item.id}">25:00</div>
+                    <div class="pomo-controls">
+                        <button class="pomo-btn" onclick="startPomo('${item.id}')">START</button>
+                        <button class="pomo-btn" onclick="resetPomo('${item.id}')">RESET</button>
+                    </div>
+                </div>
+            `;
+            item.pomoTime = 25 * 60;
+            item.pomoInterval = null;
+        }
+
+        window.startPomo = function(itemId) {
+            const item = items.find(i => i.id === itemId);
+            if(item.pomoInterval) return;
+            
+            item.pomoInterval = setInterval(() => {
+                item.pomoTime--;
+                if(item.pomoTime < 0) {
+                    clearInterval(item.pomoInterval);
+                    item.pomoInterval = null;
+                    alert("Session Complete");
+                    return;
+                }
+                const m = Math.floor(item.pomoTime / 60).toString().padStart(2, '0');
+                const s = (item.pomoTime % 60).toString().padStart(2, '0');
+                document.getElementById(`pomo-time-${itemId}`).innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        window.resetPomo = function(itemId) {
+            const item = items.find(i => i.id === itemId);
+            if(item.pomoInterval) clearInterval(item.pomoInterval);
+            item.pomoInterval = null;
+            item.pomoTime = 25 * 60;
+            document.getElementById(`pomo-time-${itemId}`).innerText = "25:00";
+        }
+
         // --- TradingView Functionalities ---
         function renderTradingViewContent(item) {
             const container = item.el.querySelector('.content-container');
@@ -1541,7 +1735,7 @@
             function handleStart(e) {
                 if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; 
                 if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; 
-                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews', 'tvchart', 'tv-news', 'tv-eco', 'heatmap-stock', 'heatmap-crypto', 'heatmap-etf', 'ticker-tape'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews', 'tvchart', 'tv-news', 'tv-eco', 'heatmap-stock', 'heatmap-crypto', 'heatmap-etf', 'ticker-tape', 'kanban', 'audio', 'pomodoro'].includes(item.type) && !e.target.closest('.widget-header')) return;
                 if(e.type === 'touchstart') e.preventDefault();
 
                 const startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
