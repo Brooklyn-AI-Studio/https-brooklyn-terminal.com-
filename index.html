@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V10.3 TUTORIAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BROOKLYN-TERMINAL // V10.5 SHOWCASE</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -323,91 +323,118 @@
         .context-menu-item:hover .submenu { display: block; }
         .widget-header { cursor: move; }
 
-        /* Tutorial Styles */
+        /* Tutorial Styles - Showcase Mode */
         #tutorial-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
             z-index: 99999;
             display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
         }
         #tutorial-overlay.active { opacity: 1; pointer-events: auto; }
         .tutorial-card {
-            width: 500px; max-width: 90%;
-            background: rgba(10, 10, 10, 0.95);
+            width: 550px; max-width: 90%;
+            background: rgba(5, 5, 5, 0.95);
             border: 1px solid var(--accent-color);
             border-radius: var(--border-radius);
-            box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
-            padding: 30px;
-            text-align: center;
-            position: relative;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.15);
+            padding: 30px; text-align: center; position: relative; overflow: hidden;
         }
-        .tutorial-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem; color: var(--accent-color);
-            margin-bottom: 20px; letter-spacing: 2px;
+        .tutorial-slides-container { height: 280px; position: relative; }
+        .tutorial-slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; transition: opacity 0.5s ease-in-out; pointer-events: none;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .tutorial-anim-box {
-            width: 100%; height: 180px;
-            background: #000; border: 1px dashed var(--border-color);
-            margin: 20px 0; position: relative; overflow: hidden;
-            border-radius: 4px;
-        }
-        /* Animation Elements */
-        .demo-sidebar { position: absolute; left: 0; top: 0; width: 80px; height: 100%; background: #111; border-right: 1px solid #333; display: flex; justify-content: center; padding-top: 40px; }
-        .demo-item { width: 40px; height: 40px; background: rgba(0,255,204,0.1); border: 1px solid var(--accent-color); border-radius: 4px; }
-        .demo-cursor { 
-            position: absolute; top: 55px; left: 30px; 
-            width: 20px; height: 20px; 
-            background: white; clip-path: polygon(0 0, 0% 100%, 100% 50%);
-            transform: rotate(-15deg);
-            animation: dragDemo 3s infinite ease-in-out;
-            z-index: 10;
-        }
-        .demo-ghost-item {
-            position: absolute; top: 50px; left: 20px;
-            width: 40px; height: 40px; 
-            background: rgba(0,255,204,0.3); border: 1px solid var(--accent-color);
-            opacity: 0;
-            animation: itemMove 3s infinite ease-in-out;
-        }
-        .demo-target {
-            position: absolute; top: 50px; right: 50px;
-            width: 120px; height: 80px;
-            border: 2px dashed #444;
-            display: flex; justify-content: center; align-items: center;
-            color: #444; font-size: 0.8em;
-        }
+        .tutorial-slide.active { opacity: 1; }
         
-        @keyframes dragDemo {
-            0% { top: 55px; left: 30px; transform: scale(1); }
-            20% { top: 55px; left: 30px; transform: scale(0.8); } /* Click */
-            60% { top: 80px; left: 280px; transform: scale(0.8); } /* Drag */
-            80% { top: 80px; left: 280px; transform: scale(1); } /* Release */
-            100% { top: 55px; left: 30px; transform: scale(1); } /* Reset */
+        /* Scene 1: Identity */
+        .sys-boot-text {
+            font-family: 'Courier New', monospace; color: var(--accent-color);
+            text-align: left; font-size: 0.9em; line-height: 1.6; width: 100%; padding: 0 20px;
         }
-        @keyframes itemMove {
-            0%, 20% { opacity: 0; top: 50px; left: 20px; }
-            21% { opacity: 1; }
-            60% { top: 75px; left: 270px; opacity: 1; }
-            80% { top: 75px; left: 270px; opacity: 0; } /* Dropped */
+        .typing-line { overflow: hidden; white-space: nowrap; border-right: 2px solid transparent; width: 0; animation: typing 2s steps(40, end) forwards; }
+        .typing-line:nth-child(1) { animation-delay: 0s; }
+        .typing-line:nth-child(2) { animation-delay: 1s; }
+        .typing-line:nth-child(3) { animation-delay: 2s; color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff; }
+        .typing-line:nth-child(4) { animation-delay: 3s; }
+        
+        @keyframes typing { from { width: 0; border-right-color: var(--accent-color); } to { width: 100%; border-right-color: transparent; } }
+
+        /* Scene 2: Pro Ops */
+        .scene-box { position: relative; width: 100%; height: 180px; background: #111; border: 1px dashed #333; border-radius: 4px; overflow: hidden; }
+        .scene-sidebar { position: absolute; left: 0; top: 0; width: 60px; height: 100%; background: #080808; border-right: 1px solid #333; display: flex; justify-content: center; padding-top: 20px; }
+        .scene-tool { width: 30px; height: 30px; border: 1px solid var(--accent-color); background: rgba(0,255,204,0.1); border-radius: 4px; }
+        .scene-cursor {
+            position: absolute; width: 15px; height: 15px; background: #fff;
+            clip-path: polygon(0 0, 0% 100%, 100% 50%); z-index: 20;
+            animation: sceneDrag 4s infinite;
+        }
+        .scene-window {
+            position: absolute; width: 30px; height: 30px; background: rgba(0,255,204,0.2); border: 1px solid var(--accent-color);
+            opacity: 0; z-index: 10;
+            animation: sceneWindowExpand 4s infinite;
+        }
+        .scene-chart-content {
+            width: 100%; height: 100%; display: none;
+            background: linear-gradient(180deg, rgba(0,255,204,0.05) 0%, transparent 100%);
+            background-image: repeating-linear-gradient(90deg, transparent 0, transparent 10px, rgba(0,255,204,0.1) 10px, rgba(0,255,204,0.1) 11px);
+        }
+        .scene-floating-data {
+            position: absolute; top: 10px; right: -100px; background: #000; border: 1px solid var(--stock-up); color: var(--stock-up);
+            padding: 2px 5px; font-size: 0.7em; border-radius: 2px; font-weight: bold;
+            animation: sceneDataFloat 4s infinite;
+        }
+
+        @keyframes sceneDrag {
+            0% { top: 25px; left: 20px; transform: scale(1); }
+            20% { top: 25px; left: 20px; transform: scale(0.8); }
+            50% { top: 60px; left: 150px; transform: scale(0.8); }
+            70% { top: 60px; left: 150px; transform: scale(1); }
+            100% { top: 25px; left: 20px; transform: scale(1); }
+        }
+        @keyframes sceneWindowExpand {
+            0%, 20% { opacity: 0; top: 20px; left: 15px; width: 30px; height: 30px; }
+            25% { opacity: 1; }
+            50% { top: 60px; left: 150px; width: 30px; height: 30px; }
+            60% { top: 40px; left: 100px; width: 200px; height: 120px; background: #000; opacity: 1; }
+            90% { top: 40px; left: 100px; width: 200px; height: 120px; opacity: 1; }
             100% { opacity: 0; }
         }
-
-        .tutorial-text { font-size: 0.9rem; color: #aaa; margin-bottom: 10px; line-height: 1.5; }
-        .tutorial-highlight { color: var(--text-primary); font-weight: bold; }
-        .tutorial-btn {
-            background: var(--accent-color); color: #000;
-            border: none; padding: 10px 30px;
-            font-family: 'Rajdhani', sans-serif; font-weight: bold; font-size: 1rem;
-            cursor: pointer; margin-top: 10px;
-            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
-            transition: transform 0.1s;
+        @keyframes sceneDataFloat {
+            0%, 60% { opacity: 0; right: 80px; }
+            65% { opacity: 1; right: 80px; }
+            90% { opacity: 1; right: 80px; }
+            100% { opacity: 0; right: 80px; }
         }
-        .tutorial-btn:hover { opacity: 0.9; }
-        .tutorial-btn:active { transform: translateY(2px); }
 
+        /* Scene 3: Customization */
+        .scene-ui-mock {
+            width: 200px; height: 120px; border: 2px solid; padding: 10px;
+            display: flex; flex-direction: column; gap: 5px; position: relative;
+            animation: sceneTheme 6s infinite;
+        }
+        .scene-ui-bar { height: 8px; width: 60%; background: currentColor; opacity: 0.5; }
+        .scene-ui-btn { position: absolute; bottom: 10px; right: 10px; width: 30px; height: 15px; border: 1px solid currentColor; }
+        .scene-ui-text { font-size: 0.8em; margin-top: 10px; font-weight: bold; }
+        
+        @keyframes sceneTheme {
+            0%, 30% { color: #00ffcc; border-color: #00ffcc; } /* Default */
+            33%, 63% { color: #ff9800; border-color: #ff9800; } /* Pro */
+            66%, 100% { color: #b026ff; border-color: #b026ff; } /* Neon */
+        }
+
+        .tutorial-title { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; color: #fff; margin-bottom: 5px; letter-spacing: 1px; }
+        .tutorial-subtitle { font-size: 0.85rem; color: var(--accent-color); margin-bottom: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+        .tutorial-btn {
+            background: var(--accent-color); color: #000; border: none; padding: 12px 40px;
+            font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: 1px;
+            cursor: pointer; margin-top: 20px; clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+            transition: all 0.2s; text-transform: uppercase;
+        }
+        .tutorial-btn:hover { background: #fff; box-shadow: 0 0 15px #fff; }
+        
         .helper-btn {
             width: 30px; height: 30px; border: 1px solid var(--border-color);
             color: var(--text-secondary); border-radius: 50%;
@@ -416,23 +443,57 @@
             transition: all 0.2s;
         }
         .helper-btn:hover { color: var(--accent-color); border-color: var(--accent-color); background: rgba(0,255,204,0.1); }
+        
+        /* Slide Indicators */
+        .slide-dots { display: flex; gap: 8px; justify-content: center; margin-top: 15px; }
+        .dot { width: 8px; height: 8px; background: #333; border-radius: 50%; transition: background 0.3s; }
+        .dot.active { background: var(--accent-color); box-shadow: 0 0 5px var(--accent-color); }
     </style>
 </head>
 <body>
     <div id="tutorial-overlay">
         <div class="tutorial-card">
-            <div class="tutorial-title">SYSTEM INITIATED</div>
-            <div class="tutorial-text">
-                <span class="tutorial-highlight">Drag & Drop</span> tools from the sidebar to the workspace.<br>
-                從左側工具列 <span class="tutorial-highlight">拖曳 (Drag)</span> 並放置到操作區。
+            <div class="tutorial-title">BROOKLYN-TERMINAL</div>
+            <div class="tutorial-subtitle">SYSTEM BRIEFING</div>
+            
+            <div class="tutorial-slides-container">
+                <div class="tutorial-slide active" id="slide-1">
+                    <div class="sys-boot-text">
+                        <div class="typing-line">> INITIALIZING SYSTEM...</div>
+                        <div class="typing-line">> CHECKING LICENSE...</div>
+                        <div class="typing-line">> ACCESS: GRANTED (FREE)</div>
+                        <div class="typing-line">> WELCOME, TRADER.</div>
+                    </div>
+                </div>
+
+                <div class="tutorial-slide" id="slide-2">
+                    <div class="scene-box">
+                        <div class="scene-sidebar"><div class="scene-tool"></div></div>
+                        <div class="scene-window"><div class="scene-chart-content" style="display:block;"></div></div>
+                        <div class="scene-floating-data">BTC: +12.5%</div>
+                        <div class="scene-cursor"></div>
+                    </div>
+                    <div style="margin-top:15px; font-size:0.9em; color:#aaa;">DRAG & DROP • LIVE CHARTS • REAL-TIME DATA</div>
+                </div>
+
+                <div class="tutorial-slide" id="slide-3">
+                    <div style="height:180px; display:flex; align-items:center; justify-content:center;">
+                        <div class="scene-ui-mock">
+                            <div class="scene-ui-bar"></div>
+                            <div class="scene-ui-bar" style="width:40%"></div>
+                            <div class="scene-ui-btn"></div>
+                            <div class="scene-ui-text">THEME ENGINE</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:15px; font-size:0.9em; color:#aaa;">TOTAL VISUAL CONTROL</div>
+                </div>
             </div>
-            <div class="tutorial-anim-box">
-                <div class="demo-sidebar"><div class="demo-item"></div></div>
-                <div class="demo-target">DROP ZONE</div>
-                <div class="demo-ghost-item"></div>
-                <div class="demo-cursor"></div>
+
+            <div class="slide-dots">
+                <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
             </div>
-            <button class="tutorial-btn" onclick="closeTutorial()">INITIALIZE</button>
+
+            <button class="tutorial-btn" onclick="closeTutorial()">立即體驗</button>
         </div>
     </div>
 
@@ -514,7 +575,7 @@
                     <label class="switch"><input type="checkbox" id="proSwitch"><span class="slider"></span></label>
                 </div>
                 <div style="display:flex; justify-content:flex-end; margin-top:5px;">
-                    <div class="helper-btn" onclick="showTutorial()" title="Show Tutorial">?</div>
+                    <div class="helper-btn" onclick="showTutorial()" title="System Briefing">?</div>
                 </div>
             </div>
         </div>
@@ -531,14 +592,46 @@
         let items = [], activeColor = '#007bff';
         let isSidebarCollapsed = false;
         
-        // Tutorial Logic
+        // Tutorial Logic V10.5
+        let currentSlide = 0;
+        let slideInterval;
+        const slides = document.querySelectorAll('.tutorial-slide');
+        const dots = document.querySelectorAll('.dot');
+
         function showTutorial() {
             document.getElementById('tutorial-overlay').classList.add('active');
+            resetSlides();
+            startSlideShow();
         }
         function closeTutorial() {
             document.getElementById('tutorial-overlay').classList.remove('active');
+            stopSlideShow();
         }
-        // Auto-show tutorial on first load (simulated by just running it once)
+        function resetSlides() {
+            currentSlide = 0;
+            updateSlideClasses();
+        }
+        function updateSlideClasses() {
+            slides.forEach((s, i) => {
+                s.classList.toggle('active', i === currentSlide);
+            });
+            dots.forEach((d, i) => {
+                d.classList.toggle('active', i === currentSlide);
+            });
+        }
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            updateSlideClasses();
+        }
+        function startSlideShow() {
+            stopSlideShow(); // Clear existing
+            slideInterval = setInterval(nextSlide, 4000); // 4 seconds per slide
+        }
+        function stopSlideShow() {
+            if(slideInterval) clearInterval(slideInterval);
+        }
+
+        // Auto-show tutorial on first load
         window.onload = function() {
             setTimeout(showTutorial, 500);
         };
@@ -572,11 +665,11 @@
                 let weatherCity = ''; if(i.type === 'weather') weatherCity = i.cityLabel;
                 return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent, webUrl: webUrl, weatherCity: weatherCity };
             });
-            localStorage.setItem('brooklyn_layout_v10_3', JSON.stringify(layoutData)); alert('Layout Saved!');
+            localStorage.setItem('brooklyn_layout_v10_5', JSON.stringify(layoutData)); alert('Layout Saved!');
         }
 
         function loadLayout() {
-            const saved = localStorage.getItem('brooklyn_layout_v10_3');
+            const saved = localStorage.getItem('brooklyn_layout_v10_5');
             if(!saved) { alert('No saved layout found.'); return; }
             clearGrid();
             const layoutData = JSON.parse(saved);
@@ -1442,38 +1535,155 @@
         }
         function setupInteractions(item) {
             const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
-            el.addEventListener('mousedown', (e) => {
+            el.addEventListener('mousedown', handleStart);
+            el.addEventListener('touchstart', handleStart, {passive: false});
+
+            function handleStart(e) {
                 if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; 
                 if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; 
                 if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews', 'tvchart', 'tv-news', 'tv-eco', 'heatmap-stock', 'heatmap-crypto', 'heatmap-etf', 'ticker-tape'].includes(item.type) && !e.target.closest('.widget-header')) return;
-                e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
-                function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) 
-                rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY);
-                if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); else el.classList.remove('collision');
+                if(e.type === 'touchstart') e.preventDefault();
+
+                const startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+                const startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+                const startLeft = item.x;
+                const startTop = item.y; 
+                el.style.zIndex = 999;
+
+                function onMove(ev) { 
+                    const clientX = ev.type === 'mousemove' ? ev.clientX : ev.touches[0].clientX;
+                    const clientY = ev.type === 'mousemove' ? ev.clientY : ev.touches[0].clientY;
+                    const dx = clientX - startX;
+                    const dy = clientY - startY; 
+                    let rawX = startLeft + dx;
+                    let rawY = startTop + dy; 
+                    const maxW = parseInt(gridCanvas.style.width);
+                    const maxH = parseInt(gridCanvas.style.height); 
+                    if(rawX < 0) rawX = 0; 
+                    if(rawY < 0) rawY = 0; 
+                    if(rawX + item.w > maxW) rawX = maxW - item.w; 
+                    if(rawY + item.h > maxH) rawY = maxH - item.h; 
+                    el.style.left = rawX + 'px'; 
+                    el.style.top = rawY + 'px'; 
+                    const snapX = snap(rawX);
+                    const snapY = snap(rawY);
+                    if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); 
+                    else el.classList.remove('collision');
                 }
-                function onUp(ev) { document.removeEventListener('mousemove', onMove);
-                document.removeEventListener('mouseup', onUp); el.style.zIndex = ''; const finalX = snap(parseInt(el.style.left)), finalY = snap(parseInt(el.style.top));
-                if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { el.style.left = item.x + 'px'; el.style.top = item.y + 'px';
-                } else { item.x = finalX; item.y = finalY; el.style.left = finalX + 'px'; el.style.top = finalY + 'px';
-                } el.classList.remove('collision'); }
-                document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
-            });
-            resizeHandle.addEventListener('mousedown', (e) => {
-                e.stopPropagation(); e.preventDefault(); const startX = e.clientX, startY = e.clientY, startW = item.w, startH = item.h;
-                function onResize(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let nw = snap(Math.max(MIN_W, startW + dx)), nh = snap(Math.max(MIN_H, startH + dy)); if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision'); else { el.classList.remove('collision'); el.style.width = nw + 'px'; el.style.height = nh 
-                + 'px'; item.w = nw; item.h = nh; 
-                    if(item.type === 'clock') renderClockContent(item); 
-                    if(item.type === 'weather') updateWeatherScale(item);
-                    if(item.type === 'quote') updateQuoteScale(item);
-                } }
-                function onUp() { document.removeEventListener('mousemove', onResize); document.removeEventListener('mouseup', onUp); el.classList.remove('collision'); }
-                document.addEventListener('mousemove', onResize); document.addEventListener('mouseup', onUp);
-            });
+
+                function onUp(ev) { 
+                    document.removeEventListener('mousemove', onMove); 
+                    document.removeEventListener('mouseup', onUp);
+                    document.removeEventListener('touchmove', onMove); 
+                    document.removeEventListener('touchend', onUp); 
+                    el.style.zIndex = ''; 
+                    const finalX = snap(parseInt(el.style.left)); 
+                    const finalY = snap(parseInt(el.style.top));
+                    if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { 
+                        el.style.left = item.x + 'px'; 
+                        el.style.top = item.y + 'px';
+                    } else { 
+                        item.x = finalX; 
+                        item.y = finalY; 
+                        el.style.left = finalX + 'px'; 
+                        el.style.top = finalY + 'px';
+                    } 
+                    el.classList.remove('collision'); 
+                }
+
+                if (e.type === 'mousedown') {
+                    document.addEventListener('mousemove', onMove); 
+                    document.addEventListener('mouseup', onUp);
+                } else {
+                    document.addEventListener('touchmove', onMove, {passive: false}); 
+                    document.addEventListener('touchend', onUp);
+                }
+            }
+
+            resizeHandle.addEventListener('mousedown', handleResizeStart);
+            resizeHandle.addEventListener('touchstart', handleResizeStart, {passive: false});
+
+            function handleResizeStart(e) {
+                e.stopPropagation(); 
+                if(e.type === 'touchstart') e.preventDefault();
+
+                const startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+                const startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+                const startW = item.w; 
+                const startH = item.h;
+
+                function onResize(ev) { 
+                    const clientX = ev.type === 'mousemove' ? ev.clientX : ev.touches[0].clientX;
+                    const clientY = ev.type === 'mousemove' ? ev.clientY : ev.touches[0].clientY;
+                    const dx = clientX - startX; 
+                    const dy = clientY - startY; 
+                    let nw = snap(Math.max(MIN_W, startW + dx)); 
+                    let nh = snap(Math.max(MIN_H, startH + dy)); 
+                    if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision'); 
+                    else { 
+                        el.classList.remove('collision'); 
+                        el.style.width = nw + 'px'; 
+                        el.style.height = nh + 'px'; 
+                        item.w = nw; item.h = nh; 
+                        if(item.type === 'clock') renderClockContent(item); 
+                        if(item.type === 'weather') updateWeatherScale(item);
+                        if(item.type === 'quote') updateQuoteScale(item);
+                    } 
+                }
+
+                function onResizeUp() { 
+                    document.removeEventListener('mousemove', onResize); 
+                    document.removeEventListener('mouseup', onResizeUp);
+                    document.removeEventListener('touchmove', onResize); 
+                    document.removeEventListener('touchend', onResizeUp); 
+                    el.classList.remove('collision'); 
+                }
+
+                if(e.type === 'mousedown') {
+                    document.addEventListener('mousemove', onResize); 
+                    document.addEventListener('mouseup', onResizeUp);
+                } else {
+                    document.addEventListener('touchmove', onResize, {passive: false}); 
+                    document.addEventListener('touchend', onResizeUp);
+                }
+            }
         }
         function snap(v) { return Math.round(v / CELL_SIZE) * CELL_SIZE; }
         function checkCollision(target, ignoreId) { return items.some(i => { if (i.id === ignoreId) return false; return (target.x < i.x + i.w && target.x + target.w > i.x && target.y < i.y + i.h && target.y + target.h > i.y); }); }
         function hexToRgb(hex) { const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 }; }
-        gridResizer.addEventListener('mousedown', (e) => { e.stopPropagation(); const startX = e.clientX, startY = e.clientY, startW = parseInt(getComputedStyle(gridCanvas).width), startH = parseInt(getComputedStyle(gridCanvas).height); function resizeGrid(ev) { const nw = Math.max(600, startW + (ev.clientX - startX)), nh = Math.max(600, startH + (ev.clientY - startY)); gridCanvas.style.width = snap(nw) + 'px'; gridCanvas.style.height = snap(nh) + 'px'; } document.addEventListener('mousemove', resizeGrid); document.addEventListener('mouseup', () => document.removeEventListener('mousemove', resizeGrid), {once:true}); });
+        
+        const handleGridResize = (e) => {
+            e.stopPropagation(); 
+            if(e.type === 'touchstart') e.preventDefault();
+            const startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+            const startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+            const startW = parseInt(getComputedStyle(gridCanvas).width);
+            const startH = parseInt(getComputedStyle(gridCanvas).height);
+            
+            function resizeGrid(ev) {
+                const clientX = ev.type === 'mousemove' ? ev.clientX : ev.touches[0].clientX;
+                const clientY = ev.type === 'mousemove' ? ev.clientY : ev.touches[0].clientY;
+                const nw = Math.max(600, startW + (clientX - startX));
+                const nh = Math.max(600, startH + (clientY - startY));
+                gridCanvas.style.width = snap(nw) + 'px';
+                gridCanvas.style.height = snap(nh) + 'px';
+            }
+            
+            function stopResize() {
+                document.removeEventListener('mousemove', resizeGrid);
+                document.removeEventListener('touchmove', resizeGrid);
+            }
+
+            if(e.type === 'mousedown') {
+                document.addEventListener('mousemove', resizeGrid);
+                document.addEventListener('mouseup', stopResize, {once:true});
+            } else {
+                document.addEventListener('touchmove', resizeGrid, {passive: false});
+                document.addEventListener('touchend', stopResize, {once:true});
+            }
+        };
+        gridResizer.addEventListener('mousedown', handleGridResize);
+        gridResizer.addEventListener('touchstart', handleGridResize, {passive: false});
     </script>
 </body>
 </html>
