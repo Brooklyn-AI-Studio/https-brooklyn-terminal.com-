@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V8.3 PRO</title>
+    <title>BROOKLYN-TERMINAL // V8.5 PRO</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -84,7 +84,7 @@
 
         /* Sidebar Collapsed State (Mini Mode) overrides */
         .sidebar.collapsed .sidebar-section-header { display: none; }
-        .sidebar.collapsed .sidebar-content-wrapper { display: block !important; } /* Always show content (icons) when sidebar is mini */
+        .sidebar.collapsed .sidebar-content-wrapper { display: block !important; }
         .sidebar.collapsed .sidebar-section { margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
         .sidebar.collapsed .stock-selector, .sidebar.collapsed .color-picker-container span, .sidebar.collapsed .stock-drag-item > div, .sidebar.collapsed .sidebar-footer-content label, .sidebar.collapsed .control-btn-group span { display: none; }
         .sidebar.collapsed .tool-item, .sidebar.collapsed .stock-drag-item { justify-content: center; padding: 10px; }
@@ -213,23 +213,41 @@
         }
         .nav-btn:hover { background: rgba(255,255,255,0.1); }
 
-        /* Weather Layout Styles */
-        .weather-layout { display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; color: var(--text-primary); position: relative; }
-        .weather-header { 
-            padding: 5px 10px; font-size: 0.8em; border-bottom: 1px solid var(--border-color); 
-            background: rgba(0,0,0,0.2); cursor: move; display: flex; justify-content: space-between; align-items: center; 
+        /* Weather Layout Styles - Updated for Picture-like Look */
+        .weather-layout { 
+            display: flex; flex-direction: column; width: 100%; height: 100%; cursor: default; color: var(--text-primary); position: relative; 
+            background: linear-gradient(135deg, rgba(30,30,30,0.9) 0%, rgba(10,10,10,0.95) 100%); 
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #fff; /* Force white for weather card like image */
         }
-        .weather-main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .weather-temp { font-size: 3em; font-weight: 900; line-height: 1; margin: 5px 0; }
-        .weather-icon { font-size: 4em; margin-bottom: 5px; filter: drop-shadow(0 0 10px var(--accent-color)); }
-        .weather-condition { font-size: 1em; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; margin-bottom: 10px; }
-        .weather-details { display: grid; grid-template-columns: 1fr 1fr; width: 80%; gap: 5px; border-top: 1px solid var(--border-color); padding-top: 10px; }
-        .weather-detail-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7em; }
-        .weather-detail-label { opacity: 0.6; margin-bottom: 2px; }
-        .weather-input-container { position: absolute; bottom: 5px; right: 5px; opacity: 0; transition: opacity 0.3s; width: 120px; }
-        .weather-layout:hover .weather-input-container { opacity: 1; }
-        .weather-city-input { width: 100%; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 2px 5px; font-size: 0.7em; text-align: center; border-radius: var(--border-radius); outline: none; }
         
+        /* Top Section: Icon, Temp, Condition */
+        .weather-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .weather-top-left { display: flex; align-items: center; gap: 10px; }
+        .weather-main-icon { font-size: 2.5em; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+        .weather-main-temp { font-size: 3em; font-weight: 300; line-height: 1; }
+        .weather-unit { font-size: 1em; opacity: 0.6; margin-left: 5px; font-weight: 400; }
+        .weather-condition-text { font-size: 1em; opacity: 0.9; text-align: right; margin-top: 10px;}
+
+        /* Middle Section: Location, High/Low */
+        .weather-middle { margin-bottom: 20px; }
+        .weather-location-text { font-size: 1em; margin-bottom: 5px; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .weather-hl { font-size: 0.8em; opacity: 0.7; }
+
+        /* Bottom Section: 5-Day Forecast */
+        .weather-forecast { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-top: auto; }
+        .forecast-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 0.8em; }
+        .forecast-icon { font-size: 1.2em; }
+        .forecast-temp { font-weight: 500; }
+        .forecast-day { opacity: 0.7; font-size: 0.9em; }
+
+        /* Search Input - Bottom Right Absolute */
+        .weather-search-container { position: absolute; bottom: 10px; right: 10px; width: 140px; z-index: 10; }
+        .weather-search-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 4px 8px; font-size: 0.7em; text-align: right; outline: none; transition: all 0.3s; opacity: 0.6; }
+        .weather-search-input:focus, .weather-search-input:hover { opacity: 1; border-bottom-color: var(--accent-color); width: 160px; background: rgba(0,0,0,0.5); }
+        .weather-search-input::placeholder { color: rgba(255,255,255,0.5); font-style: italic; font-size: 0.9em; }
+
         .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
         .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
         .grid-item:hover .menu-trigger { opacity: 1; }
@@ -566,7 +584,7 @@
             e.preventDefault(); const type = e.dataTransfer.getData('type'); const rect = gridCanvas.getBoundingClientRect(); const x = snap(e.clientX - rect.left); const y = snap(e.clientY - rect.top);
             if (type === 'shape') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, activeColor, 'shape'); }
             else if (type === 'clock') { if(!checkCollision({x, y, w: 200, h: 100})) createItem(x, y, 200, 100, '#ffffff', 'clock'); }
-            else if (type === 'weather') { if(!checkCollision({x, y, w: 240, h: 260})) createItem(x, y, 240, 260, '#ffffff', 'weather'); }
+            else if (type === 'weather') { if(!checkCollision({x, y, w: 280, h: 180})) createItem(x, y, 280, 180, '#ffffff', 'weather'); }
             else if (type === 'news') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'news'); }
             else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
             else if (type === 'calc') { if(!checkCollision({x, y, w: 200, h: 300})) createItem(x, y, 200, 300, '#ffffff', 'calc'); }
@@ -583,21 +601,49 @@
             const id = 'item_' + Date.now(); const el = document.createElement('div'); el.className = 'grid-item'; el.id = id; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.width = w + 'px'; el.style.height = h + 'px';
             const rgb = hexToRgb(color); el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`; el.style.borderColor = color;
             el.innerHTML = `<div class="content-container" style="width:100%; height:100%;"></div><div class="menu-trigger">⋮</div><div class="context-menu"><div class="context-menu-item danger" onclick="deleteItem('${id}')">移除 (Remove)</div></div><div class="item-resize"></div>`;
+            
+            const menu = el.querySelector('.context-menu'); 
+            const removeBtn = menu.querySelector('.context-menu-item');
+
             if (type === 'stock') {
-                const menu = el.querySelector('.context-menu'); const removeBtn = menu.querySelector('.context-menu-item');
                 const timeBtn = document.createElement('div'); timeBtn.className = 'context-menu-item'; timeBtn.innerText = '顯示/隱藏 更新時間'; timeBtn.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.showTime = !obj.showTime; renderStockContent(obj); } menu.classList.remove('show'); }; menu.insertBefore(timeBtn, removeBtn);
                 ['K 線圖 (1W)', 'K 線圖 (1M)', 'K 線圖 (3M)'].forEach((label, idx) => { const itemBtn = document.createElement('div'); itemBtn.className = 'context-menu-item'; itemBtn.innerText = label; itemBtn.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.viewMode = 'candle'; obj.timeRange = idx === 0 ? '1W' : idx === 1 ? '1M' : '3M'; renderStockContent(obj); } menu.classList.remove('show'); }; menu.insertBefore(itemBtn, removeBtn); });
                 const lineBtn = document.createElement('div'); lineBtn.className = 'context-menu-item'; lineBtn.innerText = '即時走勢 (Live Trend)'; lineBtn.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.viewMode = 'line'; renderStockContent(obj); } menu.classList.remove('show'); }; menu.insertBefore(lineBtn, removeBtn);
             }
             if (type === 'clock') {
-                const menu = el.querySelector('.context-menu'); const removeBtn = menu.querySelector('.context-menu-item');
                 const worldBtn = document.createElement('div'); worldBtn.className = 'context-menu-item'; worldBtn.innerHTML = '世界時鐘 (World Clock) <div class="submenu"></div>';
                 const submenu = document.createElement('div'); submenu.className = 'submenu'; worldBtn.appendChild(submenu);
                 const zones = [{ label: '本地時間 (Local)', tz: 'local', display: 'LOCAL' }, { label: '紐約 (New York)', tz: 'America/New_York', display: 'NEW YORK' }, { label: '倫敦 (London)', tz: 'Europe/London', display: 'LONDON' }, { label: '東京 (Tokyo)', tz: 'Asia/Tokyo', display: 'TOKYO' }, { label: '台北 (Taipei)', tz: 'Asia/Taipei', display: 'TAIPEI' }, { label: '雪梨 (Sydney)', tz: 'Australia/Sydney', display: 'SYDNEY' }];
                 zones.forEach(z => { const subItem = document.createElement('div'); subItem.className = 'context-menu-item'; subItem.innerText = z.label; subItem.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.timeZone = z.tz; obj.cityLabel = z.display; renderClockContent(obj); } menu.classList.remove('show'); }; submenu.appendChild(subItem); });
                 menu.insertBefore(worldBtn, removeBtn);
             }
-            const trigger = el.querySelector('.menu-trigger'), menu = el.querySelector('.context-menu'); trigger.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); menu.classList.toggle('show'); };
+            if (type === 'weather') {
+                const cityBtn = document.createElement('div'); cityBtn.className = 'context-menu-item'; cityBtn.innerHTML = '切換城市 (Switch City) <div class="submenu"></div>';
+                const submenu = document.createElement('div'); submenu.className = 'submenu'; cityBtn.appendChild(submenu);
+                const cities = ['Taipei', 'New York', 'London', 'Tokyo', 'Paris', 'Sydney', 'Singapore', 'Dubai', 'Shanghai', 'Berlin'];
+                cities.forEach(c => { 
+                    const subItem = document.createElement('div'); 
+                    subItem.className = 'context-menu-item'; 
+                    subItem.innerText = c; 
+                    subItem.onclick = async (e) => { 
+                        e.stopPropagation(); 
+                        const obj = items.find(i => i.id === id); 
+                        if(obj) { 
+                            obj.cityLabel = c; 
+                            const container = obj.el.querySelector('.content-container');
+                            const cityElem = container.querySelector(`#w-city-name-${id}`);
+                            if(cityElem) cityElem.innerText = c.toUpperCase();
+                            await updateWeatherData(obj, c); 
+                        } 
+                        menu.classList.remove('show'); 
+                    }; 
+                    submenu.appendChild(subItem); 
+                });
+                menu.insertBefore(cityBtn, removeBtn);
+            }
+
+            const trigger = el.querySelector('.menu-trigger'); 
+            trigger.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); menu.classList.toggle('show'); };
             gridCanvas.appendChild(el);
             const itemObj = { id, x, y, w, h, el, type, stockData: null, showTime: false, viewMode: 'line', timeRange: '1M', timeZone: 'local', cityLabel: 'LOCAL' }; items.push(itemObj);
             if (type === 'clock') renderClockContent(itemObj); if (type === 'news') renderNewsContent(itemObj); if (type === 'chat') renderChatContent(itemObj);
@@ -619,10 +665,10 @@
                 if(!geoData.results || geoData.results.length === 0) return null;
                 const { latitude, longitude, name } = geoData.results[0];
 
-                // 2. Weather Data
-                const weatherResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m`);
+                // 2. Weather Data (Current + Daily)
+                const weatherResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`);
                 const weatherData = await weatherResp.json();
-                return { name, ...weatherData.current };
+                return { name, current: weatherData.current, daily: weatherData.daily };
             } catch(e) { console.error(e); return null; }
         }
 
@@ -642,26 +688,33 @@
              return codes[code] || 'Unknown';
         }
 
+        function getDayName(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { weekday: 'short' });
+        }
+
         async function renderWeatherContent(item) {
             const container = item.el.querySelector('.content-container');
             if(!container.querySelector('.weather-layout')) {
                 container.innerHTML = `
                     <div class="weather-layout">
-                        <div class="weather-header widget-header">
-                            <span id="w-city-${item.id}">LOADING...</span>
-                            <span style="font-size:0.8em; opacity:0.6;">API</span>
+                        <div class="weather-top">
+                            <div class="weather-top-left">
+                                <div class="weather-main-icon" id="w-icon-${item.id}">☀️</div>
+                                <div class="weather-main-temp" id="w-temp-${item.id}">--</div>
+                                <div class="weather-unit">°C</div>
+                            </div>
+                            <div class="weather-condition-text" id="w-cond-${item.id}">Clear</div>
                         </div>
-                        <div class="weather-main">
-                            <div class="weather-icon" id="w-icon-${item.id}">⏳</div>
-                            <div class="weather-temp" id="w-temp-${item.id}">--</div>
-                            <div class="weather-condition" id="w-cond-${item.id}">Scanning</div>
-                            <div class="weather-details">
-                                <div class="weather-detail-item"><span class="weather-detail-label">HUMIDITY</span><span id="w-hum-${item.id}">--%</span></div>
-                                <div class="weather-detail-item"><span class="weather-detail-label">WIND</span><span id="w-wind-${item.id}">-- km/h</span></div>
-                            </div>
-                            <div class="weather-input-container">
-                                <input type="text" class="weather-city-input" id="w-input-${item.id}" placeholder="Change City" value="${item.cityLabel}">
-                            </div>
+                        <div class="weather-middle">
+                            <div class="weather-location-text" id="w-city-name-${item.id}">LOADING</div>
+                            <div class="weather-hl">H:<span id="w-high-${item.id}">--</span>° L:<span id="w-low-${item.id}">--</span>°</div>
+                        </div>
+                        <div class="weather-forecast" id="w-forecast-${item.id}">
+                            <!-- Forecast items generated here -->
+                        </div>
+                        <div class="weather-search-container">
+                            <input type="text" class="weather-search-input" id="w-input-${item.id}" placeholder="請在此搜尋城市" value="">
                         </div>
                     </div>`;
                 
@@ -671,8 +724,9 @@
                         const val = input.value.trim();
                         if(val) {
                             item.cityLabel = val;
-                            container.querySelector(`#w-city-${item.id}`).innerText = "SEARCHING...";
+                            container.querySelector(`#w-city-name-${item.id}`).innerText = "SEARCHING";
                             await updateWeatherData(item, val);
+                            input.value = ''; // Clear input after search
                         }
                     }
                 });
@@ -685,16 +739,40 @@
             const data = await fetchWeather(city);
             const container = item.el.querySelector('.content-container');
             if(data) {
-                container.querySelector(`#w-city-${item.id}`).innerText = data.name.toUpperCase();
-                container.querySelector(`#w-temp-${item.id}`).innerText = Math.round(data.temperature_2m) + '°';
-                container.querySelector(`#w-icon-${item.id}`).innerText = getWeatherIcon(data.weather_code);
-                container.querySelector(`#w-cond-${item.id}`).innerText = getWeatherDesc(data.weather_code);
-                container.querySelector(`#w-hum-${item.id}`).innerText = data.relative_humidity_2m + '%';
-                container.querySelector(`#w-wind-${item.id}`).innerText = data.wind_speed_10m + ' km/h';
-                item.cityLabel = data.name; // Update to official name
+                // Update Current Weather
+                container.querySelector(`#w-city-name-${item.id}`).innerText = data.name;
+                container.querySelector(`#w-temp-${item.id}`).innerText = Math.round(data.current.temperature_2m);
+                container.querySelector(`#w-icon-${item.id}`).innerText = getWeatherIcon(data.current.weather_code);
+                container.querySelector(`#w-cond-${item.id}`).innerText = getWeatherDesc(data.current.weather_code);
+                
+                // Update High/Low for today (index 0)
+                if(data.daily) {
+                    container.querySelector(`#w-high-${item.id}`).innerText = Math.round(data.daily.temperature_2m_max[0]);
+                    container.querySelector(`#w-low-${item.id}`).innerText = Math.round(data.daily.temperature_2m_min[0]);
+                }
+
+                // Update Forecast Row (Next 5 days, index 1-5)
+                const forecastContainer = container.querySelector(`#w-forecast-${item.id}`);
+                if(data.daily && forecastContainer) {
+                    let forecastHTML = '';
+                    for(let i=1; i<=5; i++) { // Show next 5 days
+                        if(data.daily.time[i]) {
+                             forecastHTML += `
+                                <div class="forecast-item">
+                                    <div class="forecast-day">${getDayName(data.daily.time[i])}</div>
+                                    <div class="forecast-icon">${getWeatherIcon(data.daily.weather_code[i])}</div>
+                                    <div class="forecast-temp">${Math.round(data.daily.temperature_2m_max[i])}°</div>
+                                </div>
+                             `;
+                        }
+                    }
+                    forecastContainer.innerHTML = forecastHTML;
+                }
+
+                item.cityLabel = data.name; 
             } else {
-                 container.querySelector(`#w-city-${item.id}`).innerText = "NOT FOUND";
-                 container.querySelector(`#w-cond-${item.id}`).innerText = "ERROR";
+                 const cityEl = container.querySelector(`#w-city-name-${item.id}`);
+                 if(cityEl) cityEl.innerText = "NOT FOUND";
             }
         }
 
