@@ -495,7 +495,6 @@
                         <div class="typing-line">> CHECKING LICENSE...</div>
                         <div class="typing-line">> ACCESS: Successfuly</div>
                         <div class="typing-line">> WELCOME, TRADER.</div>
-                        <div class="typing-line">> Click the button below to get started.</div>
                     </div>
                 </div>
 
@@ -862,11 +861,6 @@
             const container = item.el.querySelector('.content-container');
             if(container.querySelector('.kanban-layout')) return;
             
-            // --- New Workstation Tools ---
-        function renderKanbanContent(item) {
-            const container = item.el.querySelector('.content-container');
-            if(container.querySelector('.kanban-layout')) return;
-            
             container.innerHTML = `
                 <div class="kanban-layout">
                     <div class="kanban-header widget-header"><span>OPS BOARD</span><span style="opacity:0.5">PROJECTS</span></div>
@@ -918,11 +912,6 @@
             
             col.appendChild(card);
         }
-
-
-        // --- Other Render Functions (Abbreviated, assuming they exist from previous context) ---
-        // (Include renderAudioContent, renderPomodoroContent, etc. from original code here)
-        // For the sake of the user copying the whole block, I will include the core ones needed.
 
         function renderAudioContent(item) {
             const container = item.el.querySelector('.content-container');
