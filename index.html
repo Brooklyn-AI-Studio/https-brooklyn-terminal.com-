@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V9.8 REAL-DATA</title>
+    <title>BROOKLYN-TERMINAL // V9.9 REAL-DATA</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -538,11 +538,12 @@
             // Stats placeholder updated by live API
             mockStockData[item.s] = { 
                 symbol: item.s, name: item.n, price: isCrypto ? 0 : Math.random() * 500 + 50, change: 0, isCrypto: isCrypto, 
-                history: isCrypto ? [] : generateHistory(Math.random() * 500 + 50, 60),
+                history: [],
                 stats: {} 
             };
         });
         
+        // Fallback random history only for non-crypto
         function generateHistory(basePrice, count) {
             let history = [], current = basePrice;
             for(let i=0; i<count; i++) {
@@ -581,8 +582,11 @@
                 }
             } catch (e) {
                 console.warn("Crypto API failed, fallback...");
-                // Fallback logic omitted for brevity but kept existing structure in mind
             }
+        }
+
+        function updateLocalCryptoData(symbol, price, change) {
+             // Placeholder for other apis
         }
 
         function simulateMarket() {
@@ -591,6 +595,7 @@
                 // Only simulate non-crypto
                 if (!data.isCrypto) {
                     const change = (Math.random() - 0.5) * (data.price * 0.005), newPrice = data.price + change;
+                    if(data.history.length === 0) data.history = generateHistory(data.price, 50);
                     let last = data.history[data.history.length - 1];
                     last.close = newPrice; last.high = Math.max(last.high, newPrice); last.low = Math.min(last.low, newPrice);
                     if(Math.random() > 0.95) { data.history.push({open: newPrice, high: newPrice, low: newPrice, close: newPrice}); if(data.history.length > 100) data.history.shift(); }
@@ -608,7 +613,7 @@
                         renderStockContent(item);
                     }
                 } else if (item.type === 'clock') renderClockContent(item);
-                // Finance Pro updates are handled within its own interval, but it reads from mockStockData for price
+                // Finance Pro updates are handled within its own interval
             });
         }
 
