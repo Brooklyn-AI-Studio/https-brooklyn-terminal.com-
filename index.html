@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROOKLYN-TERMINAL // V10.0 HEATMAPS</title>
+    <title>BROOKLYN-TERMINAL // V10.2 PRO</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -137,6 +137,25 @@
         [data-pro="true"] .tool-preview.clock-icon { border-radius: 0; border-color: var(--accent-color); }
         .tool-preview.icon-only { display: flex; align-items: center; justify-content: center; font-size: 16px; }
         
+        /* Recommendation Badge Style */
+        .rec-badge {
+            font-size: 0.6em;
+            background-color: var(--accent-color);
+            color: #000;
+            padding: 2px 5px;
+            border-radius: 2px;
+            margin-left: 6px;
+            font-weight: 900;
+            vertical-align: middle;
+            letter-spacing: 0;
+            box-shadow: 0 0 5px rgba(0, 255, 204, 0.4);
+        }
+        [data-pro="true"] .rec-badge {
+            background-color: var(--text-primary);
+            color: #000;
+            box-shadow: none;
+        }
+
         .sidebar-footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
         .sidebar-footer-content { display: flex; align-items: center; justify-content: space-between; width: 100%; }
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
@@ -349,22 +368,25 @@
                     <span>Tools</span><span class="arrow">▼</span>
                 </div>
                 <div class="sidebar-content-wrapper">
+                    <div class="tool-item" draggable="true" id="tool-tvchart"><div class="tool-preview icon-only">📈</div><span>Advanced Chart <span class="rec-badge">推薦</span></span></div>
+                    <div class="tool-item" draggable="true" id="tool-ticker-tape"><div class="tool-preview icon-only">🎞️</div><span>Ticker Tape <span class="rec-badge">推薦</span></span></div>
+                    <div class="tool-item" draggable="true" id="tool-heatmap-stock"><div class="tool-preview icon-only">🇺🇸</div><span>Stock Heatmap <span class="rec-badge">推薦</span></span></div>
+                    <div class="tool-item" draggable="true" id="tool-heatmap-crypto"><div class="tool-preview icon-only">🪙</div><span>Crypto Map <span class="rec-badge">推薦</span></span></div>
+                    <div class="tool-item" draggable="true" id="tool-heatmap-etf"><div class="tool-preview icon-only">🇹🇼</div><span>ETF Heatmap <span class="rec-badge">推薦</span></span></div>
+                    <div class="tool-item" draggable="true" id="tool-tv-news"><div class="tool-preview icon-only">📰</div><span>Top Stories <span class="rec-badge">推薦</span></span></div>
+                    <div class="tool-item" draggable="true" id="tool-tv-eco"><div class="tool-preview icon-only">📅</div><span>Eco Calendar <span class="rec-badge">推薦</span></span></div>
+                    
+                    <div class="tool-item" draggable="true" id="tool-llama"><div class="tool-preview icon-only">🦙</div><span>Llama Online <span class="rec-badge">推薦</span></span></div>
+                    <div class="tool-item" draggable="true" id="tool-browser"><div class="tool-preview icon-only">🌐</div><span>Web Portal <span class="rec-badge">推薦</span></span></div>
+
+                    <div class="tool-item" draggable="true" id="tool-tvnews"><div class="tool-preview icon-only">🌐</div><span>Global News</span></div>
                     <div class="tool-item" draggable="true" id="tool-clock"><div class="tool-preview clock-icon">🕓</div><span>Digital Clock</span></div>
                     <div class="tool-item" draggable="true" id="tool-weather"><div class="tool-preview icon-only">☁️</div><span>Weather Station</span></div>
-                    <div class="tool-item" draggable="true" id="tool-tvnews"><div class="tool-preview icon-only">🌐</div><span>Global News</span></div>
-                    <div class="tool-item" draggable="true" id="tool-tvchart"><div class="tool-preview icon-only">📈</div><span>Advanced Chart</span></div>
-                    <div class="tool-item" draggable="true" id="tool-tv-news"><div class="tool-preview icon-only">📰</div><span>Top Stories</span></div>
-                    <div class="tool-item" draggable="true" id="tool-tv-eco"><div class="tool-preview icon-only">📅</div><span>Eco Calendar</span></div>
-                    <div class="tool-item" draggable="true" id="tool-heatmap-stock"><div class="tool-preview icon-only">🇺🇸</div><span>Stock Heatmap</span></div>
-                    <div class="tool-item" draggable="true" id="tool-heatmap-crypto"><div class="tool-preview icon-only">🪙</div><span>Crypto Map</span></div>
-                    <div class="tool-item" draggable="true" id="tool-heatmap-etf"><div class="tool-preview icon-only">🇹🇼</div><span>ETF Heatmap</span></div>
                     <div class="tool-item" draggable="true" id="tool-quote"><div class="tool-preview icon-only">❝</div><span>Daily Insight</span></div>
                     <div class="tool-item" draggable="true" id="tool-number"><div class="tool-preview icon-only">#</div><span>Data Fact</span></div>
                     <div class="tool-item" draggable="true" id="tool-chat"><div class="tool-preview icon-only">🤖</div><span>LLM Chat</span></div>
                     <div class="tool-item" draggable="true" id="tool-calc"><div class="tool-preview icon-only">🧮</div><span>Calculator</span></div>
                     <div class="tool-item" draggable="true" id="tool-note"><div class="tool-preview icon-only">📝</div><span>Notes</span></div>
-                    <div class="tool-item" draggable="true" id="tool-browser"><div class="tool-preview icon-only">🌐</div><span>Web Portal</span></div>
-                    <div class="tool-item" draggable="true" id="tool-llama"><div class="tool-preview icon-only">🦙</div><span>Llama Online</span></div>
                 </div>
             </div>
 
@@ -437,16 +459,16 @@
                 let weatherCity = ''; if(i.type === 'weather') weatherCity = i.cityLabel;
                 return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent, webUrl: webUrl, weatherCity: weatherCity };
             });
-            localStorage.setItem('brooklyn_layout_v10', JSON.stringify(layoutData)); alert('Layout Saved!');
+            localStorage.setItem('brooklyn_layout_v10_2', JSON.stringify(layoutData)); alert('Layout Saved!');
         }
 
         function loadLayout() {
-            const saved = localStorage.getItem('brooklyn_layout_v10');
+            const saved = localStorage.getItem('brooklyn_layout_v10_2');
             if(!saved) { alert('No saved layout found.'); return; }
             clearGrid();
             const layoutData = JSON.parse(saved);
             layoutData.forEach(data => {
-                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama','weather','quote','number','tvnews','tvchart','tv-news','tv-eco','heatmap-stock','heatmap-crypto','heatmap-etf'].includes(data.type)) color = '#ffffff';
+                let color = '#007bff'; if(['clock','news','chat','calc','note','browser','llama','weather','quote','number','tvnews','tvchart','tv-news','tv-eco','heatmap-stock','heatmap-crypto','heatmap-etf','ticker-tape'].includes(data.type)) color = '#ffffff';
                 const newItem = createItem(data.x, data.y, data.w, data.h, color, data.type);
                 if (data.type === 'clock') { newItem.obj.timeZone = data.timeZone; newItem.obj.cityLabel = data.cityLabel; renderClockContent(newItem.obj); } 
                 else if (data.type === 'note') { const el = document.getElementById(newItem.obj.id); const contentDiv = el.querySelector('.note-content'); if(contentDiv && data.noteContent) contentDiv.innerHTML = data.noteContent; } 
@@ -461,6 +483,7 @@
                 else if (data.type === 'heatmap-stock') renderStockHeatmap(newItem.obj);
                 else if (data.type === 'heatmap-crypto') renderCryptoHeatmap(newItem.obj);
                 else if (data.type === 'heatmap-etf') renderETFHeatmap(newItem.obj);
+                else if (data.type === 'ticker-tape') renderTickerTapeContent(newItem.obj);
             });
         }
 
@@ -476,6 +499,7 @@
         document.getElementById('tool-heatmap-stock').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'heatmap-stock'));
         document.getElementById('tool-heatmap-crypto').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'heatmap-crypto'));
         document.getElementById('tool-heatmap-etf').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'heatmap-etf'));
+        document.getElementById('tool-ticker-tape').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'ticker-tape'));
         document.getElementById('tool-quote').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'quote'));
         document.getElementById('tool-number').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'number'));
         document.getElementById('tool-chat').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'chat'));
@@ -497,6 +521,7 @@
             else if (type === 'heatmap-stock') { if(!checkCollision({x, y, w: 600, h: 500})) createItem(x, y, 600, 500, '#ffffff', 'heatmap-stock'); }
             else if (type === 'heatmap-crypto') { if(!checkCollision({x, y, w: 600, h: 500})) createItem(x, y, 600, 500, '#ffffff', 'heatmap-crypto'); }
             else if (type === 'heatmap-etf') { if(!checkCollision({x, y, w: 600, h: 500})) createItem(x, y, 600, 500, '#ffffff', 'heatmap-etf'); }
+            else if (type === 'ticker-tape') { if(!checkCollision({x, y, w: 1000, h: 110})) createItem(x, y, 1000, 110, '#ffffff', 'ticker-tape'); }
             else if (type === 'quote') { if(!checkCollision({x, y, w: 300, h: 160})) createItem(x, y, 300, 160, '#ffffff', 'quote'); }
             else if (type === 'number') { if(!checkCollision({x, y, w: 240, h: 200})) createItem(x, y, 240, 200, '#ffffff', 'number'); }
             else if (type === 'chat') { if(!checkCollision({x, y, w: 300, h: 400})) createItem(x, y, 300, 400, '#ffffff', 'chat'); }
@@ -558,7 +583,7 @@
             if (type === 'clock') renderClockContent(itemObj); if (type === 'chat') renderChatContent(itemObj);
             if (type === 'calc') renderCalcContent(itemObj);
             if (type === 'note') renderNoteContent(itemObj); 
-            if (type === 'browser') renderBrowserContent(itemObj);
+            if (type === 'browser') renderBrowserContent(itemObj, 'https://www.wikipedia.org', 'WEB PORTAL');
             if (type === 'weather') { itemObj.cityLabel = 'Taipei'; renderWeatherContent(itemObj); }
             if (type === 'quote') renderQuoteContent(itemObj);
             if (type === 'number') renderNumberContent(itemObj);
@@ -569,6 +594,7 @@
             if (type === 'heatmap-stock') renderStockHeatmap(itemObj);
             if (type === 'heatmap-crypto') renderCryptoHeatmap(itemObj);
             if (type === 'heatmap-etf') renderETFHeatmap(itemObj);
+            if (type === 'ticker-tape') renderTickerTapeContent(itemObj);
             if (type === 'llama') renderBrowserContent(itemObj, 'https://llama.online/chat', 'LLAMA ONLINE');
             setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
         }
@@ -863,6 +889,61 @@
                 "isMonoSize": false,
                 "width": "100%",
                 "height": "100%"
+            });
+            widgetContainer.appendChild(script);
+        }
+
+        function renderTickerTapeContent(item) {
+            const container = item.el.querySelector('.content-container');
+            if(container.querySelector('.tradingview-widget-container')) return;
+            
+            container.innerHTML = `
+                <div style="display:flex; flex-direction:column; width:100%; height:100%;">
+                    <div class="widget-header" style="padding:5px 10px; background:var(--bg-panel); border-bottom:1px solid var(--border-color); cursor:move; font-size:0.8em; color:var(--text-primary); display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:bold;">TICKER TAPE</span>
+                        <span style="opacity:0.5; font-size:0.8em;">TRADINGVIEW</span>
+                    </div>
+                    <div class="tv-embed-wrapper" style="flex:1; position:relative; overflow:hidden;"></div>
+                </div>
+            `;
+            
+            const wrapper = container.querySelector('.tv-embed-wrapper');
+            const widgetContainer = document.createElement('div');
+            widgetContainer.className = 'tradingview-widget-container';
+            widgetContainer.style.height = '100%';
+            widgetContainer.style.width = '100%';
+            
+            const widgetDiv = document.createElement('div');
+            widgetDiv.className = 'tradingview-widget-container__widget';
+            widgetDiv.style.height = '100%';
+            widgetDiv.style.width = '100%';
+            
+            widgetContainer.appendChild(widgetDiv);
+            wrapper.appendChild(widgetContainer);
+
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
+            script.async = true;
+            script.innerHTML = JSON.stringify({
+                "symbols": [
+                    { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500 Index" },
+                    { "proName": "FOREXCOM:NSXUSD", "title": "US 100 Cash CFD" },
+                    { "proName": "FX_IDC:EURUSD", "title": "EUR to USD" },
+                    { "proName": "BITSTAMP:BTCUSD", "title": "Bitcoin" },
+                    { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" },
+                    { "proName": "NASDAQ:TSLA", "title": "Tesla" },
+                    { "proName": "NASDAQ:META", "title": "META" },
+                    { "proName": "NASDAQ:AMZN", "title": "AMAZON" },
+                    { "proName": "NASDAQ:GOOGL", "title": "Google" },
+                    { "proName": "NASDAQ:PLTR", "title": "PLTR" },
+                    { "proName": "NASDAQ:AAPL", "title": "APPL" },
+                    { "proName": "NASDAQ:NVDA", "title": "NVDA" }
+                ],
+                "colorTheme": "dark",
+                "isTransparent": false,
+                "displayMode": "adaptive",
+                "locale": "zh_TW"
             });
             widgetContainer.appendChild(script);
         }
@@ -1251,7 +1332,7 @@
             el.addEventListener('mousedown', (e) => {
                 if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; 
                 if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; 
-                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews', 'tvchart', 'tv-news', 'tv-eco', 'heatmap-stock', 'heatmap-crypto', 'heatmap-etf'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                if (['news', 'chat', 'calc', 'note', 'browser', 'llama', 'tvnews', 'tvchart', 'tv-news', 'tv-eco', 'heatmap-stock', 'heatmap-crypto', 'heatmap-etf', 'ticker-tape'].includes(item.type) && !e.target.closest('.widget-header')) return;
                 e.preventDefault(); const startX = e.clientX, startY = e.clientY, startLeft = item.x, startTop = item.y; el.style.zIndex = 999;
                 function onMove(ev) { const dx = ev.clientX - startX, dy = ev.clientY - startY; let rawX = startLeft + dx, rawY = startTop + dy; const maxW = parseInt(gridCanvas.style.width), maxH = parseInt(gridCanvas.style.height); if(rawX < 0) rawX = 0; if(rawY < 0) rawY = 0; if(rawX + item.w > maxW) 
                 rawX = maxW - item.w; if(rawY + item.h > maxH) rawY = maxH - item.h; el.style.left = rawX + 'px'; el.style.top = rawY + 'px'; const snapX = snap(rawX), snapY = snap(rawY);
