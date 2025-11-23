@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BROOKLYN-TERMINAL // V11.03 </title>
+    <title>BROOKLYN-TERMINAL // V11.03 00 </title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -873,7 +873,7 @@
             }
 
 
-            if (type === 'shape') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, activeColor, 'shape'); }
+           
             else if (type === 'clock') { if(!checkCollision({x, y, w: 200, h: 100})) createItem(x, y, 200, 100, '#ffffff', 'clock'); }
             else if (type === 'weather') { if(!checkCollision({x, y, w: 280, h: 180})) createItem(x, y, 280, 180, '#ffffff', 'weather'); }
             else if (type === 'tvnews') { if(!checkCollision({x, y, w: 500, h: 400})) createItem(x, y, 500, 400, '#ffffff', 'tvnews'); }
@@ -973,9 +973,6 @@
             
             return { el, obj: itemObj };
         }
-        
-        function deleteItem(id) { const idx = items.findIndex(i => i.id === id);
-            if (idx > -1) { items[idx].el.remove(); items.splice(idx, 1); } }
         
         // --- New Workstation Tools ---
         function renderKanbanContent(item) {
@@ -2120,9 +2117,7 @@
         */
         
         // --- 4. 滑鼠中鍵移動畫布 (Panning) ---
-        const workspace = document.querySelector('.workspace');
-        let isPanning = false;
-        let startX, startY, scrollLeft, scrollTop;
+    
 
         workspace.addEventListener('mousedown', (e) => {
             if (e.button === 1) { // 中鍵
