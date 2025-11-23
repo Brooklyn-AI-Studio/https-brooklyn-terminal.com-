@@ -482,6 +482,35 @@
         .dot.active { background: var(--accent-color); box-shadow: 0 0 5px var(--accent-color); }
 /* 新增：滑鼠中鍵拖曳時的游標樣式 */
         .workspace.panning { cursor: grabbing; cursor: -webkit-grabbing; }
+        /* ==================== 新增樣式開始 ==================== */
+        
+        /* 1. 滑鼠中鍵拖曳效果 */
+        .workspace.panning { cursor: grabbing; cursor: -webkit-grabbing; }
+
+        /* 2. 圓形與文字標籤 */
+        .grid-item.circle { border-radius: 50%; }
+        /* 讓圓形內的內容垂直水平置中 */
+        .grid-item.circle .content-container { 
+            display: flex; align-items: center; justify-content: center; 
+        }
+        /* 文字標籤樣式 */
+        .item-label-container {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; text-align: center; pointer-events: none; z-index: 5;
+            color: var(--text-primary); font-weight: bold; font-size: 1.2em;
+            text-shadow: 0 0 5px rgba(0,0,0,0.8); word-wrap: break-word;
+        }
+
+        /* 3. 連線系統 (SVG 層) */
+        #connections-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; /* 位於物件之下 */
+        }
+        .connection-line {
+            stroke: var(--accent-color); stroke-width: 2px; opacity: 0.6;
+            transition: stroke 0.3s; pointer-events: auto; cursor: pointer;
+        }
+        .connection-line:hover { stroke: #fff; opacity: 1; stroke-width: 4px; }
     </style>
 </head>
 <body>
@@ -553,6 +582,10 @@
                 </div>
                 <div class="sidebar-content-wrapper">
                       <div class="tool-item" draggable="true" id="tool-square"><div class="tool-preview" style="background-color: rgba(0,123,255,0.3);"></div><span>Module 10x10</span></div>
+                      <div class="tool-item" draggable="true" id="tool-circle"><div class="tool-preview" style="background-color: rgba(255, 0, 85, 0.3); border-radius: 50%;"></div><span>Circle Node</span></div>
+                      <div class="tool-item" draggable="true" id="tool-line">
+                      <div class="tool-preview icon-only">🔗</div>
+                      <span>Connect Line</span>
                 </div>
             </div>
 
@@ -617,16 +650,27 @@
                 </div>
             </div>
         </div>
-        <div class="workspace">
-            <div id="grid-canvas"><div class="grid-resize-handle" id="gridResizer"></div></div>
+       <div class="workspace">
+            <div id="grid-canvas">
+                <svg id="connections-layer"></svg>
+                <div class="grid-resize-handle" id="gridResizer"></div>
+            </div>
         </div>
-    </div>
     <script>
         const CELL_SIZE = 20, MIN_W = CELL_SIZE * 4, MIN_H = CELL_SIZE * 4;
         const gridCanvas = document.getElementById('grid-canvas'), colorPicker = document.getElementById('colorPicker'), colorValue = document.getElementById('colorValue');
         const themeSwitch = document.getElementById('themeSwitch'), proSwitch = document.getElementById('proSwitch'), modeLabel = document.getElementById('mode-label');
         const gridResizer = document.getElementById('gridResizer');
         const sidebar = document.getElementById('sidebar'), sidebarToggle = document.getElementById('sidebarToggle');
+        // 1. 新增全域變數
+        const svgLayer = document.getElementById('connections-layer');
+        let connections = []; // 儲存連線資料
+        let connectMode = false; // 是否正在連線模式
+        let connectSource = null; // 連線起點 ID
+
+        // 2. 加入新工具的 Drag 監聽 (請加在原有的 tool-square 監聽器下方)
+        document.getElementById('tool-circle').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'circle'));
+        document.getElementById('tool-line').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'line_tool'));
         // --- Middle Mouse Pan Logic (新增功能：滑鼠中鍵拖曳畫布) ---
         const workspace = document.querySelector('.workspace');
         let isPanning = false;
@@ -805,7 +849,30 @@
         
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
         gridCanvas.addEventListener('drop', (e) => {
-            e.preventDefault(); const type = e.dataTransfer.getData('type'); const rect = gridCanvas.getBoundingClientRect(); const x = snap(e.clientX - rect.left); const y = snap(e.clientY - rect.top);
+            e.preventDefault();
+            const type = e.dataTransfer.getData('type');
+            const rect = gridCanvas.getBoundingClientRect();
+            const x = snap(e.clientX - rect.left);
+            const y = snap(e.clientY - rect.top);
+
+            // 1. 處理線條工具：拖曳放開後啟動連線模式
+            if (type === 'line_tool') {
+                alert("【連線模式啟動】\n請依序點擊兩個物件來建立連線。");
+                connectMode = true;
+                connectSource = null;
+                gridCanvas.style.cursor = 'crosshair'; // 改變游標提示
+                return;
+            }
+            // 2. 處理圓形
+            if (type === 'circle') { 
+                if(!checkCollision({x, y, w: 160, h: 160})) createItem(x, y, 160, 160, '#ff0055', 'circle'); 
+            }      
+            // 3. 處理方形 (原有邏輯)
+            else if (type === 'shape') { 
+                if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, activeColor, 'shape'); 
+            }
+
+
             if (type === 'shape') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, activeColor, 'shape'); }
             else if (type === 'clock') { if(!checkCollision({x, y, w: 200, h: 100})) createItem(x, y, 200, 100, '#ffffff', 'clock'); }
             else if (type === 'weather') { if(!checkCollision({x, y, w: 280, h: 180})) createItem(x, y, 280, 180, '#ffffff', 'weather'); }
@@ -829,58 +896,61 @@
             else if (type === 'llama') { if(!checkCollision({x, y, w: 400, h: 500})) createItem(x, y, 400, 500, '#ffffff', 'llama'); }
         });
         function createItem(x, y, w, h, color, type) {
-            const id = 'item_' + Date.now();
-            const el = document.createElement('div'); el.className = 'grid-item'; el.id = id; el.style.left = x + 'px'; el.style.top = y + 'px';
+            const id = 'item_' + Date.now() + Math.random().toString(36).substr(2, 5);
+            const el = document.createElement('div'); 
+            el.className = 'grid-item'; 
+            
+            // 處理圓形樣式
+            if (type === 'circle') el.classList.add('circle');
+            
+            el.id = id; el.style.left = x + 'px'; el.style.top = y + 'px';
             el.style.width = w + 'px'; el.style.height = h + 'px';
-            const rgb = hexToRgb(color); el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+            
+            const rgb = hexToRgb(color); 
+            el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
             el.style.borderColor = color;
-            el.innerHTML = `<div class="content-container" style="width:100%; height:100%;"></div><div class="menu-trigger">⋮</div><div class="context-menu"><div class="context-menu-item danger" onclick="deleteItem('${id}')">移除 (Remove)</div></div><div class="item-resize"></div>`;
+
+            // ★ 修改重點：加入 item-label-container 與 編輯/移除名稱 的選單
+            el.innerHTML = `
+                <div class="content-container" style="width:100%; height:100%;"></div>
+                <div class="item-label-container" id="lbl-${id}"></div>
+                <div class="menu-trigger">⋮</div>
+                <div class="context-menu">
+                    <div class="context-menu-item" onclick="editLabel('${id}')">編輯名稱 (Name)</div>
+                    <div class="context-menu-item" onclick="removeLabel('${id}')">移除名稱 (Clear)</div>
+                    <div class="context-menu-item danger" onclick="deleteItem('${id}')">移除 (Remove)</div>
+                </div>
+                <div class="item-resize"></div>`;
             
             const menu = el.querySelector('.context-menu');
-            const removeBtn = menu.querySelector('.context-menu-item');
-
-            if (type === 'clock') {
-                const worldBtn = document.createElement('div');
-                worldBtn.className = 'context-menu-item'; worldBtn.innerHTML = '世界時鐘 (World Clock) <div class="submenu"></div>';
-                const submenu = document.createElement('div'); submenu.className = 'submenu'; worldBtn.appendChild(submenu);
-                const zones = [{ label: '本地時間 (Local)', tz: 'local', display: 'LOCAL' }, { label: '紐約 (New York)', tz: 'America/New_York', display: 'NEW YORK' }, { label: '倫敦 (London)', tz: 'Europe/London', display: 'LONDON' }, { label: '東京 (Tokyo)', tz: 'Asia/Tokyo', display: 'TOKYO' }, { label: '台北 (Taipei)', tz: 'Asia/Taipei', display: 'TAIPEI' }, { label: '雪梨 (Sydney)', tz: 'Australia/Sydney', display: 'SYDNEY' }];
-                zones.forEach(z => { const subItem = document.createElement('div'); subItem.className = 'context-menu-item'; subItem.innerText = z.label; subItem.onclick = (e) => { e.stopPropagation(); const obj = items.find(i => i.id === id); if(obj) { obj.timeZone = z.tz; obj.cityLabel = z.display; renderClockContent(obj); } menu.classList.remove('show'); }; submenu.appendChild(subItem); });
-                menu.insertBefore(worldBtn, removeBtn);
-            }
-            if (type === 'weather') {
-                const cityBtn = document.createElement('div');
-                cityBtn.className = 'context-menu-item'; cityBtn.innerHTML = '切換城市 (Switch City) <div class="submenu"></div>';
-                const submenu = document.createElement('div'); submenu.className = 'submenu'; cityBtn.appendChild(submenu);
-                const cities = ['Taipei', 'New York', 'London', 'Tokyo', 'Paris', 'Sydney', 'Singapore', 'Dubai', 'Shanghai', 'Berlin'];
-                cities.forEach(c => { 
-                    const subItem = document.createElement('div'); 
-                    subItem.className = 'context-menu-item'; 
-                    subItem.innerText = c; 
-                    subItem.onclick = async (e) => { 
-                        e.stopPropagation(); 
-                        const obj = items.find(i => i.id === id); 
-                        if(obj) { 
-                            obj.cityLabel = c; 
-                            const container = obj.el.querySelector('.content-container');
-                            const cityElem = container.querySelector(`#w-city-name-${id}`);
-                            if(cityElem) cityElem.innerText = c.toUpperCase();
-                            await updateWeatherData(obj, c); 
-                        } 
-                        menu.classList.remove('show'); 
-                    }; 
-                    submenu.appendChild(subItem); 
-                });
-                menu.insertBefore(cityBtn, removeBtn);
-            }
-
             const trigger = el.querySelector('.menu-trigger');
-            trigger.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); menu.classList.toggle('show'); };
+            
+            // 選單開關
+            trigger.onclick = (e) => { 
+                e.stopPropagation(); 
+                document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); 
+                menu.classList.toggle('show'); 
+            };
+
+            // ★ 新增：物件點擊事件 (用於連線模式)
+            el.onclick = (e) => {
+                if (connectMode) {
+                    e.stopPropagation();
+                    handleConnectClick(id);
+                }
+            };
+
             gridCanvas.appendChild(el);
-            const itemObj = { id, x, y, w, h, el, type, timeZone: 'local', cityLabel: 'LOCAL' };
+            
+            // 加入 items 陣列 (新增 label 屬性)
+            const itemObj = { id, x, y, w, h, el, type, label: '' };
             items.push(itemObj);
-            if (type === 'clock') renderClockContent(itemObj); if (type === 'chat') renderChatContent(itemObj);
+
+            // 渲染既有 Widget 內容
+            if (type === 'clock') renderClockContent(itemObj);
+            if (type === 'chat') renderChatContent(itemObj);
             if (type === 'calc') renderCalcContent(itemObj);
-            if (type === 'note') renderNoteContent(itemObj); 
+            if (type === 'note') renderNoteContent(itemObj);
             if (type === 'browser') renderBrowserContent(itemObj, 'https://www.wikipedia.org', 'WEB PORTAL');
             if (type === 'weather') { itemObj.cityLabel = 'Taipei'; renderWeatherContent(itemObj); }
             if (type === 'quote') renderQuoteContent(itemObj);
@@ -897,9 +967,13 @@
             if (type === 'audio') renderAudioContent(itemObj);
             if (type === 'pomodoro') renderPomodoroContent(itemObj);
             if (type === 'llama') renderBrowserContent(itemObj, 'https://llama.online/chat', 'LLAMA ONLINE');
-            setupInteractions(itemObj); document.addEventListener('click', () => menu.classList.remove('show')); return { el, obj: itemObj };
-        }
 
+            setupInteractions(itemObj); 
+            document.addEventListener('click', () => menu.classList.remove('show')); 
+            
+            return { el, obj: itemObj };
+        }
+        
         function deleteItem(id) { const idx = items.findIndex(i => i.id === id);
             if (idx > -1) { items[idx].el.remove(); items.splice(idx, 1); } }
         
@@ -1806,6 +1880,10 @@
                     if(rawY + item.h > maxH) rawY = maxH - item.h; 
                     el.style.left = rawX + 'px'; 
                     el.style.top = rawY + 'px'; 
+                    // ★ 新增：即時更新數據以驅動線條
+                    item.x = rawX;
+                    item.y = rawY;
+                    updateLines();
                     const snapX = snap(rawX);
                     const snapY = snap(rawY);
                     if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); 
@@ -1865,7 +1943,9 @@
                         el.classList.remove('collision'); 
                         el.style.width = nw + 'px'; 
                         el.style.height = nh + 'px'; 
-                        item.w = nw; item.h = nh; 
+                        item.w = nw;
+                        item.h = nh;
+                        updateLines();
                         if(item.type === 'clock') renderClockContent(item); 
                         if(item.type === 'weather') updateWeatherScale(item);
                         if(item.type === 'quote') updateQuoteScale(item);
@@ -1925,6 +2005,148 @@
         };
         gridResizer.addEventListener('mousedown', handleGridResize);
         gridResizer.addEventListener('touchstart', handleGridResize, {passive: false});
+        // ==================== 新功能函式庫 ====================
+
+        // --- 1. 文字標籤功能 ---
+        window.editLabel = function(id) {
+            const item = items.find(i => i.id === id);
+            if(!item) return;
+            // 隱藏選單
+            item.el.querySelector('.context-menu').classList.remove('show');
+            
+            const text = prompt("請輸入名稱 (Enter Name):", item.label || "");
+            if (text !== null) {
+                item.label = text;
+                document.getElementById(`lbl-${id}`).innerText = text;
+            }
+        }
+
+        window.removeLabel = function(id) {
+            const item = items.find(i => i.id === id);
+            if(item) {
+                item.label = "";
+                document.getElementById(`lbl-${id}`).innerText = "";
+                item.el.querySelector('.context-menu').classList.remove('show');
+            }
+        }
+
+        // --- 2. 連線系統邏輯 ---
+        function handleConnectClick(id) {
+            if (!connectSource) {
+                // 第一個點
+                connectSource = id;
+                alert(`已選取起點。請點擊第二個物件作為終點。`);
+            } else {
+                // 第二個點
+                if (connectSource === id) {
+                    alert("不能連接自己！");
+                    return;
+                }
+                createConnection(connectSource, id);
+                // 重置模式
+                connectMode = false;
+                connectSource = null;
+                gridCanvas.style.cursor = 'default';
+            }
+        }
+
+        function createConnection(sourceId, targetId) {
+            // 檢查是否重複連線
+            const exists = connections.find(c => (c.s === sourceId && c.t === targetId) || (c.s === targetId && c.t === sourceId));
+            if (exists) return;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('class', 'connection-line');
+            
+            // 雙擊線條刪除
+            line.addEventListener('dblclick', function() {
+                if(confirm('刪除這條連線？')) {
+                    svgLayer.removeChild(line);
+                    connections = connections.filter(c => c.line !== line);
+                }
+            });
+
+            svgLayer.appendChild(line);
+            connections.push({ s: sourceId, t: targetId, line: line });
+            updateLines(); // 立即繪製
+        }
+
+        function updateLines() {
+            connections.forEach(conn => {
+                const sItem = items.find(i => i.id === conn.s);
+                const tItem = items.find(i => i.id === conn.t);
+                
+                if (sItem && tItem) {
+                    // 計算中心點 (包含當前拖曳位置)
+                    // 注意：這裡使用 sItem.x 而非 el.style.left，因為我們會在 onMove 更新 sItem.x
+                    const x1 = sItem.x + sItem.w / 2;
+                    const y1 = sItem.y + sItem.h / 2;
+                    const x2 = tItem.x + tItem.w / 2;
+                    const y2 = tItem.y + tItem.h / 2;
+
+                    conn.line.setAttribute('x1', x1);
+                    conn.line.setAttribute('y1', y1);
+                    conn.line.setAttribute('x2', x2);
+                    conn.line.setAttribute('y2', y2);
+                }
+            });
+        }
+
+        // 修改刪除函式：刪除物件時一併刪除線條
+        const originalDeleteItem = deleteItem; // 保存舊函式引用(如果需要)
+        deleteItem = function(id) { // 覆寫
+            const idx = items.findIndex(i => i.id === id);
+            if (idx > -1) { 
+                items[idx].el.remove(); 
+                items.splice(idx, 1); 
+                
+                // 刪除相關連線
+                const toRemove = connections.filter(c => c.s === id || c.t === id);
+                toRemove.forEach(c => {
+                    if(c.line) c.line.remove();
+                });
+                connections = connections.filter(c => c.s !== id && c.t !== id);
+            } 
+        }
+
+        // --- 3. 關鍵修正：讓線條跟隨移動 ---
+        // 我們需要攔截 setupInteractions 裡的移動事件，
+        // 最簡單的方法是重新定義 setupInteractions 裡面的 onMove 邏輯。
+        // 請務必確認 setupInteractions 內的 onMove 包含以下邏輯：
+        /*
+           item.x = rawX; 
+           item.y = rawY;
+           updateLines();
+        */
+        
+        // --- 4. 滑鼠中鍵移動畫布 (Panning) ---
+        const workspace = document.querySelector('.workspace');
+        let isPanning = false;
+        let startX, startY, scrollLeft, scrollTop;
+
+        workspace.addEventListener('mousedown', (e) => {
+            if (e.button === 1) { // 中鍵
+                e.preventDefault();
+                isPanning = true;
+                workspace.classList.add('panning');
+                startX = e.pageX - workspace.offsetLeft;
+                startY = e.pageY - workspace.offsetTop;
+                scrollLeft = workspace.scrollLeft;
+                scrollTop = workspace.scrollTop;
+            }
+        });
+        workspace.addEventListener('mouseleave', () => { isPanning = false; workspace.classList.remove('panning'); });
+        workspace.addEventListener('mouseup', () => { isPanning = false; workspace.classList.remove('panning'); });
+        workspace.addEventListener('mousemove', (e) => {
+            if (!isPanning) return;
+            e.preventDefault();
+            const x = e.pageX - workspace.offsetLeft;
+            const y = e.pageY - workspace.offsetTop;
+            const walkX = (x - startX);
+            const walkY = (y - startY);
+            workspace.scrollLeft = scrollLeft - walkX;
+            workspace.scrollTop = scrollTop - walkY;
+        });
     </script>
 </body>
 </html>
