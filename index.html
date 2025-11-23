@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BROOKLYN-TERMINAL // V11.03 07 </title>
+    <title>BROOKLYN-TERMINAL // V11.03 08 </title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -587,7 +587,14 @@
 
 @keyframes blinker { 50% { opacity: 0; } }
 @keyframes fadeInOut { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
-
+/* 修正：讓 Logo 的點擊範圍包含中間空心處，並顯示手形游標 */
+.brand .logo-icon {
+    fill: transparent !important; /* 將空心處填滿透明色，使其可被點擊 */
+    cursor: pointer;
+    pointer-events: auto; /* 確保接收滑鼠事件 */
+    background: rgba(255, 255, 255, 0.01); /* 微弱背景增加感應面積 */
+    border-radius: 50%; /* 讓感應區也是圓形 */
+}
 
     </style>
 </head>
@@ -2298,25 +2305,32 @@ function stopScreensaver() {
 }
 
 // 綁定觸發事件：點擊 Logo Icon
-// 注意：我們需要精確選取 header 裡的 svg icon
-const logoTrigger = document.querySelector('.brand .logo-icon');
-if (logoTrigger) {
-    logoTrigger.style.cursor = 'pointer'; // 增加手形游標提示
-    logoTrigger.addEventListener('click', (e) => {
-        e.stopPropagation(); // 防止冒泡
-        startScreensaver();
-    });
-}
+// ==================== 修正後的綁定邏輯 ====================
 
-// 綁定解除事件：任意按鍵或滑鼠點擊
-document.addEventListener('keydown', stopScreensaver);
-screensaver.addEventListener('click', stopScreensaver);
-screensaver.addEventListener('mousemove', () => {
-    // 為了避免一移動滑鼠就關閉，可以設定一個小閾值，或只用點擊關閉
-    // 這裡為了體驗順暢，採用點擊或按鍵關閉，滑鼠移動暫不觸發 (避免誤觸)
-});
-window.addEventListener('resize', () => {
-    if (ssActive) resizeCanvas();
+// 確保在頁面完全載入後才執行綁定
+window.addEventListener('DOMContentLoaded', () => {
+    // 嘗試抓取 Logo Icon
+    const logoTrigger = document.querySelector('.brand .logo-icon');
+    
+    if (logoTrigger) {
+        console.log("✅ Screensaver trigger ready."); // 除錯訊息：按 F12 看是否有這行
+        
+        logoTrigger.addEventListener('click', (e) => {
+            console.log("🖱️ Logo clicked!"); // 除錯訊息：點擊時是否有反應
+            e.preventDefault();
+            e.stopPropagation();
+            startScreensaver();
+        });
+        
+        // 額外：也讓文字 "Brooklyn-Terminal" 可以觸發 (以防圖示還是太難點)
+        const brandText = document.querySelector('.brand');
+        if(brandText) {
+            brandText.style.cursor = 'pointer';
+            brandText.addEventListener('click', () => startScreensaver());
+        }
+    } else {
+        console.error("❌ Logo icon not found. Check HTML structure.");
+    }
 });
     </script>
         <div id="screensaver-layer">
