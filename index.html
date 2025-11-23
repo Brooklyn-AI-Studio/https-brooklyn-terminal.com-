@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BROOKLYN-TERMINAL // V11.03 062 </title>
+    <title>BROOKLYN-TERMINAL // V11.04 </title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -511,6 +511,88 @@
             transition: stroke 0.3s; pointer-events: auto; cursor: pointer;
         }
         .connection-line:hover { stroke: #fff; opacity: 1; stroke-width: 4px; }
+      /* --- 新增：賽博龐克資訊視窗樣式 --- */
+.header-btn-terms {
+    margin-right: 15px; /* 與右邊的訪客計數器保持距離 */
+    color: var(--accent-color); cursor: pointer; font-size: 11px; font-weight: bold;
+    border: 1px solid rgba(0, 255, 204, 0.3); padding: 4px 12px;
+    background: rgba(0, 0, 0, 0.3); letter-spacing: 1px;
+    transition: all 0.2s; clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+    display: flex; align-items: center; gap: 5px; text-transform: uppercase;
+}
+.header-btn-terms:hover {
+    background: var(--accent-color); color: #000;
+    box-shadow: 0 0 15px var(--accent-color); text-shadow: none;
+}
+.header-btn-terms::before { content: 'ℹ'; margin-right: 3px; }
+
+#terms-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(8px);
+    z-index: 100000; display: flex; justify-content: center; align-items: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+#terms-overlay.active { opacity: 1; pointer-events: auto; }
+
+.terms-window {
+    width: 550px; max-width: 90%;
+    background: #0a0a0a; border: 1px solid var(--accent-color);
+    box-shadow: 0 0 30px rgba(0, 255, 204, 0.15), inset 0 0 20px rgba(0, 255, 204, 0.05);
+    position: relative; padding: 2px;
+    /* 科幻切角造型 */
+    clip-path: polygon(0 0, 100% 0, 100% 90%, 95% 100%, 0 100%);
+    transform: scale(0.9) translateY(20px); transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+#terms-overlay.active .terms-window { transform: scale(1) translateY(0); }
+
+.terms-inner {
+    /* 掃描線背景紋理 */
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 4px),
+                linear-gradient(135deg, rgba(10,10,10,1) 0%, rgba(20,20,20,1) 100%);
+    padding: 30px; height: 100%; width: 100%;
+    border: 1px solid rgba(0, 255, 204, 0.1);
+    position: relative; overflow: hidden;
+}
+/* 裝飾線條 */
+.terms-inner::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+    background: var(--accent-color); box-shadow: 0 0 10px var(--accent-color);
+}
+
+.terms-header {
+    font-family: 'Orbitron', sans-serif; color: #fff;
+    font-size: 1.4em; padding-bottom: 15px; margin-bottom: 20px;
+    border-bottom: 1px dashed rgba(255,255,255,0.2);
+    display: flex; justify-content: space-between; align-items: center;
+    text-shadow: 0 0 5px rgba(255,255,255,0.5); letter-spacing: 2px;
+}
+
+.terms-content {
+    font-family: 'Rajdhani', monospace; font-size: 1.1em; line-height: 1.6; color: #ccc;
+}
+.terms-content p { margin-bottom: 15px; }
+
+.terms-label {
+    color: var(--accent-color); font-weight: bold; font-size: 0.8em;
+    letter-spacing: 2px; margin-bottom: 8px; opacity: 0.8; display: block;
+    border-left: 3px solid var(--accent-color); padding-left: 10px;
+}
+
+.terms-link {
+    color: #fff; text-decoration: none; position: relative;
+    transition: all 0.2s; border-bottom: 1px dotted var(--accent-color);
+}
+.terms-link:hover {
+    color: var(--accent-color); background: rgba(0, 255, 204, 0.1);
+}
+
+.terms-close-btn {
+    background: transparent; border: 1px solid var(--error-color); color: var(--error-color);
+    padding: 4px 12px; cursor: pointer; font-family: 'Orbitron', sans-serif;
+    font-size: 0.7em; transition: all 0.2s; letter-spacing: 1px;
+}
+.terms-close-btn:hover { background: var(--error-color); color: #000; box-shadow: 0 0 10px var(--error-color); }
+        
     </style>
 </head>
 <body>
@@ -566,6 +648,7 @@
             Brooklyn-<span>Terminal</span><span class="beta-badge">BETA</span>
         </div>
         <div class="header-right">
+            <div class="header-btn-terms" onclick="openTerms()">INFO</div>
             <div class="visitor-count" title="Simulated Live Visitors">
                 <span>VISITORS:</span> <span id="visitor-num" class="visitor-num">00000</span>
             </div>
@@ -792,6 +875,17 @@
             });
             localStorage.setItem('brooklyn_layout_v11', JSON.stringify(layoutData)); alert('Layout Saved!');
         }
+        /* --- 新增：使用條款視窗控制 --- */
+function openTerms() {
+    document.getElementById('terms-overlay').classList.add('active');
+}
+
+function closeTerms(e) {
+    // 點擊背景遮罩或關閉按鈕時關閉視窗
+    if (!e || e.target.id === 'terms-overlay' || e.target.classList.contains('terms-close-btn')) {
+        document.getElementById('terms-overlay').classList.remove('active');
+    }
+}
 
         function loadLayout() {
             const saved = localStorage.getItem('brooklyn_layout_v11');
@@ -2248,6 +2342,31 @@ function renderYouTubeContent(item) {
         */
   
     </script>
-        
+ <div id="terms-overlay" onclick="closeTerms(event)">
+    <div class="terms-window">
+        <div class="terms-inner">
+            <div class="terms-header">
+                <span>// SYSTEM_INFO</span>
+                <button class="terms-close-btn" onclick="closeTerms()">CLOSE [X]</button>
+            </div>
+            <div class="terms-content">
+                <div style="margin-bottom: 25px;">
+                     <span class="terms-label">WELCOME_MESSAGE</span>
+                     <p>歡迎使用 <strong style="color:var(--accent-color)">Brooklyn-Terminal</strong>，開源自定義生產力平台。</p>
+                     <p>您可以從左側工具列表（Library / Tools）中，將所需的元件<span style="color:#fff; border-bottom:1px solid #555">拖曳</span>至中央的操作區，依照您的個人工作流喜好自由佈置版面。</p>
+                </div>
+
+                <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                     <span class="terms-label">CONTACT_UPLINK</span>
+                     <p>📧 Email : <a href="mailto:coreinformation30@gmail.com" class="terms-link">coreinformation30@gmail.com</a></p>
+                     <p>📸 Instagram : <a href="https://www.instagram.com/br00klyn_weirdo/" target="_blank" class="terms-link">@br00klyn_weirdo</a></p>
+                </div>
+            </div>
+            <div style="margin-top:20px; text-align:right; font-size:0.7em; color:var(--text-secondary); font-family:'Orbitron';">
+                TERMINAL_ID: BROOKLYN_V11.03 // CONNECTED
+            </div>
+        </div>
+    </div>
+</div>       
 </body>
 </html>
