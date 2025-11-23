@@ -921,6 +921,28 @@
             
             const menu = el.querySelector('.context-menu');
             const trigger = el.querySelector('.menu-trigger');
+            // ★ 新增：為 Module 10x10 和 Circle Node 加入顏色切換功能
+            if (type === 'shape' || type === 'circle') {
+                // 1. 建立一個隱藏的顏色輸入框
+                const colInput = document.createElement('input');
+                colInput.type = 'color';
+                colInput.style.display = 'none';
+                // 當顏色改變時，觸發變色函式
+                colInput.oninput = (e) => setItemColor(id, e.target.value);
+                el.appendChild(colInput);
+
+                // 2. 在選單最上方加入選項
+                const colBtn = document.createElement('div');
+                colBtn.className = 'context-menu-item';
+                colBtn.innerText = '變更顏色 (Color)';
+                colBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    menu.classList.remove('show'); // 關閉選單
+                    colInput.click(); // 觸發選色器
+                };
+                // 插入到選單的第一個位置
+                menu.insertBefore(colBtn, menu.firstChild);
+            }
             
             // 選單開關
             trigger.onclick = (e) => { 
@@ -2012,6 +2034,17 @@
             if (text !== null) {
                 item.label = text;
                 document.getElementById(`lbl-${id}`).innerText = text;
+            }
+        }
+        // --- 新增功能：個別物件變更顏色 ---
+        window.setItemColor = function(id, color) {
+            const item = items.find(i => i.id === id);
+            if(item) {
+                const rgb = hexToRgb(color);
+                // 更新邊框顏色
+                item.el.style.borderColor = color;
+                // 更新背景顏色 (保持 10% 透明度)
+                item.el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
             }
         }
 
