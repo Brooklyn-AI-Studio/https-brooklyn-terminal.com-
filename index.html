@@ -511,22 +511,6 @@
             transition: stroke 0.3s; pointer-events: auto; cursor: pointer;
         }
         .connection-line:hover { stroke: #fff; opacity: 1; stroke-width: 4px; }
-       /* 新增：文字串工具專用樣式 */
-        .grid-item.text-mode {
-            background-color: transparent !important;
-            border: 1px dashed rgba(255, 255, 255, 0.3); /* 虛線框方便辨識 */
-            box-shadow: none !important;
-        }
-        .grid-item.text-mode:hover {
-            border-color: var(--accent-color);
-            background-color: rgba(255, 255, 255, 0.05) !important;
-        }
-        /* 讓文字標籤容器支援換行與自動縮放 */
-        .item-label-container {
-            width: 100%;
-            padding: 5px;
-            /* 原本是 font-size: 1.2em; 我們會用 JS 覆寫它 */
-        }
     </style>
 </head>
 <body>
@@ -600,9 +584,6 @@
                       <div class="tool-item" draggable="true" id="tool-square"><div class="tool-preview" style="background-color: rgba(0,123,255,0.3);"></div><span>Module 10x10</span></div>
                       <div class="tool-item" draggable="true" id="tool-circle"><div class="tool-preview" style="background-color: rgba(255, 0, 85, 0.3); border-radius: 50%;"></div><span>Circle Node</span></div>
                       <div class="tool-item" draggable="true" id="tool-line">
-                      <div class="tool-preview icon-only" style="font-family: serif; font-weight: bold;">T</div>
-                        <span>...在此輸入文字...</span>
-                    </div>
                       <div class="tool-preview icon-only">✏️</div>
                       <span>Connect Line</span>
                 </div>
@@ -687,7 +668,6 @@
         // 2. 加入新工具的 Drag 監聽 (請加在原有的 tool-square 監聽器下方)
         document.getElementById('tool-circle').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'circle'));
         document.getElementById('tool-line').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'line_tool'));
-        document.getElementById('tool-text').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'text_string'));
         // --- Middle Mouse Pan Logic (新增功能：滑鼠中鍵拖曳畫布) ---
         
         let isPanning = false;
@@ -882,7 +862,7 @@
             }
             // 2. 處理圓形
             if (type === 'circle') { 
-                if(!checkCollision({x, y, w: 160, h: 160})) createItem(x, y, 160, 160, activeColor, 'circle');
+                if(!checkCollision({x, y, w: 160, h: 160})) createItem(x, y, 160, 160, '#ff0055', 'circle'); 
             }      
             // 3. 處理方形 (原有邏輯)
             else if (type === 'shape') { 
@@ -911,7 +891,6 @@
             else if (type === 'note') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, '#ffffff', 'note'); }
             else if (type === 'browser') { if(!checkCollision({x, y, w: 400, h: 300})) createItem(x, y, 400, 300, '#ffffff', 'browser'); }
             else if (type === 'llama') { if(!checkCollision({x, y, w: 400, h: 500})) createItem(x, y, 400, 500, '#ffffff', 'llama'); }
-            else if (type === 'text_string') { if(!checkCollision({x, y, w: 300, h: 80})) createItem(x, y, 300, 80, '#ffffff', 'text_string');}
         });
         function createItem(x, y, w, h, color, type) {
             const id = 'item_' + Date.now() + Math.random().toString(36).substr(2, 5);
@@ -920,9 +899,6 @@
             
             // 處理圓形樣式
             if (type === 'circle') el.classList.add('circle');
-            if (type === 'text_string') el.classList.add('text-mode');
-            let editMenuText = '編輯名稱 (Name)';
-            if (type === 'text_string') editMenuText = '編輯文字 (Edit Text)';
             
             el.id = id; el.style.left = x + 'px'; el.style.top = y + 'px';
             el.style.width = w + 'px'; el.style.height = h + 'px';
@@ -945,28 +921,6 @@
             
             const menu = el.querySelector('.context-menu');
             const trigger = el.querySelector('.menu-trigger');
-            // ★ 新增：為 Module 10x10 和 Circle Node 加入顏色切換功能
-            if (type === 'shape' || type === 'circle') {
-                // 1. 建立一個隱藏的顏色輸入框
-                const colInput = document.createElement('input');
-                colInput.type = 'color';
-                colInput.style.display = 'none';
-                // 當顏色改變時，觸發變色函式
-                colInput.oninput = (e) => setItemColor(id, e.target.value);
-                el.appendChild(colInput);
-
-                // 2. 在選單最上方加入選項
-                const colBtn = document.createElement('div');
-                colBtn.className = 'context-menu-item';
-                colBtn.innerText = '變更顏色 (Color)';
-                colBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    menu.classList.remove('show'); // 關閉選單
-                    colInput.click(); // 觸發選色器
-                };
-                // 插入到選單的第一個位置
-                menu.insertBefore(colBtn, menu.firstChild);
-            }
             
             // 選單開關
             trigger.onclick = (e) => { 
@@ -986,7 +940,6 @@
             gridCanvas.appendChild(el);
             
             // 加入 items 陣列 (新增 label 屬性)
-            const initialLabel = type === 'text_string' ? "在此編輯文字" : "";
             const itemObj = { id, x, y, w, h, el, type, label: '' };
             items.push(itemObj);
 
@@ -1014,10 +967,7 @@
 
             setupInteractions(itemObj); 
             document.addEventListener('click', () => menu.classList.remove('show')); 
-            // 4. ★★★ 關鍵：建立時立即計算一次文字大小 ★★★
-            if (type === 'shape' || type === 'circle' || type === 'text_string') {
-                updateLabelScale(itemObj);
-            }
+            
             return { el, obj: itemObj };
         }
         
@@ -1990,10 +1940,6 @@
                         item.w = nw;
                         item.h = nh;
                         updateLines();
-                        // ★★★ 新增：縮放時同步調整文字大小 ★★★
-                        if (item.type === 'shape' || item.type === 'circle' || item.type === 'text_string') {
-                            updateLabelScale(item);
-                        }
                         if(item.type === 'clock') renderClockContent(item); 
                         if(item.type === 'weather') updateWeatherScale(item);
                         if(item.type === 'quote') updateQuoteScale(item);
@@ -2068,17 +2014,6 @@
                 document.getElementById(`lbl-${id}`).innerText = text;
             }
         }
-        // --- 新增功能：個別物件變更顏色 ---
-        window.setItemColor = function(id, color) {
-            const item = items.find(i => i.id === id);
-            if(item) {
-                const rgb = hexToRgb(color);
-                // 更新邊框顏色
-                item.el.style.borderColor = color;
-                // 更新背景顏色 (保持 10% 透明度)
-                item.el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
-            }
-        }
 
         window.removeLabel = function(id) {
             const item = items.find(i => i.id === id);
@@ -2088,16 +2023,7 @@
                 item.el.querySelector('.context-menu').classList.remove('show');
             }
         }
-       // --- 新增功能：文字隨物件大小縮放 ---
-        function updateLabelScale(item) {
-            const labelEl = document.getElementById(`lbl-${item.id}`);
-            if (labelEl) {
-                // 計算公式：寬度 / 10 (您可以調整這個係數來改變預設大小)
-                // Math.max 確保文字至少有 12px 大小
-                const newSize = Math.max(12, item.w / 10); 
-                labelEl.style.fontSize = `${newSize}px`;
-            }
-        }
+
         // --- 2. 連線系統邏輯 ---
         function handleConnectClick(id) {
             if (!connectSource) {
@@ -2125,7 +2051,7 @@
 
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('class', 'connection-line');
-            line.style.stroke = activeColor;
+            
             // 雙擊線條刪除
             line.addEventListener('dblclick', function() {
                 if(confirm('刪除這條連線？')) {
