@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BROOKLYN-TERMINAL // V11.03 08 </title>
+    <title>BROOKLYN-TERMINAL // V11.03 061 </title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -511,91 +511,6 @@
             transition: stroke 0.3s; pointer-events: auto; cursor: pointer;
         }
         .connection-line:hover { stroke: #fff; opacity: 1; stroke-width: 4px; }
-       /* ==================== 新增：螢幕保護程式樣式 ==================== */
-#screensaver-layer {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-color: #000;
-    z-index: 100000; /* 最高層級 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s ease;
-    overflow: hidden;
-}
-
-#screensaver-layer.active {
-    opacity: 1;
-    pointer-events: auto;
-    cursor: none; /* 隱藏滑鼠 */
-}
-
-#ss-canvas {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 0;
-}
-
-.ss-container {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    color: var(--accent-color);
-    font-family: 'Orbitron', sans-serif;
-    text-shadow: 0 0 20px var(--accent-color);
-    background: rgba(0, 0, 0, 0.6);
-    padding: 40px 80px;
-    border: 1px solid var(--accent-color);
-    border-radius: 4px;
-    box-shadow: 0 0 50px rgba(0, 255, 204, 0.1);
-    backdrop-filter: blur(5px);
-}
-
-.ss-clock {
-    font-size: 8rem;
-    font-weight: 900;
-    line-height: 1;
-    letter-spacing: 5px;
-    margin-bottom: 20px;
-}
-
-.ss-status {
-    font-size: 1.2rem;
-    letter-spacing: 3px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.ss-sub {
-    font-size: 0.8rem;
-    opacity: 0.7;
-    font-family: var(--font-main);
-}
-
-.ss-unlock {
-    margin-top: 40px;
-    font-size: 0.7rem;
-    opacity: 0;
-    animation: fadeInOut 3s infinite;
-}
-
-.blink { animation: blinker 1s linear infinite; }
-
-@keyframes blinker { 50% { opacity: 0; } }
-@keyframes fadeInOut { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
-/* 修正：讓 Logo 的點擊範圍包含中間空心處，並顯示手形游標 */
-.brand .logo-icon {
-    fill: transparent !important; /* 將空心處填滿透明色，使其可被點擊 */
-    cursor: pointer;
-    pointer-events: auto; /* 確保接收滑鼠事件 */
-    background: rgba(255, 255, 255, 0.01); /* 微弱背景增加感應面積 */
-    border-radius: 50%; /* 讓感應區也是圓形 */
-}
-
     </style>
 </head>
 <body>
@@ -693,6 +608,7 @@
 
                     <div class="tool-item" draggable="true" id="tool-llama"><div class="tool-preview icon-only">🦙</div><span>Llama Online <span class="rec-badge">推薦</span></span></div>
                     <div class="tool-item" draggable="true" id="tool-browser"><div class="tool-preview icon-only">🌐</div><span>Web Portal <span class="rec-badge">推薦</span></span></div>
+                    <div class="tool-item" draggable="true" id="tool-youtube"> <div class="tool-preview icon-only">📺</div> <span>YouTube Player</span></div>
 
                     <div class="tool-item" draggable="true" id="tool-tvnews"><div class="tool-preview icon-only">🌐</div><span>Global News </span></div>
                     <div class="tool-item" draggable="true" id="tool-clock"><div class="tool-preview clock-icon">🕓</div><span>Digital Clock </span></div>
@@ -901,6 +817,7 @@
                 else if (data.type === 'ticker-tape') renderTickerTapeContent(newItem.obj);
                 else if (data.type === 'kanban') renderKanbanContent(newItem.obj);
                 else if (data.type === 'audio') renderAudioContent(newItem.obj);
+                else if (data.type === 'youtube') renderYouTubeContent(newItem.obj);
                 else if (data.type === 'pomodoro') renderPomodoroContent(newItem.obj);
             });
         }
@@ -927,6 +844,7 @@
         document.getElementById('tool-calc').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'calc'));
         document.getElementById('tool-note').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'note'));
         document.getElementById('tool-browser').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'browser'));
+        document.getElementById('tool-youtube').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'youtube'));
         document.getElementById('tool-llama').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'llama'));
         
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
@@ -976,6 +894,8 @@
             else if (type === 'note') { if(!checkCollision({x, y, w: 200, h: 200})) createItem(x, y, 200, 200, '#ffffff', 'note'); }
             else if (type === 'browser') { if(!checkCollision({x, y, w: 400, h: 300})) createItem(x, y, 400, 300, '#ffffff', 'browser'); }
             else if (type === 'llama') { if(!checkCollision({x, y, w: 400, h: 500})) createItem(x, y, 400, 500, '#ffffff', 'llama'); }
+            else if (type === 'youtube') {if(!checkCollision({x, y, w: 400, h: 300})) createItem(x, y, 400, 300, '#ff0000', 'youtube'); 
+}
         });
         function createItem(x, y, w, h, color, type) {
             const id = 'item_' + Date.now() + Math.random().toString(36).substr(2, 5);
@@ -1071,6 +991,7 @@
             if (type === 'audio') renderAudioContent(itemObj);
             if (type === 'pomodoro') renderPomodoroContent(itemObj);
             if (type === 'llama') renderBrowserContent(itemObj, 'https://llama.online/chat', 'LLAMA ONLINE');
+            if (type === 'youtube') renderYouTubeContent(itemObj);
 
             setupInteractions(itemObj); 
             document.addEventListener('click', () => menu.classList.remove('show')); 
@@ -1949,6 +1870,60 @@
             if(item.historyIndex < item.history.length - 1) { item.historyIndex++; const url = item.history[item.historyIndex]; frame.src = url; input.value = url; } };
             refBtn.onclick = (e) => { e.stopPropagation(); frame.src = frame.src; };
         }
+        // --- YouTube Player Functionality ---
+function renderYouTubeContent(item) {
+    const container = item.el.querySelector('.content-container');
+    if(container.querySelector('.youtube-layout')) return;
+
+    // 預設影片 (例如 Lofi Girl，也可以留空)
+    const defaultId = "jfKfPfyJRdk"; 
+
+    container.innerHTML = `
+        <div class="youtube-layout" style="display:flex; flex-direction:column; width:100%; height:100%;">
+            <div class="widget-header" style="padding:5px 10px; background:var(--bg-panel); border-bottom:1px solid var(--border-color); cursor:move; font-size:0.8em; color:var(--text-primary); display:flex; gap:5px; align-items:center;">
+                <span style="font-weight:bold;">YOUTUBE</span>
+                <input type="text" class="browser-input" id="yt-input-${item.id}" placeholder="Paste YouTube Link or ID" style="flex:1; font-size:0.8em;">
+                <button class="browser-btn" id="yt-go-${item.id}">PLAY</button>
+            </div>
+            <div style="flex:1; background:#000; position:relative;">
+                <iframe id="yt-frame-${item.id}" width="100%" height="100%" src="https://www.youtube.com/embed/${defaultId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+    `;
+
+    const input = container.querySelector(`#yt-input-${item.id}`);
+    const btn = container.querySelector(`#yt-go-${item.id}`);
+    const frame = container.querySelector(`#yt-frame-${item.id}`);
+
+    // 防止輸入時觸發拖曳
+    input.addEventListener('mousedown', e => e.stopPropagation());
+
+    // 解析 YouTube 網址的函式
+    const loadVideo = () => {
+        let val = input.value.trim();
+        if(!val) return;
+        
+        let videoId = val;
+        // 簡單的正則表達式來抓取 ID
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = val.match(regExp);
+        if (match && match[2].length === 11) {
+            videoId = match[2];
+        }
+
+        frame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    };
+
+    btn.onclick = (e) => { 
+        e.stopPropagation(); 
+        loadVideo(); 
+    };
+
+    input.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') loadVideo();
+    });
+}
+        
         function setupInteractions(item) {
             const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
             el.addEventListener('mousedown', handleStart);
@@ -2231,118 +2206,8 @@
            item.y = rawY;
            updateLines();
         */
-  // ==================== 新增：螢幕保護程式邏輯 ====================
-const screensaver = document.getElementById('screensaver-layer');
-const ssCanvas = document.getElementById('ss-canvas');
-const ssCtx = ssCanvas.getContext('2d');
-const ssClock = document.getElementById('ss-clock-display');
-let ssActive = false;
-let ssInterval;
-let ssAnimFrame;
-
-// 設定：數位雨的內容 (股票代碼、生產力術語、數據)
-const ssChars = "NVDA TSLA BTC ETH AI GPU +12% -5% BUY SELL HOLD 4090 H100 DOJO OPTIMUS 3.14 0 1".split(" ");
-const fontSize = 14;
-let drops = [];
-
-// 初始化 Canvas 大小
-function resizeCanvas() {
-    ssCanvas.width = window.innerWidth;
-    ssCanvas.height = window.innerHeight;
-    const columns = ssCanvas.width / fontSize;
-    drops = [];
-    for (let x = 0; x < columns; x++) {
-        drops[x] = Math.random() * ssCanvas.height; // 隨機起始高度
-    }
-}
-
-// 繪製動畫 (Matrix Effect 但改為賽博龐克財經風)
-function drawScreensaver() {
-    // 讓背景帶有一點拖影效果，形成殘影
-    ssCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ssCtx.fillRect(0, 0, ssCanvas.width, ssCanvas.height);
-
-    // 設定文字顏色 (使用 CSS 變數中的強調色，這裡先抓取 computed style)
-    const accent = getComputedStyle(document.body).getPropertyValue('--accent-color').trim();
-    ssCtx.fillStyle = accent || '#00ffcc'; 
-    ssCtx.font = fontSize + "px monospace";
-
-    for (let i = 0; i < drops.length; i++) {
-        // 隨機選取文字
-        const text = ssChars[Math.floor(Math.random() * ssChars.length)];
-        ssCtx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-        // 如果掉出螢幕或隨機重置
-        if (drops[i] * fontSize > ssCanvas.height && Math.random() > 0.975) {
-            drops[i] = 0;
-        }
-        drops[i]++;
-    }
-    
-    // 更新時鐘
-    const now = new Date();
-    ssClock.innerText = now.toLocaleTimeString('en-GB', { hour12: false });
-    
-    if (ssActive) ssAnimFrame = requestAnimationFrame(drawScreensaver);
-}
-
-// 啟動螢幕保護程式
-function startScreensaver() {
-    if (ssActive) return;
-    ssActive = true;
-    resizeCanvas();
-    screensaver.classList.add('active');
-    drawScreensaver();
-}
-
-// 關閉螢幕保護程式
-function stopScreensaver() {
-    if (!ssActive) return;
-    ssActive = false;
-    screensaver.classList.remove('active');
-    cancelAnimationFrame(ssAnimFrame);
-    ssCtx.clearRect(0, 0, ssCanvas.width, ssCanvas.height); // 清空畫布
-}
-
-// 綁定觸發事件：點擊 Logo Icon
-// ==================== 修正後的綁定邏輯 ====================
-
-// 確保在頁面完全載入後才執行綁定
-window.addEventListener('DOMContentLoaded', () => {
-    // 嘗試抓取 Logo Icon
-    const logoTrigger = document.querySelector('.brand .logo-icon');
-    
-    if (logoTrigger) {
-        console.log("✅ Screensaver trigger ready."); // 除錯訊息：按 F12 看是否有這行
-        
-        logoTrigger.addEventListener('click', (e) => {
-            console.log("🖱️ Logo clicked!"); // 除錯訊息：點擊時是否有反應
-            e.preventDefault();
-            e.stopPropagation();
-            startScreensaver();
-        });
-        
-        // 額外：也讓文字 "Brooklyn-Terminal" 可以觸發 (以防圖示還是太難點)
-        const brandText = document.querySelector('.brand');
-        if(brandText) {
-            brandText.style.cursor = 'pointer';
-            brandText.addEventListener('click', () => startScreensaver());
-        }
-    } else {
-        console.error("❌ Logo icon not found. Check HTML structure.");
-    }
-});
+  
     </script>
-        <div id="screensaver-layer">
-    <canvas id="ss-canvas"></canvas>
-    <div class="ss-container">
-        <div class="ss-clock" id="ss-clock-display">00:00</div>
-        <div class="ss-status">
-            <span class="blink">_SYSTEM STANDBY</span>
-            <span class="ss-sub">MARKET DATA STREAMING...</span>
-        </div>
-        <div class="ss-unlock">CLICK OR PRESS ANY KEY TO RESUME</div>
-    </div>
-</div>
+        
 </body>
 </html>
