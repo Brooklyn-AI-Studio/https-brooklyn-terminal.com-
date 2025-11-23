@@ -862,7 +862,7 @@
             }
             // 2. 處理圓形
             if (type === 'circle') { 
-                if(!checkCollision({x, y, w: 160, h: 160})) createItem(x, y, 160, 160, '#ff0055', 'circle'); 
+                if(!checkCollision({x, y, w: 160, h: 160})) createItem(x, y, 160, 160, activeColor, 'circle');
             }      
             // 3. 處理方形 (原有邏輯)
             else if (type === 'shape') { 
@@ -2051,7 +2051,7 @@
 
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('class', 'connection-line');
-            
+            line.style.stroke = activeColor;
             // 雙擊線條刪除
             line.addEventListener('dblclick', function() {
                 if(confirm('刪除這條連線？')) {
