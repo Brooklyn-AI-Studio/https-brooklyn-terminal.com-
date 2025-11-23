@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BROOKLYN-TERMINAL // V11.03 06 </title>
+    <title>BROOKLYN-TERMINAL // V11.03 07 </title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -511,6 +511,84 @@
             transition: stroke 0.3s; pointer-events: auto; cursor: pointer;
         }
         .connection-line:hover { stroke: #fff; opacity: 1; stroke-width: 4px; }
+       /* ==================== 新增：螢幕保護程式樣式 ==================== */
+#screensaver-layer {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: #000;
+    z-index: 100000; /* 最高層級 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    overflow: hidden;
+}
+
+#screensaver-layer.active {
+    opacity: 1;
+    pointer-events: auto;
+    cursor: none; /* 隱藏滑鼠 */
+}
+
+#ss-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+}
+
+.ss-container {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: var(--accent-color);
+    font-family: 'Orbitron', sans-serif;
+    text-shadow: 0 0 20px var(--accent-color);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 40px 80px;
+    border: 1px solid var(--accent-color);
+    border-radius: 4px;
+    box-shadow: 0 0 50px rgba(0, 255, 204, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.ss-clock {
+    font-size: 8rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 5px;
+    margin-bottom: 20px;
+}
+
+.ss-status {
+    font-size: 1.2rem;
+    letter-spacing: 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ss-sub {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    font-family: var(--font-main);
+}
+
+.ss-unlock {
+    margin-top: 40px;
+    font-size: 0.7rem;
+    opacity: 0;
+    animation: fadeInOut 3s infinite;
+}
+
+.blink { animation: blinker 1s linear infinite; }
+
+@keyframes blinker { 50% { opacity: 0; } }
+@keyframes fadeInOut { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+
+
     </style>
 </head>
 <body>
@@ -2146,7 +2224,111 @@
            item.y = rawY;
            updateLines();
         */
-  
+  // ==================== 新增：螢幕保護程式邏輯 ====================
+const screensaver = document.getElementById('screensaver-layer');
+const ssCanvas = document.getElementById('ss-canvas');
+const ssCtx = ssCanvas.getContext('2d');
+const ssClock = document.getElementById('ss-clock-display');
+let ssActive = false;
+let ssInterval;
+let ssAnimFrame;
+
+// 設定：數位雨的內容 (股票代碼、生產力術語、數據)
+const ssChars = "NVDA TSLA BTC ETH AI GPU +12% -5% BUY SELL HOLD 4090 H100 DOJO OPTIMUS 3.14 0 1".split(" ");
+const fontSize = 14;
+let drops = [];
+
+// 初始化 Canvas 大小
+function resizeCanvas() {
+    ssCanvas.width = window.innerWidth;
+    ssCanvas.height = window.innerHeight;
+    const columns = ssCanvas.width / fontSize;
+    drops = [];
+    for (let x = 0; x < columns; x++) {
+        drops[x] = Math.random() * ssCanvas.height; // 隨機起始高度
+    }
+}
+
+// 繪製動畫 (Matrix Effect 但改為賽博龐克財經風)
+function drawScreensaver() {
+    // 讓背景帶有一點拖影效果，形成殘影
+    ssCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ssCtx.fillRect(0, 0, ssCanvas.width, ssCanvas.height);
+
+    // 設定文字顏色 (使用 CSS 變數中的強調色，這裡先抓取 computed style)
+    const accent = getComputedStyle(document.body).getPropertyValue('--accent-color').trim();
+    ssCtx.fillStyle = accent || '#00ffcc'; 
+    ssCtx.font = fontSize + "px monospace";
+
+    for (let i = 0; i < drops.length; i++) {
+        // 隨機選取文字
+        const text = ssChars[Math.floor(Math.random() * ssChars.length)];
+        ssCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        // 如果掉出螢幕或隨機重置
+        if (drops[i] * fontSize > ssCanvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+        }
+        drops[i]++;
+    }
+    
+    // 更新時鐘
+    const now = new Date();
+    ssClock.innerText = now.toLocaleTimeString('en-GB', { hour12: false });
+    
+    if (ssActive) ssAnimFrame = requestAnimationFrame(drawScreensaver);
+}
+
+// 啟動螢幕保護程式
+function startScreensaver() {
+    if (ssActive) return;
+    ssActive = true;
+    resizeCanvas();
+    screensaver.classList.add('active');
+    drawScreensaver();
+}
+
+// 關閉螢幕保護程式
+function stopScreensaver() {
+    if (!ssActive) return;
+    ssActive = false;
+    screensaver.classList.remove('active');
+    cancelAnimationFrame(ssAnimFrame);
+    ssCtx.clearRect(0, 0, ssCanvas.width, ssCanvas.height); // 清空畫布
+}
+
+// 綁定觸發事件：點擊 Logo Icon
+// 注意：我們需要精確選取 header 裡的 svg icon
+const logoTrigger = document.querySelector('.brand .logo-icon');
+if (logoTrigger) {
+    logoTrigger.style.cursor = 'pointer'; // 增加手形游標提示
+    logoTrigger.addEventListener('click', (e) => {
+        e.stopPropagation(); // 防止冒泡
+        startScreensaver();
+    });
+}
+
+// 綁定解除事件：任意按鍵或滑鼠點擊
+document.addEventListener('keydown', stopScreensaver);
+screensaver.addEventListener('click', stopScreensaver);
+screensaver.addEventListener('mousemove', () => {
+    // 為了避免一移動滑鼠就關閉，可以設定一個小閾值，或只用點擊關閉
+    // 這裡為了體驗順暢，採用點擊或按鍵關閉，滑鼠移動暫不觸發 (避免誤觸)
+});
+window.addEventListener('resize', () => {
+    if (ssActive) resizeCanvas();
+});
     </script>
+        <div id="screensaver-layer">
+    <canvas id="ss-canvas"></canvas>
+    <div class="ss-container">
+        <div class="ss-clock" id="ss-clock-display">00:00</div>
+        <div class="ss-status">
+            <span class="blink">_SYSTEM STANDBY</span>
+            <span class="ss-sub">MARKET DATA STREAMING...</span>
+        </div>
+        <div class="ss-unlock">CLICK OR PRESS ANY KEY TO RESUME</div>
+    </div>
+</div>
 </body>
 </html>
