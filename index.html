@@ -480,6 +480,8 @@
         .slide-dots { display: flex; gap: 8px; justify-content: center; margin-top: 15px; }
         .dot { width: 8px; height: 8px; background: #333; border-radius: 50%; transition: background 0.3s; }
         .dot.active { background: var(--accent-color); box-shadow: 0 0 5px var(--accent-color); }
+/* 新增：滑鼠中鍵拖曳時的游標樣式 */
+        .workspace.panning { cursor: grabbing; cursor: -webkit-grabbing; }
     </style>
 </head>
 <body>
@@ -625,6 +627,51 @@
         const themeSwitch = document.getElementById('themeSwitch'), proSwitch = document.getElementById('proSwitch'), modeLabel = document.getElementById('mode-label');
         const gridResizer = document.getElementById('gridResizer');
         const sidebar = document.getElementById('sidebar'), sidebarToggle = document.getElementById('sidebarToggle');
+        // --- Middle Mouse Pan Logic (新增功能：滑鼠中鍵拖曳畫布) ---
+        const workspace = document.querySelector('.workspace');
+        let isPanning = false;
+        let startX, startY, scrollLeft, scrollTop;
+
+        workspace.addEventListener('mousedown', (e) => {
+            // e.button === 1 代表滑鼠中鍵 (滾輪點擊)
+            if (e.button === 1) {
+                e.preventDefault(); // 防止瀏覽器預設的自動捲動圖示出現
+                isPanning = true;
+                workspace.classList.add('panning');
+                
+                // 記錄初始位置與目前的捲軸位置
+                startX = e.pageX - workspace.offsetLeft;
+                startY = e.pageY - workspace.offsetTop;
+                scrollLeft = workspace.scrollLeft;
+                scrollTop = workspace.scrollTop;
+            }
+        });
+
+        workspace.addEventListener('mouseleave', () => {
+            isPanning = false;
+            workspace.classList.remove('panning');
+        });
+
+        workspace.addEventListener('mouseup', () => {
+            isPanning = false;
+            workspace.classList.remove('panning');
+        });
+
+        workspace.addEventListener('mousemove', (e) => {
+            if (!isPanning) return;
+            e.preventDefault();
+            
+            // 計算滑鼠移動的距離
+            const x = e.pageX - workspace.offsetLeft;
+            const y = e.pageY - workspace.offsetTop;
+            const walkX = (x - startX); // 這裡可以乘上倍率來加速捲動，例如 (x - startX) * 2
+            const walkY = (y - startY);
+            
+            // 更新捲軸位置 (反向移動實現拖曳效果)
+            workspace.scrollLeft = scrollLeft - walkX;
+            workspace.scrollTop = scrollTop - walkY;
+        });
+        // -------------------------------------------------------
         let items = [], activeColor = '#007bff';
         let isSidebarCollapsed = false;
         
