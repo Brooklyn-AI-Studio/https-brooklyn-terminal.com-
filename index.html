@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BROOKLYN-TERMINAL // V11.03 061 </title>
+    <title>BROOKLYN-TERMINAL // V11.03 062 </title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -947,8 +947,48 @@
                 // 插入到選單的第一個位置
                 menu.insertBefore(colBtn, menu.firstChild);
             }
+
+
+          // ★ 修正：針對「天氣 (Weather)」加入變更城市選項
+            if (type === 'weather') {
+                const cityBtn = document.createElement('div');
+                cityBtn.className = 'context-menu-item';
+                cityBtn.innerText = '📍 設定城市 (Change City)';
+                cityBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    menu.classList.remove('show');
+                    const newCity = prompt("請輸入城市名稱 (例如: Tokyo, New York):", itemObj.cityLabel || "Taipei");
+                    if (newCity) {
+                        itemObj.cityLabel = newCity;
+                        // 呼叫天氣更新函式 (需確保此時 updateWeatherData 已定義，或稍後執行)
+                        if (typeof updateWeatherData === 'function') {
+                            updateWeatherData(itemObj, newCity);
+                        }
+                    }
+                };
+                // 插入到選單最上方
+                menu.insertBefore(cityBtn, menu.firstChild);
+            }
+
+            // ★ 修正：針對「時鐘 (Clock)」加入變更時區選項
+            if (type === 'clock') {
+                const tzBtn = document.createElement('div');
+                tzBtn.className = 'context-menu-item';
+                tzBtn.innerText = '🕒 設定時區 (Timezone)';
+                tzBtn.style.borderBottom = '1px solid var(--accent-color)'; // 加個底線區隔
+                tzBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    menu.classList.remove('show');
+                    const newTz = prompt("請輸入時區 (例如: Asia/Tokyo, Europe/London, local):", itemObj.timeZone || "local");
+                    if (newTz) {
+                        itemObj.timeZone = newTz;
+                        renderClockContent(itemObj);
+                    }
+                };
+                menu.insertBefore(tzBtn, menu.firstChild);
+            }            
             const trigger = el.querySelector('.menu-trigger');
-            
+
             // 選單開關
             trigger.onclick = (e) => { 
                 e.stopPropagation(); 
