@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BROOKLYN-TERMINAL // V11.03 00 </title>
+    <title>BROOKLYN-TERMINAL // V11.03 01 </title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -664,6 +664,7 @@
         const sidebar = document.getElementById('sidebar'), sidebarToggle = document.getElementById('sidebarToggle');
         // 1. 新增全域變數
         const svgLayer = document.getElementById('connections-layer');
+        const workspace = document.querySelector('.workspace');
         let connections = []; // 儲存連線資料
         let connectMode = false; // 是否正在連線模式
         let connectSource = null; // 連線起點 ID
@@ -2090,8 +2091,8 @@
         }
 
         // 修改刪除函式：刪除物件時一併刪除線條
-        const originalDeleteItem = deleteItem; // 保存舊函式引用(如果需要)
-        deleteItem = function(id) { // 覆寫
+        
+        deleteItem = function(id) { 
             const idx = items.findIndex(i => i.id === id);
             if (idx > -1) { 
                 items[idx].el.remove(); 
@@ -2115,33 +2116,7 @@
            item.y = rawY;
            updateLines();
         */
-        
-        // --- 4. 滑鼠中鍵移動畫布 (Panning) ---
-    
-
-        workspace.addEventListener('mousedown', (e) => {
-            if (e.button === 1) { // 中鍵
-                e.preventDefault();
-                isPanning = true;
-                workspace.classList.add('panning');
-                startX = e.pageX - workspace.offsetLeft;
-                startY = e.pageY - workspace.offsetTop;
-                scrollLeft = workspace.scrollLeft;
-                scrollTop = workspace.scrollTop;
-            }
-        });
-        workspace.addEventListener('mouseleave', () => { isPanning = false; workspace.classList.remove('panning'); });
-        workspace.addEventListener('mouseup', () => { isPanning = false; workspace.classList.remove('panning'); });
-        workspace.addEventListener('mousemove', (e) => {
-            if (!isPanning) return;
-            e.preventDefault();
-            const x = e.pageX - workspace.offsetLeft;
-            const y = e.pageY - workspace.offsetTop;
-            const walkX = (x - startX);
-            const walkY = (y - startY);
-            workspace.scrollLeft = scrollLeft - walkX;
-            workspace.scrollTop = scrollTop - walkY;
-        });
+  
     </script>
 </body>
 </html>
