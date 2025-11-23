@@ -862,7 +862,7 @@
             }
             // 2. 處理圓形
             if (type === 'circle') { 
-                if(!checkCollision({x, y, w: 160, h: 160})) createItem(x, y, 160, 160, '#ff0055', 'circle'); 
+                if(!checkCollision({x, y, w: 160, h: 160})) createItem(x, y, 160, 160, activeColor, 'circle');
             }      
             // 3. 處理方形 (原有邏輯)
             else if (type === 'shape') { 
@@ -920,6 +920,28 @@
                 <div class="item-resize"></div>`;
             
             const menu = el.querySelector('.context-menu');
+            // ★ 新增：為 Module 10x10 和 Circle Node 加入顏色切換功能
+            if (type === 'shape' || type === 'circle') {
+                // 1. 建立一個隱藏的顏色輸入框
+                const colInput = document.createElement('input');
+                colInput.type = 'color';
+                colInput.style.display = 'none';
+                // 當顏色改變時，觸發變色函式
+                colInput.oninput = (e) => setItemColor(id, e.target.value);
+                el.appendChild(colInput);
+
+                // 2. 在選單最上方加入選項
+                const colBtn = document.createElement('div');
+                colBtn.className = 'context-menu-item';
+                colBtn.innerText = '變更顏色 (Color)';
+                colBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    menu.classList.remove('show'); // 關閉選單
+                    colInput.click(); // 觸發選色器
+                };
+                // 插入到選單的第一個位置
+                menu.insertBefore(colBtn, menu.firstChild);
+            }
             const trigger = el.querySelector('.menu-trigger');
             
             // 選單開關
@@ -2023,6 +2045,17 @@
                 item.el.querySelector('.context-menu').classList.remove('show');
             }
         }
+        // --- 新增功能：個別物件變更顏色 ---
+        window.setItemColor = function(id, color) {
+            const item = items.find(i => i.id === id);
+            if(item) {
+                const rgb = hexToRgb(color);
+                // 更新邊框顏色
+                item.el.style.borderColor = color;
+                // 更新背景顏色 (保持 10% 透明度)
+                item.el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+            }
+        }
 
         // --- 2. 連線系統邏輯 ---
         function handleConnectClick(id) {
@@ -2051,7 +2084,8 @@
 
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('class', 'connection-line');
-            
+
+            line.style.stroke = activeColor;
             // 雙擊線條刪除
             line.addEventListener('dblclick', function() {
                 if(confirm('刪除這條連線？')) {
