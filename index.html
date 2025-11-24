@@ -356,6 +356,132 @@
         .context-menu-item:hover .submenu { display: block; }
         .widget-header { cursor: move; }
 
+        /* --- Nodex AI 戰情室樣式 --- */
+.nodex-container {
+    width: 100%;
+    height: 100%;
+    background: var(--bg-body);
+    display: flex;
+    overflow: hidden;
+}
+
+/* 左側：Agent 列表 */
+.nodex-sidebar {
+    width: 280px;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+.nodex-header {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 10px;
+}
+.agent-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.agent-card:hover, .agent-card.active {
+    background: rgba(0, 255, 204, 0.1);
+    border-color: var(--accent-color);
+}
+.agent-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5em;
+    border: 1px solid var(--border-color);
+}
+.agent-info { display: flex; flex-direction: column; }
+.agent-name { font-weight: bold; color: var(--text-primary); font-size: 0.9em; }
+.agent-role { font-size: 0.7em; color: var(--text-secondary); text-transform: uppercase; }
+
+/* 右側：對話區域 */
+.nodex-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: radial-gradient(circle at center, #111 0%, #000 100%);
+}
+.nodex-chat-window {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    justify-content: center; /* 讓敬請期待置中 */
+}
+
+/* 敬請期待的鎖定畫面效果 */
+.nodex-lock-screen {
+    text-align: center;
+    border: 1px solid var(--accent-color);
+    padding: 40px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.8);
+    box-shadow: 0 0 50px rgba(0, 255, 204, 0.1);
+    max-width: 600px;
+    position: relative;
+    overflow: hidden;
+}
+/* 掃描線動畫 */
+.nodex-lock-screen::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 5px;
+    background: var(--accent-color);
+    opacity: 0.5;
+    box-shadow: 0 0 20px var(--accent-color);
+    animation: scanline 2s linear infinite;
+}
+@keyframes scanline { 0% { top: -10%; } 100% { top: 110%; } }
+
+.lock-icon { font-size: 4em; margin-bottom: 20px; opacity: 0.8; }
+.lock-title { font-size: 2em; font-family: 'Orbitron'; color: var(--accent-color); margin-bottom: 10px; }
+.lock-desc { color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px; }
+.lock-tag { 
+    display: inline-block; padding: 5px 10px; 
+    background: var(--btn-bg); border: 1px solid var(--accent-color); 
+    color: var(--accent-color); font-size: 0.8em; letter-spacing: 1px;
+}
+
+/* 模擬輸入框 (禁用狀態) */
+.nodex-input-area {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-panel);
+    opacity: 0.5;
+    pointer-events: none; /* 禁止點擊 */
+}
+.nodex-input-mock {
+    width: 100%;
+    padding: 15px;
+    background: #000;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: #555;
+    font-family: monospace;
+}
+
+        
         /* --- PulseStreet 動態牆樣式 --- */
 .pulse-container {
     width: 100%;
@@ -1187,39 +1313,96 @@
             setTimeout(showTutorial, 500);
         };
         // --- 新增：切換空間功能 ---
-        // --- 更新後的切換空間邏輯 ---
+       // --- 更新後的切換空間邏輯 (含 Nodex) ---
         window.switchSpace = function(spaceMode) {
-            // 1. 如果模式沒變，就不做任何事
             if (currentSpace === spaceMode) return;
             currentSpace = spaceMode;
 
-            // 2. 更新按鈕 UI 狀態 (移除舊的 active，新增新的 active)
+            // 1. 更新按鈕 UI
             document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
             const targetBtn = document.getElementById(`tab-${spaceMode}`);
             if(targetBtn) targetBtn.classList.add('active');
 
-            // 3. 清理工作：清空網格上的物件與連線
+            // 2. 清理畫面
             clearGrid(); 
-            
-            // 移除可能已經存在的 PulseStreet 容器 (避免重複堆疊)
-            const existingPulse = document.querySelector('.pulse-container');
-            if(existingPulse) existingPulse.remove();
+            // 移除所有特殊模式的容器 (Pulse & Nodex)
+            document.querySelectorAll('.pulse-container, .nodex-container').forEach(el => el.remove());
             
             const gridCanvas = document.getElementById('grid-canvas');
 
-            // 4. 根據模式決定顯示內容
+            // 3. 路由判斷
             if (spaceMode === 'pulse') {
-                // Pulse 模式：隱藏網格，渲染動態牆
                 if(gridCanvas) gridCanvas.style.display = 'none';
                 renderPulseStreet();
+            } else if (spaceMode === 'nodex') {
+                // Nodex 模式：隱藏網格，渲染 AI 戰情室
+                if(gridCanvas) gridCanvas.style.display = 'none';
+                renderNodex();
             } else {
-                // Workspace/Edu 模式：顯示網格，讀取存檔
+                // Workspace/Edu 模式
                 if(gridCanvas) gridCanvas.style.display = 'block';
-                // true 代表靜默讀取，如果沒有存檔也不要跳出煩人的 alert
-                loadLayout(true); 
+                loadLayout(true);
             }
         }
+// --- Nodex 渲染核心 ---
+        function renderNodex() {
+            const workspace = document.querySelector('.workspace');
+            
+            const container = document.createElement('div');
+            container.className = 'nodex-container';
+            
+            container.innerHTML = `
+                <div class="nodex-sidebar">
+                    <div class="nodex-header">NODEX // AGENTS</div>
+                    
+                    <div class="agent-card active">
+                        <div class="agent-avatar">📈</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Stock Analyst</div>
+                            <div class="agent-role">Market Intelligence</div>
+                        </div>
+                    </div>
+                    
+                    <div class="agent-card">
+                        <div class="agent-avatar">🧬</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Data Scientist</div>
+                            <div class="agent-role">Quant & Stats</div>
+                        </div>
+                    </div>
 
+                    <div class="agent-card" style="opacity:0.5;">
+                        <div class="agent-avatar">🔒</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Crypto Sentinel</div>
+                            <div class="agent-role">Coming Soon</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nodex-main">
+                    <div class="nodex-chat-window">
+                        
+                        <div class="nodex-lock-screen">
+                            <div class="lock-icon">🚧</div>
+                            <div class="lock-title">SYSTEM UNDER CONSTRUCTION</div>
+                            <div class="lock-desc">
+                                The <strong>Nodex Neural Interface</strong> is currently being fine-tuned for high-frequency trading analysis and complex data modeling.<br><br>
+                                Stock Analyst & Data Scientist agents are initializing...
+                            </div>
+                            <div class="lock-tag">COMING SOON // 敬請期待</div>
+                        </div>
+
+                    </div>
+
+                    <div class="nodex-input-area">
+                        <div class="nodex-input-mock">System Offline. Waiting for module update...</div>
+                    </div>
+                </div>
+            `;
+            
+            workspace.appendChild(container);
+        }
         // --- 新增：PulseStreet 渲染核心函式 ---
         function renderPulseStreet() {
             const workspace = document.querySelector('.workspace');
