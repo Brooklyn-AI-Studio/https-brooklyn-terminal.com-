@@ -4,7 +4,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BROOKLYN-TERMINAL // V11.04 01 </title>
+    <title>BROOKLYN-TERMINAL // V11.04 02 </title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -434,7 +434,49 @@
     text-align: right;
     opacity: 0.8;
 }
-        
+        /* --- 新增：空間切換頁籤樣式 --- */
+.nav-tabs {
+    display: flex;
+    gap: 5px;
+    margin-left: 30px;
+    height: 100%;
+    align-items: center;
+}
+
+.nav-tab-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 16px;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+    /* 科幻切角設計 */
+    clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%, 0 35%);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-tab-btn:hover {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    background: rgba(0, 255, 204, 0.05);
+}
+
+.nav-tab-btn.active {
+    background: var(--accent-color);
+    color: #000;
+    border-color: var(--accent-color);
+    font-weight: bold;
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+}
+
+/* 在 Pro 模式下的樣式微調 */
+[data-pro="true"] .nav-tab-btn.active {
+    background: var(--text-primary);
+}
         /* Tutorial Styles - Showcase Mode */
         #tutorial-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -723,9 +765,15 @@
     </div>
 
     <header>
+        <header>
         <div class="brand">
             <svg class="logo-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
             Brooklyn-<span>Terminal</span><span class="beta-badge">BETA</span>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab-btn active" id="tab-workspace" onclick="switchSpace('workspace')">WORKSPACE</button>
+            <button class="nav-tab-btn" id="tab-edu" onclick="switchSpace('edu')">SPACE-EDU</button>
         </div>
         <div class="header-right">
             <div class="header-btn-terms" onclick="openTerms()">INFO</div>
@@ -868,6 +916,7 @@
         let connections = []; // 儲存連線資料
         let connectMode = false; // 是否正在連線模式
         let connectSource = null; // 連線起點 ID
+        let currentSpace = 'workspace';
 
         // 2. 加入新工具的 Drag 監聽 (請加在原有的 tool-square 監聽器下方)
         document.getElementById('tool-circle').addEventListener('dragstart', (e) => e.dataTransfer.setData('type', 'circle'));
@@ -963,6 +1012,38 @@
         window.onload = function() {
             setTimeout(showTutorial, 500);
         };
+        // --- 新增：切換空間功能 ---
+        window.switchSpace = function(spaceMode) {
+            // 1. 如果空間沒變，就不做任何事
+            if (currentSpace === spaceMode) return;
+            
+            // 2. 提示用戶是否要切換 (可選，這裡直接切換以保持流暢)
+            // if(!confirm("Switching spaces will clear unsaved changes. Proceed?")) return;
+
+            // 3. 更新當前模式變數
+            currentSpace = spaceMode;
+
+            // 4. 更新按鈕 UI 狀態
+            document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${spaceMode}`).classList.add('active');
+
+            // 5. 清空當前畫面 (包含物件與連線)
+            clearGrid(); 
+            
+            // 6. 自動讀取該空間的存檔 (如果有的話)
+            // 為了避免切換到空畫面讓用戶困惑，我們自動執行 loadLayout
+            // 如果該空間沒有存檔，loadLayout 會跳出 alert，我們可以稍微修改 loadLayout 讓體驗更好
+            loadLayout(true); // 傳入 true 表示這是「靜默讀取」，不要跳 alert
+        }
+
+        // 輔助：清空連線 (原本的 clearGrid 只有清空 items，沒有清空 SVG 連線)
+        function clearAllConnections() {
+            const layer = document.getElementById('connections-layer');
+            while (layer.firstChild) {
+                layer.removeChild(layer.firstChild);
+            }
+            connections = [];
+        }
 
         // Toggle Section Logic
         window.toggleSection = function(id) {
@@ -974,15 +1055,118 @@
         themeSwitch.addEventListener('change', (e) => { if (e.target.checked) { document.documentElement.setAttribute('data-theme', 'light'); modeLabel.innerText = "MODE: LIGHT"; } else { document.documentElement.removeAttribute('data-theme'); modeLabel.innerText = "MODE: DARK"; }});
         proSwitch.addEventListener('change', (e) => { if (e.target.checked) document.documentElement.setAttribute('data-pro', 'true'); else document.documentElement.removeAttribute('data-pro'); });
         colorPicker.addEventListener('input', (e) => { activeColor = e.target.value; colorValue.innerText = activeColor; document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D'; document.querySelector('.tool-preview').style.borderColor = activeColor; });
+        // 修改後的 saveLayout
         function saveLayout() {
             const layoutData = items.map(i => {
                 const el = document.getElementById(i.id);
                 let noteContent = ''; if(i.type === 'note') { const contentDiv = el.querySelector('.note-content'); if(contentDiv) noteContent = contentDiv.innerHTML; }
                 let webUrl = ''; if (i.type === 'browser' || i.type === 'llama') { const iframe = el.querySelector('.browser-frame'); if (iframe) webUrl = iframe.src; }
                 let weatherCity = ''; if(i.type === 'weather') weatherCity = i.cityLabel;
-                return { type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, timeZone: i.timeZone, cityLabel: i.cityLabel, noteContent: noteContent, webUrl: webUrl, weatherCity: weatherCity };
+                // 加入 label 儲存
+                return { 
+                    type: i.type, x: i.x, y: i.y, w: i.w, h: i.h, 
+                    timeZone: i.timeZone, cityLabel: i.cityLabel, 
+                    noteContent: noteContent, webUrl: webUrl, weatherCity: weatherCity,
+                    label: i.label, // 確保名稱也被儲存
+                    color: i.el.style.borderColor // 確保顏色被儲存
+                };
             });
-            localStorage.setItem('brooklyn_layout_v11', JSON.stringify(layoutData)); alert('Layout Saved!');
+            
+            // ★ 重點：儲存連線資訊
+            const linesData = connections.map(c => ({ s: c.s, t: c.t }));
+
+            // ★ 重點：根據 currentSpace 決定存到哪個 Key
+            const storageKey = currentSpace === 'edu' ? 'brooklyn_layout_v11_edu' : 'brooklyn_layout_v11_workspace';
+            
+            const savePackage = {
+                items: layoutData,
+                lines: linesData
+            };
+
+            localStorage.setItem(storageKey, JSON.stringify(savePackage)); 
+            alert(`Layout Saved to [ ${currentSpace.toUpperCase()} ] !`);
+        }
+
+        // 修改後的 loadLayout
+        function loadLayout(isSilent = false) {
+            // ★ 重點：根據 currentSpace 決定讀取哪個 Key
+            const storageKey = currentSpace === 'edu' ? 'brooklyn_layout_v11_edu' : 'brooklyn_layout_v11_workspace';
+            
+            const saved = localStorage.getItem(storageKey);
+            
+            if(!saved) { 
+                if(!isSilent) alert(`No saved layout found for ${currentSpace.toUpperCase()}.`); 
+                return; 
+            }
+            
+            clearGrid(); // 先清空
+            
+            // 相容舊版資料 (舊版直接存陣列，新版存 {items, lines})
+            let data = JSON.parse(saved);
+            let layoutData = [];
+            let linesData = [];
+
+            if (Array.isArray(data)) {
+                layoutData = data; // 舊版格式
+            } else {
+                layoutData = data.items || [];
+                linesData = data.lines || [];
+            }
+
+            layoutData.forEach(data => {
+                // 讀取顏色，若無則預設
+                let color = data.color || '#007bff'; 
+                if(['clock','news','chat','calc','note','browser','llama','weather','quote','number','tvnews','tvchart','tv-news','tv-eco','heatmap-stock','heatmap-crypto','heatmap-etf','ticker-tape','kanban','audio','pomodoro'].includes(data.type)) color = '#ffffff';
+                
+                const newItem = createItem(data.x, data.y, data.w, data.h, color, data.type);
+                
+                // 還原 Label
+                if(data.label) {
+                    newItem.obj.label = data.label;
+                    const lbl = document.getElementById(`lbl-${newItem.obj.id}`);
+                    if(lbl) lbl.innerText = data.label;
+                }
+
+                // ... (原有的 switch case 邏輯保持不變，照抄原本的即可) ...
+                if (data.type === 'clock') { newItem.obj.timeZone = data.timeZone; newItem.obj.cityLabel = data.cityLabel; renderClockContent(newItem.obj); } 
+                else if (data.type === 'note') { const el = document.getElementById(newItem.obj.id); const contentDiv = el.querySelector('.note-content'); if(contentDiv && data.noteContent) contentDiv.innerHTML = data.noteContent; } 
+                else if ((data.type === 'browser' || data.type === 'llama') && data.webUrl) { const el = document.getElementById(newItem.obj.id); const iframe = el.querySelector('.browser-frame'); const input = el.querySelector('.browser-input'); if (iframe && input) { iframe.src = data.webUrl; input.value = data.webUrl; } }
+                else if (data.type === 'weather') { newItem.obj.cityLabel = data.weatherCity || 'Taipei'; renderWeatherContent(newItem.obj); }
+                else if (data.type === 'quote') renderQuoteContent(newItem.obj);
+                else if (data.type === 'number') renderNumberContent(newItem.obj);
+                else if (data.type === 'tvnews') renderGlobalNewsContent(newItem.obj);
+                else if (data.type === 'tvchart') renderTradingViewContent(newItem.obj);
+                else if (data.type === 'tv-news') renderTVNewsContent(newItem.obj);
+                else if (data.type === 'tv-eco') renderTVEcoContent(newItem.obj);
+                else if (data.type === 'heatmap-stock') renderStockHeatmap(newItem.obj);
+                else if (data.type === 'heatmap-crypto') renderCryptoHeatmap(newItem.obj);
+                else if (data.type === 'heatmap-etf') renderETFHeatmap(newItem.obj);
+                else if (data.type === 'ticker-tape') renderTickerTapeContent(newItem.obj);
+                else if (data.type === 'kanban') renderKanbanContent(newItem.obj);
+                else if (data.type === 'audio') renderAudioContent(newItem.obj);
+                else if (data.type === 'youtube') renderYouTubeContent(newItem.obj);
+                else if (data.type === 'pomodoro') renderPomodoroContent(newItem.obj);
+            });
+
+            // ★ 還原連線
+            if (linesData && linesData.length > 0) {
+                 // 稍微延遲一下確保 DOM 建立完成
+                 setTimeout(() => {
+                     linesData.forEach(l => {
+                         // 確保兩端物件都存在
+                         if (items.find(i => i.id === l.s) && items.find(i => i.id === l.t)) {
+                             createConnection(l.s, l.t);
+                         }
+                     });
+                 }, 50);
+            }
+        }
+
+        // 修改後的 clearGrid (確保連線也被清除)
+        function clearGrid() { 
+            items.forEach(i => { const el = document.getElementById(i.id); if(el) el.remove(); });
+            items = []; 
+            clearAllConnections(); // 呼叫上方定義的清空連線函式
         }
         /* --- 新增：使用條款視窗控制 --- */
 function openTerms() {
