@@ -4,7 +4,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BROOKLYN-TERMINAL // V11.04 </title>
+    <title>BROOKLYN-TERMINAL // V11.04 01 </title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -356,6 +356,85 @@
         .context-menu-item:hover .submenu { display: block; }
         .widget-header { cursor: move; }
 
+        /* --- 新增：訪客數據面板樣式 --- */
+.visitor-count {
+    cursor: pointer;
+    position: relative;
+    padding: 5px 10px;
+    transition: background 0.3s;
+    border-radius: 4px;
+}
+.visitor-count:hover {
+    background: rgba(0, 255, 204, 0.1); /* 微發光背景 */
+}
+
+/* 數據詳細面板 (預設隱藏) */
+#visitor-stats-panel {
+    display: none; /* 預設隱藏 */
+    position: absolute;
+    top: 50px; /* Header 高度下方 */
+    right: 10px;
+    width: 280px;
+    background: var(--bg-panel);
+    border: 1px solid var(--accent-color);
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+    z-index: 9999;
+    padding: 15px;
+    clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 0 100%); /* 科幻切角 */
+    backdrop-filter: blur(10px);
+}
+
+/* 面板顯示時的狀態 */
+#visitor-stats-panel.active {
+    display: block;
+    animation: panelSlideIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+@keyframes panelSlideIn {
+    from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 數據網格排版 */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.stat-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1em;
+    color: var(--text-primary);
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(0, 255, 204, 0.3);
+}
+
+.stats-footer {
+    border-top: 1px dashed var(--border-color);
+    margin-top: 10px;
+    padding-top: 5px;
+    font-size: 0.7em;
+    color: var(--accent-color);
+    text-align: right;
+    opacity: 0.8;
+}
+        
         /* Tutorial Styles - Showcase Mode */
         #tutorial-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -650,9 +729,50 @@
         </div>
         <div class="header-right">
             <div class="header-btn-terms" onclick="openTerms()">INFO</div>
-            <div class="visitor-count" title="Simulated Live Visitors">
-                <span>VISITORS:</span> <span id="visitor-num" class="visitor-num">LOADING</span>
+            <div class="visitor-count" onclick="toggleVisitorStats()" title="Click for Detailed Analytics">
+    <span>VISITORS:</span> 
+    <span id="busuanzi_value_site_pv" class="visitor-num">loading...</span>
+    <span style="font-size: 0.8em; opacity: 0.7;">▼</span>
+
+    <div id="visitor-stats-panel">
+        <div style="margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+            TRAFFIC_ANALYTICS //
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-label">Today Traffic</span>
+                <span id="busuanzi_value_today_pv" class="stat-value">...</span>
             </div>
+            <div class="stat-item">
+                <span class="stat-label">Today Users</span>
+                <span id="busuanzi_value_today_uv" class="stat-value">...</span>
+            </div>
+
+            <div class="stat-item">
+                <span class="stat-label">Total Traffic</span>
+                <span id="busuanzi_value_site_pv_detail" class="stat-value">...</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Users</span>
+                <span id="busuanzi_value_site_uv" class="stat-value">...</span>
+            </div>
+
+            <div class="stat-item">
+                <span class="stat-label">Page Hits</span>
+                <span id="busuanzi_value_page_pv" class="stat-value">...</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Page Users</span>
+                <span id="busuanzi_value_page_uv" class="stat-value">...</span>
+            </div>
+        </div>
+
+        <div class="stats-footer">
+            SYSTEM STATUS: MONITORING
+        </div>
+    </div>
+</div>
             <div style="font-size: 12px; opacity: 0.7;">SYS.STATUS: ONLINE</div>
         </div>
     </header>
@@ -870,6 +990,51 @@ function openTerms() {
     document.getElementById('terms-overlay').classList.add('active');
 }
 
+// --- 新增：訪客面板控制與腳本引入 ---
+
+// 1. 面板開關功能
+function toggleVisitorStats() {
+    const panel = document.getElementById('visitor-stats-panel');
+    panel.classList.toggle('active');
+}
+
+// 2. 點擊其他地方時關閉面板
+document.addEventListener('click', function(e) {
+    const container = document.querySelector('.visitor-count');
+    const panel = document.getElementById('visitor-stats-panel');
+    // 如果點擊的不是 visitor-count 本身或其子元素，就關閉面板
+    if (!container.contains(e.target)) {
+        panel.classList.remove('active');
+    }
+});
+
+// 3. 解決 ID 重複問題 (同步 Header 與 面板內的總瀏覽量)
+// 不蒜子腳本載入後，會自動填入 busuanzi_value_site_pv
+// 我們設一個定時器，把 Header 的值同步到面板內的 ..._detail
+setInterval(() => {
+    const mainVal = document.getElementById('busuanzi_value_site_pv').innerText;
+    const detailEl = document.getElementById('busuanzi_value_site_pv_detail');
+    if(mainVal && mainVal !== 'loading...' && detailEl) {
+        detailEl.innerText = mainVal;
+    }
+}, 1000);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
 function closeTerms(e) {
     // 點擊背景遮罩或關閉按鈕時關閉視窗
     if (!e || e.target.id === 'terms-overlay' || e.target.classList.contains('terms-close-btn')) {
@@ -2358,6 +2523,6 @@ function renderYouTubeContent(item) {
         </div>
     </div>
 </div>
-        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <script src="//cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
 </body>
 </html>
