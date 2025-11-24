@@ -646,13 +646,38 @@
 
 /* 4. 圓圈樣式微調：確保完整呈現 */
 .pulse-story-ring {
+    /* 關鍵修改：從 50% 改為 24px，創造圓角方形效果 */
+    border-radius: 24px !important; 
+    /* 尺寸維持不變 */
     width: 80px !important;
     height: 80px !important;
-    margin-bottom: 5px; /* 讓圓圈跟文字有點距離 */
-    flex-shrink: 0; /* 禁止壓縮 */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* 增加立體感 */
+    /* 確保漸層背景依然漂亮 */
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    padding: 3px; /* 邊框厚度 */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+/* 3. 內層圖片/圖示：跟隨外框變形 */
+.pulse-story-img {
+    /* 內層圓角要稍微小一點點，視覺上才協調 */
+    border-radius: 20px !important; 
+    
+    width: 100%;
+    height: 100%;
+    background: #1a1a1a; /* 稍微調亮背景，避免在純黑底上看不見 */
+    border: 3px solid var(--bg-body); /* 內圈黑色隔線 */
+    
+    /* 確保 emoji/圖示 居中且大小適中 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px; /* 調整圖示大小 */
 }
 
+/* 4. 點擊/懸停時的互動效果 */
+.pulse-story:hover .pulse-story-ring {
+    transform: translateY(-5px) scale(1.05); /* 上浮並放大 */
+    box-shadow: 0 10px 25px rgba(220, 39, 67, 0.4); /* 發光效果 */
+}
 /* 2. 發文框 (Create Post) */
 .pulse-create {
     background: var(--bg-panel);
@@ -685,6 +710,8 @@
     border-radius: 8px;
     overflow: hidden;
     animation: fadeInUp 0.5s ease;
+    margin-bottom: 60px !important; /* 加大間距，讓畫面更透氣 */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); /* 稍微加強陰影，增加層次感 */
 }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
