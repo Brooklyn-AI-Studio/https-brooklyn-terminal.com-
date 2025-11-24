@@ -605,7 +605,7 @@
 .pulse-container::-webkit-scrollbar { display: none; }
 
 .pulse-layout {
-    width: 600px;
+    width: 900px;
     max-width: 95%;
     display: flex;
     flex-direction: column;
@@ -1458,29 +1458,29 @@
             
             container.innerHTML = `
                 <div class="nodex-sidebar">
-                    <div class="nodex-header">NODEX // AGENTS</div>
+                    <div class="nodex-header">探索 Nodex </div>
                     
                     <div class="agent-card active">
                         <div class="agent-avatar">📈</div>
                         <div class="agent-info">
-                            <div class="agent-name">Stock Analyst</div>
-                            <div class="agent-role">Market Intelligence</div>
+                            <div class="agent-name">Stock Analyst 股市分析師</div>
+                            <div class="agent-role">提供專業的股市情報。</div>
                         </div>
                     </div>
                     
                     <div class="agent-card">
-                        <div class="agent-avatar">🧬</div>
+                        <div class="agent-avatar">🔍</div>
                         <div class="agent-info">
-                            <div class="agent-name">Data Scientist</div>
-                            <div class="agent-role">Quant & Stats</div>
+                            <div class="agent-name">Data Scientist 資料科學家</div>
+                            <div class="agent-role">為您提供的資料找出Insight.</div>
                         </div>
                     </div>
 
                     <div class="agent-card" style="opacity:0.5;">
-                        <div class="agent-avatar">🔒</div>
+                        <div class="agent-avatar">💻</div>
                         <div class="agent-info">
-                            <div class="agent-name">Crypto Sentinel</div>
-                            <div class="agent-role">Coming Soon</div>
+                            <div class="agent-name">DeepSeek Coder</div>
+                            <div class="agent-role">Let the Code Write Itself.</div>
                         </div>
                     </div>
                 </div>
@@ -1490,12 +1490,12 @@
                         
                         <div class="nodex-lock-screen">
                             <div class="lock-icon">🚧</div>
-                            <div class="lock-title">SYSTEM UNDER CONSTRUCTION</div>
+                            <div class="lock-title">開發中，敬請期待。</div>
                             <div class="lock-desc">
-                                The <strong>Nodex Neural Interface</strong> is currently being fine-tuned for high-frequency trading analysis and complex data modeling.<br><br>
-                                Stock Analyst & Data Scientist agents are initializing...
+                                <strong>Nodex</strong> 是brooklyn-terminal的大語言模型(LLM)互動環境，透過專業訓練集微調，為使用者提供強大的AI工具。<br><br>
+                                您可以在Workspace -> 工作列表 -> Tools 中 找到LLama online獲得暫時性語言模型服務 (每日限制50對話次數)。
                             </div>
-                            <div class="lock-tag">COMING SOON // 敬請期待</div>
+                            <div class="lock-tag">敬請期待</div>
                         </div>
 
                     </div>
@@ -1519,12 +1519,12 @@
             // 模擬資料：限時動態 (Stories)
             const stories = [
                 { name: "Your Story", icon: "＋", seen: false },
-                { name: "Elon Musk", icon: "🚀", seen: false },
-                { name: "CZ_Binance", icon: "🔶", seen: false },
-                { name: "Vitalik.eth", icon: "🦄", seen: false },
-                { name: "Satoshi", icon: "₿", seen: true },
-                { name: "Fed_Powell", icon: "🏦", seen: true },
-                { name: "Nvidia_AI", icon: "🤖", seen: false },
+                { name: "伊龍馬", icon: "🚀", seen: false },
+                { name: "全都是泡沫", icon: "🔶", seen: false },
+                { name: "uni-tech", icon: "🦄", seen: false },
+                { name: "泡泡博士", icon: "₿", seen: true },
+                { name: "韭菜新手", icon: "🏦", seen: true },
+                { name: "當沖機器", icon: "🤖", seen: false },
             ];
 
             // 生成 Stories 的 HTML
@@ -1540,25 +1540,25 @@
             // 模擬資料：貼文 (Feed)
             const posts = [
                 {
-                    name: "Market Analyst Pro", time: "2h ago • 🌎",
-                    avatar: "📈",
-                    content: "Bitcoin just broke the $95k resistance level! 🚀 Institutional inflow is massive today. Keep an eye on the liquidity sweep at the highs. #BTC #Crypto",
+                    name: "Brooklyn", time: "2h ago • 公開",
+                    avatar: "Ⓜ️",
+                    content: "PulseStreet是brooklyn-terminal系統的動態社群，您可以在這裡找到股市同好、工作夥伴，以及大語言模型愛好者! 你工作無聊的閒暇時間，或許能在這裡獲得精神娛樂連結。 功能開發中，敬啟期待。 #LLM #BTC #Crypto",
                     image: null, // 純文字貼文
                     likes: "1.2k", comments: "342"
                 },
                 {
-                    name: "Tech Insider", time: "4h ago • 🔒",
-                    avatar: "💻",
+                    name: "Tech-Weirdo", time: "4h ago • 公開",
+                    avatar: "🚇",
                     content: "Breaking: New quantum chip prototype demonstrates 1000x efficiency gain. The AI race is just getting started.",
                     image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80", 
                     likes: "8.5k", comments: "1.2k"
                 },
                 {
-                    name: "System Bot", time: "Just now • 🤖",
+                    name: "System Bot", time: "Just now • 系統公告",
                     avatar: "⚙️",
                     content: "System maintenance scheduled for 03:00 UTC. Please save your workspace configurations.",
                     image: null,
-                    likes: "5", comments: "0"
+                    likes: "1984", comments: "0"
                 }
             ];
 
@@ -1597,14 +1597,14 @@
                     </div>
                     
                     <div class="pulse-create">
-                        <div class="pulse-avatar">👤</div>
-                        <div class="pulse-input-dummy">What's happening in the market?</div>
+                        <div class="pulse-avatar">Ⓜ️</div>
+                        <div class="pulse-input-dummy">聊聊你對AMD暴漲有什麼看法?</div>
                     </div>
 
                     <div class="pulse-feed">
                         ${postsHTML}
                         <div style="text-align:center; padding:20px; opacity:0.5; font-size:0.8em;">
-                            — YOU ARE CAUGHT UP —
+                            — 已經到底了 —
                         </div>
                     </div>
                 </div>
