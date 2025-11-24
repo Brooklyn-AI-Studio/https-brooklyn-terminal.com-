@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BROOKLYN-TERMINAL // V11.04 02 </title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style>
         :root {
             --bg-body: #050505;
@@ -749,7 +749,7 @@
     margin: 0 auto 10px;
     border: 2px solid var(--accent-color);
     display: flex; align-items: center; justify-content: center;
-    font-size: 2em;
+    font-size: 3.5em;
 }
 .pulse-profile-name { font-weight: bold; font-size: 1.1em; color: #fff; }
 .pulse-profile-handle { font-size: 0.8em; color: var(--accent-color); margin-bottom: 10px; font-family: monospace; }
@@ -1670,10 +1670,8 @@
                 { name: "Your Story", icon: "＋", seen: false },
                 { name: "伊龍馬", icon: "🚀", seen: false },
                 { name: "全都是泡沫", icon: "🔶", seen: false },
-                { name: "uni-tech", icon: "🦄", seen: false },
-                { name: "泡泡博士", icon: "₿", seen: true },
-                { name: "韭菜新手", icon: "🏦", seen: true },
-                { name: "當沖機器", icon: "🤖", seen: false },
+                { name: "泡泡博士", icon: "₿", seen: false },
+                { name: "當沖機器", icon: "🤖", seen: false  },
             ];
 
             // 生成 Stories HTML
@@ -1734,19 +1732,20 @@
                     </div>
                     ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
                     <div class="pulse-stats">
-                        <span>👍 ${p.likes} Likes</span>
+                        <span>❤ ${p.likes} Likes</span>
                         <span>${p.comments} Comments</span>
                     </div>
                     <div class="pulse-actions">
-                        <button class="pulse-action-btn"><span>👍</span> Like</button>
-                        <button class="pulse-action-btn"><span>💬</span> Comment</button>
-                        <button class="pulse-action-btn"><span>↗</span> Share</button>
+                        <button class="pulse-action-btn"><span>♡</span> Like</button>
+                        <button class="pulse-action-btn"><span> ◌ </span> Comment</button>
+                        <button class="pulse-action-btn"><span>⤴︎</span> Share</button>
+                         <button class="pulse-action-btn"><span>✪</span> Archive</button>
                     </div>
                 </div>
             `).join('');
 
             // 3. 模擬資料：聯絡人 (右側欄) - 參考您的圖片
-            const contacts = ["Kevin60214", "Una51", "安大略帥哥", "凱哥哥", "南港志村健", "show5050", "大衛芬奇", " 北京魔術師", "leeds", "酒吧老闆Jayson"];
+            const contacts = ["Kevin60214", "Una51", "安大略帥哥", "凱哥哥", "南港志村健", "show5050", "大衛芬奇", " 西大路霸主", "leeds", "酒吧老闆Jayson"];
             let contactsHTML = contacts.map(c => `
                 <div class="pulse-contact-item">
                     <div class="contact-avatar">
@@ -1773,19 +1772,19 @@
                             <div class="pulse-profile-name">Brooklyn</div>
                             <div class="pulse-profile-handle">@Brooklyn LV.42 碼頭常駐者</div>
                             <div class="pulse-profile-stats">
-                                <div class="p-stat-item"><span class="p-stat-val">142</span><span class="p-stat-label">貼文</span></div>
-                                <div class="p-stat-item"><span class="p-stat-val">8.5k</span><span class="p-stat-label">粉絲</span></div>
-                                <div class="p-stat-item"><span class="p-stat-val">240</span><span class="p-stat-label">追蹤中</span></div>
+                                <div class="p-stat-item"><span class="p-stat-val">37</span><span class="p-stat-label">貼文</span></div>
+                                <div class="p-stat-item"><span class="p-stat-val">1.5k</span><span class="p-stat-label">粉絲</span></div>
+                                <div class="p-stat-item"><span class="p-stat-val">24</span><span class="p-stat-label">追蹤中</span></div>
                             </div>
                         </div>
 
                         <div class="pulse-nav-list">
-                            <div class="pulse-nav-item"><span class="pulse-nav-icon">👥</span> 朋友 (Friends)</div>
-                            <div class="pulse-nav-item"><span class="pulse-nav-icon">🕒</span> 動態回顧 (Memories)</div>
-                            <div class="pulse-nav-item"><span class="pulse-nav-icon">🔖</span> 我的珍藏 (Saved)</div>
-                            <div class="pulse-nav-item"><span class="pulse-nav-icon">💬</span> 討論區 (Forum)</div>
-                            <div class="pulse-nav-item"><span class="pulse-nav-icon">📢</span> 群組 (Groups)</div>
-                            <div class="pulse-nav-item"><span class="pulse-nav-icon">🎮</span> 娛樂中心 (Games)</div>
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">👥</span> 朋友</div>
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">🕒</span> 動態回顧</div>
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">🔖</span> 我的珍藏</div>
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">💬</span> 討論區</div>
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">📢</span> 群組</div>
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">📞</span> 支援中心</div>
                         </div>
                     </div>
 
@@ -1808,7 +1807,7 @@
                     </div>
 
                     <div class="pulse-sidebar-right">
-                        <div class="pulse-contact-header">聯絡人 (CONTACTS)</div>
+                        <div class="pulse-contact-header">聯絡人</div>
                         <div class="pulse-nav-list">
                             ${contactsHTML}
                         </div>
@@ -1818,11 +1817,11 @@
                         <div class="pulse-contact-header">可能認識的用戶 </div>
                         <div class="pulse-contact-item">
                             <div class="contact-avatar">🤖</div>
-                            <div class="contact-name">AI Bot 01</div>
+                            <div class="contact-name">YOLO2002</div>
                         </div>
                         <div class="pulse-contact-item">
                             <div class="contact-avatar">🦊</div>
-                            <div class="contact-name">Meta Mask</div>
+                            <div class="contact-name">FOXme69</div>
                         </div>
                     </div>
 
