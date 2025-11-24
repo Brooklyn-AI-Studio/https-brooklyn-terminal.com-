@@ -1225,7 +1225,7 @@ function closeTerms(e) {
     }
 }
 
-        function loadLayout() {
+       /* function loadLayout() {
             const saved = localStorage.getItem('brooklyn_layout_v11');
             if(!saved) { alert('No saved layout found.'); return; }
             clearGrid();
@@ -1252,7 +1252,7 @@ function closeTerms(e) {
                 else if (data.type === 'youtube') renderYouTubeContent(newItem.obj);
                 else if (data.type === 'pomodoro') renderPomodoroContent(newItem.obj);
             });
-        }
+        }*/
 
         function clearGrid() { items.forEach(i => { const el = document.getElementById(i.id); if(el) el.remove(); }); items = []; }
 
