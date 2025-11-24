@@ -356,6 +356,178 @@
         .context-menu-item:hover .submenu { display: block; }
         .widget-header { cursor: move; }
 
+        /* --- PulseStreet 動態牆樣式 --- */
+.pulse-container {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    background: var(--bg-body);
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    /* 隱藏預設捲軸但保持滾動功能 */
+    scrollbar-width: none; 
+}
+.pulse-container::-webkit-scrollbar { display: none; }
+
+.pulse-layout {
+    width: 600px;
+    max-width: 95%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 50px;
+}
+
+/* 1. 頂部限時動態區 (Stories) */
+.pulse-stories-wrapper {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+}
+.pulse-story {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    min-width: 70px;
+}
+.pulse-story-ring {
+    width: 65px; height: 65px;
+    border-radius: 50%;
+    padding: 3px;
+    /* IG 風格漸層邊框 */
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    position: relative;
+    transition: transform 0.2s;
+}
+/* 未讀/已讀 區分 (模擬) */
+.pulse-story.seen .pulse-story-ring {
+    background: var(--border-color);
+}
+.pulse-story:hover .pulse-story-ring {
+    transform: scale(1.05);
+}
+.pulse-story-img {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 3px solid var(--bg-panel); /* 內圈黑邊 */
+    background: #222;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+}
+.pulse-story-name {
+    font-size: 0.75em;
+    color: var(--text-primary);
+    max-width: 70px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 2. 發文框 (Create Post) */
+.pulse-create {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.pulse-input-dummy {
+    flex: 1;
+    background: var(--input-bg);
+    border-radius: 20px;
+    padding: 10px 15px;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    cursor: text;
+    border: 1px solid transparent;
+}
+.pulse-input-dummy:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: var(--border-color);
+}
+
+/* 3. 貼文卡片 (Feed Post) */
+.pulse-post {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    animation: fadeInUp 0.5s ease;
+}
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.pulse-post-header {
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.pulse-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: #333;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2em;
+    border: 1px solid var(--border-color);
+}
+.pulse-meta { flex: 1; display: flex; flex-direction: column; }
+.pulse-name { font-weight: bold; color: var(--text-primary); font-size: 0.95em; }
+.pulse-time { font-size: 0.75em; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; }
+.pulse-menu-btn { color: var(--text-secondary); cursor: pointer; }
+
+.pulse-content {
+    padding: 5px 15px 15px 15px;
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: #eee;
+}
+.pulse-content-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    background: #000;
+}
+
+.pulse-stats {
+    padding: 10px 15px;
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex; justify-content: space-between;
+}
+
+.pulse-actions {
+    display: flex;
+}
+.pulse-action-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: var(--font-main);
+    font-weight: bold;
+    font-size: 0.9em;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.pulse-action-btn:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--accent-color);
+}
         /* --- 新增：訪客數據面板樣式 --- */
 .visitor-count {
     cursor: pointer;
@@ -774,6 +946,8 @@
         <div class="nav-tabs">
             <button class="nav-tab-btn active" id="tab-workspace" onclick="switchSpace('workspace')">WORKSPACE</button>
             <button class="nav-tab-btn" id="tab-edu" onclick="switchSpace('edu')">SPACE-EDU</button>
+            <button class="nav-tab-btn" id="tab-pulse" onclick="switchSpace('pulse')">PULSESTREET</button>
+            <button class="nav-tab-btn" id="tab-pulse" onclick="switchSpace('pulse')">Nodex</button>
         </div>
         <div class="header-right">
             <div class="header-btn-terms" onclick="openTerms()">INFO</div>
@@ -1013,27 +1187,143 @@
             setTimeout(showTutorial, 500);
         };
         // --- 新增：切換空間功能 ---
+        // --- 更新後的切換空間邏輯 ---
         window.switchSpace = function(spaceMode) {
-            // 1. 如果空間沒變，就不做任何事
+            // 1. 如果模式沒變，就不做任何事
             if (currentSpace === spaceMode) return;
-            
-            // 2. 提示用戶是否要切換 (可選，這裡直接切換以保持流暢)
-            // if(!confirm("Switching spaces will clear unsaved changes. Proceed?")) return;
-
-            // 3. 更新當前模式變數
             currentSpace = spaceMode;
 
-            // 4. 更新按鈕 UI 狀態
+            // 2. 更新按鈕 UI 狀態 (移除舊的 active，新增新的 active)
             document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`tab-${spaceMode}`).classList.add('active');
+            const targetBtn = document.getElementById(`tab-${spaceMode}`);
+            if(targetBtn) targetBtn.classList.add('active');
 
-            // 5. 清空當前畫面 (包含物件與連線)
+            // 3. 清理工作：清空網格上的物件與連線
             clearGrid(); 
             
-            // 6. 自動讀取該空間的存檔 (如果有的話)
-            // 為了避免切換到空畫面讓用戶困惑，我們自動執行 loadLayout
-            // 如果該空間沒有存檔，loadLayout 會跳出 alert，我們可以稍微修改 loadLayout 讓體驗更好
-            loadLayout(true); // 傳入 true 表示這是「靜默讀取」，不要跳 alert
+            // 移除可能已經存在的 PulseStreet 容器 (避免重複堆疊)
+            const existingPulse = document.querySelector('.pulse-container');
+            if(existingPulse) existingPulse.remove();
+            
+            const gridCanvas = document.getElementById('grid-canvas');
+
+            // 4. 根據模式決定顯示內容
+            if (spaceMode === 'pulse') {
+                // Pulse 模式：隱藏網格，渲染動態牆
+                if(gridCanvas) gridCanvas.style.display = 'none';
+                renderPulseStreet();
+            } else {
+                // Workspace/Edu 模式：顯示網格，讀取存檔
+                if(gridCanvas) gridCanvas.style.display = 'block';
+                // true 代表靜默讀取，如果沒有存檔也不要跳出煩人的 alert
+                loadLayout(true); 
+            }
+        }
+
+        // --- 新增：PulseStreet 渲染核心函式 ---
+        function renderPulseStreet() {
+            const workspace = document.querySelector('.workspace');
+            
+            // 建立主容器
+            const container = document.createElement('div');
+            container.className = 'pulse-container';
+            
+            // 模擬資料：限時動態 (Stories)
+            const stories = [
+                { name: "Your Story", icon: "＋", seen: false },
+                { name: "Elon Musk", icon: "🚀", seen: false },
+                { name: "CZ_Binance", icon: "🔶", seen: false },
+                { name: "Vitalik.eth", icon: "🦄", seen: false },
+                { name: "Satoshi", icon: "₿", seen: true },
+                { name: "Fed_Powell", icon: "🏦", seen: true },
+                { name: "Nvidia_AI", icon: "🤖", seen: false },
+            ];
+
+            // 生成 Stories 的 HTML
+            let storiesHTML = stories.map(s => `
+                <div class="pulse-story ${s.seen ? 'seen' : ''}">
+                    <div class="pulse-story-ring">
+                        <div class="pulse-story-img">${s.icon}</div>
+                    </div>
+                    <div class="pulse-story-name">${s.name}</div>
+                </div>
+            `).join('');
+
+            // 模擬資料：貼文 (Feed)
+            const posts = [
+                {
+                    name: "Market Analyst Pro", time: "2h ago • 🌎",
+                    avatar: "📈",
+                    content: "Bitcoin just broke the $95k resistance level! 🚀 Institutional inflow is massive today. Keep an eye on the liquidity sweep at the highs. #BTC #Crypto",
+                    image: null, // 純文字貼文
+                    likes: "1.2k", comments: "342"
+                },
+                {
+                    name: "Tech Insider", time: "4h ago • 🔒",
+                    avatar: "💻",
+                    content: "Breaking: New quantum chip prototype demonstrates 1000x efficiency gain. The AI race is just getting started.",
+                    image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80", 
+                    likes: "8.5k", comments: "1.2k"
+                },
+                {
+                    name: "System Bot", time: "Just now • 🤖",
+                    avatar: "⚙️",
+                    content: "System maintenance scheduled for 03:00 UTC. Please save your workspace configurations.",
+                    image: null,
+                    likes: "5", comments: "0"
+                }
+            ];
+
+            // 生成 Posts 的 HTML
+            let postsHTML = posts.map(p => `
+                <div class="pulse-post">
+                    <div class="pulse-post-header">
+                        <div class="pulse-avatar">${p.avatar}</div>
+                        <div class="pulse-meta">
+                            <div class="pulse-name">${p.name}</div>
+                            <div class="pulse-time">${p.time}</div>
+                        </div>
+                        <div class="pulse-menu-btn">•••</div>
+                    </div>
+                    <div class="pulse-content">
+                        ${p.content}
+                    </div>
+                    ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
+                    <div class="pulse-stats">
+                        <span>👍 ${p.likes} Likes</span>
+                        <span>${p.comments} Comments</span>
+                    </div>
+                    <div class="pulse-actions">
+                        <button class="pulse-action-btn"><span>👍</span> Like</button>
+                        <button class="pulse-action-btn"><span>💬</span> Comment</button>
+                        <button class="pulse-action-btn"><span>↗</span> Share</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // 組合最終 HTML 結構
+            container.innerHTML = `
+                <div class="pulse-layout">
+                    <div class="pulse-stories-wrapper">
+                        ${storiesHTML}
+                    </div>
+                    
+                    <div class="pulse-create">
+                        <div class="pulse-avatar">👤</div>
+                        <div class="pulse-input-dummy">What's happening in the market?</div>
+                    </div>
+
+                    <div class="pulse-feed">
+                        ${postsHTML}
+                        <div style="text-align:center; padding:20px; opacity:0.5; font-size:0.8em;">
+                            — YOU ARE CAUGHT UP —
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 將動態牆插入到 workspace 區域
+            workspace.appendChild(container);
         }
 
         // 輔助：清空連線 (原本的 clearGrid 只有清空 items，沒有清空 SVG 連線)
