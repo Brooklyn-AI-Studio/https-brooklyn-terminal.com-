@@ -624,35 +624,59 @@
     padding-bottom: 50px;
 }
 
-/* 1. 頂部限時動態區 (Stories) */
+/* --- 限時動態樣式優化 (圓形修正版) --- */
+
+/* 1. 移除外層方框與背景，讓動態直接浮在頁面上 */
 .pulse-stories-wrapper {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 15px;
-    display: flex;
+    background: transparent !important; /* 移除背景色 */
+    border: none !important;            /* 移除邊框 */
+    padding: 10px 0 !important;         /* 減少內距 */
     gap: 15px;
+    /* 重要：保持橫向捲動 */
+    display: flex;
     overflow-x: auto;
     white-space: nowrap;
-    scrollbar-width: none;
+    scrollbar-width: none; /* Firefox 隱藏捲軸 */
 }
+/* Chrome/Safari 隱藏捲軸 */
+.pulse-stories-wrapper::-webkit-scrollbar { 
+    display: none; 
+}
+
+/* 2. 強制圓圈不被壓縮 (關鍵修正) */
 .pulse-story {
+    flex-shrink: 0 !important; /* ★ 這行是重點：禁止被壓縮成橢圓 */
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
     cursor: pointer;
-    min-width: 70px;
+    min-width: auto; /* 移除最小寬度限制 */
 }
-/* 1. 加大圓圈尺寸 */
+
+/* 3. 確保圓圈尺寸固定且完美 */
 .pulse-story-ring {
-    width: 90px;  /* 原本是 65px，改大 */
-    height: 90px; /* 原本是 65px，改大 */
-    border-radius: 50%;
+    width: 80px !important;  /* 設定固定寬度 */
+    height: 80px !important; /* 設定固定高度 (與寬度相同) */
+    border-radius: 50% !important;
     padding: 3px;
     background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
     position: relative;
     transition: transform 0.2s;
+    /* 確保圓形不會因為內容而變形 */
+    box-sizing: border-box;
+}
+
+/* 4. 調整下方文字樣式 */
+.pulse-story-name {
+    font-size: 0.8em;
+    color: #fff; /* 確保文字在深色背景清晰 */
+    text-align: center;
+    max-width: 80px; /* 配合圓圈寬度 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* 增加文字可讀性 */
 }
 
 /* 2. 確保容器有足夠空間 (非必要，但建議檢查) */
@@ -669,14 +693,6 @@
 }
 
 /* 3. (選用) 調整文字大小以配合大圓圈 */
-.pulse-story-name {
-    font-size: 0.85em; /* 原本是 0.75em */
-    color: var(--text-primary);
-    max-width: 90px; /* 配合圓圈寬度 */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-top: 5px;
-}
 /* 未讀/已讀 區分 (模擬) */
 .pulse-story.seen .pulse-story-ring {
     background: var(--border-color);
@@ -691,13 +707,6 @@
     background: #222;
     display: flex; align-items: center; justify-content: center;
     font-size: 24px;
-}
-.pulse-story-name {
-    font-size: 0.75em;
-    color: var(--text-primary);
-    max-width: 70px;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 /* 2. 發文框 (Create Post) */
@@ -1498,7 +1507,7 @@
                     <div class="agent-card active">
                         <div class="agent-avatar">📈</div>
                         <div class="agent-info">
-                            <div class="agent-name">Stock Analyst 股市分析師</div>
+                            <div class="agent-name">Stock Analyst 股市分析</div>
                             <div class="agent-role">提供專業的股市情報。</div>
                         </div>
                     </div>
@@ -1506,7 +1515,7 @@
                     <div class="agent-card">
                         <div class="agent-avatar">🔍</div>
                         <div class="agent-info">
-                            <div class="agent-name">Data Scientist 資料科學家</div>
+                            <div class="agent-name">Data Scientist 資料分析</div>
                             <div class="agent-role">為您提供的資料找出Insight.</div>
                         </div>
                     </div>
@@ -1527,7 +1536,7 @@
                             <div class="lock-icon">🚧</div>
                             <div class="lock-title">開發中，敬請期待。</div>
                             <div class="lock-desc">
-                                <strong>Nodex</strong> 是brooklyn-terminal的大語言模型(LLM)互動環境，透過專業訓練集微調，為使用者提供強大的AI工具。<br><br>
+                                <strong>Nodex</strong> 是brooklyn-terminal系統下的大語言模型(LLM)互動環境，透過專業可靠的訓練集進行微調，為使用者提供強大、個性化、專屬的AI工具。<br><br>
                                 您可以在Workspace -> 工作列表 -> Tools 中 找到LLama online獲得暫時性語言模型服務 (每日限制50對話次數)。
                             </div>
                             <div class="lock-tag">敬請期待</div>
@@ -1582,18 +1591,18 @@
                     likes: "1.2k", comments: "342"
                 },
                 {
-                    name: "Tech-Weirdo", time: "4h ago • 公開",
+                    name: "科技航廈", time: "4h ago • 公開",
                     avatar: "🚇",
-                    content: "Breaking: New quantum chip prototype demonstrates 1000x efficiency gain. The AI race is just getting started.",
-                    image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80", 
+                    content: "Gemini 3十分鐘解出百年數學難題　陶哲軒：表現遠超預期。Google 上周推出的 Gemini 3，再度引起學界與科技圈高度關注。最新實測顯示，該模型不僅在多項基準測試中取得領先，更被世界級數學家陶哲軒親自驗證成功在短短十分鐘內協助推導出埃爾德什問題 #367 的關鍵證明，展現出 AI 在高階推理上的突破性進展。",
+                    image: "https://cdn2.ettoday.net/images/8505/d8505938.jpg", 
                     likes: "8.5k", comments: "1.2k"
                 },
                 {
-                    name: "System Bot", time: "Just now • 系統公告",
-                    avatar: "⚙️",
-                    content: "System maintenance scheduled for 03:00 UTC. Please save your workspace configurations.",
-                    image: null,
-                    likes: "1984", comments: "0"
+                    name: "PulseStreet", time: "Just now • 系統公告",
+                    avatar: "🅿️",
+                    content: "比特幣成為戰場：白宮與摩根大通之間的無聲戰爭。",
+                    image: "https://image.blocktempo.com/2025/11/cover-image-bitcoin-battlefield-jpmorgan-white-house-silent-war.webp", 
+                    likes: "1984", comments: "40"
                 }
             ];
 
