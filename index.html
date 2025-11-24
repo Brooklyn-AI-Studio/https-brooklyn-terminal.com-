@@ -601,112 +601,56 @@
 }
 
         
-        /* --- PulseStreet 動態牆樣式 --- */
-.pulse-container {
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    background: var(--bg-body);
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-    /* 隱藏預設捲軸但保持滾動功能 */
-    scrollbar-width: none; 
-}
-.pulse-container::-webkit-scrollbar { display: none; }
+/* --- PulseStreet 排版終極修正 --- */
 
+/* 1. 修正主容器：強制覆蓋整個工作區 (解決背景網點與留白問題) */
+.pulse-container {
+    position: absolute !important; /* 強制絕對定位 */
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    background: #050505 !important; /* 確保背景不透明，蓋住網格 */
+    z-index: 10; /* 確保在網格之上 */
+    padding: 20px 0 !important; /* 上下留白，左右貼齊 */
+    overflow-y: auto; /* 允許垂直捲動 */
+}
+
+/* 2. 修正限時動態容器：增加高度緩衝 (解決圓圈被切頭問題) */
+.pulse-stories-wrapper {
+    /* 確保內距足夠大，容納圓圈縮放與陰影 */
+    padding: 15px 20px !important; 
+    min-height: 130px !important; /* 強制最小高度，防止被壓縮 */
+    align-items: center; /* 垂直置中 */
+    
+    /* 保持橫向捲動 */
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    overflow-y: visible; /* 嘗試讓垂直方向溢出可見 (瀏覽器支援度不一，靠 min-height 最保險) */
+    white-space: nowrap;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* 3. 修正版面寬度：確保在絕對定位下依然置中 */
 .pulse-layout {
-    width: 600px;
+    width: 800px; /* 設定您想要的寬度 */
     max-width: 95%;
+    margin: 0 auto; /* 水平置中 */
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding-bottom: 50px;
+    padding-bottom: 80px; /* 底部留白 */
 }
 
-/* --- 限時動態樣式優化 (圓形修正版) --- */
-
-/* 1. 移除外層方框與背景，讓動態直接浮在頁面上 */
-.pulse-stories-wrapper {
-    background: transparent !important; /* 移除背景色 */
-    border: none !important;            /* 移除邊框 */
-    padding: 10px 0 !important;         /* 減少內距 */
-    gap: 15px;
-    /* 重要：保持橫向捲動 */
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    scrollbar-width: none; /* Firefox 隱藏捲軸 */
-}
-/* Chrome/Safari 隱藏捲軸 */
-.pulse-stories-wrapper::-webkit-scrollbar { 
-    display: none; 
-}
-
-/* 2. 強制圓圈不被壓縮 (關鍵修正) */
-.pulse-story {
-    flex-shrink: 0 !important; /* ★ 這行是重點：禁止被壓縮成橢圓 */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    min-width: auto; /* 移除最小寬度限制 */
-}
-
-/* 3. 確保圓圈尺寸固定且完美 */
+/* 4. 圓圈樣式微調：確保完整呈現 */
 .pulse-story-ring {
-    width: 80px !important;  /* 設定固定寬度 */
-    height: 80px !important; /* 設定固定高度 (與寬度相同) */
-    border-radius: 50% !important;
-    padding: 3px;
-    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-    position: relative;
-    transition: transform 0.2s;
-    /* 確保圓形不會因為內容而變形 */
-    box-sizing: border-box;
-}
-
-/* 4. 調整下方文字樣式 */
-.pulse-story-name {
-    font-size: 0.8em;
-    color: #fff; /* 確保文字在深色背景清晰 */
-    text-align: center;
-    max-width: 80px; /* 配合圓圈寬度 */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* 增加文字可讀性 */
-}
-
-/* 2. 確保容器有足夠空間 (非必要，但建議檢查) */
-.pulse-stories-wrapper {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px; /* 稍微增加內距讓視覺不擁擠 */
-    display: flex;
-    gap: 20px; /* 增加圓圈之間的間距 */
-    overflow-x: auto;
-    white-space: nowrap;
-    scrollbar-width: none;
-}
-
-/* 3. (選用) 調整文字大小以配合大圓圈 */
-/* 未讀/已讀 區分 (模擬) */
-.pulse-story.seen .pulse-story-ring {
-    background: var(--border-color);
-}
-.pulse-story:hover .pulse-story-ring {
-    transform: scale(1.05);
-}
-.pulse-story-img {
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    border: 3px solid var(--bg-panel); /* 內圈黑邊 */
-    background: #222;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
+    width: 80px !important;
+    height: 80px !important;
+    margin-bottom: 5px; /* 讓圓圈跟文字有點距離 */
+    flex-shrink: 0; /* 禁止壓縮 */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* 增加立體感 */
 }
 
 /* 2. 發文框 (Create Post) */
