@@ -678,6 +678,141 @@
     transform: translateY(-5px) scale(1.05); /* 上浮並放大 */
     box-shadow: 0 10px 25px rgba(220, 39, 67, 0.4); /* 發光效果 */
 }
+/* --- PulseStreet 三欄式佈局 --- */
+
+/* 1. 修正主容器寬度 */
+.pulse-layout {
+    width: 1200px; /* 加寬以容納三欄 */
+    max-width: 98%;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 280px 1fr 280px; /* 左側欄 | 中間動態 | 右側欄 */
+    gap: 30px;
+    padding-bottom: 80px;
+    align-items: start; /* 讓側欄固定在上方，不會隨內容拉長 */
+}
+
+/* 2. 側邊欄通用樣式 */
+.pulse-sidebar-left, .pulse-sidebar-right {
+    position: sticky;
+    top: 20px; /* 捲動時固定在頂部 */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: calc(100vh - 40px); /* 限制高度 */
+    overflow-y: auto; /* 內容多時可捲動 */
+    scrollbar-width: none; /* 隱藏捲軸 */
+}
+.pulse-sidebar-left::-webkit-scrollbar, .pulse-sidebar-right::-webkit-scrollbar { display: none; }
+
+/* --- 左側欄位元件 --- */
+
+/* 搜尋欄 */
+.pulse-search-box {
+    display: flex;
+    align-items: center;
+    background: #222;
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 10px;
+}
+.pulse-search-icon { margin-right: 10px; font-size: 1.2em; }
+.pulse-search-input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    width: 100%;
+    outline: none;
+}
+
+/* 個人資訊卡 */
+.pulse-profile-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+/* 背景裝飾線 */
+.pulse-profile-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+    background: var(--accent-color);
+    box-shadow: 0 0 10px var(--accent-color);
+}
+.pulse-profile-avatar {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: #000;
+    margin: 0 auto 10px;
+    border: 2px solid var(--accent-color);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2em;
+}
+.pulse-profile-name { font-weight: bold; font-size: 1.1em; color: #fff; }
+.pulse-profile-handle { font-size: 0.8em; color: var(--accent-color); margin-bottom: 10px; font-family: monospace; }
+.pulse-profile-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+.p-stat-item { display: flex; flex-direction: column; font-size: 0.8em; }
+.p-stat-val { font-weight: bold; font-size: 1.2em; color: #fff; }
+.p-stat-label { color: #888; }
+
+/* 導覽選單列表 */
+.pulse-nav-list { display: flex; flex-direction: column; gap: 5px; }
+.pulse-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: #ccc;
+    font-size: 0.95em;
+}
+.pulse-nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.pulse-nav-icon { width: 30px; font-size: 1.2em; text-align: center; margin-right: 10px; }
+
+/* --- 右側欄位元件 (聯絡人) --- */
+.pulse-contact-header {
+    font-size: 0.9em; color: #888; font-weight: bold; margin-bottom: 10px; padding-left: 10px;
+}
+.pulse-contact-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.pulse-contact-item:hover { background: rgba(255,255,255,0.1); }
+.contact-avatar {
+    width: 32px; height: 32px; border-radius: 50%; background: #333;
+    margin-right: 12px; position: relative;
+    display: flex; align-items: center; justify-content: center; border: 1px solid #444;
+}
+.contact-status {
+    position: absolute; bottom: 0; right: 0; width: 8px; height: 8px;
+    background: #00ff00; border-radius: 50%; border: 1px solid #000;
+}
+.contact-name { font-size: 0.9em; color: #ddd; }
+
+/* 中間區域調整 (確保在三欄中正確顯示) */
+.pulse-feed-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0; /* 防止 grid 爆版 */
+}
+
+
+        
 /* 2. 發文框 (Create Post) */
 .pulse-create {
     background: var(--bg-panel);
@@ -710,7 +845,7 @@
     border-radius: 8px;
     overflow: hidden;
     animation: fadeInUp 0.5s ease;
-    margin-bottom: 60px !important; /* 加大間距，讓畫面更透氣 */
+    margin-bottom: 40px !important; /* 加大間距，讓畫面更透氣 */
     box-shadow: 0 10px 30px rgba(0,0,0,0.2); /* 稍微加強陰影，增加層次感 */
 }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -1523,15 +1658,14 @@
             
             workspace.appendChild(container);
         }
-        // --- 新增：PulseStreet 渲染核心函式 ---
+       // --- PulseStreet 渲染核心 (三欄式整合版) ---
         function renderPulseStreet() {
             const workspace = document.querySelector('.workspace');
             
-            // 建立主容器
             const container = document.createElement('div');
             container.className = 'pulse-container';
             
-            // 模擬資料：限時動態 (Stories)
+            // 1. 模擬資料：限時動態 (Stories) - 來自您的原始資料
             const stories = [
                 { name: "Your Story", icon: "＋", seen: false },
                 { name: "伊龍馬", icon: "🚀", seen: false },
@@ -1542,7 +1676,7 @@
                 { name: "當沖機器", icon: "🤖", seen: false },
             ];
 
-            // 生成 Stories 的 HTML
+            // 生成 Stories HTML
             let storiesHTML = stories.map(s => `
                 <div class="pulse-story ${s.seen ? 'seen' : ''}">
                     <div class="pulse-story-ring">
@@ -1552,7 +1686,7 @@
                 </div>
             `).join('');
 
-            // 模擬資料：貼文 (Feed)
+            // 2. 模擬資料：貼文 (Feed) - 來自您的原始資料
             const posts = [
                 {
                     name: "Brooklyn", time: "2h ago • 公開",
@@ -1574,10 +1708,17 @@
                     content: "比特幣成為戰場：白宮與摩根大通之間的無聲戰爭。",
                     image: "https://image.blocktempo.com/2025/11/cover-image-bitcoin-battlefield-jpmorgan-white-house-silent-war.webp", 
                     likes: "1984", comments: "40"
-                }
+                },
+                 {
+                    name: "演算法博士", time: "4h ago • 公開",
+                    avatar: "⚽",
+                    content: "諾貝爾獎得主合作　陽明交大高速演算法助新藥研發。（中央社記者許秩維台北24日電）陽明交大生物科技系副教授羅惟正與諾貝爾化學獎得主瓦謝爾合作，開發高效能蛋白質結構比對搜尋演算法，可在數億筆資料庫中迅速比較蛋白質結構，加速新藥研發。陽明交通大學今天發布新聞稿指出，準確預測及分析比較蛋白質結構，能幫助科學家理解藥物與治療標靶之間的相互作用，加速藥物研發，但這項工作一直是科學界面臨的難題。",
+                    image: "https://imgcdn.cna.com.tw/www/WebPhotos/1024/20251124/1024x768_wmkn_0_C20251124000003.jpg", 
+                    likes: "14", comments: "1"
+                }                
             ];
 
-            // 生成 Posts 的 HTML
+            // 生成 Posts HTML
             let postsHTML = posts.map(p => `
                 <div class="pulse-post">
                     <div class="pulse-post-header">
@@ -1604,31 +1745,92 @@
                 </div>
             `).join('');
 
-            // 組合最終 HTML 結構
+            // 3. 模擬資料：聯絡人 (右側欄) - 參考您的圖片
+            const contacts = ["Kevin60214", "Una51", "安大略帥哥", "凱哥哥", "南港志村健", "show5050", "大衛芬奇", " 北京魔術師", "leeds", "酒吧老闆Jayson"];
+            let contactsHTML = contacts.map(c => `
+                <div class="pulse-contact-item">
+                    <div class="contact-avatar">
+                        ${c.charAt(0)}
+                        <div class="contact-status"></div>
+                    </div>
+                    <div class="contact-name">${c}</div>
+                </div>
+            `).join('');
+
+            // 4. 組合三欄式 HTML
             container.innerHTML = `
                 <div class="pulse-layout">
-                    <div class="pulse-stories-wrapper">
-                        ${storiesHTML}
-                    </div>
                     
-                    <div class="pulse-create">
-                        <div class="pulse-avatar">Ⓜ️</div>
-                        <div class="pulse-input-dummy">聊聊你對AMD暴漲有什麼看法?</div>
-                    </div>
+                    <div class="pulse-sidebar-left">
+                        
+                        <div class="pulse-search-box">
+                            <span class="pulse-search-icon">🔍</span>
+                            <input type="text" class="pulse-search-input" placeholder="Search PulseStreet...">
+                        </div>
 
-                    <div class="pulse-feed">
-                        ${postsHTML}
-                        <div style="text-align:center; padding:20px; opacity:0.5; font-size:0.8em;">
-                            — 已經到底了 —
+                        <div class="pulse-profile-card">
+                            <div class="pulse-profile-avatar">Ⓜ️</div>
+                            <div class="pulse-profile-name">Brooklyn</div>
+                            <div class="pulse-profile-handle">@Brooklyn LV.42 碼頭常駐者</div>
+                            <div class="pulse-profile-stats">
+                                <div class="p-stat-item"><span class="p-stat-val">142</span><span class="p-stat-label">貼文</span></div>
+                                <div class="p-stat-item"><span class="p-stat-val">8.5k</span><span class="p-stat-label">粉絲</span></div>
+                                <div class="p-stat-item"><span class="p-stat-val">240</span><span class="p-stat-label">追蹤中</span></div>
+                            </div>
+                        </div>
+
+                        <div class="pulse-nav-list">
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">👥</span> 朋友 (Friends)</div>
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">🕒</span> 動態回顧 (Memories)</div>
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">🔖</span> 我的珍藏 (Saved)</div>
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">💬</span> 討論區 (Forum)</div>
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">📢</span> 群組 (Groups)</div>
+                            <div class="pulse-nav-item"><span class="pulse-nav-icon">🎮</span> 娛樂中心 (Games)</div>
                         </div>
                     </div>
+
+                    <div class="pulse-feed-container">
+                        <div class="pulse-stories-wrapper">
+                            ${storiesHTML}
+                        </div>
+                        
+                        <div class="pulse-create">
+                            <div class="pulse-avatar">Ⓜ️</div>
+                            <div class="pulse-input-dummy">聊聊你對AMD暴漲有什麼看法?</div>
+                        </div>
+
+                        <div class="pulse-feed">
+                            ${postsHTML}
+                            <div style="text-align:center; padding:20px; opacity:0.5; font-size:0.8em;">
+                                — 已經到底了 —
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pulse-sidebar-right">
+                        <div class="pulse-contact-header">聯絡人 (CONTACTS)</div>
+                        <div class="pulse-nav-list">
+                            ${contactsHTML}
+                        </div>
+                        
+                        <div style="border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;"></div>
+                        
+                        <div class="pulse-contact-header">可能認識的用戶 </div>
+                        <div class="pulse-contact-item">
+                            <div class="contact-avatar">🤖</div>
+                            <div class="contact-name">AI Bot 01</div>
+                        </div>
+                        <div class="pulse-contact-item">
+                            <div class="contact-avatar">🦊</div>
+                            <div class="contact-name">Meta Mask</div>
+                        </div>
+                    </div>
+
                 </div>
             `;
 
-            // 將動態牆插入到 workspace 區域
             workspace.appendChild(container);
         }
-
         // 輔助：清空連線 (原本的 clearGrid 只有清空 items，沒有清空 SVG 連線)
         function clearAllConnections() {
             const layer = document.getElementById('connections-layer');
