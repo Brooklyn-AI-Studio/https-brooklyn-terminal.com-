@@ -651,7 +651,7 @@
         <div class="header-right">
             <div class="header-btn-terms" onclick="openTerms()">INFO</div>
             <div class="visitor-count" title="Simulated Live Visitors">
-                <span>VISITORS:</span> <span id="visitor-num" class="visitor-num">00000</span>
+                <span>VISITORS:</span> <span id="visitor-num" class="visitor-num">LOADING</span>
             </div>
             <div style="font-size: 12px; opacity: 0.7;">SYS.STATUS: ONLINE</div>
         </div>
@@ -850,17 +850,6 @@
             const sec = document.getElementById(id);
             if(sec) sec.classList.toggle('closed');
         }
-
-        function initVisitorCounter() {
-            const visitorEl = document.getElementById('visitor-num');
-            let count = localStorage.getItem('visitorCount');
-            if (!count) { count = Math.floor(Math.random() * 4000) + 8000; } else { count = parseInt(count); }
-            count++; localStorage.setItem('visitorCount', count);
-            const updateDisplay = () => { visitorEl.innerText = count.toLocaleString('en-US', {minimumIntegerDigits: 5, useGrouping:false}); };
-            updateDisplay();
-            setInterval(() => { if(Math.random() > 0.7) { count += Math.floor(Math.random() * 3) + 1; localStorage.setItem('visitorCount', count); updateDisplay(); } }, 3000);
-        }
-        initVisitorCounter();
 
         sidebarToggle.addEventListener('click', () => { isSidebarCollapsed = !isSidebarCollapsed; if (isSidebarCollapsed) { sidebar.classList.add('collapsed'); sidebarToggle.innerHTML = '&gt;'; } else { sidebar.classList.remove('collapsed'); sidebarToggle.innerHTML = '&lt;'; }});
         themeSwitch.addEventListener('change', (e) => { if (e.target.checked) { document.documentElement.setAttribute('data-theme', 'light'); modeLabel.innerText = "MODE: LIGHT"; } else { document.documentElement.removeAttribute('data-theme'); modeLabel.innerText = "MODE: DARK"; }});
@@ -2368,6 +2357,7 @@ function renderYouTubeContent(item) {
             </div>
         </div>
     </div>
-</div>       
+</div>
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </body>
 </html>
