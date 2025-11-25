@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BROOKLYN-TERMINAL // V11.04 02 </title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
@@ -498,7 +498,41 @@
     background: #222;
     border: none;
 }
+* --- PulseStreet SVG 通用樣式 --- */
+.pulse-icon {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    margin-right: 10px;
+    opacity: 0.8;
+    transition: all 0.2s;
+}
+/* 讓圖示在滑鼠懸停時發光 */
+.pulse-nav-item:hover .pulse-icon {
+    opacity: 1;
+    stroke: var(--accent-color);
+    filter: drop-shadow(0 0 5px var(--accent-color));
+}
+/* 貼文底部操作按鈕的圖示 */
+.action-icon-svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    margin-right: 5px;
+}
 
+
+
+
+
+
+        
 /* 1. 鎖定主畫面範圍，禁止整個頁面捲動 */
 .nodex-main {
     position: relative !important; /* 作為定位基準 */
@@ -1441,19 +1475,44 @@
         .connection-line:hover { stroke: #fff; opacity: 1; stroke-width: 4px; }
       /* --- 新增：賽博龐克資訊視窗樣式 --- */
 .header-btn-terms {
-    margin-right: 15px; /* 與右邊的訪客計數器保持距離 */
-    color: var(--accent-color); cursor: pointer; font-size: 11px; font-weight: bold;
-    border: 1px solid rgba(0, 255, 204, 0.3); padding: 4px 12px;
-    background: rgba(0, 0, 0, 0.3); letter-spacing: 1px;
-    transition: all 0.2s; clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
-    display: flex; align-items: center; gap: 5px; text-transform: uppercase;
+    /* --- 保留您原本的設定 --- */
+    margin-right: 15px;
+    color: var(--accent-color); 
+    cursor: pointer; 
+    font-size: 11px; 
+    font-weight: bold;
+    border: 1px solid rgba(0, 255, 204, 0.3); 
+    padding: 4px 12px;
+    background: rgba(0, 0, 0, 0.3); 
+    letter-spacing: 1px;
+    transition: all 0.2s; 
+    clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+    display: flex; 
+    align-items: center; 
+    text-transform: uppercase;
+
+    /* --- 微調的部分 --- */
+    gap: 6px; /* 稍微增加間距，讓圖示跟文字不要太擠 */
 }
 .header-btn-terms:hover {
-    background: var(--accent-color); color: #000;
-    box-shadow: 0 0 15px var(--accent-color); text-shadow: none;
+    background: var(--accent-color); 
+    color: #000;
+    box-shadow: 0 0 15px var(--accent-color); 
+    text-shadow: none;
 }
-.header-btn-terms::before { content: 'ℹ'; margin-right: 3px; }
-
+/* 確保隱藏原本 CSS 生成的 'ℹ' 符號 */
+.header-btn-terms::before {
+    content: none !important; 
+}
+/* --- 新增：INFO 的 SVG 圖示設定 --- */
+.info-icon {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor; /* 關鍵：讓圖示顏色跟隨文字變色 */
+    stroke-width: 2;
+    margin-bottom: 1px; /* 微調垂直對齊 */
+}
 #terms-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(8px);
@@ -1641,7 +1700,10 @@
         </div>
 
         <div class="header-right">
-             <div class="header-btn-terms" onclick="openTerms()">INFO</div>
+             <div class="header-btn-terms" onclick="openTerms()">
+    <svg class="info-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+    INFO
+</div>
              <div class="visitor-count" onclick="toggleVisitorStats()" title="Click for Detailed Analytics">
                 <span>VISITORS:</span> 
                 <span id="hosts_count" class="visitor-num">loading...</span>
@@ -2106,7 +2168,7 @@
                                 </div>
                                 <div class="toolbar-right">
                                     <div class="action-icon" title="搜尋網路"><svg class="action-svg" viewBox="0 0 24 24">${icons.web}</svg></div>
-                                    <div class="action-icon" title="使用算力"><svg class="action-svg" viewBox="0 0 24 24" style="transform:scale(0.8)">${icons.cpu}</svg></div>
+                                    <div class="action-icon" title="語言模型"><svg class="action-svg" viewBox="0 0 24 24" style="transform:scale(0.8)">${icons.cpu}</svg></div>
                                     <div class="action-icon" title="附件"><svg class="action-svg" viewBox="0 0 24 24">${icons.attach}</svg></div>
                                     <div class="action-icon" title="語音輸入"><svg class="action-svg" viewBox="0 0 24 24">${icons.mic}</svg></div>
                                     <button class="send-btn"><svg class="action-svg" viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor;">${icons.send}</svg></button>
