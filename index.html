@@ -1752,35 +1752,39 @@
             setTimeout(showTutorial, 500);
         };
         // --- 新增：切換空間功能 ---
-       // --- 更新後的切換空間邏輯 (含 Nodex) ---
+     // --- 更新後的切換空間邏輯 (自動隱藏側邊欄版) ---
         window.switchSpace = function(spaceMode) {
             if (currentSpace === spaceMode) return;
             currentSpace = spaceMode;
 
             // 1. 更新按鈕 UI
-            //document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.nav-pill-btn').forEach(btn => btn.classList.remove('active'));
             const targetBtn = document.getElementById(`tab-${spaceMode}`);
             if(targetBtn) targetBtn.classList.add('active');
 
             // 2. 清理畫面
             clearGrid(); 
-            // 移除所有特殊模式的容器 (Pulse & Nodex)
             document.querySelectorAll('.pulse-container, .nodex-container').forEach(el => el.remove());
             
             const gridCanvas = document.getElementById('grid-canvas');
+            const mainSidebar = document.getElementById('sidebar'); // 取得主側邊欄
 
-            // 3. 路由判斷
+            // 3. 路由判斷與視窗控制
             if (spaceMode === 'pulse') {
                 if(gridCanvas) gridCanvas.style.display = 'none';
+                if(mainSidebar) mainSidebar.style.display = 'none'; // PulseStreet 保留側邊欄 (可選)
                 renderPulseStreet();
-            } else if (spaceMode === 'nodex') {
-                // Nodex 模式：隱藏網格，渲染 AI 戰情室
+            } 
+            else if (spaceMode === 'nodex') {
+                // ★ Nodex 模式：隱藏原本的工具列，讓畫面變寬
                 if(gridCanvas) gridCanvas.style.display = 'none';
+                if(mainSidebar) mainSidebar.style.display = 'none'; // 隱藏左側工作列
                 renderNodex();
-            } else {
-                // Workspace/Edu 模式
+            } 
+            else {
+                // Workspace/Edu 模式：恢復顯示工具列
                 if(gridCanvas) gridCanvas.style.display = 'block';
+                if(mainSidebar) mainSidebar.style.display = 'flex'; // 恢復顯示
                 loadLayout(true);
             }
         }
