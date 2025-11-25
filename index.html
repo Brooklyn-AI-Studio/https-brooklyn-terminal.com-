@@ -16,7 +16,7 @@
             --grid-line: rgba(0, 255, 204, 0.1);
             --grid-line-strong: rgba(0, 255, 204, 0.3);
             --handle-color: #ff0055; --shadow-glow: 0 0 10px rgba(0, 255, 204, 0.3);
-            --glass-bg: rgba(17, 17, 17, 0.95);
+            --glass-bg: rgba(17, 17, 17, 0.95); 
             --error-color: #ff0033;
             --input-bg: rgba(0,0,0,0.5);
             --input-text: #00ffcc;
@@ -544,20 +544,17 @@
     margin: 0 !important;
 }
         /* 4. 確保輸入框背景不透明 (防止文字重疊時看不清) */
-/* 1. 外層容器：更圓潤、懸浮感更強 */
+/* 1. 外層容器：維持圓潤與懸浮 */
 .nodex-input-wrapper {
-    background: rgba(20, 20, 20, 0.8) !important; /* 半透明深黑 */
-    border: 1px solid rgba(255, 255, 255, 0.1) !important; /* 極細微邊框 */
-    border-radius: 32px !important; /* 超大圓角 (膠囊狀) */
-    padding: 20px 28px !important; /* 增加內距讓空間更寬敞 */
-    
-    /* 複合陰影：一層深色陰影製造立體感，一層微弱光暈製造科技感 */
-    box-shadow: 
-        0 10px 40px rgba(0, 0, 0, 0.6),
-        0 0 0 1px rgba(0, 255, 204, 0.05) !important;
-    
-    backdrop-filter: blur(20px); /* 強力毛玻璃效果 */
-    transition: all 0.3s ease;
+    background: rgba(20, 20, 20, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 32px !important;
+    padding: 15px 25px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column; /* 垂直排列：上輸入框，下工具列 */
+    gap: 10px; /* 上下間距 */
 }
 /* 聚焦時的互動效果：邊框發光 */
 .nodex-input-wrapper:focus-within {
@@ -625,52 +622,61 @@
 
 /* --- Nodex 輸入框介面升級 (Perplexity Style) --- */
 
-/* 2. 輸入文字區：字體加大、更清晰 */
+/* 2. 輸入文字區：強制滿寬、移除預設樣式 */
 .nodex-real-input {
-    font-size: 1.1rem !important; /* 字體加大 */
-    letter-spacing: 0.5px;
-    height: 28px !important;
-    margin-bottom: 12px !important; /* 與下方工具列拉開距離 */
+    width: 100% !important;        /* 填滿容器 */
+    background: transparent !important;
+    border: none !important;       /* 移除醜醜的白框 */
+    outline: none !important;      /* 移除聚焦藍框 */
+    color: #e0e0e0 !important;
+    font-size: 1.1rem !important;
+    font-family: inherit;
+    height: 30px !important;       /* 固定高度 */
+    margin: 0 !important;
+    padding: 0 !important;
 }
 .nodex-real-input::placeholder {
-    color: rgba(255, 255, 255, 0.3) !important;
-    font-weight: 300;
+    color: rgba(255, 255, 255, 0.3);
 }
-
-/* 3. 底部工具列 (左右分佈) */
+/* 3. 底部工具列：橫向排列 (Flex Row) */
 .nodex-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 4px;
+    display: flex !important;
+    flex-direction: row !important; /* 關鍵：橫向排列 */
+    justify-content: space-between !important; /* 左右推開 */
+    align-items: center !important;
+    width: 100% !important;
 }
-/* 工具列按鈕：微調圓角以配合整體 */
+/* 按鈕樣式微調 */
 .tool-btn {
-    border-radius: 20px !important; /* 按鈕也變圓 */
-    width: 34px !important;
-    height: 34px !important;
+    width: 32px; height: 32px;
+    border-radius: 50%; /* 改成圓形比較好看 */
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #888;
+    transition: all 0.2s;
 }
+/* 左側按鈕群組 */
 .toolbar-left {
-    border-radius: 24px !important; /* 左側容器變圓 */
-    background: rgba(255,255,255,0.03) !important;
-    border: 1px solid rgba(255,255,255,0.05) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 4px;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 .tool-btn:hover { color: #bbb; }
 
 /* 激活的按鈕 (青色風格) */
 .tool-btn.active {
-    background: #0f3030; /* 深青色背景 */
-    color: #00ffcc;       /* 亮青色圖示 */
-    border: 1px solid #005544;
-    box-shadow: 0 0 10px rgba(0, 255, 204, 0.1);
+    background: #0f3030; color: #00ffcc;
 }
-.tool-icon { width: 16px; height: 16px; fill: currentColor; }
+.tool-icon { width: 18px; height: 18px; fill: currentColor; }
 
-/* 右側：功能圖示與發送 */
+/* 右側按鈕群組 */
 .toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
 }
 .action-icon {
     color: #666;
@@ -685,12 +691,12 @@
 /* 發送按鈕 */
 /* 4. 發送按鈕：變成圓形 */
 .send-btn {
-    border-radius: 50% !important; /* 變成正圓形 */
-    width: 36px !important;
-    height: 36px !important;
-    background: var(--accent-color) !important; /* 預設就亮起 */
-    color: #000 !important;
-    box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    color: #000; cursor: pointer;
 }
 .send-btn:hover {
     transform: scale(1.1);
