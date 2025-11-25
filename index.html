@@ -477,12 +477,6 @@
 }
 /* --- Nodex 2.0: Modern AI Interface --- */
 
-/* 主容器調整 */
-.nodex-container {
-    background: #111; /* 更深色的背景 */
-    color: #e0e0e0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
 
 /* 左側欄位優化 */
 .nodex-sidebar {
@@ -518,10 +512,7 @@
 
 /* 1. 放寬主內容區塊限制 */
 .nodex-chat-window {
-    width: 100% !important;
-    max-width: 100% !important; /* 移除原本的 900px 限制 */
-    padding: 30px 40px !important; /* 增加左右內距，避免內容貼邊 */
-    align-items: stretch !important; /* 強制子元素拉伸填滿寬度 */
+    padding-bottom: 120px !important; /* 底部留白，避免內容被輸入框擋住 */
 }
 
 /* 2. 調整卡片格線佈局，適應寬螢幕 */
@@ -534,9 +525,13 @@
 
 /* 3. 讓輸入框也跟著變寬 (可選，視您喜好) */
 .nodex-input-container {
-    max-width: 80% !important; /* 讓輸入框佔據 80% 寬度 */
-    left: 50%;
-    transform: translateX(-50%); /* 保持水平置中 */
+    width: 90% !important; /* 在小螢幕佔 90% */
+    max-width: 1000px !important; /* 在大螢幕限制最大寬度 (原本約 800px -> 改寬) */
+    
+    /* 保持置中定位 */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    bottom: 40px !important; /* 稍微調整底部距離 */
 }
 
 /* 4. 修正標題對齊 */
@@ -728,18 +723,16 @@
     border-color: var(--accent-color);
 }
 
-
-
-
-
-
-
         
         /* --- Nodex AI 戰情室樣式 --- */
 .nodex-container {
-    width: 100%;
-    height: 100%;
-    background: var(--bg-body);
+    position: absolute !important; /* 關鍵：脫離原本的排版流 */
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    background: #050505 !important; /* 使用實色背景 (深黑) 來遮擋後方的網格 */
+    z-index: 50; /* 確保層級高於網格 */
     display: flex;
     overflow: hidden;
 }
@@ -798,16 +791,7 @@
     position: relative;
     background: radial-gradient(circle at center, #111 0%, #000 100%);
 }
-.nodex-chat-window {
-    flex: 1;
-    padding: 40px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    align-items: center;
-    justify-content: center; /* 讓敬請期待置中 */
-}
+
 
 /* 敬請期待的鎖定畫面效果 */
 .nodex-lock-screen {
