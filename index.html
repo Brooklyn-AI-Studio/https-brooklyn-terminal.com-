@@ -2203,7 +2203,7 @@
                 loadLayout(true);
             }
         }
-// --- Nodex 渲染核心 (7.0 Timeline Update) ---
+// --- Nodex 渲染核心 (結構修復版) ---
         function renderNodex() {
             const workspace = document.querySelector('.workspace');
             const container = document.createElement('div');
@@ -2221,27 +2221,35 @@
                 send: '<path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>'
             };
 
-            // 1. 設定 HTML 結構
+            // 1. 設定 HTML 結構 (注意：這裡修復了標籤閉合問題)
             container.innerHTML = `
                 <div class="nodex-sidebar">
                     <div class="nodex-header" style="border:none; padding-bottom:0;">Nodex 專屬語言模型</div>
                     <div style="font-size:0.8em; color:#666; margin-bottom:20px; padding-left:2px;">POWERED BY BROOKLYN-terminal</div>
                     
                     <div class="agent-card active">
-                        <div class="agent-avatar"Da</div>
-                        <div class="agent-info"><div class="agent-name">Data Analyst 資料分析</div><div class="agent-role">Designed by Brooklyn</div></div>
+                        <div class="agent-avatar">Da</div> <div class="agent-info">
+                            <div class="agent-name">Data Analyst 資料分析</div>
+                            <div class="agent-role">Designed by Brooklyn</div>
+                        </div>
                     </div>
+                    
                     <div class="agent-card">
                         <div class="agent-avatar">＄</div>
-                        <div class="agent-info"><div class="agent-name">Technical analysis 技術分析</div><div class="agent-role">Designed by Brooklyn</div></div>
+                        <div class="agent-info">
+                            <div class="agent-name">Technical analysis 技術分析</div>
+                            <div class="agent-role">Designed by Brooklyn</div>
+                        </div>
                     </div>
+                    
                     <div class="agent-card">
                         <div class="agent-avatar">℃</div>
-                        <div class="agent-info"><div class="agent-name">Macro 宏觀經濟</div><div class="agent-role">Designed by Brooklyn</div></div>
+                        <div class="agent-info">
+                            <div class="agent-name">Macro 宏觀經濟</div>
+                            <div class="agent-role">Designed by Brooklyn</div>
+                        </div>
                     </div>
-                </div>
-
-                <div class="nodex-main">
+                </div> <div class="nodex-main">
                     <div class="nodex-chat-window">
                         
                         <div class="news-section-header" style="margin-top: 0;">最新科技動態 (Tech Trends)</div>
@@ -2272,23 +2280,26 @@
                             <div class="tradingview-widget-container__widget"></div>
                         </div>
 
-                        <div style="height: 120px;"></div> 
+                        <div style="height: 150px;"></div> 
                     </div>
 
                     <div class="nodex-input-container">
                         <div class="nodex-input-wrapper">
                             <input type="text" class="nodex-real-input" placeholder="聊聊今日股行情...">
+                            
                             <div class="nodex-toolbar">
                                 <div class="toolbar-left">
                                     <div class="tool-btn active" title="搜尋模式"><svg class="tool-icon" viewBox="0 0 24 24">${icons.search}</svg></div>
                                     <div class="tool-btn" title="深度思考"><svg class="tool-icon" viewBox="0 0 24 24">${icons.reason}</svg></div>
                                     <div class="tool-btn" title="創意發想"><svg class="tool-icon" viewBox="0 0 24 24">${icons.idea}</svg></div>
                                 </div>
+                                
                                 <div class="toolbar-right">
                                     <div class="action-icon" title="搜尋網路"><svg class="action-svg" viewBox="0 0 24 24">${icons.web}</svg></div>
-                                    <div class="action-icon" title="語言模型"><svg class="action-svg" viewBox="0 0 24 24" style="transform:scale(0.8)">${icons.cpu}</svg></div>
+                                    <div class="action-icon" title="使用算力"><svg class="action-svg" viewBox="0 0 24 24" style="transform:scale(0.8)">${icons.cpu}</svg></div>
                                     <div class="action-icon" title="附件"><svg class="action-svg" viewBox="0 0 24 24">${icons.attach}</svg></div>
                                     <div class="action-icon" title="語音輸入"><svg class="action-svg" viewBox="0 0 24 24">${icons.mic}</svg></div>
+                                    
                                     <button class="send-btn"><svg class="action-svg" viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor;">${icons.send}</svg></button>
                                 </div>
                             </div>
@@ -2306,12 +2317,11 @@
                             <div class="lock-tag">點擊解鎖體驗</div>
                         </div>
                     </div>
-                </div>
-            `;
+                </div> `;
             
             workspace.appendChild(container);
 
-            // 2. 動態注入 Widgets (Timeline + Ticker Tape)
+            // 2. 動態注入 Widgets
             setTimeout(() => {
                 // (A) Timeline Widget
                 const timelineContainer = document.getElementById('tv-timeline-container');
@@ -2326,7 +2336,7 @@
                         "colorTheme": "dark",
                         "isTransparent": true,
                         "locale": "zh_TW",
-                        "width": "100%", /* 強制滿版 */
+                        "width": "100%", 
                         "height": "550"
                     });
                     timelineContainer.appendChild(scriptTimeline);
