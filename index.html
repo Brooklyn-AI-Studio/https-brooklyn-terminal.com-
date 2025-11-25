@@ -1784,13 +1784,13 @@
                 loadLayout(true);
             }
         }
-// --- Nodex 渲染核心 (3.0 Real Data 版) ---
+// --- Nodex 渲染核心 (4.0 Ticker Tape 版) ---
         function renderNodex() {
             const workspace = document.querySelector('.workspace');
             const container = document.createElement('div');
             container.className = 'nodex-container';
             
-            // 1. 設定 HTML 結構 (預留 Widget 的容器 id)
+            // 1. 設定 HTML 結構
             container.innerHTML = `
                 <div class="nodex-sidebar">
                     <div class="nodex-header" style="border:none; padding-bottom:0;">Nodex Finance</div>
@@ -1813,10 +1813,8 @@
                 <div class="nodex-main">
                     <div class="nodex-chat-window">
                         
-                        <div class="market-summary-grid">
-                            <div class="market-card" id="tv-widget-spx" style="padding:0; overflow:hidden;"></div>
-                            <div class="market-card" id="tv-widget-ndx" style="padding:0; overflow:hidden;"></div>
-                            <div class="market-card" id="tv-widget-vix" style="padding:0; overflow:hidden;"></div>
+                        <div class="tradingview-widget-container" id="tv-ticker-tape-container" style="width: 100%; margin-bottom: 30px;">
+                            <div class="tradingview-widget-container__widget"></div>
                         </div>
 
                         <div class="news-section-header">市場摘要 (Market Summary)</div>
@@ -1870,46 +1868,41 @@
             
             workspace.appendChild(container);
 
-            // 2. 動態注入 TradingView Widget (因為 innerHTML 無法執行 script)
-            
-            // 定義要顯示的三個商品
-            const widgets = [
-                { id: 'tv-widget-spx', symbol: 'CME_MINI:ES1!' }, // S&P 500 期貨
-                { id: 'tv-widget-ndx', symbol: 'CME_MINI:NQ1!' }, // Nasdaq 100 期貨
-                { id: 'tv-widget-vix', symbol: 'CBOE:VIX' }       // VIX 恐慌指數
-            ];
-
-            // 延遲一點點執行以確保 DOM 已經存在
+            // 2. 動態注入 TradingView Ticker Tape Widget
             setTimeout(() => {
-                widgets.forEach(w => {
-                    const wrapper = document.getElementById(w.id);
-                    if(wrapper) {
-                        const div = document.createElement('div');
-                        div.className = 'tradingview-widget-container';
-                        div.style.width = '100%';
-                        div.style.height = '100%';
-                        
-                        const widgetDiv = document.createElement('div');
-                        widgetDiv.className = 'tradingview-widget-container__widget';
-                        div.appendChild(widgetDiv);
-
-                        const script = document.createElement('script');
-                        script.type = 'text/javascript';
-                        script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-info.js';
-                        script.async = true;
-                        // 使用您提供的 Widget 設定，並開啟透明背景以融合您的 UI
-                        script.innerHTML = JSON.stringify({
-                            "symbol": w.symbol,
-                            "width": "100%",
-                            "locale": "zh_TW",
-                            "colorTheme": "dark",
-                            "isTransparent": true 
-                        });
-                        
-                        div.appendChild(script);
-                        wrapper.appendChild(div);
-                    }
-                });
+                const widgetContainer = document.getElementById('tv-ticker-tape-container');
+                if (widgetContainer) {
+                    const script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
+                    script.async = true;
+                    // 使用您提供的 JSON 設定
+                    script.innerHTML = JSON.stringify({
+                        "symbols": [
+                            { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500 Index" },
+                            { "proName": "BITSTAMP:BTCUSD", "title": "Bitcoin" },
+                            { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" },
+                            { "proName": "NASDAQ:NVDA", "title": "NVDA" },
+                            { "proName": "NASDAQ:AAPL", "title": "APPL" },
+                            { "proName": "NASDAQ:PLTR", "title": "PLTR" },
+                            { "proName": "NASDAQ:MSFT", "title": "MSFT" },
+                            { "proName": "NASDAQ:META", "title": "META" },
+                            { "proName": "NASDAQ:AMD", "title": "AMD" },
+                            { "proName": "NASDAQ:AMZN", "title": "AMAZON" },
+                            { "proName": "NASDAQ:PYPL", "title": "PLPY" },
+                            { "proName": "NYSE:BABA", "title": "BABA" },
+                            { "proName": "NASDAQ:MSTR", "title": "MSTR" }
+                        ],
+                        "colorTheme": "dark",
+                        "locale": "zh_TW",
+                        "largeChartUrl": "",
+                        "isTransparent": false,
+                        "showSymbolLogo": true,
+                        "displayMode": "adaptive"
+                    });
+                    
+                    widgetContainer.appendChild(script);
+                }
             }, 100);
         }
        // --- PulseStreet 渲染核心 (三欄式整合版) ---
