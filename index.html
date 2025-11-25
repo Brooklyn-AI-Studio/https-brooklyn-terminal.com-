@@ -1784,7 +1784,7 @@
                 loadLayout(true);
             }
         }
-// --- Nodex 渲染核心 (4.0 Ticker Tape 版) ---
+// --- Nodex 渲染核心 (5.0 Tech News + Ticker Tape 版) ---
         function renderNodex() {
             const workspace = document.querySelector('.workspace');
             const container = document.createElement('div');
@@ -1813,6 +1813,26 @@
                 <div class="nodex-main">
                     <div class="nodex-chat-window">
                         
+                        <div class="news-section-header" style="margin-top: 0;">最新科技動態 (Tech Trends)</div>
+                        
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:15px; width:100%; margin-bottom:30px;">
+                            <div class="market-card" style="cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#00ffcc'" onmouseout="this.style.borderColor='#333'">
+                                <div style="font-size:0.75em; color:var(--accent-color); margin-bottom:5px; letter-spacing:1px;">ARTIFICIAL INTELLIGENCE</div>
+                                <div style="font-weight:bold; margin-bottom:8px; line-height:1.3; font-size:1.1em;">OpenAI 推出 GPT-5 預覽版</div>
+                                <div style="font-size:0.85em; color:#888; line-height:1.5;">推理能力大幅提升，號稱能解決博士級數學難題，將於下個月開放 API 測試。</div>
+                            </div>
+                            <div class="market-card" style="cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#00ffcc'" onmouseout="this.style.borderColor='#333'">
+                                <div style="font-size:0.75em; color:var(--accent-color); margin-bottom:5px; letter-spacing:1px;">SEMICONDUCTOR</div>
+                                <div style="font-weight:bold; margin-bottom:8px; line-height:1.3; font-size:1.1em;">Nvidia Blackwell 晶片出貨</div>
+                                <div style="font-size:0.85em; color:#888; line-height:1.5;">數據中心營收再創新高，台積電 2nm 製程產能已被預訂一空。</div>
+                            </div>
+                            <div class="market-card" style="cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#00ffcc'" onmouseout="this.style.borderColor='#333'">
+                                <div style="font-size:0.75em; color:var(--accent-color); margin-bottom:5px; letter-spacing:1px;">QUANTUM</div>
+                                <div style="font-weight:bold; margin-bottom:8px; line-height:1.3; font-size:1.1em;">Google 量子電腦新突破</div>
+                                <div style="font-size:0.85em; color:#888; line-height:1.5;">量子糾錯率降低 50%，向商用量子計算邁出一大步，預計 2026 進入實用階段。</div>
+                            </div>
+                        </div>
+
                         <div class="tradingview-widget-container" id="tv-ticker-tape-container" style="width: 100%; margin-bottom: 30px;">
                             <div class="tradingview-widget-container__widget"></div>
                         </div>
