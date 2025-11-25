@@ -512,15 +512,20 @@
 
 /* 1. 放寬主內容區塊限制 */
 .nodex-chat-window {
-    padding-bottom: 120px !important; /* 底部留白，避免內容被輸入框擋住 */
+    width: 100% !important;          /* 關鍵：強制寬度 100% */
+    max-width: 100% !important;      /* 關鍵：移除最大寬度限制 */
+    padding: 30px 40px !important;   /* 增加左右留白 */
+    padding-bottom: 120px !important;/* 保留底部留白 */
+    align-items: stretch !important; /* 關鍵：讓內部元素橫向拉伸填滿 */
 }
 
 /* 2. 調整卡片格線佈局，適應寬螢幕 */
 .market-summary-grid, 
-.news-section-grid { /* 假設您稍後會用到 grid */
-    /* 自動填滿欄位，每欄至少 300px，自動拉伸 */
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+.news-section-grid { 
+    /* 讓卡片自動填滿整行，每張卡片至少 250px */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
     gap: 20px !important;
+    width: 100% !important; /* 確保容器寬度也是 100% */
 }
 
 /* 3. 讓輸入框也跟著變寬 (可選，視您喜好) */
