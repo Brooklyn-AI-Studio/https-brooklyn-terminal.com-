@@ -1617,6 +1617,106 @@
     stroke-linejoin: round;
     margin-right: 2px;
 }
+/* --- PulseStreet Facebook 風格優化 --- */
+
+/* 1. 左側與右側列表項目優化 */
+.pulse-side-btn {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    width: 100%;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: #e4e6eb;
+    font-size: 0.95em;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    background: transparent;
+    text-align: left;
+}
+.pulse-side-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* 2. 圓形圖示/頭像容器 */
+.pulse-side-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #2d2d2d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+    overflow: hidden; /* 讓捷徑圖片變圓 */
+}
+.pulse-side-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 3. 分隔線與標題 */
+.pulse-divider {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin: 10px 8px;
+}
+.pulse-section-title {
+    font-size: 1.05em;
+    color: #b0b3b8;
+    font-weight: 600;
+    padding: 8px 12px;
+    margin-top: 5px;
+}
+
+/* 4. 聯絡人優化 */
+.contact-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.contact-row:hover { background: rgba(255,255,255,0.1); }
+.contact-img-box {
+    position: relative;
+    width: 32px; height: 32px;
+    margin-right: 12px;
+}
+.contact-img {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background: #444;
+    object-fit: cover;
+}
+.online-dot {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 10px; height: 10px;
+    background: #31a24c; /* FB 綠色 */
+    border: 2px solid #18191a; /* 黑色邊框 */
+    border-radius: 50%;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     </style>
 </head>
 <body>
@@ -2159,7 +2259,7 @@
 
                     <div class="nodex-input-container">
                         <div class="nodex-input-wrapper">
-                            <input type="text" class="nodex-real-input" placeholder="詢問後續問題...">
+                            <input type="text" class="nodex-real-input" placeholder="聊聊今日股行情...">
                             <div class="nodex-toolbar">
                                 <div class="toolbar-left">
                                     <div class="tool-btn active" title="搜尋模式"><svg class="tool-icon" viewBox="0 0 24 24">${icons.search}</svg></div>
@@ -2248,142 +2348,141 @@
                 }
             }, 100);
         }
-       // --- PulseStreet 渲染核心 (SVG Icons Upgrade) ---
+      // --- PulseStreet 渲染核心 (Facebook Style Update) ---
         function renderPulseStreet() {
             const workspace = document.querySelector('.workspace');
             const container = document.createElement('div');
             container.className = 'pulse-container';
             
-            // ★ 定義 PulseStreet 專用 SVG 圖示庫
+            // SVG 圖示庫
             const pIcons = {
                 search: '<svg class="pulse-icon" style="margin:0" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
-                friends: '<svg class="pulse-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
-                time: '<svg class="pulse-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
-                save: '<svg class="pulse-icon" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>',
-                chat: '<svg class="pulse-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>',
-                group: '<svg class="pulse-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>', // 改用盾牌代表社群/群組
-                support: '<svg class="pulse-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
-                like: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>',
-                comment: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
-                share: '<svg class="action-icon-svg" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>',
-                archive: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>',
-                user: '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
+                user: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
+                friends: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#1877F2"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>',
+                memories: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#2ABBA7"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" fill="white"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="white"/></svg>',
+                saved: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#A033FF"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" fill="currentColor"/></svg>',
+                groups: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#1877F2"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 9c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-11C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z" fill="white"/></svg>',
+                video: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#E41E3F"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2z" fill="currentColor"/></svg>',
+                arrowDown: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#E4E6EB"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>'
             };
 
-            // 1. 模擬資料：Stories (使用文字圖示或替換為 SVG，這裡保留文字圖示因為它們是「頭像」)
+            // 1. Stories Data
             const stories = [
                 { name: "Your Story", icon: "＋", seen: false },
                 { name: "伊龍馬", icon: "🚀", seen: false },
                 { name: "全都是泡沫", icon: "🔶", seen: false },
                 { name: "泡泡博士", icon: "₿", seen: false },
-                { name: "當沖機器", icon: "🤖", seen: false  },
+                { name: "當沖機器", icon: "🤖", seen: false },
             ];
-
             let storiesHTML = stories.map(s => `
                 <div class="pulse-story ${s.seen ? 'seen' : ''}">
-                    <div class="pulse-story-ring">
-                        <div class="pulse-story-img">${s.icon}</div>
-                    </div>
+                    <div class="pulse-story-ring"><div class="pulse-story-img">${s.icon}</div></div>
                     <div class="pulse-story-name">${s.name}</div>
                 </div>
             `).join('');
 
-            // 2. 模擬資料：貼文
+            // 2. Posts Data
             const posts = [
                 {
                     name: "Brooklyn", time: "2h ago • 公開",
-                    avatar: pIcons.user, // 替換為 SVG 頭像
-                    content: "PulseStreet是brooklyn-terminal系統的動態社群，您可以在這裡找到股市同好、工作夥伴，以及大語言模型愛好者! 你工作無聊的閒暇時間，或許能在這裡獲得精神娛樂連結。 功能開發中，敬啟期待。 #LLM #BTC #Crypto",
-                    image: null, 
-                    likes: "1.2k", comments: "342"
+                    avatar: "Ⓜ️",
+                    content: "PulseStreet是brooklyn-terminal系統的動態社群，您可以在這裡找到股市同好、工作夥伴，以及大語言模型愛好者! #LLM #BTC #Crypto",
+                    image: null, likes: "1.2k", comments: "342"
                 },
                 {
                     name: "科技航廈", time: "4h ago • 公開",
                     avatar: "🚇",
-                    content: "Gemini 3十分鐘解出百年數學難題　陶哲軒：表現遠超預期。Google 上周推出的 Gemini 3，再度引起學界與科技圈高度關注。最新實測顯示，該模型不僅在多項基準測試中取得領先，更被世界級數學家陶哲軒親自驗證成功在短短十分鐘內協助推導出埃爾德什問題 #367 的關鍵證明，展現出 AI 在高階推理上的突破性進展。",
-                    image: "https://cdn2.ettoday.net/images/8505/d8505938.jpg", 
-                    likes: "8.5k", comments: "1.2k"
+                    content: "Gemini 3十分鐘解出百年數學難題　陶哲軒：表現遠超預期。Google 上周推出的 Gemini 3，再度引起學界與科技圈高度關注。",
+                    image: "https://cdn2.ettoday.net/images/8505/d8505938.jpg", likes: "8.5k", comments: "1.2k"
                 },
                 {
                     name: "PulseStreet", time: "Just now • 系統公告",
                     avatar: "🅿️",
                     content: "比特幣成為戰場：白宮與摩根大通之間的無聲戰爭。",
-                    image: "https://image.blocktempo.com/2025/11/cover-image-bitcoin-battlefield-jpmorgan-white-house-silent-war.webp", 
-                    likes: "1984", comments: "40"
-                },
-                 {
-                    name: "演算法博士", time: "4h ago • 公開",
-                    avatar: "⚽",
-                    content: "諾貝爾獎得主合作　陽明交大高速演算法助新藥研發。（中央社記者許秩維台北24日電）陽明交大生物科技系副教授羅惟正與諾貝爾化學獎得主瓦謝爾合作，開發高效能蛋白質結構比對搜尋演算法，可在數億筆資料庫中迅速比較蛋白質結構，加速新藥研發。",
-                    image: "https://imgcdn.cna.com.tw/www/WebPhotos/1024/20251124/1024x768_wmkn_0_C20251124000003.jpg", 
-                    likes: "14", comments: "1"
-                }                
+                    image: "https://image.blocktempo.com/2025/11/cover-image-bitcoin-battlefield-jpmorgan-white-house-silent-war.webp", likes: "1984", comments: "40"
+                }
             ];
-
             let postsHTML = posts.map(p => `
                 <div class="pulse-post">
                     <div class="pulse-post-header">
                         <div class="pulse-avatar">${p.avatar}</div>
-                        <div class="pulse-meta">
-                            <div class="pulse-name">${p.name}</div>
-                            <div class="pulse-time">${p.time}</div>
-                        </div>
+                        <div class="pulse-meta"><div class="pulse-name">${p.name}</div><div class="pulse-time">${p.time}</div></div>
                         <div class="pulse-menu-btn">•••</div>
                     </div>
                     <div class="pulse-content">${p.content}</div>
                     ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
-                    <div class="pulse-stats">
-                        <span>${pIcons.like} ${p.likes}</span>
-                        <span>${p.comments} Comments</span>
-                    </div>
+                    <div class="pulse-stats"><span>👍 ${p.likes}</span><span>${p.comments} Comments</span></div>
                     <div class="pulse-actions">
-                        <button class="pulse-action-btn">${pIcons.like} Like</button>
-                        <button class="pulse-action-btn">${pIcons.comment} Comment</button>
-                        <button class="pulse-action-btn">${pIcons.share} Share</button>
-                        <button class="pulse-action-btn">${pIcons.archive} Save</button>
+                        <button class="pulse-action-btn">👍 Like</button>
+                        <button class="pulse-action-btn">💬 Comment</button>
+                        <button class="pulse-action-btn">↗ Share</button>
                     </div>
                 </div>
             `).join('');
 
-            // 3. 聯絡人
-            const contacts = ["Kevin60214", "Una51", "安大略帥哥", "凱哥哥", "南港志村健", "show5050", "大衛芬奇", " 西大路霸主", "leeds", "酒吧老闆Jayson"];
+            // 3. Contacts Data (來自您的截圖)
+            const contacts = [
+                "KuanYu Chen", "胡雅筠", "余修", "鄧家昕", "陳靜雯", 
+                "劉宇哲", "江晉緯", "陳嘉惠", "陳民祐", "Abid Aw"
+            ];
             let contactsHTML = contacts.map(c => `
-                <div class="pulse-contact-item">
-                    <div class="contact-avatar">${c.charAt(0)}<div class="contact-status"></div></div>
-                    <div class="contact-name">${c}</div>
+                <div class="contact-row">
+                    <div class="contact-img-box">
+                        <div class="contact-img" style="display:flex;align-items:center;justify-content:center;background:#444;color:#fff;font-size:12px;">${c.charAt(0)}</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="contact-name" style="color:#e4e6eb; font-size:0.95em;">${c}</div>
                 </div>
             `).join('');
 
-            // 4. 組合 HTML
+            // 4. 捷徑 Data (來自您的截圖)
+            const shortcuts = [
+                { name: "女明星美腳", icon: "👠" }, // 使用 Emoji 代替截圖
+                { name: "Candy Crush Saga", icon: "🍬" },
+                { name: "FarmVille 2", icon: "🐮" },
+                { name: "大老二 - 神來也", icon: "♠️" },
+                { name: "開心水族箱", icon: "🐠" }
+            ];
+            let shortcutsHTML = shortcuts.map(s => `
+                <div class="pulse-side-btn">
+                    <div class="pulse-side-icon" style="border-radius:8px; font-size:20px;">${s.icon}</div>
+                    <div>${s.name}</div>
+                </div>
+            `).join('');
+
+            // 5. 組合 HTML
             container.innerHTML = `
                 <div class="pulse-layout">
                     
                     <div class="pulse-sidebar-left">
                         <div class="pulse-search-box">
                             ${pIcons.search}
-                            <input type="text" class="pulse-search-input" placeholder="查看你所選取的標的。">
+                            <input type="text" class="pulse-search-input" placeholder="搜尋 PulseStreet">
                         </div>
 
-                        <div class="pulse-profile-card">
-                            <div class="pulse-profile-avatar">
-                                <svg viewBox="0 0 24 24" width="50" height="50" fill="none" stroke="#00ffcc" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <div class="pulse-side-btn">
+                            <div class="pulse-side-icon" style="overflow:hidden;">
+                                <div style="width:100%;height:100%;background:#00ffcc;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold;">B</div>
                             </div>
-                            <div class="pulse-profile-name">Brooklyn</div>
-                            <div class="pulse-profile-handle">@Brooklyn LV.42 碼頭常駐者</div>
-                            <div class="pulse-profile-stats">
-                                <div class="p-stat-item"><span class="p-stat-val">37</span><span class="p-stat-label">貼文</span></div>
-                                <div class="p-stat-item"><span class="p-stat-val">1.5k</span><span class="p-stat-label">粉絲</span></div>
-                                <div class="p-stat-item"><span class="p-stat-val">24</span><span class="p-stat-label">追蹤中</span></div>
-                            </div>
+                            <div style="font-weight:bold;">Brooklyn</div>
                         </div>
 
-                        <div class="pulse-nav-list">
-                            <div class="pulse-nav-item">${pIcons.friends} 朋友</div>
-                            <div class="pulse-nav-item">${pIcons.time} 動態回顧</div>
-                            <div class="pulse-nav-item">${pIcons.save} 我的珍藏</div>
-                            <div class="pulse-nav-item">${pIcons.chat} 討論區</div>
-                            <div class="pulse-nav-item">${pIcons.group} 群組</div>
-                            <div class="pulse-nav-item">${pIcons.support} 支援中心</div>
+                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.friends}</div><div>朋友</div></div>
+                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.memories}</div><div>動態回顧</div></div>
+                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.saved}</div><div>我的珍藏</div></div>
+                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.groups}</div><div>社團</div></div>
+                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.video}</div><div>Video</div></div>
+                        <div class="pulse-side-btn">
+                            <div class="pulse-side-icon" style="background:#3a3b3c;">${pIcons.arrowDown}</div>
+                            <div>顯示更多</div>
+                        </div>
+
+                        <div class="pulse-divider"></div>
+
+                        <div class="pulse-section-title">你的捷徑</div>
+                        ${shortcutsHTML}
+                        <div style="font-size:0.8em; color:#888; padding:10px;">
+                            私隱政策 · 服務條款 · 廣告 · Cookies · Meta © 2025
                         </div>
                     </div>
 
@@ -2391,9 +2490,7 @@
                         <div class="pulse-stories-wrapper">${storiesHTML}</div>
                         
                         <div class="pulse-create">
-                            <div class="pulse-avatar">
-                                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#888" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            </div>
+                            <div class="pulse-avatar">Ⓜ️</div>
                             <div class="pulse-input-dummy">聊聊你對AMD暴漲有什麼看法?</div>
                         </div>
 
@@ -2404,21 +2501,18 @@
                     </div>
 
                     <div class="pulse-sidebar-right">
-                        <div class="pulse-contact-header">聯絡人</div>
-                        <div class="pulse-nav-list">${contactsHTML}</div>
-                        
-                        <div style="border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;"></div>
-                        
-                        <div class="pulse-contact-header">可能認識的用戶</div>
-                        <div class="pulse-contact-item">
-                            <div class="contact-avatar">🤖</div>
-                            <div class="contact-name">YOLO2002</div>
+                        <div class="pulse-contact-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <span>聯絡人</span>
+                            <div style="display:flex; gap:10px; opacity:0.6;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                            </div>
                         </div>
-                        <div class="pulse-contact-item">
-                            <div class="contact-avatar">🦊</div>
-                            <div class="contact-name">FOXme69</div>
+                        <div class="pulse-nav-list">
+                            ${contactsHTML}
                         </div>
                     </div>
+
                 </div>
             `;
 
