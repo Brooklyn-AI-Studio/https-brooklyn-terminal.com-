@@ -995,19 +995,43 @@
 .pulse-search-box {
     display: flex;
     align-items: center;
-    background: #222;
-    padding: 8px 15px;
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    margin-bottom: 10px;
+    background-color: #3A3B3C; /* FB 深色模式的搜尋框背景色 */
+    border-radius: 50px;       /* 膠囊形狀 */
+    padding: 0 12px;
+    height: 40px;              /* 固定高度，標準大小 */
+    width: 100%;               /* 填滿側邊欄寬度 */
+    margin-bottom: 20px;       /* 與下方個人檔案的距離 */
+    border: 1px solid transparent;
+    transition: all 0.2s;
 }
-.pulse-search-icon { margin-right: 10px; font-size: 1.2em; }
+
+/* 搜尋框懸停/聚焦效果 */
+.pulse-search-box:hover,
+.pulse-search-box:focus-within {
+    background-color: #4E4F50; /* 懸停時變亮一點 */
+}
+
+/* 搜尋圖示 */
+.pulse-search-box .pulse-icon {
+    width: 20px;
+    height: 20px;
+    margin: 0 8px 0 0; /* 調整圖示邊距 */
+    stroke: #b0b3b8;   /* 灰色圖示 */
+    opacity: 1;
+}
+
+/* 輸入欄位 */
 .pulse-search-input {
     background: transparent;
     border: none;
-    color: #fff;
+    color: #e4e6eb;    /* 亮白色文字 */
+    font-size: 15px;   /* 適當的文字大小 */
     width: 100%;
     outline: none;
+    height: 100%;
+}
+.pulse-search-input::placeholder {
+    color: #b0b3b8;    /* 灰色提示字 */
 }
 
 /* 個人資訊卡 */
@@ -2467,7 +2491,7 @@
                 <div class="pulse-layout">
                     <div class="pulse-sidebar-left">
                         <div class="pulse-search-box">
-                            ${pIcons.search}
+                            ${pIcons.search} <input type="text" class="pulse-search-input" placeholder="搜尋 PulseStreet">
                             <input type="text" class="pulse-search-input" placeholder="搜尋 PulseStreet">
                         </div>
 
@@ -2493,7 +2517,7 @@
                         <div class="pulse-section-title">你的捷徑</div>
                         ${shortcutsHTML}
                         <div style="font-size:0.8em; color:#888; padding:10px;">
-                            私隱政策 · 服務條款 · 廣告 · Cookies · Meta © 2025
+                            私隱政策 · 服務條款 · 廣告 · Cookies · Brooklyn-terminal © 2025
                         </div>
                     </div>
 
