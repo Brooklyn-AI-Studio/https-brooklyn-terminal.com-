@@ -1784,12 +1784,13 @@
                 loadLayout(true);
             }
         }
-// --- Nodex 渲染核心 (2.0版) ---
+// --- Nodex 渲染核心 (3.0 Real Data 版) ---
         function renderNodex() {
             const workspace = document.querySelector('.workspace');
             const container = document.createElement('div');
             container.className = 'nodex-container';
             
+            // 1. 設定 HTML 結構 (預留 Widget 的容器 id)
             container.innerHTML = `
                 <div class="nodex-sidebar">
                     <div class="nodex-header" style="border:none; padding-bottom:0;">Nodex Finance</div>
@@ -1797,24 +1798,15 @@
                     
                     <div class="agent-card active">
                         <div class="agent-avatar">🇺🇸</div>
-                        <div class="agent-info">
-                            <div class="agent-name">US Market</div>
-                            <div class="agent-role">S&P 500, Nasdaq</div>
-                        </div>
+                        <div class="agent-info"><div class="agent-name">US Market</div><div class="agent-role">S&P 500, Nasdaq</div></div>
                     </div>
                     <div class="agent-card">
                         <div class="agent-avatar">₿</div>
-                        <div class="agent-info">
-                            <div class="agent-name">Crypto</div>
-                            <div class="agent-role">BTC, ETH, Altcoins</div>
-                        </div>
+                        <div class="agent-info"><div class="agent-name">Crypto</div><div class="agent-role">BTC, ETH, Altcoins</div></div>
                     </div>
                     <div class="agent-card">
                         <div class="agent-avatar">🌏</div>
-                        <div class="agent-info">
-                            <div class="agent-name">Global Macro</div>
-                            <div class="agent-role">Forex, Bonds</div>
-                        </div>
+                        <div class="agent-info"><div class="agent-name">Global Macro</div><div class="agent-role">Forex, Bonds</div></div>
                     </div>
                 </div>
 
@@ -1822,21 +1814,9 @@
                     <div class="nodex-chat-window">
                         
                         <div class="market-summary-grid">
-                            <div class="market-card">
-                                <div class="market-card-header"><span>S&P Futures</span><span style="color:#ff4444;">↘ 0.02%</span></div>
-                                <div class="market-val">6,720</div>
-                                <svg class="market-chart-mini" viewBox="0 0 100 40"><path d="M0 30 L20 35 L40 25 L60 38 L80 20 L100 25" fill="none" stroke="#ff4444" stroke-width="2"/></svg>
-                            </div>
-                            <div class="market-card">
-                                <div class="market-card-header"><span>NASDAQ Fut.</span><span style="color:#ff4444;">↘ 0.04%</span></div>
-                                <div class="market-val">24,938.25</div>
-                                <svg class="market-chart-mini" viewBox="0 0 100 40"><path d="M0 30 L30 35 L50 20 L70 25 L100 15" fill="none" stroke="#ff4444" stroke-width="2"/></svg>
-                            </div>
-                            <div class="market-card">
-                                <div class="market-card-header"><span>VIX</span><span style="color:#ff4444;">↘ 12.42%</span></div>
-                                <div class="market-val">20.52</div>
-                                <svg class="market-chart-mini" viewBox="0 0 100 40"><path d="M0 25 L30 22 L60 28 L80 15 L100 10" fill="none" stroke="#ff4444" stroke-width="2"/></svg>
-                            </div>
+                            <div class="market-card" id="tv-widget-spx" style="padding:0; overflow:hidden;"></div>
+                            <div class="market-card" id="tv-widget-ndx" style="padding:0; overflow:hidden;"></div>
+                            <div class="market-card" id="tv-widget-vix" style="padding:0; overflow:hidden;"></div>
                         </div>
 
                         <div class="news-section-header">市場摘要 (Market Summary)</div>
@@ -1847,14 +1827,12 @@
                                 A strong rally in AI and semiconductor stocks powered the S&P 500 (+1.55%) and Nasdaq 100 (+2.62%) higher. Alphabet surged over 6% after launching its latest AI model, and Broadcom climbed more than 11%, leading sector gains.
                             </div>
                         </div>
-
                         <div class="ai-summary-box">
                             <div class="summary-title">Rate Cut Hopes Reignite Risk Appetite</div>
                             <div class="summary-text">
                                 Fed officials, including John Williams and Chris Waller, reinforced expectations for a December rate cut, now priced at 75–80% probability. Falling Treasury yields helped fuel stock buying and eased pressure on risk assets.
                             </div>
                         </div>
-
                         <div class="ai-summary-box">
                             <div class="summary-title">Bitcoin Shows Signs of Stabilization</div>
                             <div class="summary-text">
@@ -1862,7 +1840,8 @@
                             </div>
                         </div>
 
-                        <div style="height: 100px;"></div> </div>
+                        <div style="height: 100px;"></div> 
+                    </div>
 
                     <div class="nodex-input-container">
                         <div class="nodex-input-wrapper">
@@ -1880,18 +1859,58 @@
                             <div class="lock-icon">🚧</div>
                             <div class="lock-title">開發中，敬請期待。</div>
                             <div class="lock-desc">
-                                <strong>Nodex</strong>  是brooklyn-terminal系統下的大語言模型(LLM)互動環境，透過專業可靠的訓練集進行微調，為使用者提供強大、個性化、專屬的AI工具。<br><br>
-                                您可以在Workspace -> 工作列表 -> Tools 中 找到LLama online獲得暫時性語言模型服務 (每日限制50對話次數)。<br><br>
-                                點擊此卡片即可預覽介面。
+                                <strong>Nodex</strong> 是brooklyn-terminal系統下的大語言模型互動環境。<br><br>
+                                點擊此卡片即可預覽介面 (Demo Only)。
                             </div>
-                            <div class="lock-tag">敬請期待</div>
+                            <div class="lock-tag">點擊解鎖體驗</div>
                         </div>
                     </div>
-
                 </div>
             `;
             
             workspace.appendChild(container);
+
+            // 2. 動態注入 TradingView Widget (因為 innerHTML 無法執行 script)
+            
+            // 定義要顯示的三個商品
+            const widgets = [
+                { id: 'tv-widget-spx', symbol: 'CME_MINI:ES1!' }, // S&P 500 期貨
+                { id: 'tv-widget-ndx', symbol: 'CME_MINI:NQ1!' }, // Nasdaq 100 期貨
+                { id: 'tv-widget-vix', symbol: 'CBOE:VIX' }       // VIX 恐慌指數
+            ];
+
+            // 延遲一點點執行以確保 DOM 已經存在
+            setTimeout(() => {
+                widgets.forEach(w => {
+                    const wrapper = document.getElementById(w.id);
+                    if(wrapper) {
+                        const div = document.createElement('div');
+                        div.className = 'tradingview-widget-container';
+                        div.style.width = '100%';
+                        div.style.height = '100%';
+                        
+                        const widgetDiv = document.createElement('div');
+                        widgetDiv.className = 'tradingview-widget-container__widget';
+                        div.appendChild(widgetDiv);
+
+                        const script = document.createElement('script');
+                        script.type = 'text/javascript';
+                        script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-info.js';
+                        script.async = true;
+                        // 使用您提供的 Widget 設定，並開啟透明背景以融合您的 UI
+                        script.innerHTML = JSON.stringify({
+                            "symbol": w.symbol,
+                            "width": "100%",
+                            "locale": "zh_TW",
+                            "colorTheme": "dark",
+                            "isTransparent": true 
+                        });
+                        
+                        div.appendChild(script);
+                        wrapper.appendChild(div);
+                    }
+                });
+            }, 100);
         }
        // --- PulseStreet 渲染核心 (三欄式整合版) ---
         function renderPulseStreet() {
