@@ -529,30 +529,20 @@
 
 
 
-
-
-
-        
-/* 1. 鎖定主畫面範圍，禁止整個頁面捲動 */
-.nodex-main {
-    position: relative !important; /* 作為定位基準 */
-    height: 100vh !important;      /* 填滿視窗高度 */
-    overflow: hidden !important;   /* 隱藏主容器的捲軸 */
-}
-
 /* 2. 設定內容區域為「獨立捲動」 */
 .nodex-chat-window {
-    height: 100% !important;       /* 填滿高度 */
-    overflow-y: auto !important;   /* 只有這裡可以捲動 */
-    padding-bottom: 180px !important; /* 底部預留大空間，防止內容被輸入框擋住 */
+    flex: 1; /* 填滿高度 */
+    width: 100% !important;
+    max-width: 1000px !important; /* 限制內容最大寬度 */
+    margin: 0 auto; /* 內容置中 */
+    padding: 30px 40px;
+    padding-bottom: 180px !important; /* 關鍵：底部留白，防止被輸入框擋住 */
+    overflow-y: auto; /* 只有這裡可以捲動 */
     
-    /* 隱藏內容區的捲軸 (美觀考量，可選) */
-    scrollbar-width: none; 
+    /* 隱藏捲軸但可捲動 */
+    scrollbar-width: none;
 }
-.nodex-chat-window::-webkit-scrollbar {
-    display: none; 
-}
-
+.nodex-chat-window::-webkit-scrollbar { display: none; }
 /* 2. 調整卡片格線佈局，適應寬螢幕 */
 .market-summary-grid, 
 .news-section-grid { 
@@ -766,25 +756,27 @@
         
         /* --- Nodex AI 戰情室樣式 --- */
 .nodex-container {
-    position: absolute !important; /* 關鍵：脫離原本的排版流 */
+    position: absolute !important;
     top: 0;
     left: 0;
     width: 100% !important;
     height: 100% !important;
-    background: #050505 !important; /* 使用實色背景 (深黑) 來遮擋後方的網格 */
-    z-index: 50; /* 確保層級高於網格 */
-    display: flex;
-    overflow: hidden;
+    background: #050505 !important;
+    z-index: 50;
+    display: flex; /* 左欄 + 右欄 */
+    overflow: hidden; /* 禁止外層捲動 */
 }
 
 /* 左側：Agent 列表 */
 .nodex-sidebar {
-    width: 280px;
-    background: var(--bg-panel);
-    border-right: 1px solid var(--border-color);
+    width: 260px;
+    background: #080808;
+    border-right: 1px solid #222;
     display: flex;
     flex-direction: column;
     padding: 20px;
+    flex-shrink: 0; /* 禁止縮小，防止被右邊擠壓 */
+    z-index: 2;
 }
 .nodex-header {
     font-size: 1.2em;
@@ -825,11 +817,13 @@
 
 /* 右側：對話區域 */
 .nodex-main {
-    flex: 1;
+    flex: 1; /* 自動填滿剩下的寬度 */
+    position: relative; /* 作為輸入框的定位基準 */
+    height: 100%; /* 填滿高度 */
     display: flex;
     flex-direction: column;
-    position: relative;
     background: radial-gradient(circle at center, #111 0%, #000 100%);
+    overflow: hidden; /* 內部獨立捲動 */
 }
 
 
