@@ -514,34 +514,35 @@
     align-items: center; /* 內容置中 */
 }
 
+/* --- Nodex 滿版修正 --- */
+
+/* 1. 放寬主內容區塊限制 */
 .nodex-chat-window {
-    width: 100%;
-    max-width: 900px; /* 限制最大寬度，閱讀體驗更好 */
-    padding: 40px 20px;
-    align-items: flex-start; /* 內容靠左對齊 */
-    justify-content: flex-start; /* 從頂部開始 */
+    width: 100% !important;
+    max-width: 100% !important; /* 移除原本的 900px 限制 */
+    padding: 30px 40px !important; /* 增加左右內距，避免內容貼邊 */
+    align-items: stretch !important; /* 強制子元素拉伸填滿寬度 */
 }
 
-/* 市場摘要區塊 (Market Summary) */
-.market-summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    width: 100%;
-    margin-bottom: 30px;
+/* 2. 調整卡片格線佈局，適應寬螢幕 */
+.market-summary-grid, 
+.news-section-grid { /* 假設您稍後會用到 grid */
+    /* 自動填滿欄位，每欄至少 300px，自動拉伸 */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 20px !important;
 }
-.market-card {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 8px;
-    padding: 15px;
+
+/* 3. 讓輸入框也跟著變寬 (可選，視您喜好) */
+.nodex-input-container {
+    max-width: 80% !important; /* 讓輸入框佔據 80% 寬度 */
+    left: 50%;
+    transform: translateX(-50%); /* 保持水平置中 */
 }
-.market-card-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9em;
-    margin-bottom: 10px;
-    font-weight: bold;
+
+/* 4. 修正標題對齊 */
+.news-section-header {
+    text-align: left !important; /* 標題靠左 */
+    width: 100% !important;
 }
 .market-val {
     font-size: 1.4em;
