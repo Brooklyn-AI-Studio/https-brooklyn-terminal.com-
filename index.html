@@ -2349,29 +2349,44 @@
             }, 100);
         }
       // --- PulseStreet 渲染核心 (Facebook Style Update) ---
+       // --- PulseStreet 渲染核心 (Facebook Style + SVG Shortcuts) ---
         function renderPulseStreet() {
             const workspace = document.querySelector('.workspace');
             const container = document.createElement('div');
             container.className = 'pulse-container';
             
-            // SVG 圖示庫
+            // 1. 通用介面圖示 (SVG)
             const pIcons = {
                 search: '<svg class="pulse-icon" style="margin:0" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
                 user: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
-                friends: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#1877F2"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>',
-                memories: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#2ABBA7"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" fill="white"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="white"/></svg>',
-                saved: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#A033FF"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" fill="currentColor"/></svg>',
-                groups: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#1877F2"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 9c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-11C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z" fill="white"/></svg>',
-                video: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#E41E3F"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2z" fill="currentColor"/></svg>',
-                arrowDown: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#E4E6EB"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>'
+                friends: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#1877F2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
+                memories: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#2ABBA7"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
+                saved: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#A033FF"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>',
+                groups: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#1877F2"><circle cx="12" cy="12" r="10"></circle><path d="M16 16s-1.5-2-4-2-4 2-4 2"></path><line x1="12" y1="8" x2="12" y2="13"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+                video: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#E41E3F"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
+                arrowDown: '<svg class="pulse-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>',
+                // 貼文操作圖示
+                like: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>',
+                comment: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>',
+                share: '<svg class="action-icon-svg" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
             };
 
-            // 1. Stories Data
+            // 2. 捷徑專用圖示 (SVG 代替 Emoji)
+            // 我為每個遊戲繪製了對應的簡約圖示
+            const shortcutIcons = {
+                beauty: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF69B4" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>', // 星星代表女明星
+                candy: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FFD700" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>', // 糖果
+                farm: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#4CAF50" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>', // 農場(層疊)
+                cards: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF5252" stroke-width="2"><rect x="2" y="2" width="14" height="18" rx="2" ry="2"></rect><rect x="8" y="4" width="14" height="18" rx="2" ry="2"></rect></svg>', // 撲克牌
+                fish: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00BFFF" stroke-width="2"><path d="M2 12h6c2 0 3-2 5-2s3 2 5 2h4"></path><path d="M16 8l2 4-2 4"></path><circle cx="19" cy="12" r="2"></circle></svg>' // 魚/波浪
+            };
+
+            // 3. Stories Data
             const stories = [
                 { name: "Your Story", icon: "＋", seen: false },
-                { name: "伊龍馬", icon: "🚀", seen: false },
+                { name: "火箭博士", icon: "🚀", seen: false },
                 { name: "全都是泡沫", icon: "🔶", seen: false },
-                { name: "泡泡博士", icon: "₿", seen: false },
+                { name: "加密先鋒", icon: "₿", seen: false },
                 { name: "當沖機器", icon: "🤖", seen: false },
             ];
             let storiesHTML = stories.map(s => `
@@ -2381,23 +2396,20 @@
                 </div>
             `).join('');
 
-            // 2. Posts Data
+            // 4. Posts Data
             const posts = [
                 {
-                    name: "Brooklyn", time: "2h ago • 公開",
-                    avatar: "Ⓜ️",
+                    name: "Brooklyn", time: "2h ago • 公開", avatar: "Ⓜ️",
                     content: "PulseStreet是brooklyn-terminal系統的動態社群，您可以在這裡找到股市同好、工作夥伴，以及大語言模型愛好者! #LLM #BTC #Crypto",
                     image: null, likes: "1.2k", comments: "342"
                 },
                 {
-                    name: "科技航廈", time: "4h ago • 公開",
-                    avatar: "🚇",
-                    content: "Gemini 3十分鐘解出百年數學難題　陶哲軒：表現遠超預期。Google 上周推出的 Gemini 3，再度引起學界與科技圈高度關注。",
+                    name: "科技航廈", time: "4h ago • 公開", avatar: "🚇",
+                    content: "Gemini 3十分鐘解出百年數學難題　陶哲軒：表現遠超預期。",
                     image: "https://cdn2.ettoday.net/images/8505/d8505938.jpg", likes: "8.5k", comments: "1.2k"
                 },
                 {
-                    name: "PulseStreet", time: "Just now • 系統公告",
-                    avatar: "🅿️",
+                    name: "PulseStreet", time: "Just now • 系統公告", avatar: "🅿️",
                     content: "比特幣成為戰場：白宮與摩根大通之間的無聲戰爭。",
                     image: "https://image.blocktempo.com/2025/11/cover-image-bitcoin-battlefield-jpmorgan-white-house-silent-war.webp", likes: "1984", comments: "40"
                 }
@@ -2411,19 +2423,19 @@
                     </div>
                     <div class="pulse-content">${p.content}</div>
                     ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
-                    <div class="pulse-stats"><span>👍 ${p.likes}</span><span>${p.comments} Comments</span></div>
+                    <div class="pulse-stats"><span>${pIcons.like} ${p.likes}</span><span>${p.comments} Comments</span></div>
                     <div class="pulse-actions">
-                        <button class="pulse-action-btn">👍 Like</button>
-                        <button class="pulse-action-btn">💬 Comment</button>
-                        <button class="pulse-action-btn">↗ Share</button>
+                        <button class="pulse-action-btn">${pIcons.like} Like</button>
+                        <button class="pulse-action-btn">${pIcons.comment} Comment</button>
+                        <button class="pulse-action-btn">${pIcons.share} Share</button>
                     </div>
                 </div>
             `).join('');
 
-            // 3. Contacts Data (來自您的截圖)
+            // 5. Contacts Data
             const contacts = [
-                "KuanYu Chen", "胡雅筠", "余修", "鄧家昕", "陳靜雯", 
-                "劉宇哲", "江晉緯", "陳嘉惠", "陳民祐", "Abid Aw"
+                "Benson Chen", "Kevin HO", "cocco", "BY5423", "火箭博士", 
+                "瘋狂小生", "飲水人", "竹北薪水小偷", "終究是我扛下了所有", "斯勾姨"
             ];
             let contactsHTML = contacts.map(c => `
                 <div class="contact-row">
@@ -2435,25 +2447,24 @@
                 </div>
             `).join('');
 
-            // 4. 捷徑 Data (來自您的截圖)
+            // 6. 捷徑 Data (使用上面定義的 shortcutIcons)
             const shortcuts = [
-                { name: "女明星美腳", icon: "👠" }, // 使用 Emoji 代替截圖
-                { name: "Candy Crush Saga", icon: "🍬" },
-                { name: "FarmVille 2", icon: "🐮" },
-                { name: "大老二 - 神來也", icon: "♠️" },
-                { name: "開心水族箱", icon: "🐠" }
+                { name: "韭菜俱樂部", icon: shortcutIcons.beauty },
+                { name: "科技先驅日報", icon: shortcutIcons.candy },
+                { name: "模組開發", icon: shortcutIcons.farm },
+                { name: "機率討論版", icon: shortcutIcons.cards },
+                { name: "網路釣魚", icon: shortcutIcons.fish }
             ];
             let shortcutsHTML = shortcuts.map(s => `
                 <div class="pulse-side-btn">
-                    <div class="pulse-side-icon" style="border-radius:8px; font-size:20px;">${s.icon}</div>
+                    <div class="pulse-side-icon" style="border-radius:8px; background:rgba(255,255,255,0.05);">${s.icon}</div>
                     <div>${s.name}</div>
                 </div>
             `).join('');
 
-            // 5. 組合 HTML
+            // 7. 組合 HTML
             container.innerHTML = `
                 <div class="pulse-layout">
-                    
                     <div class="pulse-sidebar-left">
                         <div class="pulse-search-box">
                             ${pIcons.search}
@@ -2512,7 +2523,6 @@
                             ${contactsHTML}
                         </div>
                     </div>
-
                 </div>
             `;
 
