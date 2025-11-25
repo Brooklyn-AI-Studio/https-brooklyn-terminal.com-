@@ -7,7 +7,7 @@
     <title>BROOKLYN-TERMINAL // V11.04 02 </title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
-    <style>
+    <style> 
         :root {
             --bg-body: #050505;
             --bg-panel: #111111; --grid-bg: #0a0a0a;
@@ -464,7 +464,7 @@
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-
+        
 .nav-icon {
     width: 16px;
     height: 16px;
@@ -475,6 +475,191 @@
     opacity: 1;
     fill: var(--accent-color); /* 讓圖示變成青色 */
 }
+/* --- Nodex 2.0: Modern AI Interface --- */
+
+/* 主容器調整 */
+.nodex-container {
+    background: #111; /* 更深色的背景 */
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* 左側欄位優化 */
+.nodex-sidebar {
+    background: #080808;
+    border-right: 1px solid #222;
+    width: 260px;
+}
+.agent-card {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: background 0.2s;
+}
+.agent-card:hover, .agent-card.active {
+    background: #1a1a1a;
+    border-color: #333;
+}
+.agent-avatar {
+    font-size: 1.2em;
+    background: #222;
+    border: none;
+}
+
+/* 右側主畫面：模仿 Perplexity 風格 */
+.nodex-main {
+    background: #111;
+    padding: 0; /* 移除內距，讓內容自適應 */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 內容置中 */
+}
+
+.nodex-chat-window {
+    width: 100%;
+    max-width: 900px; /* 限制最大寬度，閱讀體驗更好 */
+    padding: 40px 20px;
+    align-items: flex-start; /* 內容靠左對齊 */
+    justify-content: flex-start; /* 從頂部開始 */
+}
+
+/* 市場摘要區塊 (Market Summary) */
+.market-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+.market-card {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 15px;
+}
+.market-card-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+.market-val {
+    font-size: 1.4em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.market-chart-mini {
+    height: 40px;
+    width: 100%;
+    opacity: 0.7;
+    /* 簡單模擬走勢圖 */
+    background: linear-gradient(to right, transparent 0%, transparent 10%, #ff3333 10%, #ff3333 20%, transparent 20%);
+    position: relative;
+}
+/* 用 SVG 或 CSS 繪製簡單線條 */
+.trend-line-down {
+    stroke: #ff3333; fill: none; stroke-width: 2;
+}
+
+/* 新聞摘要區塊 */
+.news-section-header {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    width: 100%;
+    color: #ccc;
+}
+.ai-summary-box {
+    background: #161616;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+.summary-title {
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+}
+.summary-text {
+    font-size: 0.95em;
+    line-height: 1.6;
+    color: #bbb;
+}
+
+/* 輸入框區域優化 */
+.nodex-input-container {
+    width: 100%;
+    max-width: 800px;
+    position: absolute;
+    bottom: 30px;
+    padding: 0 20px;
+}
+.nodex-input-wrapper {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 24px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    transition: border-color 0.2s;
+}
+.nodex-input-wrapper:hover { border-color: #555; }
+.nodex-real-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1em;
+    outline: none;
+}
+.nodex-input-actions {
+    display: flex;
+    gap: 10px;
+    opacity: 0.6;
+}
+.action-icon { cursor: pointer; font-size: 1.1em; }
+.action-icon:hover { color: #fff; opacity: 1; }
+
+/* 鎖定畫面 (Overlay) */
+.nodex-lock-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity 0.3s;
+}
+.nodex-lock-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+/* 繼承並微調原本的 lock-screen 樣式 */
+.nodex-lock-screen {
+    background: #111;
+    border: 1px solid #333;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    cursor: pointer; /* 提示可點擊 */
+}
+.nodex-lock-screen:hover {
+    border-color: var(--accent-color);
+}
+
+
+
+
+
+
+
+        
         /* --- Nodex AI 戰情室樣式 --- */
 .nodex-container {
     width: 100%;
@@ -1599,38 +1784,36 @@
                 loadLayout(true);
             }
         }
-// --- Nodex 渲染核心 ---
+// --- Nodex 渲染核心 (2.0版) ---
         function renderNodex() {
             const workspace = document.querySelector('.workspace');
-            
             const container = document.createElement('div');
             container.className = 'nodex-container';
             
             container.innerHTML = `
                 <div class="nodex-sidebar">
-                    <div class="nodex-header">探索 Nodex </div>
+                    <div class="nodex-header" style="border:none; padding-bottom:0;">Nodex Finance</div>
+                    <div style="font-size:0.8em; color:#666; margin-bottom:20px; padding-left:2px;">POWERED BY BROOKLYN AI</div>
                     
                     <div class="agent-card active">
-                        <div class="agent-avatar">📈</div>
+                        <div class="agent-avatar">🇺🇸</div>
                         <div class="agent-info">
-                            <div class="agent-name">Stock Analyst 股市分析</div>
-                            <div class="agent-role">提供專業的股市情報。</div>
+                            <div class="agent-name">US Market</div>
+                            <div class="agent-role">S&P 500, Nasdaq</div>
                         </div>
                     </div>
-                    
                     <div class="agent-card">
-                        <div class="agent-avatar">🔍</div>
+                        <div class="agent-avatar">₿</div>
                         <div class="agent-info">
-                            <div class="agent-name">Data Scientist 資料分析</div>
-                            <div class="agent-role">為您提供的資料找出Insight.</div>
+                            <div class="agent-name">Crypto</div>
+                            <div class="agent-role">BTC, ETH, Altcoins</div>
                         </div>
                     </div>
-
-                    <div class="agent-card" style="opacity:0.5;">
-                        <div class="agent-avatar">💻</div>
+                    <div class="agent-card">
+                        <div class="agent-avatar">🌏</div>
                         <div class="agent-info">
-                            <div class="agent-name">DeepSeek Coder</div>
-                            <div class="agent-role">Let the Code Write Itself.</div>
+                            <div class="agent-name">Global Macro</div>
+                            <div class="agent-role">Forex, Bonds</div>
                         </div>
                     </div>
                 </div>
@@ -1638,21 +1821,73 @@
                 <div class="nodex-main">
                     <div class="nodex-chat-window">
                         
-                        <div class="nodex-lock-screen">
+                        <div class="market-summary-grid">
+                            <div class="market-card">
+                                <div class="market-card-header"><span>S&P Futures</span><span style="color:#ff4444;">↘ 0.02%</span></div>
+                                <div class="market-val">6,720</div>
+                                <svg class="market-chart-mini" viewBox="0 0 100 40"><path d="M0 30 L20 35 L40 25 L60 38 L80 20 L100 25" fill="none" stroke="#ff4444" stroke-width="2"/></svg>
+                            </div>
+                            <div class="market-card">
+                                <div class="market-card-header"><span>NASDAQ Fut.</span><span style="color:#ff4444;">↘ 0.04%</span></div>
+                                <div class="market-val">24,938.25</div>
+                                <svg class="market-chart-mini" viewBox="0 0 100 40"><path d="M0 30 L30 35 L50 20 L70 25 L100 15" fill="none" stroke="#ff4444" stroke-width="2"/></svg>
+                            </div>
+                            <div class="market-card">
+                                <div class="market-card-header"><span>VIX</span><span style="color:#ff4444;">↘ 12.42%</span></div>
+                                <div class="market-val">20.52</div>
+                                <svg class="market-chart-mini" viewBox="0 0 100 40"><path d="M0 25 L30 22 L60 28 L80 15 L100 10" fill="none" stroke="#ff4444" stroke-width="2"/></svg>
+                            </div>
+                        </div>
+
+                        <div class="news-section-header">市場摘要 (Market Summary)</div>
+
+                        <div class="ai-summary-box">
+                            <div class="summary-title">Tech Leads Equity Rebound</div>
+                            <div class="summary-text">
+                                A strong rally in AI and semiconductor stocks powered the S&P 500 (+1.55%) and Nasdaq 100 (+2.62%) higher. Alphabet surged over 6% after launching its latest AI model, and Broadcom climbed more than 11%, leading sector gains.
+                            </div>
+                        </div>
+
+                        <div class="ai-summary-box">
+                            <div class="summary-title">Rate Cut Hopes Reignite Risk Appetite</div>
+                            <div class="summary-text">
+                                Fed officials, including John Williams and Chris Waller, reinforced expectations for a December rate cut, now priced at 75–80% probability. Falling Treasury yields helped fuel stock buying and eased pressure on risk assets.
+                            </div>
+                        </div>
+
+                        <div class="ai-summary-box">
+                            <div class="summary-title">Bitcoin Shows Signs of Stabilization</div>
+                            <div class="summary-text">
+                                After plunging near $80,000 last week, Bitcoin steadied at $88,202 (-0.08%). Outflows from Bitcoin ETFs—over $3.5B this month—continue to weigh on sentiment, but a potential Fed pivot and bottoming signals are emerging in crypto markets.
+                            </div>
+                        </div>
+
+                        <div style="height: 100px;"></div> </div>
+
+                    <div class="nodex-input-container">
+                        <div class="nodex-input-wrapper">
+                            <input type="text" class="nodex-real-input" placeholder="Ask anything about US markets...">
+                            <div class="nodex-input-actions">
+                                <span class="action-icon">🔍</span>
+                                <span class="action-icon">📎</span>
+                                <span class="action-icon">➔</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nodex-lock-overlay" id="nodex-lock">
+                        <div class="nodex-lock-screen" onclick="document.getElementById('nodex-lock').classList.add('hidden')">
                             <div class="lock-icon">🚧</div>
                             <div class="lock-title">開發中，敬請期待。</div>
                             <div class="lock-desc">
-                                <strong>Nodex</strong> 是brooklyn-terminal系統下的大語言模型(LLM)互動環境，透過專業可靠的訓練集進行微調，為使用者提供強大、個性化、專屬的AI工具。<br><br>
-                                您可以在Workspace -> 工作列表 -> Tools 中 找到LLama online獲得暫時性語言模型服務 (每日限制50對話次數)。
+                                <strong>Nodex</strong>  是brooklyn-terminal系統下的大語言模型(LLM)互動環境，透過專業可靠的訓練集進行微調，為使用者提供強大、個性化、專屬的AI工具。<br><br>
+                                您可以在Workspace -> 工作列表 -> Tools 中 找到LLama online獲得暫時性語言模型服務 (每日限制50對話次數)。<br><br>
+                                點擊此卡片即可預覽介面。
                             </div>
                             <div class="lock-tag">敬請期待</div>
                         </div>
-
                     </div>
 
-                    <div class="nodex-input-area">
-                        <div class="nodex-input-mock">System Offline. Waiting for module update...</div>
-                    </div>
                 </div>
             `;
             
