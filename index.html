@@ -1935,16 +1935,14 @@
                             <div class="scene-ui-text">THEME ENGINE</div>
                         </div>
                     </div>
-                    <div style="margin-top:15px; font-size:0.9em; color:#aaa;">TOTAL VISUAL CONTROL</div>
-                </div>
+                    <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px; width: 100%;">
+                
+                <button class="tutorial-btn" onclick="closeTutorial()">立即體驗</button>
+                
+                <button class="tutorial-btn" id="tutorial-login-btn" style="background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color);">
+                    GOOGLE 登入
+                </button>
             </div>
-
-            <div class="slide-dots">
-                <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
-            </div>
-
-            <button class="tutorial-btn" onclick="closeTutorial()">立即體驗</button>
-        </div>
     </div>
 <div id="welcome-overlay">
     <div class="login-container">
@@ -4546,6 +4544,22 @@ window.closeLoginModal = function() {
         // 移除舊的 onclick 事件，改用我們的 Firebase 登入
         centerLoginBtn.onclick = null; 
         centerLoginBtn.addEventListener('click', performLogin);
+    }
+    // (C) 新增：教學視窗中的 Google 登入按鈕
+    const tutorialLoginBtn = document.getElementById('tutorial-login-btn');
+    
+    if (tutorialLoginBtn) {
+        tutorialLoginBtn.addEventListener('click', () => {
+            // 1. 關閉教學視窗
+            const tutOverlay = document.getElementById('tutorial-overlay');
+            if(tutOverlay) tutOverlay.classList.remove('active');
+            
+            // 2. 停止教學輪播 (呼叫全域函式)
+            if(window.stopSlideShow) window.stopSlideShow();
+
+            // 3. 執行登入
+            performLogin();
+        });
     }
 
     // 8. 監聽登入狀態改變 (這是核心，會自動更新 UI)
