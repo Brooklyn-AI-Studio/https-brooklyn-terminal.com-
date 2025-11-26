@@ -4,7 +4,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.003</title> 
+    <title>BROOKLYN-TERMINAL // V1.004</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -4710,6 +4710,14 @@ window.closeLoginModal = function() {
         serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // ★ 新增：引入 Firebase Storage (圖片上傳用) ★
+    import { 
+        getStorage, 
+        ref, 
+        uploadBytes, 
+        getDownloadURL 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
     // 2. Firebase 設定
     const firebaseConfig = {
         apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
@@ -4730,9 +4738,12 @@ window.closeLoginModal = function() {
     // ★ 初始化資料庫 ★
     const db = getFirestore(app);
 
+    // ★ 初始化資料庫與儲存空間 ★
+    const db = getFirestore(app);
+    const storage = getStorage(app); // 初始化 Storage
     // ★ 關鍵：將資料庫工具掛載到 window (讓 PulseStreet 可以使用) ★
     window.db = db;
-    window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp };
+    window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp ,getStorage, ref, uploadBytes, getDownloadURL};
 
     // --- 4. 登入與介面邏輯 (保持不變) ---
     
