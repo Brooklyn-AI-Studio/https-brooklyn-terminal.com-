@@ -7,7 +7,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.031</title> 
+    <title>BROOKLYN-TERMINAL // V1.032</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -2807,178 +2807,196 @@ window.switchSpace = function(spaceMode) {
             }, 100);
         }
      
-       // --- PulseStreet 渲染核心 (修改版：移除 Stories，加入股市圖) ---
-function renderPulseStreet() {
-    const workspace = document.querySelector('.workspace');
-    const container = document.createElement('div');
-    container.className = 'pulse-container';
-    
-    // 1. 圖示定義 (SVG)
-    const pIcons = {
-        search: '<svg class="pulse-icon" style="margin:0" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
-        friends: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#1877F2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
-        memories: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#2ABBA7"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
-        saved: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#A033FF"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>',
-        groups: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#1877F2"><circle cx="12" cy="12" r="10"></circle><path d="M16 16s-1.5-2-4-2-4 2-4 2"></path><line x1="12" y1="8" x2="12" y2="13"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
-        video: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#E41E3F"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
-        arrowDown: '<svg class="pulse-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>',
-        like: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>',
-        comment: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>',
-        share: '<svg class="action-icon-svg" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
-    };
+        // --- PulseStreet 渲染核心 (連線 Firestore 版) ---
+        function renderPulseStreet() {
+            const workspace = document.querySelector('.workspace');
+            const container = document.createElement('div');
+            container.className = 'pulse-container';
+            
+            // 1. 圖示定義 (SVG)
+            const pIcons = {
+                search: '<svg class="pulse-icon" style="margin:0" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                friends: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#1877F2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
+                memories: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#2ABBA7"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
+                saved: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#A033FF"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>',
+                groups: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#1877F2"><circle cx="12" cy="12" r="10"></circle><path d="M16 16s-1.5-2-4-2-4 2-4 2"></path><line x1="12" y1="8" x2="12" y2="13"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+                video: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#E41E3F"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
+                arrowDown: '<svg class="pulse-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>',
+                like: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>',
+                comment: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>',
+                share: '<svg class="action-icon-svg" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
+            };
 
-    // 2. 捷徑資料
-    const shortcutIcons = {
-        beauty: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF69B4" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>',
-        candy: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FFD700" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>',
-        farm: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#4CAF50" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>',
-        cards: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF5252" stroke-width="2"><rect x="2" y="2" width="14" height="18" rx="2" ry="2"></rect><rect x="8" y="4" width="14" height="18" rx="2" ry="2"></rect></svg>',
-        fish: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00BFFF" stroke-width="2"><path d="M2 12h6c2 0 3-2 5-2s3 2 5 2h4"></path><path d="M16 8l2 4-2 4"></path><circle cx="19" cy="12" r="2"></circle></svg>'
-    };
+            // 2. 捷徑與 Stories 資料 (這部分目前保持靜態，之後也可以改成動態)
+            const shortcutIcons = {
+                beauty: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF69B4" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>',
+                candy: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FFD700" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>',
+                farm: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#4CAF50" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>',
+                cards: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF5252" stroke-width="2"><rect x="2" y="2" width="14" height="18" rx="2" ry="2"></rect><rect x="8" y="4" width="14" height="18" rx="2" ry="2"></rect></svg>',
+                fish: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00BFFF" stroke-width="2"><path d="M2 12h6c2 0 3-2 5-2s3 2 5 2h4"></path><path d="M16 8l2 4-2 4"></path><circle cx="19" cy="12" r="2"></circle></svg>'
+            };
 
-    // ★ 修改：已移除 stories 和 storiesHTML 變數宣告 ★
-
-    const shortcuts = [
-        { name: "公開討論版", icon: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF3333" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>', action: "loadCommunityView('gossip')" },
-        { name: "美股代碼 (Tickers)", icon: shortcutIcons.cards, action: "" }, 
-        { name: "韭菜農場 (Farm)", icon: shortcutIcons.farm, action: "" },
-        { name: "糖果 crush", icon: shortcutIcons.candy, action: "" }
-    ];
-    let shortcutsHTML = shortcuts.map(s => `
-        <div class="pulse-side-btn" onclick="${s.action ? s.action : ''}">
-            <div class="pulse-side-icon" style="border-radius:8px; background:rgba(255,255,255,0.05);">${s.icon}</div>
-            <div>${s.name}</div>
-        </div>
-    `).join('');
-
-    const contacts = []; 
-    let contactsHTML = contacts.map(c => `
-        <div class="contact-row">
-            <div class="contact-img-box">
-                <div class="contact-img" style="display:flex;align-items:center;justify-content:center;background:#444;color:#fff;font-size:12px;">${c.charAt(0)}</div>
-                <div class="online-dot"></div>
-            </div>
-            <div class="contact-name" style="color:#e4e6eb; font-size:0.95em;">${c}</div>
-        </div>
-    `).join('');
-
-    // 3. 渲染 HTML 結構
-    container.innerHTML = `
-        <div class="pulse-layout">
-            <div class="pulse-sidebar-left">
-                <div class="pulse-search-box">
-                    ${pIcons.search} <input type="text" class="pulse-search-input" placeholder="搜尋 PulseStreet">
+            const stories = [
+                { name: "Your Story", icon: "＋", seen: false },
+                { name: "火箭博士", icon: "🚀", seen: false },
+                { name: "全都是泡沫", icon: "🔶", seen: false },
+                { name: "加密先鋒", icon: "₿", seen: false },
+                { name: "當沖機器", icon: "🤖", seen: false },
+            ];
+            let storiesHTML = stories.map(s => `
+                <div class="pulse-story ${s.seen ? 'seen' : ''}">
+                    <div class="pulse-story-ring"><div class="pulse-story-img">${s.icon}</div></div>
+                    <div class="pulse-story-name">${s.name}</div>
                 </div>
-                
-                <div class="pulse-side-btn" id="pulse-profile-btn" onclick="loadProfileView()">
-                    <div class="pulse-side-icon" style="overflow:hidden;">
-                        ${window.currentUser && window.currentUser.photoURL 
-                            ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;object-fit:cover;">` 
-                            : `<div style="width:100%;height:100%;background:#00ffcc;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold;">${window.currentUser ? window.currentUser.displayName.charAt(0) : 'G'}</div>`
-                        }
+            `).join('');
+
+            const shortcuts = [
+    { 
+        name: "公開討論版", 
+        icon: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF3333" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>', 
+        action: "loadCommunityView('gossip')" // ★ 設定點擊觸發函式
+    },
+    { name: "美股代碼 (Tickers)", icon: shortcutIcons.cards, action: "" }, // 範例
+    { name: "韭菜農場 (Farm)", icon: shortcutIcons.farm, action: "" },     // 範例
+    { name: "糖果 crush", icon: shortcutIcons.candy, action: "" }          // 範例
+];
+            let shortcutsHTML = shortcuts.map(s => `
+    <div class="pulse-side-btn" onclick="${s.action ? s.action : ''}">
+        <div class="pulse-side-icon" style="border-radius:8px; background:rgba(255,255,255,0.05);">${s.icon}</div>
+        <div>${s.name}</div>
+    </div>
+`).join('');
+
+            const contacts = [];
+            let contactsHTML = contacts.map(c => `
+                <div class="contact-row">
+                    <div class="contact-img-box">
+                        <div class="contact-img" style="display:flex;align-items:center;justify-content:center;background:#444;color:#fff;font-size:12px;">${c.charAt(0)}</div>
+                        <div class="online-dot"></div>
                     </div>
-                    <div style="font-weight:bold;">${window.currentUser ? window.currentUser.displayName : 'Guest (請登入)'}</div>
+                    <div class="contact-name" style="color:#e4e6eb; font-size:0.95em;">${c}</div>
                 </div>
+            `).join('');
 
-                <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.friends}</div><div>朋友</div></div>
-                <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.memories}</div><div>動態回顧</div></div>
-                <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.saved}</div><div>我的珍藏</div></div>
-                <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.groups}</div><div>社團</div></div>
-                <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.video}</div><div>Video</div></div>
-                <div class="pulse-side-btn">
-                    <div class="pulse-side-icon" style="background:#3a3b3c;">${pIcons.arrowDown}</div>
-                    <div>顯示更多</div>
-                </div>
-                <div class="pulse-divider"></div>
-                <div class="pulse-section-title">捷徑</div>
-                ${shortcutsHTML}
-                <div style="font-size:0.8em; color:#888; padding:10px;">私隱政策 · 服務條款 · 廣告 · Cookies · Brooklyn-terminal © 2025</div>
-            </div>
+            // 3. 渲染 HTML 結構
+            container.innerHTML = `
+                <div class="pulse-layout">
+                    <div class="pulse-sidebar-left">
+                        <div class="pulse-search-box">
+                            ${pIcons.search} <input type="text" class="pulse-search-input" placeholder="搜尋 PulseStreet">
+                        </div>
+                        
+                        <div class="pulse-side-btn" id="pulse-profile-btn" onclick="loadProfileView()">
+                            <div class="pulse-side-icon" style="overflow:hidden;">
+                                ${window.currentUser && window.currentUser.photoURL 
+                                    ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;object-fit:cover;">` 
+                                    : `<div style="width:100%;height:100%;background:#00ffcc;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold;">${window.currentUser ? window.currentUser.displayName.charAt(0) : 'G'}</div>`
+                                }
+                            </div>
+                            <div style="font-weight:bold;">${window.currentUser ? window.currentUser.displayName : 'Guest (請登入)'}</div>
+                        </div>
 
-            <div class="pulse-feed-container">
-                
-                <div class="tradingview-widget-container" id="pulse-tv-widget" style="margin-bottom: 20px; height: 400px; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
-                    <div class="tradingview-widget-container__widget"></div>
-                    <div class="tradingview-widget-copyright"><a href="https://tw.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a></div>
-                </div>
-                <div class="pulse-create"> 
-                    <div class="pulse-avatar">
-                        ${window.currentUser && window.currentUser.photoURL 
-                            ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;border-radius:50%;">`
-                            : 'Ⓜ️'}
+                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.friends}</div><div>朋友</div></div>
+                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.memories}</div><div>動態回顧</div></div>
+                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.saved}</div><div>我的珍藏</div></div>
+                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.groups}</div><div>社團</div></div>
+                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.video}</div><div>Video</div></div>
+                        <div class="pulse-side-btn">
+                            <div class="pulse-side-icon" style="background:#3a3b3c;">${pIcons.arrowDown}</div>
+                            <div>顯示更多</div>
+                        </div>
+                        <div class="pulse-divider"></div>
+                        <div class="pulse-section-title">捷徑</div>
+                        ${shortcutsHTML}
+                        <div style="font-size:0.8em; color:#888; padding:10px;">私隱政策 · 服務條款 · 廣告 · Cookies · Brooklyn-terminal © 2025</div>
                     </div>
-                    <textarea 
-                        class="pulse-input-dummy" 
-                        id="pulse-real-input" 
-                        placeholder="聊聊你對市場的看法... (Shift+Enter 換行)" 
-                        style="border:none; outline:none; color:#fff; resize:none; overflow:hidden; min-height:24px; max-height:200px; line-height:1.5; font-family:inherit; padding-top:10px;"
-                        oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
-                        onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submitPost(); }"></textarea>
-                    
-                    <button id="pulse-submit-btn" 
-                        onclick="submitPost()"
-                        style="background: var(--accent-color); color: #000; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-family: var(--font-main); white-space: nowrap;">
-                        POST
-                    </button>
-                </div>
 
-                <div class="pulse-feed" id="pulse-real-feed">
-                    <div style="text-align:center; padding:40px; color:#666;">
-                        <div style="font-size: 2em; margin-bottom: 10px;">📡</div>
-                        正在連線至 PulseStreet 網路...
+                    <div class="pulse-feed-container">
+                       <div class="tradingview-widget-container" id="tv-overview-widget" style="margin-bottom: 20px; height: 400px; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+    <div class="tradingview-widget-container__widget"></div>
+</div>
+                       <div class="pulse-create"> 
+                            <div class="pulse-avatar">
+                                ${window.currentUser && window.currentUser.photoURL 
+                                    ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;border-radius:50%;">`
+                                    : 'Ⓜ️'}
+                            </div>
+                           <input type="text" 
+       class="pulse-input-dummy" 
+       id="pulse-real-input" 
+       placeholder="聊聊你對市場的看法..." 
+       style="border:none; outline:none; color:#fff;"
+       onkeypress="if(event.key === 'Enter') submitPost()">  <button id="pulse-submit-btn" 
+        onclick="submitPost()"  style="
+        background: var(--accent-color);
+        color: #000; 
+        border: none; 
+        padding: 6px 16px; 
+        border-radius: 20px; 
+        font-weight: bold; 
+        cursor: pointer; 
+        font-family: var(--font-main);
+        white-space: nowrap;">
+        POST
+</button>
+                        </div>
+
+                        <div class="pulse-feed" id="pulse-real-feed">
+                            <div style="text-align:center; padding:40px; color:#666;">
+                                <div style="font-size: 2em; margin-bottom: 10px;">📡</div>
+                                正在連線至 PulseStreet 網路...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pulse-sidebar-right">
+                        <div class="pulse-contact-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <span>聯絡人</span>
+                            <div style="display:flex; gap:10px; opacity:0.6;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                            </div>
+                        </div>
+                        <div class="pulse-nav-list">${contactsHTML}</div>
                     </div>
                 </div>
-            </div>
+            `;
 
-            <div class="pulse-sidebar-right">
-                <div class="pulse-contact-header" style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>聯絡人</span>
-                    <div style="display:flex; gap:10px; opacity:0.6;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                    </div>
-                </div>
-                <div class="pulse-nav-list">${contactsHTML}</div>
-            </div>
-        </div>
-    `;
+            workspace.appendChild(container);
+// 在 workspace.appendChild(container); 之後貼上：
 
-    workspace.appendChild(container);
-
-    // ★ 修改：動態載入 TradingView Script (因為 innerHTML 內的 script 不會執行) ★
-    const tvWidgetContainer = document.getElementById('pulse-tv-widget');
-    if (tvWidgetContainer) {
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js';
-        script.async = true;
-        // 填入您提供的設定
-        script.innerHTML = JSON.stringify({
-          "lineWidth": 2,
-          "lineType": 0,
-          "chartType": "area",
-          "fontColor": "rgb(106, 109, 120)",
-          "gridLineColor": "rgba(255, 255, 255, 0.06)",
-          "volumeUpColor": "rgba(34, 171, 148, 0.5)",
-          "volumeDownColor": "rgba(247, 82, 95, 0.5)",
-          "backgroundColor": "#0F0F0F",
-          "widgetFontColor": "rgba(255, 255, 255, 1)",
-          "upColor": "#22ab94",
-          "downColor": "#f7525f",
-          "borderUpColor": "#22ab94",
-          "borderDownColor": "#f7525f",
-          "wickUpColor": "#22ab94",
-          "wickDownColor": "#f7525f",
-          "colorTheme": "dark",
-          "isTransparent": false,
-          "locale": "zh_TW",
-          "chartOnly": false,
-          "scalePosition": "right",
-          "scaleMode": "Normal",
-          "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
-          "valuesTracking": "1",
-          "changeMode": "price-and-percent",
-          "symbols": [
+const tvContainer = document.getElementById('tv-overview-widget');
+if (tvContainer) {
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js';
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+        "lineWidth": 2,
+        "lineType": 0,
+        "chartType": "area",
+        "fontColor": "rgb(106, 109, 120)",
+        "gridLineColor": "rgba(255, 255, 255, 0.06)",
+        "volumeUpColor": "rgba(34, 171, 148, 0.5)",
+        "volumeDownColor": "rgba(247, 82, 95, 0.5)",
+        "backgroundColor": "#0F0F0F",
+        "widgetFontColor": "rgba(255, 255, 255, 1)",
+        "upColor": "#22ab94",
+        "downColor": "#f7525f",
+        "borderUpColor": "#22ab94",
+        "borderDownColor": "#f7525f",
+        "wickUpColor": "#22ab94",
+        "wickDownColor": "#f7525f",
+        "colorTheme": "dark",
+        "isTransparent": false,
+        "locale": "zh_TW",
+        "chartOnly": false,
+        "scalePosition": "right",
+        "scaleMode": "Normal",
+        "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
+        "valuesTracking": "1",
+        "changeMode": "price-and-percent",
+        "symbols": [
             [ "NASDAQ:AAPL|1M" ],
             [ "NASDAQ:NVDA|1M" ],
             [ "NASDAQ:TSLA|1M" ],
@@ -2996,85 +3014,332 @@ function renderPulseStreet() {
             [ "NASDAQ:GESLX|1M" ],
             [ "NYSE:T|1M" ],
             [ "NASDAQ:INTC|1M" ]
-          ],
-          "dateRanges": [
+        ],
+        "dateRanges": [
             "1d|1",
             "1m|30",
             "3m|60",
             "12m|1D",
             "60m|1W",
             "all|1M"
-          ],
-          "fontSize": "10",
-          "headerFontSize": "medium",
-          "autosize": true,
-          "width": "100%",
-          "height": "100%",
-          "noTimeScale": false,
-          "hideDateRanges": false,
-          "hideMarketStatus": false,
-          "hideSymbolLogo": false
-        });
-        tvWidgetContainer.appendChild(script);
-    }
-    // ★ 結束 Widget Script 載入 ★
+        ],
+        "fontSize": "10",
+        "headerFontSize": "medium",
+        "autosize": true,
+        "width": "100%",
+        "height": "100%",
+        "noTimeScale": false,
+        "hideDateRanges": false,
+        "hideMarketStatus": false,
+        "hideSymbolLogo": false
+    });
+    tvContainer.appendChild(script);
+}
+    
+// --- 新增功能：開啟編輯視窗 ---
+window.openEditModal = function() {
+    const user = window.currentUser;
+    if(!user) return;
 
-    // 4. (保持不變) 渲染後續邏輯 (監聽貼文...)
-    if (window.fs && window.db) {
-        const { collection, query, orderBy, onSnapshot } = window.fs;
-        const q = query(collection(window.db, "posts"), orderBy("timestamp", "desc"));
-        onSnapshot(q, (snapshot) => {
-            const feedEl = document.getElementById('pulse-real-feed');
-            if(!feedEl) return;
-            let html = '';
+    // 建立編輯視窗的 HTML
+    const editHTML = `
+        <div id="edit-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); z-index:10000; display:flex; justify-content:center; align-items:center;">
+            <div style="background:#0a0a0a; border:1px solid #00ffcc; padding:30px; width:400px; max-width:90%; border-radius:12px; box-shadow:0 0 30px rgba(0,255,204,0.2); position:relative;">
+                <h2 style="color:#fff; margin-top:0; font-family:'Orbitron'; border-bottom:1px dashed #333; padding-bottom:10px;">EDIT PROFILE</h2>
+                
+                <label style="display:block; color:#888; font-size:0.8em; margin-bottom:5px;">DISPLAY NAME</label>
+                <input type="text" id="edit-name" value="${user.displayName}" style="width:100%; background:#111; border:1px solid #333; color:#fff; padding:8px; border-radius:4px; margin-bottom:15px; outline:none;">
+                
+                <label style="display:block; color:#888; font-size:0.8em; margin-bottom:5px;">PHOTO URL (LINK)</label>
+                <input type="text" id="edit-photo" value="${user.photoURL}" style="width:100%; background:#111; border:1px solid #333; color:#fff; padding:8px; border-radius:4px; margin-bottom:15px; outline:none;">
+                
+                <label style="display:block; color:#888; font-size:0.8em; margin-bottom:5px;">BIO (自我介紹)</label>
+                <textarea id="edit-bio" rows="4" style="width:100%; background:#111; border:1px solid #333; color:#fff; padding:8px; border-radius:4px; margin-bottom:20px; outline:none; resize:none;">${window.currentBio || ""}</textarea>
+                
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button onclick="document.getElementById('edit-overlay').remove()" style="background:transparent; border:1px solid #555; color:#aaa; padding:8px 20px; border-radius:4px; cursor:pointer;">CANCEL</button>
+                    <button onclick="saveProfileChanges()" style="background:#00ffcc; border:none; color:#000; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">SAVE CHANGES</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', editHTML);
+}
+
+// --- 新增功能：儲存變更 ---
+window.saveProfileChanges = async function() {
+    const newName = document.getElementById('edit-name').value;
+    const newPhoto = document.getElementById('edit-photo').value;
+    const newBio = document.getElementById('edit-bio').value;
+    const btn = document.querySelector('#edit-overlay button[onclick^="save"]'); // 取得儲存按鈕
+
+    btn.innerText = "SAVING...";
+    
+    try {
+        const { updateProfile, doc, setDoc } = window.fs;
+        
+        // 1. 更新 Firebase Auth (暱稱與頭像)
+        await updateProfile(window.appAuth.currentUser, {
+            displayName: newName,
+            photoURL: newPhoto
+        });
+        
+        // 2. 更新 Firestore (自我介紹 Bio) - 存入 users 集合
+        await setDoc(doc(window.db, "users", window.currentUser.uid), {
+            bio: newBio,
+            updatedAt: new Date()
+        }, { merge: true }); // merge: true 代表只更新欄位，不覆蓋整份文件
+
+        // 3. 更新完成
+        alert("個人檔案已更新！(Profile Updated)");
+        document.getElementById('edit-overlay').remove();
+        
+        // 重新載入個人頁面以顯示最新資料
+        loadProfileView(); 
+
+    } catch (e) {
+        console.error(e);
+        alert("更新失敗: " + e.message);
+        btn.innerText = "SAVE CHANGES";
+    }
+}
+// --- 新增功能：追蹤/取消追蹤 ---
+window.toggleFollow = async function(targetUid) {
+    if (!window.currentUser) {
+        alert("請先登入 (Please Login First)");
+        return;
+    }
+    const currentUid = window.currentUser.uid;
+    if (currentUid === targetUid) return; // 不能追蹤自己
+
+    const btn = document.getElementById('follow-btn');
+    const originalText = btn.innerText;
+    btn.innerText = "PROCESSING...";
+    btn.disabled = true;
+
+    // 定義唯一的關係 ID (追蹤者_被追蹤者)
+    const relId = `${currentUid}_${targetUid}`; 
+
+    try {
+        const { doc, getDoc, setDoc, deleteDoc, serverTimestamp } = window.fs;
+        const relRef = doc(window.db, "relationships", relId);
+        const relSnap = await getDoc(relRef);
+
+        if (relSnap.exists()) {
+            // 已經追蹤 -> 執行「取消追蹤」
+            await deleteDoc(relRef);
+            updateFollowUI(false);
+        } else {
+            // 尚未追蹤 -> 執行「追蹤」
+            await setDoc(relRef, {
+                followerId: currentUid, // 誰追蹤
+                followingId: targetUid, // 追蹤誰
+                timestamp: serverTimestamp()
+            });
+            updateFollowUI(true);
+        }
+        // 重新載入數據 (更新粉絲數)
+        loadFollowStats(targetUid);
+
+    } catch (err) {
+        console.error("追蹤失敗:", err);
+        alert("操作失敗: " + err.message);
+        btn.innerText = originalText;
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// 輔助函式：更新按鈕樣式
+function updateFollowUI(isFollowing) {
+    const btn = document.getElementById('follow-btn');
+    if (!btn) return;
+    
+    if (isFollowing) {
+        btn.innerHTML = "✓ FOLLOWING";
+        btn.style.background = "transparent";
+        btn.style.border = "1px solid var(--accent-color)";
+        btn.style.color = "var(--accent-color)";
+    } else {
+        btn.innerHTML = "➕ FOLLOW";
+        btn.style.background = "var(--accent-color)";
+        btn.style.border = "none";
+        btn.style.color = "#000";
+    }
+}
+
+// 輔助函式：載入粉絲數據
+async function loadFollowStats(targetUid) {
+    if (!window.fs || !window.db) return;
+    const { collection, query, where, getCountFromServer } = window.fs;
+
+    try {
+        // 1. 計算「粉絲數」 (Followers): 誰追蹤了 targetUid
+        const followersQ = query(collection(window.db, "relationships"), where("followingId", "==", targetUid));
+        const followersSnap = await getCountFromServer(followersQ);
+        
+        // 2. 計算「正在追蹤」 (Following): targetUid 追蹤了誰
+        const followingQ = query(collection(window.db, "relationships"), where("followerId", "==", targetUid));
+        const followingSnap = await getCountFromServer(followingQ);
+
+        // 更新介面
+        const followersEl = document.getElementById('stat-followers');
+        const followingEl = document.getElementById('stat-following');
+        
+        if(followersEl) followersEl.innerText = followersSnap.data().count;
+        if(followingEl) followingEl.innerText = followingSnap.data().count;
+
+    } catch (e) {
+        console.error("Stats load error:", e);
+    }
+}
+
+
+
             
+// --- 修改位置： window.loadProfileView (修復讀取他人資料問題) ---
+window.loadProfileView = async function(targetUid = null) {
+    const currentUser = window.currentUser;
+    
+    // 1. 檢查登入
+    if (!targetUid && !currentUser) {
+        alert("請先登入 (Please Login first)");
+        return;
+    }
+    
+    const uid = targetUid || currentUser.uid;
+    const isSelf = currentUser && currentUser.uid === uid;
+    
+    // 2. 初始化變數 (預設值)
+    // 如果是自己，先用 currentUser 的資料，如果是別人先顯示 Loading
+    let displayName = isSelf ? currentUser.displayName : "Loading..."; 
+    let photoURL = isSelf ? currentUser.photoURL : "";
+    let email = isSelf ? currentUser.email : "user@brooklyn.com";
+    let bioText = "Loading bio...";
+
+    // 3. 從 Firestore 讀取真實資料 (包含名字、頭像、Bio)
+    try {
+        const { doc, getDoc } = window.fs;
+        const userSnap = await getDoc(doc(window.db, "users", uid));
+        
+        if (userSnap.exists()) {
+            const data = userSnap.data();
+            
+            // ★ 關鍵修正：如果有讀到資料，就覆蓋變數 ★
+            if (data.displayName) displayName = data.displayName;
+            if (data.photoURL) photoURL = data.photoURL;
+            if (data.bio) bioText = data.bio;
+            else bioText = "這位用戶很懶，還沒寫自我介紹。";
+            
+        } else {
+            bioText = "這位用戶很懶，還沒寫自我介紹。";
+        }
+        
+        // 如果是看自己，順便更新全域變數方便編輯
+        if(isSelf) window.currentBio = bioText;
+        
+    } catch(e) {
+        console.error("Profile Load Error:", e);
+        bioText = "Bio loading failed.";
+    }
+
+    // 4. 渲染畫面
+    const feedContainer = document.querySelector('.pulse-feed-container');
+    if (!feedContainer) return;
+    
+    feedContainer.innerHTML = `
+        <div class="pulse-profile-layout" style="animation: fadeInUp 0.4s ease;">
+            
+            <div class="profile-cover-section">
+                <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">RETURN</button>
+                <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:4px 8px; font-size:0.7em; color:#fff; border-radius:4px; border:1px solid rgba(255,255,255,0.1);">COVER_ID: #8842-X</div>
+            </div>
+            
+            <div class="profile-info-card">
+                <div class="profile-header-row">
+                    <div class="profile-avatar-lg">
+                        ${photoURL 
+                            ? `<img src="${photoURL}" style="width:100%; height:100%; object-fit:cover;">`
+                            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3em;color:#555;">👾</div>`
+                        }
+                    </div>
+                    <div class="profile-actions">
+                        ${isSelf 
+                            ? `<button class="profile-btn" onclick="openEditModal()">✏️ EDIT PROFILE</button>
+                               <button class="profile-btn" style="border-color:var(--error-color); color:var(--error-color);" onclick="appAuth.signOut().then(()=>location.reload())">LOGOUT</button>`
+                            : `<button id="follow-btn" class="profile-btn" onclick="toggleFollow('${uid}')">CHECKING...</button>
+                               <button class="profile-btn">💬 MESSAGE</button>`
+                        }
+                    </div>
+                </div>
+                
+                <div class="profile-name-lg">${displayName}</div>
+                <div class="profile-handle">ID: ${uid.substring(0,6)}...</div>
+                <div class="profile-bio" style="white-space: pre-wrap;">${bioText}</div>
+                
+                <div class="profile-stats-row">
+                    <div class="p-stat-box"><span class="p-stat-num" id="stat-followers">--</span><span class="p-stat-lbl">Followers</span></div>
+                    <div class="p-stat-box"><span class="p-stat-num" id="stat-following">--</span><span class="p-stat-lbl">Following</span></div>
+                    <div class="p-stat-box"><span class="p-stat-num">Level 3</span><span class="p-stat-lbl">Access</span></div>
+                </div>
+            </div>
+
+            <div class="profile-tabs">
+                <div class="p-tab active">LOGS</div><div class="p-tab">MEDIA</div>
+            </div>
+
+            <div id="profile-posts-feed" style="display:flex; flex-direction:column; gap:20px; padding-bottom:50px;">
+                <div class="news-loading" style="padding:40px;">LOADING LOGS...</div>
+            </div>
+        </div>
+    `;
+
+    // 5. 檢查追蹤狀態 (如果是看別人)
+    if (!isSelf && currentUser) {
+        const { doc, getDoc } = window.fs;
+        const relId = `${currentUser.uid}_${uid}`;
+        getDoc(doc(window.db, "relationships", relId)).then(snap => {
+            if (typeof updateFollowUI === 'function') {
+                updateFollowUI(snap.exists());
+            }
+        }).catch(err => {
+            console.log("Follow check failed", err);
+            const btn = document.getElementById('follow-btn');
+            if(btn) { btn.innerText = "➕ FOLLOW"; btn.style.background = "var(--accent-color)"; }
+        });
+    }
+
+    // 6. 載入粉絲數據
+    if (typeof loadFollowStats === 'function') {
+        loadFollowStats(uid);
+    }
+
+    // 7. 載入貼文 (維持原本)
+    if (window.fs && window.db) {
+        const { collection, query, where, orderBy, getDocs } = window.fs;
+        const q = query(collection(window.db, "posts"), where("uid", "==", uid), orderBy("timestamp", "desc"));
+        getDocs(q).then((snapshot) => {
+            const listEl = document.getElementById('profile-posts-feed');
+            if(!listEl) return;
+            if (snapshot.empty) {
+                listEl.innerHTML = `<div style="text-align:center; padding:50px; color:#666;">NO LOGS FOUND</div>`;
+                return;
+            }
+            let html = '';
             snapshot.forEach((doc) => {
                 const p = doc.data();
-                let timeStr = "Just now";
-                if(p.timestamp) {
-                    const date = p.timestamp.toDate();
-                    const now = new Date();
-                    const diff = (now - date) / 1000;
-                    if(diff < 60) timeStr = "剛剛";
-                    else if(diff < 3600) timeStr = `${Math.floor(diff/60)} 分鐘前`;
-                    else if(diff < 86400) timeStr = `${Math.floor(diff/3600)} 小時前`;
-                    else timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                }
-                
-                // 產生貼文 HTML (包含連結轉換 linkify)
+                let timeStr = "Unknown";
+                if(p.timestamp) timeStr = p.timestamp.toDate().toLocaleDateString();
                 html += `
                     <div class="pulse-post">
                         <div class="pulse-post-header">
-                            <div class="pulse-avatar" style="cursor:pointer;" onclick="loadProfileView('${p.uid}')">
-                                ${p.avatar ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` : '<div style="width:100%;height:100%;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;">👤</div>'}
-                            </div>
-                            <div class="pulse-meta">
-                                <div class="pulse-name" style="cursor:pointer; color:var(--accent-color);" onclick="loadProfileView('${p.uid}')">${p.name || 'Anonymous'}</div>
-                                <div class="pulse-time">${timeStr} <span style="margin-left:5px; opacity:0.7;">• 公開</span></div>
-                            </div>
-                            <div class="pulse-menu-btn">•••</div>
+                            <div class="pulse-avatar">${p.avatar ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` : '👤'}</div>
+                            <div class="pulse-meta"><div class="pulse-name">${p.name}</div><div class="pulse-time">${timeStr}</div></div>
                         </div>
-                        
-                        <div class="pulse-content">${linkify(p.content)}</div>
-                        ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
-                        
-                        <div class="pulse-stats">
-                            <span>${pIcons.like} ${p.likes || 0}</span>
-                            <span>${p.comments || 0} Comments</span>
-                        </div>
-                        <div class="pulse-actions">
-                            <button class="pulse-action-btn">${pIcons.like} Like</button>
-                            <button class="pulse-action-btn">${pIcons.comment} Comment</button>
-                            <button class="pulse-action-btn">${pIcons.share} Share</button>
-                        </div>
-                    </div>
-                `;
+                        <div class="pulse-content">${p.content}</div>
+                    </div>`;
             });
-            
-            if(html === '') {
-                html = `<div style="text-align:center; padding:50px; opacity:0.6;"><div style="font-size:3em; margin-bottom:10px;">📝</div><div>這裡還很安靜...</div><div style="font-size:0.9em; margin-top:5px;">成為第一個發言的人吧！</div></div>`;
-            }
-            feedEl.innerHTML = html;
+            listEl.innerHTML = html;
         });
     }
 }
