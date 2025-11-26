@@ -5,7 +5,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.020</title> 
+    <title>BROOKLYN-TERMINAL // V1.021</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -3116,7 +3116,7 @@ async function loadFollowStats(targetUid) {
 
 
             
-// --- 修改位置： window.loadProfileView 函式 (支援 Bio 讀取與編輯) ---
+// --- 修改位置： window.loadProfileView (修復名字顯示與按鈕狀態) ---
 window.loadProfileView = async function(targetUid = null) {
     const currentUser = window.currentUser;
     if (!targetUid && !currentUser) {
@@ -3127,34 +3127,43 @@ window.loadProfileView = async function(targetUid = null) {
     const uid = targetUid || currentUser.uid;
     const isSelf = currentUser && currentUser.uid === uid;
     
-    // 基本資料
-    const displayName = isSelf ? currentUser.displayName : "Loading..."; 
+    // ★ 修正 1：改用 let，這樣後面才能更新名字
+    let displayName = isSelf ? currentUser.displayName : "Loading..."; 
     const photoURL = isSelf ? currentUser.photoURL : "";
     const email = isSelf ? currentUser.email : "user@brooklyn.com";
 
-    // 讀取 Bio
+    // 讀取 Bio 與 名字
     let bioText = "Loading bio...";
     try {
         const { doc, getDoc } = window.fs;
         const userSnap = await getDoc(doc(window.db, "users", uid));
+        
         if (userSnap.exists()) {
-            // 如果是對方的檔案，直接顯示名字
-            if (!isSelf && userSnap.data().displayName) {
-               // 這裡可以選擇是否要用資料庫的名字覆蓋預設的 Loading
+            // ★ 修正 2：如果有抓到名字，就更新變數
+            if (userSnap.data().displayName) {
+               displayName = userSnap.data().displayName;
             }
-            if (userSnap.data().bio) bioText = userSnap.data().bio;
-            else bioText = "這位用戶很懶，還沒寫自我介紹。";
+            
+            if (userSnap.data().bio) {
+                bioText = userSnap.data().bio;
+            } else {
+                bioText = "這位用戶很懶，還沒寫自我介紹。";
+            }
         } else {
             bioText = "這位用戶很懶，還沒寫自我介紹。";
         }
+        // 如果是自己，順便更新全域變數
         if(isSelf) window.currentBio = bioText;
+        
     } catch(e) {
+        console.error("Profile Load Error:", e);
         bioText = "Bio loading failed.";
     }
 
     const feedContainer = document.querySelector('.pulse-feed-container');
     if (!feedContainer) return;
     
+    // 渲染 HTML (這時候 displayName 已經是最新的了)
     feedContainer.innerHTML = `
         <div class="pulse-profile-layout" style="animation: fadeInUp 0.4s ease;">
             
@@ -3202,19 +3211,31 @@ window.loadProfileView = async function(targetUid = null) {
         </div>
     `;
 
-    // 2. 檢查追蹤狀態 (如果是看別人)
+    // 2. 檢查追蹤狀態 (★ 修正：加入錯誤處理，防止按鈕卡住)
     if (!isSelf && currentUser) {
         const { doc, getDoc } = window.fs;
         const relId = `${currentUser.uid}_${uid}`;
         getDoc(doc(window.db, "relationships", relId)).then(snap => {
-            updateFollowUI(snap.exists());
+            // 確保 updateFollowUI 存在
+            if (typeof updateFollowUI === 'function') {
+                updateFollowUI(snap.exists());
+            } else {
+                console.warn("updateFollowUI function missing!");
+            }
+        }).catch(err => {
+            console.log("Follow check failed", err);
+            // 發生錯誤時，預設顯示為未追蹤，避免卡在 CHECKING
+            const btn = document.getElementById('follow-btn');
+            if(btn) { btn.innerText = "➕ FOLLOW"; btn.style.background = "var(--accent-color)"; }
         });
     }
 
-    // 3. 載入粉絲數據 (所有人都要載入)
-    loadFollowStats(uid);
+    // 3. 載入粉絲數據
+    if (typeof loadFollowStats === 'function') {
+        loadFollowStats(uid);
+    }
 
-    // 4. 載入貼文 (保持不變)
+    // 4. 載入貼文 (維持原本)
     if (window.fs && window.db) {
         const { collection, query, where, orderBy, getDocs } = window.fs;
         const q = query(collection(window.db, "posts"), where("uid", "==", uid), orderBy("timestamp", "desc"));
@@ -3243,6 +3264,100 @@ window.loadProfileView = async function(targetUid = null) {
         });
     }
 }
+// ============================================================
+// ★ 追蹤功能輔助函式 (必須存在，按鈕才不會卡住) ★
+// ============================================================
+
+// 1. 追蹤/取消追蹤 主邏輯
+window.toggleFollow = async function(targetUid) {
+    if (!window.currentUser) {
+        alert("請先登入 (Please Login First)");
+        return;
+    }
+    const currentUid = window.currentUser.uid;
+    if (currentUid === targetUid) return; 
+
+    const btn = document.getElementById('follow-btn');
+    const originalText = btn.innerText;
+    btn.innerText = "PROCESSING...";
+    btn.disabled = true;
+
+    const relId = `${currentUid}_${targetUid}`; 
+
+    try {
+        const { doc, getDoc, setDoc, deleteDoc, serverTimestamp } = window.fs;
+        const relRef = doc(window.db, "relationships", relId);
+        const relSnap = await getDoc(relRef);
+
+        if (relSnap.exists()) {
+            await deleteDoc(relRef);
+            updateFollowUI(false);
+        } else {
+            await setDoc(relRef, {
+                followerId: currentUid,
+                followingId: targetUid,
+                timestamp: serverTimestamp()
+            });
+            updateFollowUI(true);
+        }
+        loadFollowStats(targetUid);
+
+    } catch (err) {
+        console.error("追蹤失敗:", err);
+        alert("操作失敗: " + err.message);
+        btn.innerText = originalText;
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// 2. 更新按鈕樣式 UI
+window.updateFollowUI = function(isFollowing) {
+    const btn = document.getElementById('follow-btn');
+    if (!btn) return;
+    
+    if (isFollowing) {
+        btn.innerHTML = "✓ FOLLOWING";
+        btn.style.background = "transparent";
+        btn.style.border = "1px solid var(--accent-color)";
+        btn.style.color = "var(--accent-color)";
+    } else {
+        btn.innerHTML = "➕ FOLLOW";
+        btn.style.background = "var(--accent-color)";
+        btn.style.border = "none";
+        btn.style.color = "#000";
+    }
+}
+
+// 3. 載入粉絲數據
+window.loadFollowStats = async function(targetUid) {
+    if (!window.fs || !window.db) return;
+    const { collection, query, where, getCountFromServer } = window.fs;
+
+    // ★ 如果 getCountFromServer 沒定義，會導致數據顯示 --
+    if (!getCountFromServer) {
+        console.warn("請檢查 import 是否包含 getCountFromServer");
+        return;
+    }
+
+    try {
+        const followersQ = query(collection(window.db, "relationships"), where("followingId", "==", targetUid));
+        const followersSnap = await getCountFromServer(followersQ);
+        
+        const followingQ = query(collection(window.db, "relationships"), where("followerId", "==", targetUid));
+        const followingSnap = await getCountFromServer(followingQ);
+
+        const followersEl = document.getElementById('stat-followers');
+        const followingEl = document.getElementById('stat-following');
+        
+        if(followersEl) followersEl.innerText = followersSnap.data().count;
+        if(followingEl) followingEl.innerText = followingSnap.data().count;
+
+    } catch (e) {
+        console.error("Stats load error:", e);
+    }
+}
+            
 
 // 輔助功能：刪除自己的貼文 (僅前端模擬，需後端規則配合)
 window.deletePost = async function(docId) {
@@ -3286,7 +3401,7 @@ window.loadCommunityView = function(groupId) {
                         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                             <div>
                                 <h1 style="margin:0; font-size:1.5em; color:#fff; display:flex; align-items:center; gap:10px;">
-                                    八卦傳令部 (Gossip HQ)
+                                    公開討論區 (Gossip HQ)
                                     <span style="font-size:0.5em; background:${themeColor}; color:#000; padding:2px 8px; border-radius:4px; vertical-align:middle;">PRIVATE</span>
                                 </h1>
                                 <div style="color:${themeColor}; font-family:monospace; margin-top:5px;">/GROUP/Main/Market_Leaks</div>
@@ -3555,7 +3670,7 @@ window.loadCommunityView = function(groupId) {
                         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                             <div>
                                 <h1 style="margin:0; font-size:1.5em; color:#fff; display:flex; align-items:center; gap:10px;">
-                                    八卦傳令部 (Gossip HQ)
+                                    公開討論區 (Gossip HQ)
                                     <span style="font-size:0.5em; background:${themeColor}; color:#000; padding:2px 8px; border-radius:4px; vertical-align:middle;">PRIVATE</span>
                                 </h1>
                                 <div style="color:${themeColor}; font-family:monospace; margin-top:5px;">/GROUP/Main/Market_Leaks</div>
