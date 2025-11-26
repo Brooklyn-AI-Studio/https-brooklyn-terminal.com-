@@ -5,7 +5,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.015</title> 
+    <title>BROOKLYN-TERMINAL // V1.016</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -3293,6 +3293,229 @@ window.submitGroupPost = async function(groupId) {
         input.value = content;
     }
 }
+// ============================================================
+// ★ 社團功能核心修復包 (包含會員管理與按鈕狀態更新) ★
+// ============================================================
+
+// 1. 輔助函式：更新按鈕外觀 (修復卡在 Checking 的關鍵)
+window.updateJoinButton = function(isJoined) {
+    const btn = document.getElementById('group-join-btn');
+    if (!btn) return;
+    
+    if (isJoined) {
+        // 已加入狀態
+        btn.innerText = "✓ JOINED";
+        btn.style.background = "transparent";
+        btn.style.border = "1px solid #FF3366";
+        btn.style.color = "#FF3366";
+    } else {
+        // 未加入狀態
+        btn.innerText = "JOIN GROUP +";
+        btn.style.background = "#FF3366";
+        btn.style.border = "none";
+        btn.style.color = "#000";
+    }
+}
+
+// 2. 切換會員狀態 (加入/退出)
+window.toggleGroupMembership = async function(groupId) {
+    if (!window.currentUser) {
+        alert("⚠️ 請先登入 (Please Login First)");
+        return;
+    }
+
+    const uid = window.currentUser.uid;
+    const docId = `${groupId}_${uid}`; 
+    const btn = document.getElementById('group-join-btn');
+    
+    // 視覺回饋
+    const originalText = btn.innerText;
+    btn.innerText = "PROCESSING...";
+    btn.disabled = true;
+
+    try {
+        const { doc, getDoc, setDoc, deleteDoc, serverTimestamp } = window.fs;
+        const memberRef = doc(window.db, "group_members", docId);
+        const memberSnap = await getDoc(memberRef);
+
+        if (memberSnap.exists()) {
+            // 已經是會員 -> 執行「退出」
+            if(confirm("確定要退出此社團嗎? (Leave Group?)")) {
+                await deleteDoc(memberRef);
+                updateJoinButton(false); 
+                alert("已退出社團。");
+            } else {
+                updateJoinButton(true); // 取消退出，還原狀態
+            }
+        } else {
+            // 不是會員 -> 執行「加入」
+            await setDoc(memberRef, {
+                uid: uid,
+                groupId: groupId,
+                joinedAt: serverTimestamp(),
+                name: window.currentUser.displayName,
+                avatar: window.currentUser.photoURL
+            });
+            updateJoinButton(true);
+            
+            // 加入成功的特效
+            const box = document.querySelector('.profile-info-card');
+            if(box) {
+                box.style.animation = 'none';
+                box.offsetHeight; /* trigger reflow */
+                box.style.animation = 'pulse 0.5s ease';
+            }
+        }
+    } catch (err) {
+        console.error("會員操作失敗:", err);
+        alert("系統錯誤: " + err.message);
+        btn.innerText = originalText;
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// 3. 社團頁面渲染 (確保載入時會檢查狀態)
+window.loadCommunityView = function(groupId) {
+    const feedContainer = document.querySelector('.pulse-feed-container');
+    if (!feedContainer) return;
+
+    const themeColor = "#FF3366"; 
+    
+    feedContainer.innerHTML = `
+        <div class="pulse-profile-layout" style="animation: fadeInUp 0.4s ease;">
+            
+            <div class="profile-cover-section" style="background: linear-gradient(135deg, #2b0000 0%, #1a0505 100%); border-bottom: 2px solid ${themeColor};">
+                <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">
+                    &lt; RETURN FEED
+                </button>
+                <div style="position:absolute; bottom:10px; right:10px; font-family:'Orbitron'; font-size:4em; opacity:0.1; color:${themeColor}; font-weight:900;">
+                    GOSSIP
+                </div>
+            </div>
+            
+            <div class="profile-info-card" style="border-top:none; padding-top:20px;">
+                <div style="display:flex; gap:20px; align-items:flex-start;">
+                    <div style="width:100px; height:100px; background:#000; border:2px solid ${themeColor}; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:3em; margin-top:-50px; position:relative; z-index:5; box-shadow:0 5px 20px rgba(255, 51, 102, 0.3);">🔥</div>
+                    <div style="flex:1;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <h1 style="margin:0; font-size:1.5em; color:#fff; display:flex; align-items:center; gap:10px;">
+                                    八卦傳令部 (Gossip HQ)
+                                    <span style="font-size:0.5em; background:${themeColor}; color:#000; padding:2px 8px; border-radius:4px; vertical-align:middle;">PRIVATE</span>
+                                </h1>
+                                <div style="color:${themeColor}; font-family:monospace; margin-top:5px;">/GROUP/Main/Market_Leaks</div>
+                            </div>
+                            
+                            <button id="group-join-btn" class="profile-btn" 
+                                    style="background:${themeColor}; color:#000; border:none; transition:all 0.3s;" 
+                                    onclick="toggleGroupMembership('${groupId}')">
+                                CHECKING...
+                            </button>
+                        </div>
+                        
+                        <p style="color:#ccc; font-size:0.9em; margin-top:10px; line-height:1.5;">
+                            ⚠️ <strong>本區規則：</strong> 匿名爆料 / 小道消息 / 韭菜取暖。<br>DYOR.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-tabs" style="margin-top:20px;">
+                <div class="p-tab active" style="color:${themeColor};">LATEST</div>
+                <div class="p-tab">TRENDING</div>
+            </div>
+
+            <div class="pulse-create" style="border:1px solid ${themeColor}; background:rgba(255, 51, 102, 0.05); margin-top:20px;">
+                <div class="pulse-avatar" style="background:${themeColor}; color:#000; font-weight:bold;">?</div>
+                <input type="text" id="group-post-input" class="pulse-input-dummy" 
+                       placeholder="在此社團發布消息..." style="color:#fff;"
+                       onkeypress="if(event.key === 'Enter') submitGroupPost('${groupId}')">
+                <button onclick="submitGroupPost('${groupId}')" 
+                        style="background:${themeColor}; color:#fff; border:none; padding:6px 16px; border-radius:20px; font-weight:bold; cursor:pointer;">
+                    POST
+                </button>
+            </div>
+
+            <div id="group-feed-list" style="margin-top:20px; display:flex; flex-direction:column; gap:20px; padding-bottom:50px;">
+                <div class="news-loading" style="padding:40px; border:1px dashed #333; border-radius:8px;">
+                    Connecting to Secret Channel...
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // ★ 關鍵修復：這裡會決定按鈕最後顯示什麼字 ★
+    if (window.currentUser && window.fs && window.db) {
+        const { doc, getDoc } = window.fs;
+        const docId = `${groupId}_${window.currentUser.uid}`;
+        // 查詢資料庫
+        getDoc(doc(window.db, "group_members", docId)).then(snap => {
+            updateJoinButton(snap.exists()); // 有資料就顯示 JOINED，沒資料顯示 JOIN GROUP
+        }).catch(e => {
+            console.log("Member check error:", e);
+            updateJoinButton(false); // 發生錯誤就預設讓使用者可以按加入
+        });
+    } else {
+        // 如果沒登入，直接顯示加入按鈕
+        updateJoinButton(false);
+    }
+
+    // 啟動貼文監聽
+    if (window.fs && window.db) {
+        const { collection, query, where, orderBy, onSnapshot } = window.fs;
+        const q = query(
+            collection(window.db, "posts"), 
+            where("category", "==", "gossip"), 
+            orderBy("timestamp", "desc")
+        );
+
+        onSnapshot(q, (snapshot) => {
+            const listEl = document.getElementById('group-feed-list');
+            if(!listEl) return;
+            
+            if (snapshot.empty) {
+                listEl.innerHTML = `<div style="text-align:center; padding:30px; color:#666;">尚無爆料消息...</div>`;
+                return;
+            }
+
+            let html = '';
+            snapshot.forEach((doc) => {
+                const p = doc.data();
+                let timeStr = "Just now";
+                if(p.timestamp) {
+                    const date = p.timestamp.toDate();
+                    timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                }
+
+                html += `
+                    <div class="pulse-post" style="border-left: 2px solid ${themeColor};">
+                        <div class="pulse-post-header">
+                            <div class="pulse-avatar">
+                                ${p.avatar ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` : '🕵️'}
+                            </div>
+                            <div class="pulse-meta">
+                                <div class="pulse-name" style="color:${themeColor};">${p.name}</div>
+                                <div class="pulse-time">${timeStr}</div>
+                            </div>
+                            ${(window.currentUser && window.currentUser.uid === p.uid) ? 
+                                `<div class="pulse-menu-btn" onclick="deletePost('${doc.id}')" title="Delete">🗑️</div>` : ''}
+                        </div>
+                        <div class="pulse-content">${p.content}</div>
+                        <div class="pulse-stats" style="border-top:1px solid rgba(255,51,102,0.2); margin-top:10px; padding-top:10px;">
+                            <span style="color:${themeColor};">🔥 ${p.likes || 0} 热度</span>
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+        });
+    }
+}
+
+
+
+            
 // --- 新增功能：社團會員管理 (真實記憶性) ---
 window.toggleGroupMembership = async function(groupId) {
     if (!window.currentUser) {
