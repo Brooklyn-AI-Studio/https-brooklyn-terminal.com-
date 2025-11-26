@@ -1906,50 +1906,58 @@
 </head>
 <body>
     <div id="tutorial-overlay">
-        <div class="tutorial-card">
-            <div class="tutorial-title">BROOKLYN-TERMINAL</div>
-            <div class="tutorial-subtitle">打造屬於自己的AI工作站</div>
+    <div class="tutorial-card">
+        <div class="tutorial-title">BROOKLYN-TERMINAL</div>
+        <div class="tutorial-subtitle">打造屬於自己的AI工作站</div>
+        
+        <div class="tutorial-slides-container">
             
-            <div class="tutorial-slides-container">
-                <div class="tutorial-slide active" id="slide-1">
-                    <div class="sys-boot-text">
-                        <div class="typing-line">> INITIALIZING SYSTEM...</div>
-                        <div class="typing-line">> CHECKING LICENSE...@br00klyn_weirdo</div>
-                        <div class="typing-line">> ACCESS: Successfuly</div>
-                        <div class="typing-line">> WELCOME, TRADER.</div>
-                    </div>
+            <div class="tutorial-slide active" id="slide-1">
+                <div class="sys-boot-text">
+                    <div class="typing-line">> INITIALIZING SYSTEM...</div>
+                    <div class="typing-line">> CHECKING LICENSE...@br00klyn_weirdo</div>
+                    <div class="typing-line">> ACCESS: Successfuly</div>
+                    <div class="typing-line">> WELCOME, TRADER.</div>
                 </div>
-
-
-    
-                <div class="tutorial-slide" id="slide-2">
-                    <div class="scene-box">
-                        <div class="scene-sidebar"><div class="scene-tool"></div></div>
-                        <div class="scene-window"><div class="scene-chart-content" style="display:block;"></div></div>
-                        <div class="scene-floating-data">BTC: +12.5%</div>
-                        <div class="scene-cursor"></div>
-                    </div>
-                    <div style="margin-top:15px; font-size:0.9em; color:#aaa;">DRAG & DROP • LIVE CHARTS • REAL-TIME DATA</div>
-                </div>
-
-                <div class="tutorial-slide" id="slide-3">
-                    <div style="height:180px; display:flex; align-items:center; justify-content:center;">
-                        <div class="scene-ui-mock">
-                            <div class="scene-ui-bar"></div>
-                            <div class="scene-ui-bar" style="width:40%"></div>
-                            <div class="scene-ui-btn"></div>
-                            <div class="scene-ui-text">THEME ENGINE</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px; width: 100%;">
-                
-                <button class="tutorial-btn" onclick="closeTutorial()">立即體驗</button>
-                
-               <button class="tutorial-btn" id="tutorial-login-btn" style="background: transparent;
-border: 1px solid var(--accent-color); color: var(--accent-color);">
-                    GOOGLE 登入
-                </button>
             </div>
+
+            <div class="tutorial-slide" id="slide-2">
+                <div class="scene-box">
+                    <div class="scene-sidebar"><div class="scene-tool"></div></div>
+                    <div class="scene-window"><div class="scene-chart-content" style="display:block;"></div></div>
+                    <div class="scene-floating-data">BTC: +12.5%</div>
+                    <div class="scene-cursor"></div>
+                </div>
+                <div style="margin-top:15px; font-size:0.9em; color:#aaa;">DRAG & DROP • LIVE CHARTS • REAL-TIME DATA</div>
+            </div>
+
+            <div class="tutorial-slide" id="slide-3">
+                <div style="height:180px; display:flex; align-items:center; justify-content:center;">
+                    <div class="scene-ui-mock">
+                        <div class="scene-ui-bar"></div>
+                        <div class="scene-ui-bar" style="width:40%"></div>
+                        <div class="scene-ui-btn"></div>
+                        <div class="scene-ui-text">THEME ENGINE</div>
+                    </div>
+                </div>
+                <div style="margin-top:15px; font-size:0.9em; color:#aaa;">TOTAL VISUAL CONTROL</div>
+            </div>
+        
+        </div> <div class="slide-dots">
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px; width: 100%;">
+            <button class="tutorial-btn" onclick="closeTutorial()">立即體驗</button>
+            
+            <button class="tutorial-btn" id="tutorial-login-btn" style="background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color);">
+                GOOGLE 登入
+            </button>
+        </div>
+
+    </div> </div> ```
             </div> </div>     </div>         </div>             <div id="welcome-overlay">
     <div class="login-container">
         <div class="close-login-btn" onclick="closeLoginModal()">×</div>
