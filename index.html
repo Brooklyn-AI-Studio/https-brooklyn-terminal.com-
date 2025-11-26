@@ -4650,20 +4650,14 @@ window.closeLoginModal = function() {
 });
     </script>
 <script type="module">
-    // 1. 引入 Firebase 核心、驗證與資料庫
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
     import { 
         getAuth, 
         GoogleAuthProvider, 
         signInWithPopup, 
         signOut, 
-        onAuthStateChanged, 
-        doc,      
-        setDoc,   
-        limit     
+        onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    
+
     // ★ 新增：引入 Firestore 資料庫模組 ★
     import { 
         getFirestore, 
@@ -4672,9 +4666,12 @@ window.closeLoginModal = function() {
         query, 
         orderBy, 
         onSnapshot, 
-        serverTimestamp 
+        serverTimestamp,
+        doc,      
+        setDoc,   
+        limit     
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
+    
     // 2. Firebase 設定
     const firebaseConfig = {
         apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
