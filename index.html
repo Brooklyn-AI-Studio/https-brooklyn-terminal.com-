@@ -5,7 +5,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.023</title> 
+    <title>BROOKLYN-TERMINAL // V1.024</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -3990,142 +3990,7 @@ function updateJoinButton(isJoined) {
     }
 }
             
-            
-            // ==========================================
-            // ★ Firestore 功能實作區 ★
-            // ==========================================
-            
-            const input = document.getElementById('pulse-real-input');
-            const feed = document.getElementById('pulse-real-feed');
-
-            // 4. 發文功能 (監聽 Enter 鍵)
-            input.addEventListener('keypress', async (e) => {
-                if (e.key === 'Enter' && input.value.trim() !== '') {
-                    // 檢查是否登入
-                    if (!window.currentUser) {
-                        alert("⚠️ 系統提示：請先登入 Google 帳號才能發文。\n(Please Login to post)");
-                        return;
-                    }
-                    
-                    const content = input.value.trim();
-                    input.value = ''; // 立即清空輸入框，提升體驗
-                    input.placeholder = "發送中...";
-
-                    try {
-                        // 從 window.fs 取得 Firestore 函式 (我們在底部 script 定義的)
-                        const { addDoc, collection, serverTimestamp } = window.fs;
-                        
-                        // 寫入資料庫
-                        await addDoc(collection(window.db, "posts"), {
-                            content: content,
-                            name: window.currentUser.displayName,
-                            avatar: window.currentUser.photoURL,
-                            uid: window.currentUser.uid,
-                            timestamp: serverTimestamp(), // 伺服器時間
-                            likes: 0,
-                            comments: 0
-                        });
-                        
-                        input.placeholder = "聊聊你對市場的看法? (按 Enter 發佈)";
-                        // 成功後不需要手動更新畫面，下面的 onSnapshot 會自動處理！
-                        
-                    } catch (err) {
-                        console.error("發文錯誤:", err);
-                        alert("發送失敗: " + err.message);
-                        input.value = content; // 失敗時把文字補回去
-                    }
-                }
-            });
-
-            // 5. 即時監聽貼文 (Real-time Listener)
-            // 這段程式碼會讓網頁與資料庫保持連線，有人發文時自動更新
-            if (window.fs && window.db) {
-                try {
-                    const { collection, query, orderBy, onSnapshot } = window.fs;
-                    
-                    // 查詢條件：posts 集合，依照時間倒序排列
-                    const q = query(collection(window.db, "posts"), orderBy("timestamp", "desc"));
-                    
-                    // 開始監聽
-                    onSnapshot(q, (snapshot) => {
-                        // 檢查元素是否還在 (防止切換頁面後報錯)
-                        const feedEl = document.getElementById('pulse-real-feed');
-                        if(!feedEl) return;
-
-                        let html = '';
-                        
-                        snapshot.forEach((doc) => {
-                            const p = doc.data();
-                            
-                            // 時間格式化
-                            let timeStr = "Just now";
-                            if(p.timestamp) {
-                                // 將 Firestore Timestamp 轉為 JS Date
-                                const date = p.timestamp.toDate();
-                                const now = new Date();
-                                const diff = (now - date) / 1000; // 秒數差
-                                
-                                if(diff < 60) timeStr = "剛剛";
-                                else if(diff < 3600) timeStr = `${Math.floor(diff/60)} 分鐘前`;
-                                else if(diff < 86400) timeStr = `${Math.floor(diff/3600)} 小時前`;
-                                else timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            }
-
-                            // 產生貼文 HTML
-                            html += `
-                        <div class="pulse-post">
-                            <div class="pulse-post-header">
-                                <div class="pulse-avatar" style="cursor:pointer;" onclick="loadProfileView('${p.uid}')">
-                                    ${p.avatar 
-                                        ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` 
-                                        : '<div style="width:100%;height:100%;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;">👤</div>'}
-                                </div>
-                                
-                                <div class="pulse-meta">
-                                    <div class="pulse-name" style="cursor:pointer;" onclick="loadProfileView('${p.uid}')">
-                                        ${p.name || 'Anonymous'}
-                                    </div>
-                                    <div class="pulse-time">${timeStr} <span style="margin-left:5px; opacity:0.7;">• 公開</span></div>
-                                </div>
-
-                                <div class="pulse-menu-btn">•••</div>
-                            </div>
-                            
-                            <div class="pulse-content">${p.content}</div>
-                            ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
-                            
-                            <div class="pulse-stats">
-                                <span>${pIcons.like} ${p.likes || 0}</span>
-                                <span>${p.comments || 0} Comments</span>
-                            </div>
-                            <div class="pulse-actions">
-                                <button class="pulse-action-btn">${pIcons.like} Like</button>
-                                <button class="pulse-action-btn">${pIcons.comment} Comment</button>
-                                <button class="pulse-action-btn">${pIcons.share} Share</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                        
-                        // 如果資料庫是空的
-                        if(html === '') {
-                            html = `
-                                <div style="text-align:center; padding:50px; opacity:0.6;">
-                                    <div style="font-size:3em; margin-bottom:10px;">📝</div>
-                                    <div>這裡還很安靜...</div>
-                                    <div style="font-size:0.9em; margin-top:5px;">成為第一個發言的人吧！</div>
-                                </div>`;
-                        }
-                        
-                        feedEl.innerHTML = html;
-                    });
-                } catch (e) {
-                    console.error("讀取資料庫失敗:", e);
-                    feed.innerHTML = '<div style="text-align:center; color:#ff3333; padding:20px; border:1px solid #ff3333; border-radius:8px; margin-top:20px;">無法連線至資料庫<br><span style="font-size:0.8em; color:#aaa;">請確認 Firebase 設定是否正確</span></div>';
-                }
-            } else {
-                console.warn("Firebase 尚未初始化，無法讀取資料庫");
-            }
+           
         }
         // 輔助：清空連線 (原本的 clearGrid 只有清空 items，沒有清空 SVG 連線)
         function clearAllConnections() {
