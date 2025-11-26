@@ -4784,7 +4784,7 @@ window.closeLoginModal = function() {
 });
     </script>
 <script type="module">
-    // 1. 引入 Firebase 核心、驗證與資料庫
+    // 1. 引入 Firebase 核心、驗證與資料庫工具
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
     import { 
@@ -4794,29 +4794,11 @@ window.closeLoginModal = function() {
         signOut, 
         onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    
+    // ★ 引入 Firestore 所有必要功能 (含按讚、留言所需工具) ★
     import { 
         getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp,
-        // ★ 新增以下功能 ★
         doc, updateDoc, arrayUnion, arrayRemove, increment, getDocs
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    // ... (中間 Firebase 設定與初始化保持不變) ...
-
-    // ★ 關鍵更新：更新 window.fs，加入新工具 ★
-    window.fs = { 
-        collection, addDoc, query, orderBy, onSnapshot, serverTimestamp,
-        doc, updateDoc, arrayUnion, arrayRemove, increment, getDocs
-    };
-    window.db = db;
-    // ★ 新增：引入 Firestore 資料庫模組 ★
-    import { 
-        getFirestore, 
-        collection, 
-        addDoc, 
-        query, 
-        orderBy, 
-        onSnapshot, 
-        serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // 2. Firebase 設定
@@ -4835,25 +4817,27 @@ window.closeLoginModal = function() {
     const analytics = getAnalytics(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    
-    // ★ 初始化資料庫 ★
-    const db = getFirestore(app);
+    const db = getFirestore(app); // 初始化資料庫
 
-    // ★ 關鍵：將資料庫工具掛載到 window (讓 PulseStreet 可以使用) ★
+    // ★ 關鍵：將資料庫工具掛載到 window，讓主程式 (renderPulseStreet) 可以使用 ★
     window.db = db;
-    window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp };
+    window.fs = { 
+        collection, addDoc, query, orderBy, onSnapshot, serverTimestamp,
+        doc, updateDoc, arrayUnion, arrayRemove, increment, getDocs
+    };
 
-    // --- 4. 登入與介面邏輯 (保持不變) ---
+    // --- 4. 登入與介面邏輯 ---
     
+    // 取得 UI 元素
     const headerBtn = document.getElementById('header-auth-btn');
     const headerText = document.getElementById('auth-text');
     const headerIcon = document.getElementById('auth-icon');
     const headerAvatar = document.getElementById('auth-avatar');
-    
     const welcomeOverlay = document.getElementById('welcome-overlay');
     const centerLoginBtn = document.getElementById('login-btn');
+    const tutorialLoginBtn = document.getElementById('tutorial-login-btn');
 
-    // 定義登入函式
+    // 登入函式
     const performLogin = () => {
         if(centerLoginBtn) centerLoginBtn.innerText = "CONNECTING...";
         if(headerText) headerText.innerText = "...";
@@ -4869,7 +4853,7 @@ window.closeLoginModal = function() {
             });
     };
 
-    // 定義登出函式
+    // 登出函式
     const performLogout = () => {
         if(confirm("確認要登出系統嗎?")) {
             signOut(auth).then(() => {
@@ -4878,7 +4862,9 @@ window.closeLoginModal = function() {
         }
     };
 
-    // 按鈕監聽
+    // --- 按鈕監聽綁定 ---
+
+    // 1. Header 右上角按鈕
     if (headerBtn) {
         headerBtn.addEventListener('click', () => {
             if (auth.currentUser) performLogout();
@@ -4886,23 +4872,30 @@ window.closeLoginModal = function() {
         });
     }
 
+    // 2. 中央歡迎畫面按鈕
     if (centerLoginBtn) {
         centerLoginBtn.onclick = null;
         centerLoginBtn.addEventListener('click', performLogin);
     }
 
-    // 教學視窗按鈕
-    const tutorialLoginBtn = document.getElementById('tutorial-login-btn');
+    // 3. 教學視窗 Google 登入按鈕 (您特別關注的部分)
     if (tutorialLoginBtn) {
         tutorialLoginBtn.addEventListener('click', () => {
+            // 關閉教學視窗
             const tutOverlay = document.getElementById('tutorial-overlay');
-            if(tutOverlay) tutOverlay.classList.remove('active');
+            if(tutOverlay) {
+                tutOverlay.classList.remove('active');
+                tutOverlay.style.opacity = '0';
+                setTimeout(() => tutOverlay.style.display = 'none', 500);
+            }
+            // 停止輪播
             if(window.stopSlideShow) window.stopSlideShow();
+            // 執行登入
             performLogin();
         });
     }
 
-    // 監聽登入狀態
+    // --- 狀態監聽 ---
     onAuthStateChanged(auth, (user) => {
         if (user) {
             // 已登入
@@ -4912,6 +4905,7 @@ window.closeLoginModal = function() {
                 headerAvatar.src = user.photoURL;
                 headerAvatar.style.display = 'block';
             }
+            // 隱藏歡迎遮罩
             if(welcomeOverlay) {
                 welcomeOverlay.style.opacity = '0';
                 setTimeout(() => welcomeOverlay.style.display = 'none', 500);
@@ -4922,6 +4916,7 @@ window.closeLoginModal = function() {
             if(headerText) headerText.innerText = "LOGIN";
             if(headerIcon) headerIcon.style.display = 'inline';
             if(headerAvatar) headerAvatar.style.display = 'none';
+            // 顯示歡迎遮罩
             if(welcomeOverlay) {
                 welcomeOverlay.style.display = 'flex';
                 setTimeout(() => welcomeOverlay.style.opacity = '1', 10);
@@ -4932,12 +4927,12 @@ window.closeLoginModal = function() {
 
     function updateUserProfile(user) {
         window.currentUser = user;
-        // 更新左側欄
+        // 更新 PulseStreet 左側欄
         const nameElements = document.querySelectorAll('.pulse-side-btn div[style*="font-weight:bold"]');
         nameElements.forEach(el => {
             if(el.innerText === 'Brooklyn') el.innerText = user.displayName;
         });
-        // 更新頭像
+        // 更新左側欄頭像
         const avatarContainer = document.querySelector('.pulse-side-icon[style*="overflow:hidden"]');
         if(avatarContainer && user.photoURL) {
             avatarContainer.innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;">`;
