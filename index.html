@@ -6,7 +6,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.022</title> 
+    <title>BROOKLYN-TERMINAL // V1.030</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -2918,20 +2918,24 @@ window.switchSpace = function(spaceMode) {
                                     ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;border-radius:50%;">`
                                     : 'Ⓜ️'}
                             </div>
-                            <input type="text" class="pulse-input-dummy" id="pulse-real-input" placeholder="聊聊你對市場的看法..." style="border:none; outline:none; color:#fff;">
-                            
-                            <button id="pulse-submit-btn" style="
-                                background: var(--accent-color); 
-                                color: #000; 
-                                border: none; 
-                                padding: 6px 16px; 
-                                border-radius: 20px; 
-                                font-weight: bold; 
-                                cursor: pointer; 
-                                font-family: var(--font-main);
-                                white-space: nowrap;">
-                                POST
-                            </button>
+                           <input type="text" 
+       class="pulse-input-dummy" 
+       id="pulse-real-input" 
+       placeholder="聊聊你對市場的看法..." 
+       style="border:none; outline:none; color:#fff;"
+       onkeypress="if(event.key === 'Enter') submitPost()">  <button id="pulse-submit-btn" 
+        onclick="submitPost()"  style="
+        background: var(--accent-color);
+        color: #000; 
+        border: none; 
+        padding: 6px 16px; 
+        border-radius: 20px; 
+        font-weight: bold; 
+        cursor: pointer; 
+        font-family: var(--font-main);
+        white-space: nowrap;">
+        POST
+</button>
                         </div>
 
                         <div class="pulse-feed" id="pulse-real-feed">
@@ -3561,6 +3565,49 @@ window.submitGroupPost = async function(groupId) {
         input.value = content;
     }
 }
+// --- 新增：PulseStreet 首頁發文功能 ---
+window.submitPost = async function() {
+    // 1. 取得輸入框
+    const input = document.getElementById('pulse-real-input');
+    if (!input) return;
+
+    // 2. 檢查登入
+    if (!window.currentUser) {
+        alert("⚠️ 系統提示：請先登入 Google 帳號才能發文。\n(Please Login to post)");
+        return;
+    }
+
+    const content = input.value.trim();
+    if (!content) return;
+
+    // 3. UI 處理：清空並顯示發送中
+    input.value = '';
+    input.placeholder = "發送中... (Posting)";
+
+    try {
+        const { addDoc, collection, serverTimestamp } = window.fs;
+        
+        // 4. 寫入資料庫 (寫入 posts 集合)
+        await addDoc(collection(window.db, "posts"), {
+            content: content,
+            name: window.currentUser.displayName,
+            avatar: window.currentUser.photoURL,
+            uid: window.currentUser.uid,
+            timestamp: serverTimestamp(),
+            likes: 0,
+            comments: 0
+            // 注意：首頁貼文通常不需要 category，或者您可以加上 category: 'public'
+        });
+
+        // 成功後還原提示文字
+        input.placeholder = "聊聊你對市場的看法...";
+        
+    } catch (err) {
+        console.error("發文錯誤:", err);
+        alert("發送失敗: " + err.message);
+        input.value = content; // 失敗時把文字補回去
+    }
+}        
 // ============================================================
 // ★ 社團功能核心修復包 (包含會員管理與按鈕狀態更新) ★
 // ============================================================
@@ -3872,46 +3919,6 @@ function updateJoinButton(isJoined) {
             
             const input = document.getElementById('pulse-real-input');
             const feed = document.getElementById('pulse-real-feed');
-
-            // 4. 發文功能 (監聽 Enter 鍵)
-            input.addEventListener('keypress', async (e) => {
-                if (e.key === 'Enter' && input.value.trim() !== '') {
-                    // 檢查是否登入
-                    if (!window.currentUser) {
-                        alert("⚠️ 系統提示：請先登入 Google 帳號才能發文。\n(Please Login to post)");
-                        return;
-                    }
-                    
-                    const content = input.value.trim();
-                    input.value = ''; // 立即清空輸入框，提升體驗
-                    input.placeholder = "發送中...";
-
-                    try {
-                        // 從 window.fs 取得 Firestore 函式 (我們在底部 script 定義的)
-                        const { addDoc, collection, serverTimestamp } = window.fs;
-                        
-                        // 寫入資料庫
-                        await addDoc(collection(window.db, "posts"), {
-                            content: content,
-                            name: window.currentUser.displayName,
-                            avatar: window.currentUser.photoURL,
-                            uid: window.currentUser.uid,
-                            timestamp: serverTimestamp(), // 伺服器時間
-                            likes: 0,
-                            comments: 0
-                        });
-                        
-                        input.placeholder = "聊聊你對市場的看法? (按 Enter 發佈)";
-                        // 成功後不需要手動更新畫面，下面的 onSnapshot 會自動處理！
-                        
-                    } catch (err) {
-                        console.error("發文錯誤:", err);
-                        alert("發送失敗: " + err.message);
-                        input.value = content; // 失敗時把文字補回去
-                    }
-                }
-            });
-
             // 5. 即時監聽貼文 (Real-time Listener)
             // 這段程式碼會讓網頁與資料庫保持連線，有人發文時自動更新
             if (window.fs && window.db) {
