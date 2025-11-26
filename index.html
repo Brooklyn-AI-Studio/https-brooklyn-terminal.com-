@@ -1297,7 +1297,71 @@
     background: rgba(255,255,255,0.05);
     border-color: var(--border-color);
 }
+/* 留言區塊 (預設隱藏) */
+.pulse-comment-section {
+    display: none; /* 預設隱藏，點擊留言按鈕才打開 */
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
 
+/* 顯示狀態 */
+.pulse-comment-section.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* 留言列表 */
+.comment-list {
+    margin-bottom: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.comment-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+}
+
+.comment-bubble {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 10px;
+    border-radius: 12px;
+    color: #eee;
+    flex: 1;
+}
+
+.comment-author {
+    font-weight: bold;
+    color: var(--accent-color);
+    font-size: 0.9em;
+    margin-bottom: 2px;
+}
+
+/* 留言輸入區 */
+.comment-input-box {
+    display: flex;
+    gap: 8px;
+}
+
+.comment-input {
+    flex: 1;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 6px 12px;
+    color: #fff;
+    outline: none;
+    font-size: 0.9em;
+}
+
+/* 已按讚的按鈕樣式 */
+.pulse-action-btn.liked {
+    color: #ff3333; /* 紅色愛心 */
+    font-weight: bold;
+}
 /* 3. 貼文卡片 (Feed Post) */
 .pulse-post {
     background: var(--bg-panel);
@@ -2813,53 +2877,77 @@ window.switchSpace = function(spaceMode) {
                     const { collection, query, orderBy, onSnapshot } = window.fs;
                     const q = query(collection(window.db, "posts"), orderBy("timestamp", "desc"));
                     
-                    onSnapshot(q, (snapshot) => {
-                        const feedEl = document.getElementById('pulse-real-feed');
-                        if(!feedEl) return;
-
-                        let html = '';
+                    snapshot.forEach((doc) => {
+                        const p = doc.data();
+                        const postId = doc.id; // ★ 關鍵 1：取得這篇貼文的唯一 ID
                         
-                        snapshot.forEach((doc) => {
-                            const p = doc.data();
-                            let timeStr = "Just now";
-                            if(p.timestamp) {
-                                const date = p.timestamp.toDate();
-                                const now = new Date();
-                                const diff = (now - date) / 1000;
-                                if(diff < 60) timeStr = "剛剛";
-                                else if(diff < 3600) timeStr = `${Math.floor(diff/60)} 分鐘前`;
-                                else if(diff < 86400) timeStr = `${Math.floor(diff/3600)} 小時前`;
-                                else timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            }
+                        // ★ 關鍵 2：判斷「我」是否按過讚
+                        // 檢查 likedBy 陣列中是否有我的 UID
+                        const isLiked = window.currentUser && p.likedBy && p.likedBy.includes(window.currentUser.uid);
+                        
+                        // 如果有按讚，加上 'liked' class (CSS 會讓它變紅色)
+                        const likeClass = isLiked ? 'liked' : '';
+                        
+                        // 準備傳遞給 toggleLike 函式的資料 (將陣列轉為字串，並處理引號問題)
+                        const likesData = p.likedBy ? JSON.stringify(p.likedBy).replace(/"/g, "&quot;") : "[]";
 
-                            html += `
-                                <div class="pulse-post">
-                                    <div class="pulse-post-header">
-                                        <div class="pulse-avatar">
-                                            ${p.avatar 
-                                                ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` 
-                                                : '<div style="width:100%;height:100%;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;">👤</div>'}
-                                        </div>
-                                        <div class="pulse-meta">
-                                            <div class="pulse-name">${p.name || 'Anonymous'}</div>
-                                            <div class="pulse-time">${timeStr} <span style="margin-left:5px; opacity:0.7;">• 公開</span></div>
-                                        </div>
-                                        <div class="pulse-menu-btn">•••</div>
+                        // 時間格式化邏輯 (保持原樣)
+                        let timeStr = "Just now";
+                        if(p.timestamp) {
+                             const date = p.timestamp.toDate();
+                             const now = new Date();
+                             const diff = (now - date) / 1000;
+                             if(diff < 60) timeStr = "剛剛";
+                             else if(diff < 3600) timeStr = `${Math.floor(diff/60)} 分鐘前`;
+                             else if(diff < 86400) timeStr = `${Math.floor(diff/3600)} 小時前`;
+                             else timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        }
+
+                        // ★ 關鍵 3：生成 HTML
+                        html += `
+                            <div class="pulse-post" id="post-${postId}">
+                                <div class="pulse-post-header">
+                                    <div class="pulse-avatar">
+                                        ${p.avatar ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` : '👤'}
                                     </div>
-                                    <div class="pulse-content">${p.content}</div>
-                                    ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
-                                    <div class="pulse-stats">
-                                        <span>${pIcons.like} ${p.likes || 0}</span>
-                                        <span>${p.comments || 0} Comments</span>
+                                    <div class="pulse-meta">
+                                        <div class="pulse-name">${p.name || 'Anonymous'}</div>
+                                        <div class="pulse-time">${timeStr} <span style="margin-left:5px; opacity:0.7;">• 公開</span></div>
                                     </div>
-                                    <div class="pulse-actions">
-                                        <button class="pulse-action-btn">${pIcons.like} Like</button>
-                                        <button class="pulse-action-btn">${pIcons.comment} Comment</button>
-                                        <button class="pulse-action-btn">${pIcons.share} Share</button>
+                                    <div class="pulse-menu-btn">•••</div>
+                                </div>
+                                
+                                <div class="pulse-content">${p.content}</div>
+                                ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
+                                
+                                <div class="pulse-stats">
+                                    <span>${pIcons.like} ${p.likes || 0}</span>
+                                    <span>${p.comments || 0} Comments</span>
+                                </div>
+                                
+                                <div class="pulse-actions">
+                                    <button class="pulse-action-btn ${likeClass}" onclick='toggleLike("${postId}", ${likesData})'>
+                                        ${pIcons.like} Like
+                                    </button>
+                                    
+                                    <button class="pulse-action-btn" onclick="toggleComments('${postId}')">
+                                        ${pIcons.comment} Comment
+                                    </button>
+                                    
+                                    <button class="pulse-action-btn">${pIcons.share} Share</button>
+                                </div>
+
+                                <div class="pulse-comment-section" id="comment-sec-${postId}">
+                                    <div class="comment-list" id="comment-list-${postId}"></div>
+                                    
+                                    <div class="comment-input-box">
+                                        <input type="text" class="comment-input" id="comment-input-${postId}" placeholder="寫下留言..." onkeypress="if(event.key==='Enter') submitComment('${postId}')">
+                                        <button class="pulse-send-btn" style="padding:4px 12px; font-size:0.8em;" onclick="submitComment('${postId}')">></button>
                                     </div>
                                 </div>
-                            `;
-                        });
+                            </div>
+                        `;
+                    });
                         
                         if(html === '') {
                             html = `
@@ -2897,6 +2985,124 @@ window.switchSpace = function(spaceMode) {
         themeSwitch.addEventListener('change', (e) => { if (e.target.checked) { document.documentElement.setAttribute('data-theme', 'light'); modeLabel.innerText = "MODE: LIGHT"; } else { document.documentElement.removeAttribute('data-theme'); modeLabel.innerText = "MODE: DARK"; }});
         proSwitch.addEventListener('change', (e) => { if (e.target.checked) document.documentElement.setAttribute('data-pro', 'true'); else document.documentElement.removeAttribute('data-pro'); });
         colorPicker.addEventListener('input', (e) => { activeColor = e.target.value; colorValue.innerText = activeColor; document.querySelector('.tool-preview').style.backgroundColor = activeColor + '4D'; document.querySelector('.tool-preview').style.borderColor = activeColor; });
+       // ==================== PulseStreet 互動功能 ====================
+
+// 1. 按讚功能
+window.toggleLike = async function(postId, likesArray) {
+    if (!window.currentUser) { alert("請先登入 (Login First)"); return; }
+    
+    const uid = window.currentUser.uid;
+    const { doc, updateDoc, arrayUnion, arrayRemove, increment } = window.fs;
+    const postRef = doc(window.db, "posts", postId);
+
+    // 判斷是按讚還是取消讚
+    const isLiked = likesArray && likesArray.includes(uid);
+
+    try {
+        if (isLiked) {
+            // 取消讚
+            await updateDoc(postRef, {
+                likes: increment(-1),
+                likedBy: arrayRemove(uid)
+            });
+        } else {
+            // 按讚
+            await updateDoc(postRef, {
+                likes: increment(1),
+                likedBy: arrayUnion(uid)
+            });
+        }
+    } catch (e) {
+        console.error("按讚失敗:", e);
+    }
+}
+
+// 2. 開關留言區
+window.toggleComments = async function(postId) {
+    const section = document.getElementById(`comment-sec-${postId}`);
+    if(!section) return;
+    
+    // 切換顯示
+    const isHidden = section.style.display === 'none' || section.style.display === '';
+    section.style.display = isHidden ? 'block' : 'none';
+
+    // 如果打開，載入留言
+    if(isHidden) {
+        loadComments(postId);
+    }
+}
+
+// 3. 載入留言 (一次性讀取)
+async function loadComments(postId) {
+    const listDiv = document.getElementById(`comment-list-${postId}`);
+    listDiv.innerHTML = '<div style="font-size:0.8em; opacity:0.5;">載入留言中...</div>';
+
+    try {
+        const { collection, getDocs, query, orderBy } = window.fs;
+        // 讀取 posts -> [postId] -> comments 子集合
+        const q = query(collection(window.db, "posts", postId, "comments"), orderBy("timestamp", "asc"));
+        const querySnapshot = await getDocs(q);
+        
+        let html = '';
+        querySnapshot.forEach((doc) => {
+            const c = doc.data();
+            html += `
+                <div class="comment-item">
+                    <div style="font-weight:bold; min-width:30px;">${c.avatar ? `<img src="${c.avatar}" style="width:24px;height:24px;border-radius:50%;">` : '👤'}</div>
+                    <div class="comment-bubble">
+                        <div class="comment-author">${c.name}</div>
+                        <div>${c.content}</div>
+                    </div>
+                </div>`;
+        });
+
+        if(html === '') html = '<div style="font-size:0.8em; opacity:0.5;">暫無留言</div>';
+        listDiv.innerHTML = html;
+
+    } catch (e) {
+        console.error("載入留言失敗:", e);
+        listDiv.innerHTML = '載入失敗';
+    }
+}
+
+// 4. 發送留言
+window.submitComment = async function(postId) {
+    const input = document.getElementById(`comment-input-${postId}`);
+    const val = input.value.trim();
+    if (!val) return;
+    if (!window.currentUser) { alert("請先登入"); return; }
+
+    try {
+        const { addDoc, collection, doc, updateDoc, increment, serverTimestamp } = window.fs;
+        
+        // A. 寫入子集合
+        await addDoc(collection(window.db, "posts", postId, "comments"), {
+            content: val,
+            name: window.currentUser.displayName,
+            avatar: window.currentUser.photoURL,
+            uid: window.currentUser.uid,
+            timestamp: serverTimestamp()
+        });
+
+        // B. 更新主貼文的留言數
+        const postRef = doc(window.db, "posts", postId);
+        await updateDoc(postRef, {
+            comments: increment(1)
+        });
+
+        input.value = ''; // 清空
+        loadComments(postId); // 重新載入留言列表
+
+    } catch (e) {
+        console.error("留言失敗:", e);
+        alert("留言失敗");
+    }
+}
+        
+        
+        
+        
+        
         // 修改後的 saveLayout
         function saveLayout() {
             const layoutData = items.map(i => {
@@ -4588,7 +4794,20 @@ window.closeLoginModal = function() {
         signOut, 
         onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    
+    import { 
+        getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp,
+        // ★ 新增以下功能 ★
+        doc, updateDoc, arrayUnion, arrayRemove, increment, getDocs
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // ... (中間 Firebase 設定與初始化保持不變) ...
+
+    // ★ 關鍵更新：更新 window.fs，加入新工具 ★
+    window.fs = { 
+        collection, addDoc, query, orderBy, onSnapshot, serverTimestamp,
+        doc, updateDoc, arrayUnion, arrayRemove, increment, getDocs
+    };
+    window.db = db;
     // ★ 新增：引入 Firestore 資料庫模組 ★
     import { 
         getFirestore, 
