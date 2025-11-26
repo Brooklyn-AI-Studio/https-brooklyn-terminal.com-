@@ -364,7 +364,7 @@
     height: 100%;
     background-color: #f5f5f5; /* 背景色，建議用跟Logo底色接近的米白色 */
     z-index: 9999; /* 確保它在最上層，蓋住所有東西 */
-    display: flex; /* 使用 Flexbox 讓內容置中 */
+    display: none; /* 使用 Flexbox 讓內容置中 */
     justify-content: center;
     align-items: center;
     flex-direction: column;
@@ -2210,41 +2210,59 @@
         };
         // --- 新增：切換空間功能 ---
      // --- 更新後的切換空間邏輯 (自動隱藏側邊欄版) ---
-        window.switchSpace = function(spaceMode) {
-            if (currentSpace === spaceMode) return;
-            currentSpace = spaceMode;
+        // 修改後的 switchSpace 函式
+window.switchSpace = function(spaceMode) {
+    if (currentSpace === spaceMode) return;
+    currentSpace = spaceMode;
 
-            // 1. 更新按鈕 UI
-            document.querySelectorAll('.nav-pill-btn').forEach(btn => btn.classList.remove('active'));
-            const targetBtn = document.getElementById(`tab-${spaceMode}`);
-            if(targetBtn) targetBtn.classList.add('active');
+    // 1. 更新按鈕 UI
+    document.querySelectorAll('.nav-pill-btn').forEach(btn => btn.classList.remove('active'));
+    const targetBtn = document.getElementById(`tab-${spaceMode}`);
+    if(targetBtn) targetBtn.classList.add('active');
 
-            // 2. 清理畫面
-            clearGrid(); 
-            document.querySelectorAll('.pulse-container, .nodex-container').forEach(el => el.remove());
-            
-            const gridCanvas = document.getElementById('grid-canvas');
-            const mainSidebar = document.getElementById('sidebar'); // 取得主側邊欄
+    // 2. 清理畫面
+    clearGrid();
+    document.querySelectorAll('.pulse-container, .nodex-container').forEach(el => el.remove());
+    
+    const gridCanvas = document.getElementById('grid-canvas');
+    const mainSidebar = document.getElementById('sidebar');
+    
+    // ★ 新增：取得歡迎頁覆蓋層 ★
+    const welcomeOverlay = document.getElementById('welcome-overlay');
 
-            // 3. 路由判斷與視窗控制
-            if (spaceMode === 'pulse') {
-                if(gridCanvas) gridCanvas.style.display = 'none';
-                if(mainSidebar) mainSidebar.style.display = 'none'; // PulseStreet 保留側邊欄 (可選)
-                renderPulseStreet();
-            } 
-            else if (spaceMode === 'nodex') {
-                // ★ Nodex 模式：隱藏原本的工具列，讓畫面變寬
-                if(gridCanvas) gridCanvas.style.display = 'none';
-                if(mainSidebar) mainSidebar.style.display = 'none'; // 隱藏左側工作列
-                renderNodex();
-            } 
-            else {
-                // Workspace/Edu 模式：恢復顯示工具列
-                if(gridCanvas) gridCanvas.style.display = 'block';
-                if(mainSidebar) mainSidebar.style.display = 'flex'; // 恢復顯示
-                loadLayout(true);
-            }
+    // 3. 路由判斷與視窗控制
+    if (spaceMode === 'pulse') {
+        if(gridCanvas) gridCanvas.style.display = 'none';
+        if(mainSidebar) mainSidebar.style.display = 'none';
+        
+        // ★ 當切換到 PulseStreet 時，顯示歡迎頁與登入按鈕 ★
+        if(welcomeOverlay) {
+            welcomeOverlay.style.display = 'flex'; // 顯示覆蓋層
+            welcomeOverlay.style.opacity = '1';    // 確保不透明
         }
+
+        renderPulseStreet();
+    } 
+    else if (spaceMode === 'nodex') {
+        if(gridCanvas) gridCanvas.style.display = 'none';
+        if(mainSidebar) mainSidebar.style.display = 'none';
+        
+        // ★ 切換到其他頁面時，隱藏歡迎頁 ★
+        if(welcomeOverlay) welcomeOverlay.style.display = 'none';
+
+        renderNodex();
+    } 
+    else {
+        // Workspace/Edu 模式
+        if(gridCanvas) gridCanvas.style.display = 'block';
+        if(mainSidebar) mainSidebar.style.display = 'flex';
+        
+        // ★ 切換到其他頁面時，隱藏歡迎頁 ★
+        if(welcomeOverlay) welcomeOverlay.style.display = 'none';
+
+        loadLayout(true);
+    }
+}
 // --- Nodex 渲染核心 (結構修復版) ---
         function renderNodex() {
             const workspace = document.querySelector('.workspace');
@@ -4271,18 +4289,20 @@ function renderYouTubeContent(item) {
         <script src="https://cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
 <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const loginBtn = document.getElementById('login-btn');
-            const overlay = document.getElementById('welcome-overlay');
-            const mainApp = document.getElementById('main-app');
-
-            loginBtn.addEventListener('click', () => {
-                overlay.style.opacity = '0';
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    mainApp.style.display = 'block';
-                }, 500);
-            });
+    const loginBtn = document.getElementById('login-btn');
+    const overlay = document.getElementById('welcome-overlay');
+    if(loginBtn && overlay) {
+        loginBtn.addEventListener('click', () => {
+            // 1. 淡出效果
+            overlay.style.opacity = '0';
+            
+            // 2. 動畫結束後隱藏 (讓背後的 PulseStreet 內容露出來)
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
         });
+    }
+});
     </script>
 
 
