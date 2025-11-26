@@ -5,7 +5,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.011</title> 
+    <title>BROOKLYN-TERMINAL // V1.012</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -3114,19 +3114,18 @@ window.deletePost = async function(docId) {
 }
 // --- 新增功能：八卦社團頁面 (Community View) ---
 window.loadCommunityView = function(groupId) {
-    // 1. 取得中間的 Feed 容器 
     const feedContainer = document.querySelector('.pulse-feed-container');
     if (!feedContainer) return;
 
-    // 定義社團風格 (使用霓虹粉/紅色調代表八卦/熱門)
+    // 定義社團風格 (Neon Pink)
     const themeColor = "#FF3366"; 
     
-    // 2. 渲染社團介面
     feedContainer.innerHTML = `
         <div class="pulse-profile-layout" style="animation: fadeInUp 0.4s ease;">
             
             <div class="profile-cover-section" style="background: linear-gradient(135deg, #2b0000 0%, #1a0505 100%); border-bottom: 2px solid ${themeColor};">
-                <button class="profile-back-btn" onclick="switchSpace('pulse')">
+                
+                <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">
                     &lt; RETURN FEED
                 </button>
                 
@@ -3146,7 +3145,7 @@ window.loadCommunityView = function(groupId) {
                         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                             <div>
                                 <h1 style="margin:0; font-size:1.5em; color:#fff; display:flex; align-items:center; gap:10px;">
-                                    八卦傳令部 (Gossip HQ)
+                                    公開討論版 (Gossip HQ)
                                     <span style="font-size:0.5em; background:${themeColor}; color:#000; padding:2px 8px; border-radius:4px; vertical-align:middle;">PRIVATE</span>
                                 </h1>
                                 <div style="color:${themeColor}; font-family:monospace; margin-top:5px;">/GROUP/Main/Market_Leaks</div>
@@ -3159,7 +3158,7 @@ window.loadCommunityView = function(groupId) {
                         
                         <p style="color:#ccc; font-size:0.9em; margin-top:10px; line-height:1.5;">
                             ⚠️ <strong>本區規則：</strong> 匿名爆料 / 小道消息 / 韭菜取暖。<br>
-                            所發布內容不代表本台立場，請自行判斷真偽。DYOR (Do Your Own Research)。
+                            所發布內容不代表本台立場，請自行判斷真偽。DYOR。
                         </p>
                         
                         <div class="profile-stats-row" style="margin-top:15px; border-top:1px dashed #333; padding-top:10px;">
@@ -3172,15 +3171,9 @@ window.loadCommunityView = function(groupId) {
             </div>
 
             <div class="profile-tabs" style="margin-top:20px;">
-                <div class="p-tab active" style="color:${themeColor};">LATEST (最新)</div>
-                <div class="p-tab">TRENDING (熱門)</div>
-                <div class="p-tab">PINNED (置頂)</div>
-            </div>
-
-            <div class="pulse-create" style="border:1px solid ${themeColor}; background:rgba(255, 51, 102, 0.05);">
-                <div class="pulse-avatar" style="background:${themeColor}; color:#000; font-weight:bold;">?</div>
-                <input type="text" class="pulse-input-dummy" placeholder="在此社團匿名爆料..." style="color:#fff;">
-                <button style="background:${themeColor}; color:#fff; border:none; padding:6px 16px; border-radius:20px; font-weight:bold; cursor:pointer;">POST</button>
+                <div class="p-tab active" style="color:${themeColor};">LATEST</div>
+                <div class="p-tab">TRENDING</div>
+                <div class="p-tab">PINNED</div>
             </div>
 
             <div id="group-feed" style="margin-top:20px; display:flex; flex-direction:column; gap:20px;">
@@ -3189,33 +3182,24 @@ window.loadCommunityView = function(groupId) {
                     <div class="pulse-post-header">
                         <div class="pulse-avatar">📢</div>
                         <div class="pulse-meta">
-                            <div class="pulse-name" style="color:${themeColor};">版主 (Admin)</div>
-                            <div class="pulse-time">Pinned • 2 hours ago</div>
+                            <div class="pulse-name" style="color:${themeColor};">Admin</div>
+                            <div class="pulse-time">Pinned • 2h ago</div>
                         </div>
-                        <div class="pulse-menu-btn">•••</div>
                     </div>
                     <div class="pulse-content">
-                        [公告] 近期市場波動大，請大家理性討論，禁止洗版。違者將被踢出節點。
-                        <br><br>
-                        Tip: 點擊右上角 <span style="color:${themeColor}">INFO</span> 可查看最新服務條款。
-                    </div>
-                    <div class="pulse-stats">
-                        <span>❤️ 524</span><span>💬 88</span>
+                        [公告] 禁止洗版，違者踢出。<br>
+                        Tip: 點擊左上角 <span style="border:1px solid #555; padding:0 4px; font-size:0.8em;">RETURN FEED</span> 可隨時返回動態牆。
                     </div>
                 </div>
 
                 <div class="news-loading" style="padding:40px; border:1px dashed #333; border-radius:8px;">
-                    Loading Group Discussions...<br>
-                    (此處未來可串接 Firebase Query: where category == 'gossip')
+                    Loading Discussions...
                 </div>
 
             </div>
         </div>
     `;
-    // 這裡可以加入讀取 Firestore 特定分類貼文的邏輯
-    // 例如: loadGroupPosts('gossip');
 }
-
             
             // ==========================================
             // ★ Firestore 功能實作區 ★
