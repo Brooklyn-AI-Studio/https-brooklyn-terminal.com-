@@ -5,7 +5,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.013</title> 
+    <title>BROOKLYN-TERMINAL // V1.014</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -2572,7 +2572,8 @@
         };
         // --- 新增：切換空間功能 ---
      // --- 更新後的切換空間邏輯 (自動隱藏側邊欄版) ---
-        // 修改後的 switchSpace 函式
+   // --- 修改位置： window.switchSpace 函式 ---
+
 window.switchSpace = function(spaceMode) {
     if (currentSpace === spaceMode) return;
     currentSpace = spaceMode;
@@ -2588,8 +2589,6 @@ window.switchSpace = function(spaceMode) {
     
     const gridCanvas = document.getElementById('grid-canvas');
     const mainSidebar = document.getElementById('sidebar');
-    
-    // ★ 新增：取得歡迎頁覆蓋層 ★
     const welcomeOverlay = document.getElementById('welcome-overlay');
 
     // 3. 路由判斷與視窗控制
@@ -2597,10 +2596,17 @@ window.switchSpace = function(spaceMode) {
         if(gridCanvas) gridCanvas.style.display = 'none';
         if(mainSidebar) mainSidebar.style.display = 'none';
         
-        // ★ 當切換到 PulseStreet 時，顯示歡迎頁與登入按鈕 ★
+        // ★ 修改重點：只有在「未登入」時才顯示歡迎視窗 ★
         if(welcomeOverlay) {
-            welcomeOverlay.style.display = 'flex'; // 顯示覆蓋層
-            welcomeOverlay.style.opacity = '1';    // 確保不透明
+            if (!window.currentUser) {
+                // 沒登入 -> 顯示歡迎頁
+                welcomeOverlay.style.display = 'flex';
+                setTimeout(() => welcomeOverlay.style.opacity = '1', 10);
+            } else {
+                // 已登入 -> 確保隱藏
+                welcomeOverlay.style.display = 'none';
+                welcomeOverlay.style.opacity = '0';
+            }
         }
 
         renderPulseStreet();
@@ -2609,7 +2615,7 @@ window.switchSpace = function(spaceMode) {
         if(gridCanvas) gridCanvas.style.display = 'none';
         if(mainSidebar) mainSidebar.style.display = 'none';
         
-        // ★ 切換到其他頁面時，隱藏歡迎頁 ★
+        // 切換到其他頁面時，隱藏歡迎頁
         if(welcomeOverlay) welcomeOverlay.style.display = 'none';
 
         renderNodex();
@@ -2619,7 +2625,7 @@ window.switchSpace = function(spaceMode) {
         if(gridCanvas) gridCanvas.style.display = 'block';
         if(mainSidebar) mainSidebar.style.display = 'flex';
         
-        // ★ 切換到其他頁面時，隱藏歡迎頁 ★
+        // 切換到其他頁面時，隱藏歡迎頁
         if(welcomeOverlay) welcomeOverlay.style.display = 'none';
 
         loadLayout(true);
@@ -3110,6 +3116,8 @@ window.deletePost = async function(docId) {
     }
 }
 // --- 新增功能：八卦社團頁面 (Community View) ---
+// --- 修改位置： window.loadCommunityView 完整替換 ---
+
 window.loadCommunityView = function(groupId) {
     const feedContainer = document.querySelector('.pulse-feed-container');
     if (!feedContainer) return;
@@ -3117,15 +3125,14 @@ window.loadCommunityView = function(groupId) {
     // 定義社團風格 (Neon Pink)
     const themeColor = "#FF3366"; 
     
+    // 1. 渲染介面 (注意：輸入框增加了 ID 和 onkeypress 事件)
     feedContainer.innerHTML = `
         <div class="pulse-profile-layout" style="animation: fadeInUp 0.4s ease;">
             
             <div class="profile-cover-section" style="background: linear-gradient(135deg, #2b0000 0%, #1a0505 100%); border-bottom: 2px solid ${themeColor};">
-                
                 <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">
                     &lt; RETURN FEED
                 </button>
-                
                 <div style="position:absolute; bottom:10px; right:10px; font-family:'Orbitron'; font-size:4em; opacity:0.1; color:${themeColor}; font-weight:900;">
                     GOSSIP
                 </div>
@@ -3133,70 +3140,141 @@ window.loadCommunityView = function(groupId) {
             
             <div class="profile-info-card" style="border-top:none; padding-top:20px;">
                 <div style="display:flex; gap:20px; align-items:flex-start;">
-                    
-                    <div style="width:100px; height:100px; background:#000; border:2px solid ${themeColor}; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:3em; margin-top:-50px; position:relative; z-index:5; box-shadow:0 5px 20px rgba(255, 51, 102, 0.3);">
-                        🔥
-                    </div>
-                    
+                    <div style="width:100px; height:100px; background:#000; border:2px solid ${themeColor}; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:3em; margin-top:-50px; position:relative; z-index:5; box-shadow:0 5px 20px rgba(255, 51, 102, 0.3);">🔥</div>
                     <div style="flex:1;">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                            <div>
-                                <h1 style="margin:0; font-size:1.5em; color:#fff; display:flex; align-items:center; gap:10px;">
-                                    公開討論版 (Gossip HQ)
-                                    <span style="font-size:0.5em; background:${themeColor}; color:#000; padding:2px 8px; border-radius:4px; vertical-align:middle;">PRIVATE</span>
-                                </h1>
-                                <div style="color:${themeColor}; font-family:monospace; margin-top:5px;">/GROUP/Main/Market_Leaks</div>
-                            </div>
-                            
-                            <button class="profile-btn" style="background:${themeColor}; color:#000; border:none;" onclick="alert('已加入社團！')">
-                                JOIN GROUP +
-                            </button>
-                        </div>
-                        
+                        <h1 style="margin:0; font-size:1.5em; color:#fff; display:flex; align-items:center; gap:10px;">
+                            八卦傳令部 (Gossip HQ)
+                            <span style="font-size:0.5em; background:${themeColor}; color:#000; padding:2px 8px; border-radius:4px; vertical-align:middle;">PRIVATE</span>
+                        </h1>
                         <p style="color:#ccc; font-size:0.9em; margin-top:10px; line-height:1.5;">
-                            ⚠️ <strong>本區規則：</strong> 匿名爆料 / 小道消息 / 韭菜取暖。<br>
-                            所發布內容不代表本台立場，請自行判斷真偽。DYOR。
+                            ⚠️ <strong>本區規則：</strong> 匿名爆料 / 小道消息 / 韭菜取暖。<br>DYOR.
                         </p>
-                        
-                        <div class="profile-stats-row" style="margin-top:15px; border-top:1px dashed #333; padding-top:10px;">
-                            <div class="p-stat-box"><span class="p-stat-num" style="color:#fff;">12.5k</span><span class="p-stat-lbl">Members</span></div>
-                            <div class="p-stat-box"><span class="p-stat-num" style="color:#fff;">99+</span><span class="p-stat-lbl">Online</span></div>
-                            <div class="p-stat-box"><span class="p-stat-num" style="color:${themeColor};">HOT</span><span class="p-stat-lbl">Activity</span></div>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="profile-tabs" style="margin-top:20px;">
-                <div class="p-tab active" style="color:${themeColor};">LATEST</div>
-                <div class="p-tab">TRENDING</div>
-                <div class="p-tab">PINNED</div>
-            </div>
-
-            <div id="group-feed" style="margin-top:20px; display:flex; flex-direction:column; gap:20px;">
+            <div class="pulse-create" style="border:1px solid ${themeColor}; background:rgba(255, 51, 102, 0.05); margin-top:20px;">
+                <div class="pulse-avatar" style="background:${themeColor}; color:#000; font-weight:bold;">?</div>
                 
-                <div class="pulse-post" style="border-left: 3px solid ${themeColor};">
-                    <div class="pulse-post-header">
-                        <div class="pulse-avatar">📢</div>
-                        <div class="pulse-meta">
-                            <div class="pulse-name" style="color:${themeColor};">Admin</div>
-                            <div class="pulse-time">Pinned • 2h ago</div>
-                        </div>
-                    </div>
-                    <div class="pulse-content">
-                        [公告] 禁止洗版，違者踢出。<br>
-                        Tip: 點擊左上角 <span style="border:1px solid #555; padding:0 4px; font-size:0.8em;">RETURN FEED</span> 可隨時返回動態牆。
-                    </div>
-                </div>
+                <input type="text" id="group-post-input" class="pulse-input-dummy" 
+                       placeholder="在此社團發布消息..." style="color:#fff;"
+                       onkeypress="if(event.key === 'Enter') submitGroupPost('${groupId}')">
+                
+                <button onclick="submitGroupPost('${groupId}')" 
+                        style="background:${themeColor}; color:#fff; border:none; padding:6px 16px; border-radius:20px; font-weight:bold; cursor:pointer;">
+                    POST
+                </button>
+            </div>
 
+            <div id="group-feed-list" style="margin-top:20px; display:flex; flex-direction:column; gap:20px; padding-bottom:50px;">
                 <div class="news-loading" style="padding:40px; border:1px dashed #333; border-radius:8px;">
-                    Loading Discussions...
+                    Connecting to Secret Channel...
                 </div>
-
             </div>
         </div>
     `;
+    
+    // 2. 啟動 Firestore 監聽 (只讀取 category == 'gossip' 的貼文)
+    if (window.fs && window.db) {
+        const { collection, query, where, orderBy, onSnapshot } = window.fs;
+        
+        // ★ 關鍵查詢：篩選 category 為 gossip ★
+        // 注意：這可能需要您在 Firebase Console 建立複合索引 (Composite Index)
+        const q = query(
+            collection(window.db, "posts"), 
+            where("category", "==", "gossip"), 
+            orderBy("timestamp", "desc")
+        );
+
+        onSnapshot(q, (snapshot) => {
+            const listEl = document.getElementById('group-feed-list');
+            if(!listEl) return;
+            
+            if (snapshot.empty) {
+                listEl.innerHTML = `<div style="text-align:center; padding:30px; color:#666;">尚無爆料消息...</div>`;
+                return;
+            }
+
+            let html = '';
+            snapshot.forEach((doc) => {
+                const p = doc.data();
+                // 時間處理
+                let timeStr = "Just now";
+                if(p.timestamp) {
+                    const date = p.timestamp.toDate();
+                    timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                }
+
+                html += `
+                    <div class="pulse-post" style="border-left: 2px solid ${themeColor};">
+                        <div class="pulse-post-header">
+                            <div class="pulse-avatar">
+                                ${p.avatar ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` : '🕵️'}
+                            </div>
+                            <div class="pulse-meta">
+                                <div class="pulse-name" style="color:${themeColor};">${p.name}</div>
+                                <div class="pulse-time">${timeStr}</div>
+                            </div>
+                            ${(window.currentUser && window.currentUser.uid === p.uid) ? 
+                                `<div class="pulse-menu-btn" onclick="deletePost('${doc.id}')" title="Delete">🗑️</div>` : ''}
+                        </div>
+                        <div class="pulse-content">${p.content}</div>
+                        <div class="pulse-stats" style="border-top:1px solid rgba(255,51,102,0.2); margin-top:10px; padding-top:10px;">
+                            <span style="color:${themeColor};">🔥 ${p.likes || 0} 热度</span>
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+        }, (error) => {
+            console.error("社團讀取錯誤:", error);
+            const listEl = document.getElementById('group-feed-list');
+            if(listEl && error.message.includes("index")) {
+                listEl.innerHTML = `<div style="padding:20px; color:${themeColor}; border:1px solid ${themeColor};">系統提示：請建立 Firestore 索引 (Check Console for link)</div>`;
+            }
+        });
+    }
 }
+// --- 新增功能：社團發文處理 ---
+window.submitGroupPost = async function(groupId) {
+    // 1. 檢查登入
+    if (!window.currentUser) {
+        alert("⚠️ 請先登入才能在社團發言！");
+        return;
+    }
+
+    const input = document.getElementById('group-post-input');
+    const content = input.value.trim();
+    if (!content) return;
+
+    input.value = ''; // 清空
+    input.placeholder = "加密傳輸中...";
+
+    try {
+        const { addDoc, collection, serverTimestamp } = window.fs;
+        
+        // 2. 寫入資料庫 (重點：加入 category 欄位)
+        await addDoc(collection(window.db, "posts"), {
+            content: content,
+            category: "gossip",  // ★ 標記這是八卦版貼文
+            name: window.currentUser.displayName,
+            avatar: window.currentUser.photoURL,
+            uid: window.currentUser.uid,
+            timestamp: serverTimestamp(),
+            likes: 0
+        });
+        
+        input.placeholder = "在此社團發布消息...";
+        // 成功後不需要手動更新，上方的 onSnapshot 會自動捕捉到新貼文！
+
+    } catch (err) {
+        console.error("發文失敗:", err);
+        alert("發送失敗: " + err.message);
+        input.value = content;
+    }
+}
+
+            
             
             // ==========================================
             // ★ Firestore 功能實作區 ★
