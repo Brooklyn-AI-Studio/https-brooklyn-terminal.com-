@@ -2640,13 +2640,7 @@ window.switchSpace = function(spaceMode) {
                 </div>
             `).join('');
 
-            const shortcuts = [
-                { name: "韭菜俱樂部", icon: shortcutIcons.beauty },
-                { name: "科技先驅日報", icon: shortcutIcons.candy },
-                { name: "模組開發", icon: shortcutIcons.farm },
-                { name: "機率討論版", icon: shortcutIcons.cards },
-                { name: "網路釣魚", icon: shortcutIcons.fish }
-            ];
+            const shortcuts = [];
             let shortcutsHTML = shortcuts.map(s => `
                 <div class="pulse-side-btn">
                     <div class="pulse-side-icon" style="border-radius:8px; background:rgba(255,255,255,0.05);">${s.icon}</div>
@@ -2654,7 +2648,7 @@ window.switchSpace = function(spaceMode) {
                 </div>
             `).join('');
 
-            const contacts = ["Benson Chen", "Kevin HO", "cocco", "BY5423", "火箭博士", "瘋狂小生", "飲水人", "竹北薪水小偷", "終究是我扛下了所有", "斯勾姨"];
+            const contacts = [];
             let contactsHTML = contacts.map(c => `
                 <div class="contact-row">
                     <div class="contact-img-box">
