@@ -371,52 +371,56 @@
     filter: drop-shadow(0 0 5px var(--accent-color)); /* 加一點發光 */
 }
 
-/* 1. 背景遮罩：調低不透明度，讓背後畫面透出來 */
+/* 1. 背景遮罩：改成半透明黑色，讓使用者隱約看得到後面 */
 #welcome-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    /* 修改這裡：0.6 代表 60% 黑色，比原本的 0.85 更透 */
-    background-color: rgba(0, 0, 0, 0.6); 
-    backdrop-filter: blur(5px); /* 稍微降低模糊度，讓背景更清楚一點 */
+    background-color: rgba(0, 0, 0, 0.85); /* 85% 透明度的黑色 */
+    backdrop-filter: blur(8px);           /* 背景模糊效果 */
     z-index: 9999;
-    display: none;
+    display: none; /* 預設隱藏，由 JS 控制顯示 */
     justify-content: center;
     align-items: center;
     transition: opacity 0.5s ease;
 }
 
-/* ----------- 請取代原本的 .brand-logo 設定 ----------- */
-
-/* 針對登入視窗內的 Logo 進行放大 */
-.login-container .brand-logo {
-    max-width: 340px;    /* ★ 大幅增加寬度限制 (原本約180px)，讓它幾乎填滿視窗 */
-    width: 100%;         /* 確保在手機上也會自動縮放 */
-    height: auto;        /* 維持原圖比例 */
-    margin-bottom: 30px; /* 增加 Logo 下方的留白 */
-    display: block;
-    /* 可選：加一點點陰影讓它浮起來，增加質感 */
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+/* 2. 登入視窗：這才是白色的區塊 */
+.login-container {
+    background-color: #f5f5f5; /* 米白色背景 */
+    width: 400px;              /* 視窗寬度 */
+    max-width: 90%;            /* 手機版不超過螢幕 */
+    padding: 40px;             /* 內距 */
+    border-radius: 12px;       /* 圓角 */
+    
+    /* 裝飾：邊框與陰影 */
+    border: 1px solid var(--accent-color);
+    box-shadow: 0 0 50px rgba(0, 255, 204, 0.2); 
+    
+    /* 排版 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: #000; /* 強制視窗內文字為黑色 */
 }
 
+/* 3. Logo 樣式調整 */
+.brand-logo {
+    max-width: 200px; /* 稍微縮小一點，適應視窗 */
+    width: 100%;
+    margin-bottom: 1.5rem;
+    display: block;
+}
 
-/* ----------- 請取代原本的 .login-container h2 設定 ----------- */
-
-/* 針對標語 "SYNC WITH..." 進行專業化樣式調整 */
+/* 4. 視窗內的標題微調 */
 .login-container h2 {
     margin-top: 0;
-    margin-bottom: 35px; /* 增加與下方按鈕的距離 */
-    
-    /* ★ 關鍵修改：專業黑色風格 ★ */
-    color: #000000;          /* 純黑色 */
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* 改用經典、專業的無襯線字體，而非原本的科幻字體 */
-    font-weight: 800;        /* 特粗體，增加權威感 */
-    font-size: 1.5rem;       /* 字體稍微加大 */
-    letter-spacing: 0.5px;   /* 字距稍微縮緊一點，看起來更扎實 */
-    text-transform: uppercase; /* 維持大寫 */
-    line-height: 1.2;        /* 若換行時的行高設定 */
+    margin-bottom: 20px;
+    font-family: 'Orbitron', sans-serif;
+    color: #333; /* 深灰色標題 */
 }
 
 /* 5. 登入按鈕：圓潤 + 科技感 */
