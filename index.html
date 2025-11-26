@@ -2,13 +2,13 @@
 <html lang="zh-TW">
 <head>
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">  
-    <title>BROOKLYN-TERMINAL // V12 </title> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BROOKLYN-TERMINAL // V12.01</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
-        :root { 
+        :root {
             --bg-body: #050505;
             --bg-panel: #111111; --grid-bg: #0a0a0a;
             --text-primary: #00ffcc; --text-secondary: #888;
@@ -452,37 +452,6 @@
     box-shadow: 0 0 20px var(--accent-color); /* 發光 */
     transform: scale(1.05); /* 微微放大 */
 }
-/* 確保登入視窗可以用絕對定位來放置按鈕 */
-.login-container {
-    position: relative; /* 這行很重要，確保 X 按鈕是相對於這個視窗定位 */
-}
-
-/* 關閉按鈕樣式 */
-.close-login-btn {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 28px;
-    font-weight: bold;
-    color: #aaa;
-    cursor: pointer;
-    line-height: 1;
-    transition: color 0.2s;
-    z-index: 10;
-    font-family: sans-serif; /* 確保 X 符號顯示正常 */
-}
-
-/* 滑鼠懸停時變紅色 */
-.close-login-btn:hover {
-    color: #ff3333;
-}
-
-
-
-
-
-
-
         
 /* --- 2024 Modern Header Design --- */
 
@@ -552,7 +521,6 @@
     color: #000000 !important;
 }
 /* 2. 中間導覽列 (膠囊狀容器) */
-/* 找到這段 CSS 並加入新的定位設定 */
 .nav-pill-container {
     background: #1a1a1a;
     border: 1px solid #333;
@@ -562,11 +530,6 @@
     gap: 2px;
     align-items: center;
     height: 44px;
-
-    /* ★ 新增以下三行來強制置中 ★ */
-    position: absolute;          /* 脫離原本的排版流 */
-    left: 50%;                   /* 讓左側邊緣位於畫面正中央 */
-    transform: translateX(-50%); /* 將選單往回拉自身寬度的一半，達成幾何正中心 */
 }
 
 .nav-pill-btn {
@@ -1247,30 +1210,7 @@
     gap: 20px;
     min-width: 0; /* 防止 grid 爆版 */
 }
-/* 發送按鈕樣式 */
-.pulse-send-btn {
-    background: var(--accent-color); /* 跟隨主題色 (青/橘) */
-    color: #000;
-    border: none;
-    padding: 8px 24px;
-    border-radius: 20px; /* 膠囊狀，配合輸入框 */
-    font-weight: 900;
-    font-family: var(--font-main);
-    cursor: pointer;
-    margin-left: 10px; /* 與輸入框的距離 */
-    transition: all 0.2s;
-    text-transform: uppercase;
-    white-space: nowrap; /* 防止文字換行 */
-}
 
-.pulse-send-btn:hover {
-    box-shadow: 0 0 15px var(--accent-color); /* 發光效果 */
-    transform: scale(1.05); /* 微微放大 */
-}
-
-.pulse-send-btn:active {
-    transform: scale(0.95); /* 點擊回饋 */
-}
 
         
 /* 2. 發文框 (Create Post) */
@@ -1877,113 +1817,59 @@
     border: 2px solid #18191a; /* 黑色邊框 */
     border-radius: 50%;
 }
-/* --- Google 登入按鈕樣式 --- */
-.header-btn-auth {
-    margin-right: 15px;
-    color: #000; /* 文字黑色，對比強烈 */
-    background: var(--accent-color); /* 使用主題強調色 (青色/橘色) */
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: 900; /* 粗體 */
-    border: 1px solid var(--accent-color);
-    padding: 4px 12px; /* 內距 */
-    letter-spacing: 1px; /* 字距 */
-    transition: all 0.3s; /* 動畫過渡 */
-    
-    /* 科幻切角造型 (左上、右下切角) */
-    clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
-    
-    display: flex;
-    align-items: center;
-    gap: 8px; /* 圖示與文字間距 */
-    text-transform: uppercase;
-    height: 26px; /* 固定高度，與 INFO 按鈕一致 */
-}
 
-/* 滑鼠懸停效果 */
-.header-btn-auth:hover {
-    background: #fff; /* 變白色背景 */
-    box-shadow: 0 0 15px var(--accent-color); /* 發光效果 */
-    color: #000;
-}
-
-/* 登入後顯示的大頭貼樣式 */
-#auth-avatar {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%; /* 圓形 */
-    border: 1px solid #000;
-    object-fit: cover;
-}
-
-
-
-
-
-
-
-
-
-        
     </style>
 </head>
 <body>
     <div id="tutorial-overlay">
-    <div class="tutorial-card">
-        <div class="tutorial-title">BROOKLYN-TERMINAL</div>
-        <div class="tutorial-subtitle">打造屬於自己的AI工作站</div>
-        
-        <div class="tutorial-slides-container">
+        <div class="tutorial-card">
+            <div class="tutorial-title">BROOKLYN-TERMINAL</div>
+            <div class="tutorial-subtitle">打造屬於自己的AI工作站</div>
             
-            <div class="tutorial-slide active" id="slide-1">
-                <div class="sys-boot-text">
-                    <div class="typing-line">> INITIALIZING SYSTEM...</div>
-                    <div class="typing-line">> CHECKING LICENSE...@br00klyn_weirdo</div>
-                    <div class="typing-line">> ACCESS: Successfuly</div>
-                    <div class="typing-line">> WELCOME, TRADER.</div>
-                </div>
-            </div>
-
-            <div class="tutorial-slide" id="slide-2">
-                <div class="scene-box">
-                    <div class="scene-sidebar"><div class="scene-tool"></div></div>
-                    <div class="scene-window"><div class="scene-chart-content" style="display:block;"></div></div>
-                    <div class="scene-floating-data">BTC: +12.5%</div>
-                    <div class="scene-cursor"></div>
-                </div>
-                <div style="margin-top:15px; font-size:0.9em; color:#aaa;">DRAG & DROP • LIVE CHARTS • REAL-TIME DATA</div>
-            </div>
-
-            <div class="tutorial-slide" id="slide-3">
-                <div style="height:180px; display:flex; align-items:center; justify-content:center;">
-                    <div class="scene-ui-mock">
-                        <div class="scene-ui-bar"></div>
-                        <div class="scene-ui-bar" style="width:40%"></div>
-                        <div class="scene-ui-btn"></div>
-                        <div class="scene-ui-text">THEME ENGINE</div>
+            <div class="tutorial-slides-container">
+                <div class="tutorial-slide active" id="slide-1">
+                    <div class="sys-boot-text">
+                        <div class="typing-line">> INITIALIZING SYSTEM...</div>
+                        <div class="typing-line">> CHECKING LICENSE...@br00klyn_weirdo</div>
+                        <div class="typing-line">> ACCESS: Successfuly</div>
+                        <div class="typing-line">> WELCOME, TRADER.</div>
                     </div>
                 </div>
-                <div style="margin-top:15px; font-size:0.9em; color:#aaa;">TOTAL VISUAL CONTROL</div>
+
+
+    
+                <div class="tutorial-slide" id="slide-2">
+                    <div class="scene-box">
+                        <div class="scene-sidebar"><div class="scene-tool"></div></div>
+                        <div class="scene-window"><div class="scene-chart-content" style="display:block;"></div></div>
+                        <div class="scene-floating-data">BTC: +12.5%</div>
+                        <div class="scene-cursor"></div>
+                    </div>
+                    <div style="margin-top:15px; font-size:0.9em; color:#aaa;">DRAG & DROP • LIVE CHARTS • REAL-TIME DATA</div>
+                </div>
+
+                <div class="tutorial-slide" id="slide-3">
+                    <div style="height:180px; display:flex; align-items:center; justify-content:center;">
+                        <div class="scene-ui-mock">
+                            <div class="scene-ui-bar"></div>
+                            <div class="scene-ui-bar" style="width:40%"></div>
+                            <div class="scene-ui-btn"></div>
+                            <div class="scene-ui-text">THEME ENGINE</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:15px; font-size:0.9em; color:#aaa;">TOTAL VISUAL CONTROL</div>
+                </div>
             </div>
-        
-        </div> <div class="slide-dots">
-            <div class="dot active"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
-        </div>
 
-        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px; width: 100%;">
+            <div class="slide-dots">
+                <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+
             <button class="tutorial-btn" onclick="closeTutorial()">立即體驗</button>
-            
-            <button class="tutorial-btn" id="tutorial-login-btn" style="background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color);">
-                GOOGLE 登入
-            </button>
         </div>
-
-    </div> </div> 
-            </div> </div>     </div>         </div>             <div id="welcome-overlay">
+    </div>
+<div id="welcome-overlay">
     <div class="login-container">
-        <div class="close-login-btn" onclick="closeLoginModal()">×</div>
         <img src="PulseStreet LOGO.png" alt="PulseStreet Logo" class="brand-logo">
         
         <h3>SYNC WITH THE STREET.</h3>
@@ -2028,13 +1914,15 @@
 
         </div>
 
-       <div class="header-right">
-            
-            <div class="visitor-count" onclick="toggleVisitorStats()" title="Click for Detailed Analytics">
+        <div class="header-right">
+             <div class="header-btn-terms" onclick="openTerms()">
+    <svg class="info-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+    INFO
+</div>
+             <div class="visitor-count" onclick="toggleVisitorStats()" title="Click for Detailed Analytics">
                 <span>VISITORS:</span> 
                 <span id="hosts_count" class="visitor-num">loading...</span>
                 <span style="font-size: 0.8em; opacity: 0.7;">▼</span>
-                
                 <div id="visitor-stats-panel">
                     <div style="margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
                         TRAFFIC ANALYTICS 流量分析
@@ -2050,23 +1938,8 @@
                     <div class="stats-footer">SYSTEM STATUS: MONITORING</div>
                 </div>
             </div>
-
-            <div class="header-btn-terms" onclick="openTerms()">
-                <svg class="info-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                INFO
-            </div>
-
-            <div id="header-auth-btn" class="header-btn-auth" style="margin-right: 0;">
-                <span id="auth-icon" style="font-size: 14px;">🔑</span>
-                <span id="auth-text">LOGIN</span>
-                <img id="auth-avatar" src="" alt="User" style="display:none;">
-            </div>
-
+            <div style="font-size: 12px; opacity: 0.7;">SYS.STATUS: ONLINE</div>
         </div>
-    
-    
-</div>
-            
     </header>
     <div class="main-container">
         <div class="sidebar" id="sidebar">
@@ -2562,8 +2435,6 @@ window.switchSpace = function(spaceMode) {
                 </div> `;
             
             workspace.appendChild(container);
-            // ==========================================
-            
 
             // 2. 動態注入 Widgets
             setTimeout(() => {
@@ -2621,34 +2492,39 @@ window.switchSpace = function(spaceMode) {
             }, 100);
         }
       // --- PulseStreet 渲染核心 (Facebook Style Update) ---
-       /// --- PulseStreet 渲染核心 (含發送按鈕改良版) ---
+       // --- PulseStreet 渲染核心 (Facebook Style + SVG Shortcuts) ---
         function renderPulseStreet() {
             const workspace = document.querySelector('.workspace');
             const container = document.createElement('div');
             container.className = 'pulse-container';
             
-            // 圖示定義
+            // 1. 通用介面圖示 (SVG)
             const pIcons = {
                 search: '<svg class="pulse-icon" style="margin:0" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                user: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
                 friends: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#1877F2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
                 memories: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#2ABBA7"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
                 saved: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#A033FF"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>',
                 groups: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#1877F2"><circle cx="12" cy="12" r="10"></circle><path d="M16 16s-1.5-2-4-2-4 2-4 2"></path><line x1="12" y1="8" x2="12" y2="13"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
                 video: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#E41E3F"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
                 arrowDown: '<svg class="pulse-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>',
+                // 貼文操作圖示
                 like: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>',
                 comment: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>',
                 share: '<svg class="action-icon-svg" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
             };
 
+            // 2. 捷徑專用圖示 (SVG 代替 Emoji)
+            // 我為每個遊戲繪製了對應的簡約圖示
             const shortcutIcons = {
-                beauty: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF69B4" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>',
-                candy: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FFD700" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>',
-                farm: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#4CAF50" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>',
-                cards: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF5252" stroke-width="2"><rect x="2" y="2" width="14" height="18" rx="2" ry="2"></rect><rect x="8" y="4" width="14" height="18" rx="2" ry="2"></rect></svg>',
-                fish: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00BFFF" stroke-width="2"><path d="M2 12h6c2 0 3-2 5-2s3 2 5 2h4"></path><path d="M16 8l2 4-2 4"></path><circle cx="19" cy="12" r="2"></circle></svg>'
+                beauty: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF69B4" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>', // 星星代表女明星
+                candy: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FFD700" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>', // 糖果
+                farm: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#4CAF50" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>', // 農場(層疊)
+                cards: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF5252" stroke-width="2"><rect x="2" y="2" width="14" height="18" rx="2" ry="2"></rect><rect x="8" y="4" width="14" height="18" rx="2" ry="2"></rect></svg>', // 撲克牌
+                fish: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00BFFF" stroke-width="2"><path d="M2 12h6c2 0 3-2 5-2s3 2 5 2h4"></path><path d="M16 8l2 4-2 4"></path><circle cx="19" cy="12" r="2"></circle></svg>' // 魚/波浪
             };
 
+            // 3. Stories Data
             const stories = [
                 { name: "Your Story", icon: "＋", seen: false },
                 { name: "火箭博士", icon: "🚀", seen: false },
@@ -2663,6 +2539,58 @@ window.switchSpace = function(spaceMode) {
                 </div>
             `).join('');
 
+            // 4. Posts Data
+            const posts = [
+                {
+                    name: "Brooklyn", time: "2h ago • 公開", avatar: "Ⓜ️",
+                    content: "PulseStreet是brooklyn-terminal系統的動態社群，您可以在這裡找到股市同好、工作夥伴，以及大語言模型愛好者! 此功能開發中，敬請期待。 #LLM #BTC #Crypto",
+                    image: null, likes: "1.2k", comments: "342"
+                },
+                {
+                    name: "科技航廈", time: "4h ago • 公開", avatar: "🚇",
+                    content: "Gemini 3十分鐘解出百年數學難題　陶哲軒：表現遠超預期。",
+                    image: "https://cdn2.ettoday.net/images/8505/d8505938.jpg", likes: "8.5k", comments: "1.2k"
+                },
+                {
+                    name: "PulseStreet", time: "Just now • 系統公告", avatar: "🅿️",
+                    content: "比特幣成為戰場：白宮與摩根大通之間的無聲戰爭。",
+                    image: "https://image.blocktempo.com/2025/11/cover-image-bitcoin-battlefield-jpmorgan-white-house-silent-war.webp", likes: "1984", comments: "40"
+                }
+            ];
+            let postsHTML = posts.map(p => `
+                <div class="pulse-post">
+                    <div class="pulse-post-header">
+                        <div class="pulse-avatar">${p.avatar}</div>
+                        <div class="pulse-meta"><div class="pulse-name">${p.name}</div><div class="pulse-time">${p.time}</div></div>
+                        <div class="pulse-menu-btn">•••</div>
+                    </div>
+                    <div class="pulse-content">${p.content}</div>
+                    ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
+                    <div class="pulse-stats"><span>${pIcons.like} ${p.likes}</span><span>${p.comments} Comments</span></div>
+                    <div class="pulse-actions">
+                        <button class="pulse-action-btn">${pIcons.like} Like</button>
+                        <button class="pulse-action-btn">${pIcons.comment} Comment</button>
+                        <button class="pulse-action-btn">${pIcons.share} Share</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // 5. Contacts Data
+            const contacts = [
+                "Benson Chen", "Kevin HO", "cocco", "BY5423", "火箭博士", 
+                "瘋狂小生", "飲水人", "竹北薪水小偷", "終究是我扛下了所有", "斯勾姨"
+            ];
+            let contactsHTML = contacts.map(c => `
+                <div class="contact-row">
+                    <div class="contact-img-box">
+                        <div class="contact-img" style="display:flex;align-items:center;justify-content:center;background:#444;color:#fff;font-size:12px;">${c.charAt(0)}</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="contact-name" style="color:#e4e6eb; font-size:0.95em;">${c}</div>
+                </div>
+            `).join('');
+
+            // 6. 捷徑 Data (使用上面定義的 shortcutIcons)
             const shortcuts = [
                 { name: "韭菜俱樂部", icon: shortcutIcons.beauty },
                 { name: "科技先驅日報", icon: shortcutIcons.candy },
@@ -2677,25 +2605,20 @@ window.switchSpace = function(spaceMode) {
                 </div>
             `).join('');
 
-            
-        
-
-            // 渲染 HTML 結構
+            // 7. 組合 HTML
             container.innerHTML = `
                 <div class="pulse-layout">
                     <div class="pulse-sidebar-left">
                         <div class="pulse-search-box">
                             ${pIcons.search} <input type="text" class="pulse-search-input" placeholder="搜尋 PulseStreet">
+                            
                         </div>
-                        
-                        <div class="pulse-side-btn" id="pulse-profile-btn">
+
+                        <div class="pulse-side-btn">
                             <div class="pulse-side-icon" style="overflow:hidden;">
-                                ${window.currentUser && window.currentUser.photoURL 
-                                    ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;object-fit:cover;">` 
-                                    : `<div style="width:100%;height:100%;background:#00ffcc;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold;">${window.currentUser ? window.currentUser.displayName.charAt(0) : 'G'}</div>`
-                                }
+                                <div style="width:100%;height:100%;background:#00ffcc;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold;">B</div>
                             </div>
-                            <div style="font-weight:bold;">${window.currentUser ? window.currentUser.displayName : 'Guest (請登入)'}</div>
+                            <div style="font-weight:bold;">Brooklyn</div>
                         </div>
 
                         <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.friends}</div><div>朋友</div></div>
@@ -2707,248 +2630,46 @@ window.switchSpace = function(spaceMode) {
                             <div class="pulse-side-icon" style="background:#3a3b3c;">${pIcons.arrowDown}</div>
                             <div>顯示更多</div>
                         </div>
+
                         <div class="pulse-divider"></div>
+
                         <div class="pulse-section-title">捷徑</div>
                         ${shortcutsHTML}
-                        <div style="font-size:0.8em; color:#888; padding:10px;">私隱政策 · 服務條款 · 廣告 · Cookies · Brooklyn-terminal © 2025</div>
+                        <div style="font-size:0.8em; color:#888; padding:10px;">
+                            私隱政策 · 服務條款 · 廣告 · Cookies · Brooklyn-terminal © 2025
+                        </div>
                     </div>
 
                     <div class="pulse-feed-container">
                         <div class="pulse-stories-wrapper">${storiesHTML}</div>
                         
                         <div class="pulse-create">
-                            <div class="pulse-avatar">
-                                ${window.currentUser && window.currentUser.photoURL 
-                                    ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;border-radius:50%;">`
-                                    : 'Ⓜ️'}
-                            </div>
-                            <input type="text" class="pulse-input-dummy" id="pulse-real-input" placeholder="聊聊你對市場的看法? (輸入後按發送)" style="border:none; outline:none; color:#fff;">
-                            
-                            <button id="pulse-submit-btn" class="pulse-send-btn">SEND</button>
+                            <div class="pulse-avatar">Ⓜ️</div>
+                            <div class="pulse-input-dummy">聊聊你對AMD暴漲有什麼看法?</div>
                         </div>
 
-                        <div class="pulse-feed" id="pulse-real-feed">
-                            <div style="text-align:center; padding:40px; color:#666;">
-                                <div style="font-size: 2em; margin-bottom: 10px;">📡</div>
-                                正在連線至 PulseStreet 網路...
-                            </div>
+                        <div class="pulse-feed">
+                            ${postsHTML}
+                            <div style="text-align:center; padding:20px; opacity:0.5; font-size:0.8em;">— 已經到底了 —</div>
                         </div>
                     </div>
 
-                    
                     <div class="pulse-sidebar-right">
                         <div class="pulse-contact-header" style="display:flex; justify-content:space-between; align-items:center;">
-                            <span>ONLINE AGENTS</span>
+                            <span>聯絡人</span>
                             <div style="display:flex; gap:10px; opacity:0.6;">
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
                             </div>
                         </div>
-                        
-                        <div class="pulse-nav-list" id="pulse-online-list">
-                            <div style="padding:20px; text-align:center; color:#555; font-size:0.8em; border:1px dashed #333; margin-top:10px;">
-                                📡 SCANNING NET...
-                            </div>
+                        <div class="pulse-nav-list">
+                            ${contactsHTML}
                         </div>
                     </div>
                 </div>
             `;
 
             workspace.appendChild(container);
-            // ★ 新增：監聽線上用戶 (Real-time Users) ★
-            // ==========================================
-            if (window.fs && window.db) {
-                try {
-                    // 從 window.fs 拿出我們需要的工具
-                    const { collection, query, orderBy, limit, onSnapshot } = window.fs;
-                    
-                    // 建立查詢：找 "users" 集合，依照 "lastSeen" 時間排序，取前 20 人
-                    const userQ = query(
-                        collection(window.db, "users"), 
-                        orderBy("lastSeen", "desc"), 
-                        limit(20)
-                    );
-
-                    // 開始監聽 (onSnapshot 會在資料庫有變動時自動執行)
-                    onSnapshot(userQ, (snapshot) => {
-                        const listEl = document.getElementById('pulse-online-list');
-                        // 如果使用者切換到別的頁面，列表元素不在了，就停止執行
-                        if(!listEl) return;
-
-                        let html = '';
-                        snapshot.forEach((doc) => {
-                            const u = doc.data();
-                            
-                            // 判斷上線狀態 (簡單邏輯：最後上線時間在 10 分鐘內算綠燈)
-                            let statusColor = '#888'; // 預設灰色 (離線)
-                            let statusText = 'Offline';
-                            
-                            if (u.lastSeen) {
-                                // 計算現在時間與最後上線時間的差距 (秒)
-                                const now = new Date();
-                                const lastSeenDate = u.lastSeen.toDate();
-                                const diffMinutes = (now - lastSeenDate) / 1000 / 60;
-
-                                if(diffMinutes < 10) {
-                                    statusColor = '#31a24c'; // 綠色 (在線)
-                                    statusText = 'Online';
-                                } else if (diffMinutes < 60) {
-                                    statusColor = '#f0ad4e'; // 橘色 (閒置)
-                                    statusText = 'Idle';
-                                }
-                            }
-
-                            // 產生每位用戶的 HTML (沿用原本的 CSS 樣式)
-                            html += `
-                            <div class="contact-row" title="Last seen: ${statusText}">
-                                <div class="contact-img-box">
-                                    <div class="contact-img" style="display:flex;align-items:center;justify-content:center;background:#222;color:#fff;font-size:12px;overflow:hidden;">
-                                        ${u.avatar 
-                                            ? `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;">` 
-                                            : (u.name ? u.name.charAt(0).toUpperCase() : '?')}
-                                    </div>
-                                    <div class="online-dot" style="background:${statusColor}; border:2px solid var(--bg-panel);"></div>
-                                </div>
-                                <div class="contact-name" style="color:#bbb; font-size:0.9em;">
-                                    ${u.name || 'Unknown Agent'}
-                                </div>
-                            </div>`;
-                        });
-
-                        // 如果沒人，顯示預設訊息
-                        if(html === '') html = '<div style="padding:20px; text-align:center; color:#666;">No active agents found.</div>';
-                        
-                        // 更新畫面
-                        listEl.innerHTML = html;
-                    });
-
-                } catch (e) {
-                    console.error("無法讀取用戶列表:", e);
-                    const listEl = document.getElementById('pulse-online-list');
-                    if(listEl) listEl.innerHTML = '<div style="color:red; padding:10px;">Connection Error</div>';
-                }
-            }
-
-            // ==========================================
-            // ★ Firestore 功能實作區 ★
-            // ==========================================
-            
-            const input = document.getElementById('pulse-real-input');
-            const submitBtn = document.getElementById('pulse-submit-btn');
-            const feed = document.getElementById('pulse-real-feed');
-
-            // 定義發送功能 (共用)
-            const submitPost = async () => {
-                const content = input.value.trim();
-                if (content === '') return;
-
-                if (!window.currentUser) {
-                    alert("⚠️ 系統提示：請先登入 Google 帳號才能發文。\n(Please Login to post)");
-                    return;
-                }
-                
-                input.value = ''; // 清空
-                input.placeholder = "發送中...";
-
-                try {
-                    const { addDoc, collection, serverTimestamp } = window.fs;
-                    
-                    await addDoc(collection(window.db, "posts"), {
-                        content: content,
-                        name: window.currentUser.displayName,
-                        avatar: window.currentUser.photoURL,
-                        uid: window.currentUser.uid,
-                        timestamp: serverTimestamp(),
-                        likes: 0,
-                        comments: 0
-                    });
-                    
-                    input.placeholder = "聊聊你對市場的看法?";
-                } catch (err) {
-                    console.error("發文錯誤:", err);
-                    alert("發送失敗: " + err.message);
-                    input.value = content; // 補回文字
-                }
-            };
-
-            // 4. 綁定事件：按 Enter 或 按鈕 都可以發送
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') submitPost();
-            });
-            
-            if (submitBtn) {
-                submitBtn.addEventListener('click', submitPost);
-            }
-
-            // 5. 即時監聽貼文
-            if (window.fs && window.db) {
-                try {
-                    const { collection, query, orderBy, onSnapshot } = window.fs;
-                    const q = query(collection(window.db, "posts"), orderBy("timestamp", "desc"));
-                    
-                    onSnapshot(q, (snapshot) => {
-                        const feedEl = document.getElementById('pulse-real-feed');
-                        if(!feedEl) return;
-
-                        let html = '';
-                        
-                        snapshot.forEach((doc) => {
-                            const p = doc.data();
-                            let timeStr = "Just now";
-                            if(p.timestamp) {
-                                const date = p.timestamp.toDate();
-                                const now = new Date();
-                                const diff = (now - date) / 1000;
-                                if(diff < 60) timeStr = "剛剛";
-                                else if(diff < 3600) timeStr = `${Math.floor(diff/60)} 分鐘前`;
-                                else if(diff < 86400) timeStr = `${Math.floor(diff/3600)} 小時前`;
-                                else timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            }
-
-                            html += `
-                                <div class="pulse-post">
-                                    <div class="pulse-post-header">
-                                        <div class="pulse-avatar">
-                                            ${p.avatar 
-                                                ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` 
-                                                : '<div style="width:100%;height:100%;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;">👤</div>'}
-                                        </div>
-                                        <div class="pulse-meta">
-                                            <div class="pulse-name">${p.name || 'Anonymous'}</div>
-                                            <div class="pulse-time">${timeStr} <span style="margin-left:5px; opacity:0.7;">• 公開</span></div>
-                                        </div>
-                                        <div class="pulse-menu-btn">•••</div>
-                                    </div>
-                                    <div class="pulse-content">${p.content}</div>
-                                    ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
-                                    <div class="pulse-stats">
-                                        <span>${pIcons.like} ${p.likes || 0}</span>
-                                        <span>${p.comments || 0} Comments</span>
-                                    </div>
-                                    <div class="pulse-actions">
-                                        <button class="pulse-action-btn">${pIcons.like} Like</button>
-                                        <button class="pulse-action-btn">${pIcons.comment} Comment</button>
-                                        <button class="pulse-action-btn">${pIcons.share} Share</button>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        
-                        if(html === '') {
-                            html = `
-                                <div style="text-align:center; padding:50px; opacity:0.6;">
-                                    <div style="font-size:3em; margin-bottom:10px;">📝</div>
-                                    <div>這裡還很安靜...</div>
-                                    <div style="font-size:0.9em; margin-top:5px;">成為第一個發言的人吧！</div>
-                                </div>`;
-                        }
-                        
-                        feedEl.innerHTML = html;
-                    });
-                } catch (e) {
-                    console.error("讀取資料庫失敗:", e);
-                    feed.innerHTML = '<div style="text-align:center; color:#ff3333; padding:20px; border:1px solid #ff3333; border-radius:8px; margin-top:20px;">無法連線至資料庫<br><span style="font-size:0.8em; color:#aaa;">請確認 Firebase 設定是否正確</span></div>';
-                }
-            }
         }
         // 輔助：清空連線 (原本的 clearGrid 只有清空 items，沒有清空 SVG 連線)
         function clearAllConnections() {
@@ -4592,18 +4313,7 @@ function renderYouTubeContent(item) {
            item.y = rawY;
            updateLines();
         */
-  // 關閉登入視窗的功能
-window.closeLoginModal = function() {
-    const overlay = document.getElementById('welcome-overlay');
-    if(overlay) {
-        // 1. 淡出動畫
-        overlay.style.opacity = '0';
-        // 2. 動畫結束後隱藏
-        setTimeout(() => {
-            overlay.style.display = 'none';
-        }, 500);
-    }
-}
+  
     </script>
  <div id="terms-overlay" onclick="closeTerms(event)">
     <div class="terms-window">
@@ -4649,172 +4359,7 @@ window.closeLoginModal = function() {
     }
 });
     </script>
-<script type="module">
-    import { 
-        getAuth, 
-        GoogleAuthProvider, 
-        signInWithPopup, 
-        signOut, 
-        onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // ★ 新增：引入 Firestore 資料庫模組 ★
-    import { 
-        getFirestore, 
-        collection, 
-        addDoc, 
-        query, 
-        orderBy, 
-        onSnapshot, 
-        serverTimestamp,
-        doc,      
-        setDoc,   
-        limit     
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    
-    // 2. Firebase 設定
-    const firebaseConfig = {
-        apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
-        authDomain: "brooklyn-terminal.firebaseapp.com",
-        projectId: "brooklyn-terminal",
-        storageBucket: "brooklyn-terminal.firebasestorage.app",
-        messagingSenderId: "438411734316",
-        appId: "1:438411734316:web:649051890cf381eb0fd089",
-        measurementId: "G-G0GMW0XHG1"
-    };
-
-    // 3. 初始化 Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-    
-    // ★ 初始化資料庫 ★
-    const db = getFirestore(app);
-
-    // ★ 關鍵：將資料庫工具掛載到 window (讓 PulseStreet 可以使用) ★
-    window.db = db;
-   window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, limit };
-
-    // --- 4. 登入與介面邏輯 (保持不變) ---
-    
-    const headerBtn = document.getElementById('header-auth-btn');
-    const headerText = document.getElementById('auth-text');
-    const headerIcon = document.getElementById('auth-icon');
-    const headerAvatar = document.getElementById('auth-avatar');
-    
-    const welcomeOverlay = document.getElementById('welcome-overlay');
-    const centerLoginBtn = document.getElementById('login-btn');
-
-    // 定義登入函式
-    const performLogin = () => {
-        if(centerLoginBtn) centerLoginBtn.innerText = "CONNECTING...";
-        if(headerText) headerText.innerText = "...";
-
-        signInWithPopup(auth, provider)
-            .then((result) => {
-                console.log("登入成功:", result.user.displayName);
-            }).catch((error) => {
-                console.error("登入失敗:", error);
-                alert("登入失敗: " + error.message);
-                if(centerLoginBtn) centerLoginBtn.innerText = "Sign in";
-                if(headerText) headerText.innerText = "LOGIN";
-            });
-    };
-
-    // 定義登出函式
-    const performLogout = () => {
-        if(confirm("確認要登出系統嗎?")) {
-            signOut(auth).then(() => {
-                location.reload();
-            }).catch((error) => console.error(error));
-        }
-    };
-
-    // 按鈕監聽
-    if (headerBtn) {
-        headerBtn.addEventListener('click', () => {
-            if (auth.currentUser) performLogout();
-            else performLogin();
-        });
-    }
-
-    if (centerLoginBtn) {
-        centerLoginBtn.onclick = null;
-        centerLoginBtn.addEventListener('click', performLogin);
-    }
-
-    // 教學視窗按鈕
-    const tutorialLoginBtn = document.getElementById('tutorial-login-btn');
-    if (tutorialLoginBtn) {
-        tutorialLoginBtn.addEventListener('click', () => {
-            const tutOverlay = document.getElementById('tutorial-overlay');
-            if(tutOverlay) tutOverlay.classList.remove('active');
-            if(window.stopSlideShow) window.stopSlideShow();
-            performLogin();
-        });
-    }
-
-    // 監聽登入狀態
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            // 已登入
-            if(headerText) headerText.innerText = user.displayName.split(' ')[0].toUpperCase();
-            if(headerIcon) headerIcon.style.display = 'none';
-            if(headerAvatar) {
-                headerAvatar.src = user.photoURL;
-                headerAvatar.style.display = 'block';
-            }
-            if(welcomeOverlay) {
-                welcomeOverlay.style.opacity = '0';
-                setTimeout(() => welcomeOverlay.style.display = 'none', 500);
-            }
-            updateUserProfile(user);
-        
-            // 功能：將登入用戶的資料寫入 Firestore 的 "users" 集合
-            try {
-                const userRef = doc(db, "users", user.uid);
-                await setDoc(userRef, {
-                    uid: user.uid,
-                    name: user.displayName,
-                    email: user.email,
-                    avatar: user.photoURL,
-                    lastSeen: serverTimestamp(), // 記錄最後上線時間
-                    isOnline: true
-                }, { merge: true }); // merge: true 表示只更新欄位，不覆蓋整筆資料
-                console.log("用戶狀態已更新至資料庫");
-            } catch (err) {
-                console.error("更新用戶狀態失敗:", err);
-            }
-        } else {
-            // 未登入
-            if(headerText) headerText.innerText = "LOGIN";
-            if(headerIcon) headerIcon.style.display = 'inline';
-            if(headerAvatar) headerAvatar.style.display = 'none';
-            if(welcomeOverlay) {
-                welcomeOverlay.style.display = 'flex';
-                setTimeout(() => welcomeOverlay.style.opacity = '1', 10);
-            }
-            if(centerLoginBtn) centerLoginBtn.innerText = "Sign in";
-        }
-    });
-
-    function updateUserProfile(user) {
-        window.currentUser = user;
-        // 更新左側欄
-        const nameElements = document.querySelectorAll('.pulse-side-btn div[style*="font-weight:bold"]');
-        nameElements.forEach(el => {
-            if(el.innerText === 'Brooklyn') el.innerText = user.displayName;
-        });
-        // 更新頭像
-        const avatarContainer = document.querySelector('.pulse-side-icon[style*="overflow:hidden"]');
-        if(avatarContainer && user.photoURL) {
-            avatarContainer.innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;">`;
-        }
-    }
-
-    window.appAuth = auth;
-</script>
 
 
 
