@@ -4,7 +4,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.003</title> 
+    <title>BROOKLYN-TERMINAL // V1.004</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -2047,7 +2047,55 @@
     background: var(--accent-color);
     box-shadow: 0 -2px 10px var(--accent-color);
 }
+/* --- 個人頁面返回按鈕 (Back to Feed) --- */
+.profile-back-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 20; /* 確保層級高於封面特效 */
+    
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    
+    padding: 6px 18px;
+    font-family: 'Orbitron', sans-serif; /* 保持科幻字體 */
+    font-size: 0.8em;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    
+    cursor: pointer;
+    backdrop-filter: blur(4px); /* 毛玻璃效果 */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* 經典科幻切角造型 */
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
 
+.profile-back-btn:hover {
+    background: var(--accent-color);
+    color: #000;
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.4); /* 發光特效 */
+    transform: translateX(3px); /* 輕微位移增加互動感 */
+}
+
+/* 加上一個閃爍的裝飾點 */
+.profile-back-btn::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: currentColor;
+    margin-right: 8px;
+    border-radius: 50%;
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
 
 
 
@@ -2916,8 +2964,13 @@ window.loadProfileView = function(targetUid = null) {
     
     feedContainer.innerHTML = `
         <div class="pulse-profile-layout" style="animation: fadeInUp 0.4s ease;">
+            
             <div class="profile-cover-section">
-                <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:4px 8px; font-size:0.7em; color:#fff; border-radius:4px;">
+                <button class="profile-back-btn" onclick="switchSpace('pulse')">
+                    RETURN FEED
+                </button>
+
+                <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:4px 8px; font-size:0.7em; color:#fff; border-radius:4px; border:1px solid rgba(255,255,255,0.1);">
                     COVER_ID: #8842-X
                 </div>
             </div>
