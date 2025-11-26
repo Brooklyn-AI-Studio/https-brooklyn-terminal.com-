@@ -1817,7 +1817,54 @@
     border: 2px solid #18191a; /* 黑色邊框 */
     border-radius: 50%;
 }
+/* --- Google 登入按鈕樣式 --- */
+.header-btn-auth {
+    margin-right: 15px;
+    color: #000; /* 文字黑色，對比強烈 */
+    background: var(--accent-color); /* 使用主題強調色 (青色/橘色) */
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 900; /* 粗體 */
+    border: 1px solid var(--accent-color);
+    padding: 4px 12px; /* 內距 */
+    letter-spacing: 1px; /* 字距 */
+    transition: all 0.3s; /* 動畫過渡 */
+    
+    /* 科幻切角造型 (左上、右下切角) */
+    clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+    
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 圖示與文字間距 */
+    text-transform: uppercase;
+    height: 26px; /* 固定高度，與 INFO 按鈕一致 */
+}
 
+/* 滑鼠懸停效果 */
+.header-btn-auth:hover {
+    background: #fff; /* 變白色背景 */
+    box-shadow: 0 0 15px var(--accent-color); /* 發光效果 */
+    color: #000;
+}
+
+/* 登入後顯示的大頭貼樣式 */
+#auth-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%; /* 圓形 */
+    border: 1px solid #000;
+    object-fit: cover;
+}
+
+
+
+
+
+
+
+
+
+        
     </style>
 </head>
 <body>
@@ -1915,9 +1962,36 @@
         </div>
 
         <div class="header-right">
-             <div class="header-btn-terms" onclick="openTerms()">
-    <svg class="info-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-    INFO
+    
+    <div id="header-auth-btn" class="header-btn-auth">
+        <span id="auth-icon" style="font-size: 14px;">🔑</span> <span id="auth-text">LOGIN</span> <img id="auth-avatar" src="" alt="User" style="display:none;"> </div>
+
+    <div class="header-btn-terms" onclick="openTerms()">
+        <svg class="info-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        INFO
+    </div>
+
+    <div class="visitor-count" onclick="toggleVisitorStats()" title="Click for Detailed Analytics">
+        <span>VISITORS:</span> 
+        <span id="hosts_count" class="visitor-num">loading...</span>
+        <span style="font-size: 0.8em; opacity: 0.7;">▼</span>
+        <div id="visitor-stats-panel">
+            <div style="margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+                TRAFFIC ANALYTICS 流量分析
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item"><span class="stat-label">Today Traffic 本日流量</span><span id="busuanzi_today_pv" class="stat-value">...</span></div>
+                <div class="stat-item"><span class="stat-label">Today Users 本日用戶</span><span id="busuanzi_today_uv" class="stat-value">...</span></div>
+                <div class="stat-item"><span class="stat-label">Total Traffic 總流量</span><span id="hosts_count" class="stat-value">...</span></div>
+                <div class="stat-item"><span class="stat-label">Total Users 總用戶</span><span id="busuanzi_site_uv" class="stat-value">...</span></div>
+                <div class="stat-item"><span class="stat-label">Page Hits 頁面總閱讀量</span><span id="busuanzi_page_pv" class="stat-value">...</span></div>
+                <div class="stat-item"><span class="stat-label">Page Users 頁面總訪</span><span id="busuanzi_page_uv" class="stat-value">...</span></div>
+            </div>
+            <div class="stats-footer">SYSTEM STATUS: MONITORING</div>
+        </div>
+    </div>
+    
+    <div style="font-size: 12px; opacity: 0.7;">SYS.STATUS: ONLINE</div>
 </div>
              <div class="visitor-count" onclick="toggleVisitorStats()" title="Click for Detailed Analytics">
                 <span>VISITORS:</span> 
@@ -4360,7 +4434,7 @@ function renderYouTubeContent(item) {
 });
     </script>
 <script type="module">
-    // 1. 引入必要的 Firebase 模組 (包含 Auth)
+    // 1. 引入 Firebase 模組
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
     import { 
@@ -4371,7 +4445,7 @@ function renderYouTubeContent(item) {
         onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // 2. Firebase 設定
+    // 2. Firebase 設定 (這是您的專案設定)
     const firebaseConfig = {
         apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
         authDomain: "brooklyn-terminal.firebaseapp.com",
@@ -4382,92 +4456,123 @@ function renderYouTubeContent(item) {
         measurementId: "G-G0GMW0XHG1"
     };
 
-    // 3. 初始化 Firebase
+    // 3. 初始化
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    // 4. 處理登入按鈕點擊事件
-    const loginBtn = document.getElementById('login-btn');
-    if (loginBtn) {
-        // 移除舊的點擊事件 (如果有的話)，改用 Firebase 登入
-        loginBtn.onclick = null; 
-        
-        loginBtn.addEventListener('click', () => {
-            // 顯示載入中狀態 (選用)
-            loginBtn.innerText = "Connecting...";
-            
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    console.log("登入成功:", result.user.displayName);
-                    // 登入成功後，onAuthStateChanged 會自動處理 UI 變化
-                }).catch((error) => {
-                    console.error("登入失敗:", error);
-                    alert("登入失敗: " + error.message);
-                    loginBtn.innerText = "Sign in"; // 復原按鈕文字
-                });
+    // 4. 取得 UI 元素
+    const headerBtn = document.getElementById('header-auth-btn'); // 右上角按鈕
+    const headerText = document.getElementById('auth-text');      // 右上角文字
+    const headerIcon = document.getElementById('auth-icon');      // 右上角圖示
+    const headerAvatar = document.getElementById('auth-avatar');  // 右上角頭像
+    
+    const welcomeOverlay = document.getElementById('welcome-overlay'); // 中央歡迎畫面
+    const centerLoginBtn = document.getElementById('login-btn');       // 中央登入按鈕
+
+    // 5. 定義登入函式
+    const performLogin = () => {
+        // 更新按鈕文字為載入中
+        if(centerLoginBtn) centerLoginBtn.innerText = "CONNECTING...";
+        if(headerText) headerText.innerText = "...";
+
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                console.log("登入成功:", result.user.displayName);
+                // 登入成功後，下方的 onAuthStateChanged 會自動處理介面更新
+            }).catch((error) => {
+                console.error("登入失敗:", error);
+                alert("登入失敗 (Access Denied): " + error.message);
+                // 失敗時復原按鈕文字
+                if(centerLoginBtn) centerLoginBtn.innerText = "Sign in";
+                if(headerText) headerText.innerText = "LOGIN";
+            });
+    };
+
+    // 6. 定義登出函式
+    const performLogout = () => {
+        // 跳出確認視窗
+        if(confirm("確認要登出系統嗎? (Terminate Session?)")) {
+            signOut(auth).then(() => {
+                console.log("已登出");
+                location.reload(); // 重新整理頁面以清除狀態
+            }).catch((error) => console.error(error));
+        }
+    };
+
+    // 7. 綁定按鈕事件
+    
+    // (A) 右上角按鈕：根據登入狀態，決定執行登入或登出
+    if (headerBtn) {
+        headerBtn.addEventListener('click', () => {
+            if (auth.currentUser) {
+                performLogout(); // 已登入 -> 執行登出
+            } else {
+                performLogin();  // 未登入 -> 執行登入
+            }
         });
     }
 
-    // 5. 全域監聽登入狀態 (登入/登出都會觸發這裡)
+    // (B) 中央歡迎畫面的按鈕：執行登入
+    if (centerLoginBtn) {
+        // 移除舊的 onclick 事件，改用我們的 Firebase 登入
+        centerLoginBtn.onclick = null; 
+        centerLoginBtn.addEventListener('click', performLogin);
+    }
+
+    // 8. 監聽登入狀態改變 (這是核心，會自動更新 UI)
     onAuthStateChanged(auth, (user) => {
-        const overlay = document.getElementById('welcome-overlay');
-        
         if (user) {
-            // --- 使用者已登入 ---
+            // =========== [使用者已登入] ===========
             
-            // A. 隱藏歡迎畫面
-            if(overlay) {
-                overlay.style.opacity = '0';
-                setTimeout(() => overlay.style.display = 'none', 500);
+            // 更新右上角按鈕
+            if(headerText) headerText.innerText = user.displayName.split(' ')[0].toUpperCase(); // 顯示名字(取第一個字)
+            if(headerIcon) headerIcon.style.display = 'none'; // 隱藏鑰匙圖示
+            if(headerAvatar) {
+                headerAvatar.src = user.photoURL; // 設定頭像
+                headerAvatar.style.display = 'block'; // 顯示圖片
+            }
+            
+            // 隱藏中央歡迎畫面
+            if(welcomeOverlay) {
+                welcomeOverlay.style.opacity = '0';
+                setTimeout(() => welcomeOverlay.style.display = 'none', 500);
             }
 
-            // B. 更新介面顯示使用者資訊 (例如左側欄位)
+            // 更新 PulseStreet 的使用者名稱
             updateUserProfile(user);
 
         } else {
-            // --- 使用者未登入 ---
+            // =========== [使用者未登入] ===========
             
-            // 顯示歡迎畫面
-            if(overlay) {
-                overlay.style.display = 'flex';
-                // 稍微延遲讓 display:flex 生效後再跑動畫
-                setTimeout(() => overlay.style.opacity = '1', 10);
+            // 重置右上角按鈕
+            if(headerText) headerText.innerText = "LOGIN";
+            if(headerIcon) headerIcon.style.display = 'inline';
+            if(headerAvatar) headerAvatar.style.display = 'none';
+
+            // 顯示中央歡迎畫面 (強制登入)
+            if(welcomeOverlay) {
+                welcomeOverlay.style.display = 'flex';
+                setTimeout(() => welcomeOverlay.style.opacity = '1', 10);
             }
-            if(loginBtn) loginBtn.innerText = "Sign in";
+            if(centerLoginBtn) centerLoginBtn.innerText = "Sign in";
         }
     });
 
-    // 輔助函式: 更新介面上的使用者資料
+    // 輔助函式：更新 PulseStreet 介面中的使用者資料
     function updateUserProfile(user) {
-        // 找到 PulseStreet 左側欄原本顯示 "Brooklyn" 的地方 
-        // 因為你的 HTML 是動態生成的 (renderPulseStreet)，我們需要等它生成後再修改，
-        // 或者將使用者資訊存起來，下次渲染時使用。
-        
-        // 這裡我們先示範：如果左側欄已經存在，直接修改 DOM
-        const nameElements = document.querySelectorAll('.pulse-side-btn div[style*="font-weight:bold"]');
-        const avatarElements = document.querySelectorAll('.pulse-side-icon div');
+        // 儲存使用者資訊到全域變數，供其他程式碼使用
+        window.currentUser = user;
 
-        // 嘗試更新名稱 (這只是一個簡單的 DOM 搜尋，實際應用可能需要給元素 ID)
+        // 嘗試更新左側欄位 (如果元素已存在)
+        const nameElements = document.querySelectorAll('.pulse-side-btn div[style*="font-weight:bold"]');
         nameElements.forEach(el => {
             if(el.innerText === 'Brooklyn') el.innerText = user.displayName;
         });
         
-        // 簡單 alert 歡迎 (測試用)
-        console.log(`Welcome back, ${user.displayName}!`);
+        console.log(`User connected: ${user.displayName}`);
     }
-
-    // 6. (選用) 登出功能
-    // 你可以在 console 輸入 logout() 來測試登出，或綁定到某個按鈕
-    window.logout = () => {
-        signOut(auth).then(() => {
-            console.log("已登出");
-            location.reload(); // 重新整理頁面以重置狀態
-        }).catch((error) => {
-            console.error("登出錯誤", error);
-        });
-    };
 
     // 將 auth 掛載到 window 以便除錯
     window.appAuth = auth;
