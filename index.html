@@ -5,7 +5,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.019</title> 
+    <title>BROOKLYN-TERMINAL // V1.020</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -3022,6 +3022,99 @@ window.saveProfileChanges = async function() {
         btn.innerText = "SAVE CHANGES";
     }
 }
+// --- 新增功能：追蹤/取消追蹤 ---
+window.toggleFollow = async function(targetUid) {
+    if (!window.currentUser) {
+        alert("請先登入 (Please Login First)");
+        return;
+    }
+    const currentUid = window.currentUser.uid;
+    if (currentUid === targetUid) return; // 不能追蹤自己
+
+    const btn = document.getElementById('follow-btn');
+    const originalText = btn.innerText;
+    btn.innerText = "PROCESSING...";
+    btn.disabled = true;
+
+    // 定義唯一的關係 ID (追蹤者_被追蹤者)
+    const relId = `${currentUid}_${targetUid}`; 
+
+    try {
+        const { doc, getDoc, setDoc, deleteDoc, serverTimestamp } = window.fs;
+        const relRef = doc(window.db, "relationships", relId);
+        const relSnap = await getDoc(relRef);
+
+        if (relSnap.exists()) {
+            // 已經追蹤 -> 執行「取消追蹤」
+            await deleteDoc(relRef);
+            updateFollowUI(false);
+        } else {
+            // 尚未追蹤 -> 執行「追蹤」
+            await setDoc(relRef, {
+                followerId: currentUid, // 誰追蹤
+                followingId: targetUid, // 追蹤誰
+                timestamp: serverTimestamp()
+            });
+            updateFollowUI(true);
+        }
+        // 重新載入數據 (更新粉絲數)
+        loadFollowStats(targetUid);
+
+    } catch (err) {
+        console.error("追蹤失敗:", err);
+        alert("操作失敗: " + err.message);
+        btn.innerText = originalText;
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// 輔助函式：更新按鈕樣式
+function updateFollowUI(isFollowing) {
+    const btn = document.getElementById('follow-btn');
+    if (!btn) return;
+    
+    if (isFollowing) {
+        btn.innerHTML = "✓ FOLLOWING";
+        btn.style.background = "transparent";
+        btn.style.border = "1px solid var(--accent-color)";
+        btn.style.color = "var(--accent-color)";
+    } else {
+        btn.innerHTML = "➕ FOLLOW";
+        btn.style.background = "var(--accent-color)";
+        btn.style.border = "none";
+        btn.style.color = "#000";
+    }
+}
+
+// 輔助函式：載入粉絲數據
+async function loadFollowStats(targetUid) {
+    if (!window.fs || !window.db) return;
+    const { collection, query, where, getCountFromServer } = window.fs;
+
+    try {
+        // 1. 計算「粉絲數」 (Followers): 誰追蹤了 targetUid
+        const followersQ = query(collection(window.db, "relationships"), where("followingId", "==", targetUid));
+        const followersSnap = await getCountFromServer(followersQ);
+        
+        // 2. 計算「正在追蹤」 (Following): targetUid 追蹤了誰
+        const followingQ = query(collection(window.db, "relationships"), where("followerId", "==", targetUid));
+        const followingSnap = await getCountFromServer(followingQ);
+
+        // 更新介面
+        const followersEl = document.getElementById('stat-followers');
+        const followingEl = document.getElementById('stat-following');
+        
+        if(followersEl) followersEl.innerText = followersSnap.data().count;
+        if(followingEl) followingEl.innerText = followingSnap.data().count;
+
+    } catch (e) {
+        console.error("Stats load error:", e);
+    }
+}
+
+
+
             
 // --- 修改位置： window.loadProfileView 函式 (支援 Bio 讀取與編輯) ---
 window.loadProfileView = async function(targetUid = null) {
@@ -3039,20 +3132,23 @@ window.loadProfileView = async function(targetUid = null) {
     const photoURL = isSelf ? currentUser.photoURL : "";
     const email = isSelf ? currentUser.email : "user@brooklyn.com";
 
-    // ★ 新增：從 Firestore 讀取 Bio ★
+    // 讀取 Bio
     let bioText = "Loading bio...";
     try {
         const { doc, getDoc } = window.fs;
         const userSnap = await getDoc(doc(window.db, "users", uid));
-        if (userSnap.exists() && userSnap.data().bio) {
-            bioText = userSnap.data().bio;
+        if (userSnap.exists()) {
+            // 如果是對方的檔案，直接顯示名字
+            if (!isSelf && userSnap.data().displayName) {
+               // 這裡可以選擇是否要用資料庫的名字覆蓋預設的 Loading
+            }
+            if (userSnap.data().bio) bioText = userSnap.data().bio;
+            else bioText = "這位用戶很懶，還沒寫自我介紹。";
         } else {
-            bioText = "這位用戶很懶，還沒寫自我介紹。 (No bio yet)";
+            bioText = "這位用戶很懶，還沒寫自我介紹。";
         }
-        // 如果是自己，把 bio 存到全域變數，方便編輯視窗讀取
-        if(isSelf) window.currentBio = bioText; 
+        if(isSelf) window.currentBio = bioText;
     } catch(e) {
-        console.log("Bio load error", e);
         bioText = "Bio loading failed.";
     }
 
@@ -3063,12 +3159,8 @@ window.loadProfileView = async function(targetUid = null) {
         <div class="pulse-profile-layout" style="animation: fadeInUp 0.4s ease;">
             
             <div class="profile-cover-section">
-                <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">
-                    RETURN FEED
-                </button>
-                <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:4px 8px; font-size:0.7em; color:#fff; border-radius:4px; border:1px solid rgba(255,255,255,0.1);">
-                    COVER_ID: #8842-X
-                </div>
+                <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">RETURN FEED</button>
+                <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:4px 8px; font-size:0.7em; color:#fff; border-radius:4px; border:1px solid rgba(255,255,255,0.1);">COVER_ID: #8842-X</div>
             </div>
             
             <div class="profile-info-card">
@@ -3081,88 +3173,71 @@ window.loadProfileView = async function(targetUid = null) {
                     </div>
                     <div class="profile-actions">
                         ${isSelf 
-                            // ★ 關鍵修改：按鈕綁定 openEditModal()
                             ? `<button class="profile-btn" onclick="openEditModal()">✏️ EDIT PROFILE</button>
                                <button class="profile-btn" style="border-color:var(--error-color); color:var(--error-color);" onclick="appAuth.signOut().then(()=>location.reload())">LOGOUT</button>`
-                            : `<button class="profile-btn">➕ FOLLOW</button>
+                            : `<button id="follow-btn" class="profile-btn" onclick="toggleFollow('${uid}')">CHECKING...</button>
                                <button class="profile-btn">💬 MESSAGE</button>`
                         }
                     </div>
                 </div>
                 
                 <div class="profile-name-lg">${displayName}</div>
-                <div class="profile-handle">@${email.split('@')[0]} <span style="color:#555; margin-left:10px;">// NET_ID: ${uid.substring(0,6)}...</span></div>
-                
+                <div class="profile-handle">ID: ${uid.substring(0,6)}...</div>
                 <div class="profile-bio" style="white-space: pre-wrap;">${bioText}</div>
                 
                 <div class="profile-stats-row">
-                    <div class="p-stat-box"><span class="p-stat-num">1024</span><span class="p-stat-lbl">Followers</span></div>
-                    <div class="p-stat-box"><span class="p-stat-num">128</span><span class="p-stat-lbl">Following</span></div>
+                    <div class="p-stat-box"><span class="p-stat-num" id="stat-followers">--</span><span class="p-stat-lbl">Followers</span></div>
+                    <div class="p-stat-box"><span class="p-stat-num" id="stat-following">--</span><span class="p-stat-lbl">Following</span></div>
                     <div class="p-stat-box"><span class="p-stat-num">Level 3</span><span class="p-stat-lbl">Access</span></div>
                 </div>
             </div>
 
             <div class="profile-tabs">
-                <div class="p-tab active">LOGS (貼文)</div>
-                <div class="p-tab">MEDIA (媒體)</div>
-                <div class="p-tab">ABOUT (關於)</div>
+                <div class="p-tab active">LOGS</div><div class="p-tab">MEDIA</div>
             </div>
 
             <div id="profile-posts-feed" style="display:flex; flex-direction:column; gap:20px; padding-bottom:50px;">
-                <div class="news-loading" style="padding:40px;">LOADING USER LOGS...</div>
+                <div class="news-loading" style="padding:40px;">LOADING LOGS...</div>
             </div>
         </div>
     `;
 
-    // 載入貼文邏輯 (維持原本不變)
+    // 2. 檢查追蹤狀態 (如果是看別人)
+    if (!isSelf && currentUser) {
+        const { doc, getDoc } = window.fs;
+        const relId = `${currentUser.uid}_${uid}`;
+        getDoc(doc(window.db, "relationships", relId)).then(snap => {
+            updateFollowUI(snap.exists());
+        });
+    }
+
+    // 3. 載入粉絲數據 (所有人都要載入)
+    loadFollowStats(uid);
+
+    // 4. 載入貼文 (保持不變)
     if (window.fs && window.db) {
         const { collection, query, where, orderBy, getDocs } = window.fs;
-        const q = query(
-            collection(window.db, "posts"), 
-            where("uid", "==", uid),
-            orderBy("timestamp", "desc")
-        );
-
+        const q = query(collection(window.db, "posts"), where("uid", "==", uid), orderBy("timestamp", "desc"));
         getDocs(q).then((snapshot) => {
             const listEl = document.getElementById('profile-posts-feed');
             if(!listEl) return;
-            
             if (snapshot.empty) {
-                listEl.innerHTML = `
-                    <div style="text-align:center; padding:50px; border:1px dashed #333; border-radius:8px; color:#666;">
-                        <div style="font-size:2em; margin-bottom:10px;">📭</div>
-                        NO DATA LOGS FOUND<br>尚無發文紀錄
-                    </div>`;
+                listEl.innerHTML = `<div style="text-align:center; padding:50px; color:#666;">NO LOGS FOUND</div>`;
                 return;
             }
-
             let html = '';
             snapshot.forEach((doc) => {
                 const p = doc.data();
-                let timeStr = "Unknown Date";
-                if(p.timestamp) {
-                    const date = p.timestamp.toDate();
-                    timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                }
+                let timeStr = "Unknown";
+                if(p.timestamp) timeStr = p.timestamp.toDate().toLocaleDateString();
                 html += `
                     <div class="pulse-post">
                         <div class="pulse-post-header">
-                            <div class="pulse-avatar">
-                                ${p.avatar ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` : '👤'}
-                            </div>
-                            <div class="pulse-meta">
-                                <div class="pulse-name">${p.name}</div>
-                                <div class="pulse-time">${timeStr}</div>
-                            </div>
-                            <div class="pulse-menu-btn" onclick="deletePost('${doc.id}')" title="Delete Post">🗑️</div>
+                            <div class="pulse-avatar">${p.avatar ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` : '👤'}</div>
+                            <div class="pulse-meta"><div class="pulse-name">${p.name}</div><div class="pulse-time">${timeStr}</div></div>
                         </div>
                         <div class="pulse-content">${p.content}</div>
-                        ${p.image ? `<img src="${p.image}" class="pulse-content-img">` : ''}
-                        <div class="pulse-stats" style="border-top:1px solid rgba(255,255,255,0.05); margin-top:10px; padding-top:10px;">
-                            <span>❤️ ${p.likes || 0}</span>
-                        </div>
-                    </div>
-                `;
+                    </div>`;
             });
             listEl.innerHTML = html;
         });
@@ -5526,18 +5601,21 @@ window.closeLoginModal = function() {
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     
     // ★ 新增：引入 Firestore 資料庫模組 ★
-    import { 
-        getFirestore, 
-        collection, 
-        addDoc, 
-        query, 
-        orderBy, 
-        onSnapshot, 
-        serverTimestamp,
-        doc,
-        getDoc,
-        setDoc
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+   import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    query, 
+    orderBy, 
+    onSnapshot, 
+    serverTimestamp,
+    doc,
+    getDoc,
+    setDoc,
+    deleteDoc,       // ★ 必須有這個
+    where,           // ★ 必須有這個
+    getCountFromServer // ★ 必須有這個 (計算粉絲數用)
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // 2. Firebase 設定
     const firebaseConfig = {
@@ -5563,8 +5641,8 @@ window.closeLoginModal = function() {
     window.db = db;
     window.fs = { 
     collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, 
-    doc, getDoc, setDoc, updateProfile 
-    };
+    doc, getDoc, setDoc, updateProfile, deleteDoc, where, getCountFromServer
+};
 
     // --- 4. 登入與介面邏輯 (保持不變) ---
     
