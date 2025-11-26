@@ -355,47 +355,57 @@
         .context-menu-item .submenu { display: none; position: absolute; right: 100%; top: 0; background: var(--bg-panel); border: 1px solid var(--border-color); min-width: 120px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .context-menu-item:hover .submenu { display: block; }
         .widget-header { cursor: move; }
-/* pulsestreet歡迎頁面覆蓋層設定 */
+/* 1. 背景遮罩：改成半透明黑色，讓使用者隱約看得到後面 */
 #welcome-overlay {
-    position: fixed; /* 固定在視窗，不隨捲軸移動 */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #f5f5f5; /* 背景色，建議用跟Logo底色接近的米白色 */
-    z-index: 9999; /* 確保它在最上層，蓋住所有東西 */
-    display: none; /* 使用 Flexbox 讓內容置中 */
+    background-color: rgba(0, 0, 0, 0.85); /* 85% 透明度的黑色 */
+    backdrop-filter: blur(8px);           /* 背景模糊效果 */
+    z-index: 9999;
+    display: none; /* 預設隱藏，由 JS 控制顯示 */
     justify-content: center;
     align-items: center;
-    flex-direction: column;
-    transition: opacity 0.5s ease; /* 淡出動畫效果 */
+    transition: opacity 0.5s ease;
 }
 
-/* Logo 樣式 */
+/* 2. 登入視窗：這才是白色的區塊 */
+.login-container {
+    background-color: #f5f5f5; /* 米白色背景 */
+    width: 400px;              /* 視窗寬度 */
+    max-width: 90%;            /* 手機版不超過螢幕 */
+    padding: 40px;             /* 內距 */
+    border-radius: 12px;       /* 圓角 */
+    
+    /* 裝飾：邊框與陰影 */
+    border: 1px solid var(--accent-color);
+    box-shadow: 0 0 50px rgba(0, 255, 204, 0.2); 
+    
+    /* 排版 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: #000; /* 強制視窗內文字為黑色 */
+}
+
+/* 3. Logo 樣式調整 */
 .brand-logo {
-    max-width: 300px; /* 限制 Logo 大小 */
-    width: 80%;       /* 手機版自適應 */
-    margin-bottom: 2rem;
+    max-width: 200px; /* 稍微縮小一點，適應視窗 */
+    width: 100%;
+    margin-bottom: 1.5rem;
     display: block;
 }
 
-/* 按鈕樣式 (配合你的黑色/橘色主題) */
-#login-btn {
-    background-color: #000; /* 黑色背景 */
-    color: #fff;
-    border: none;
-    padding: 12px 30px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
+/* 4. 視窗內的標題微調 */
+.login-container h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-family: 'Orbitron', sans-serif;
+    color: #333; /* 深灰色標題 */
 }
-
-#login-btn:hover {
-    background-color: #ff6600; /* 滑鼠懸停變成橘色 (PulseStreet 風格) */
-}
-
 
 
         
