@@ -2597,38 +2597,35 @@ window.switchSpace = function(spaceMode) {
         }
       // --- PulseStreet 渲染核心 (Facebook Style Update) ---
        // --- PulseStreet 渲染核心 (Facebook Style + SVG Shortcuts) ---
+        // --- PulseStreet 渲染核心 (連線 Firestore 版) ---
         function renderPulseStreet() {
             const workspace = document.querySelector('.workspace');
             const container = document.createElement('div');
             container.className = 'pulse-container';
             
-            // 1. 通用介面圖示 (SVG)
+            // 1. 圖示定義 (SVG)
             const pIcons = {
                 search: '<svg class="pulse-icon" style="margin:0" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
-                user: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
                 friends: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#1877F2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
                 memories: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#2ABBA7"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
                 saved: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#A033FF"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>',
                 groups: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#1877F2"><circle cx="12" cy="12" r="10"></circle><path d="M16 16s-1.5-2-4-2-4 2-4 2"></path><line x1="12" y1="8" x2="12" y2="13"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
                 video: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#E41E3F"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
                 arrowDown: '<svg class="pulse-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>',
-                // 貼文操作圖示
                 like: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>',
                 comment: '<svg class="action-icon-svg" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>',
                 share: '<svg class="action-icon-svg" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
             };
 
-            // 2. 捷徑專用圖示 (SVG 代替 Emoji)
-            // 我為每個遊戲繪製了對應的簡約圖示
+            // 2. 捷徑與 Stories 資料 (這部分目前保持靜態，之後也可以改成動態)
             const shortcutIcons = {
-                beauty: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF69B4" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>', // 星星代表女明星
-                candy: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FFD700" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>', // 糖果
-                farm: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#4CAF50" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>', // 農場(層疊)
-                cards: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF5252" stroke-width="2"><rect x="2" y="2" width="14" height="18" rx="2" ry="2"></rect><rect x="8" y="4" width="14" height="18" rx="2" ry="2"></rect></svg>', // 撲克牌
-                fish: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00BFFF" stroke-width="2"><path d="M2 12h6c2 0 3-2 5-2s3 2 5 2h4"></path><path d="M16 8l2 4-2 4"></path><circle cx="19" cy="12" r="2"></circle></svg>' // 魚/波浪
+                beauty: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF69B4" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>',
+                candy: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FFD700" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>',
+                farm: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#4CAF50" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>',
+                cards: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF5252" stroke-width="2"><rect x="2" y="2" width="14" height="18" rx="2" ry="2"></rect><rect x="8" y="4" width="14" height="18" rx="2" ry="2"></rect></svg>',
+                fish: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00BFFF" stroke-width="2"><path d="M2 12h6c2 0 3-2 5-2s3 2 5 2h4"></path><path d="M16 8l2 4-2 4"></path><circle cx="19" cy="12" r="2"></circle></svg>'
             };
 
-            // 3. Stories Data
             const stories = [
                 { name: "Your Story", icon: "＋", seen: false },
                 { name: "火箭博士", icon: "🚀", seen: false },
@@ -2643,58 +2640,6 @@ window.switchSpace = function(spaceMode) {
                 </div>
             `).join('');
 
-            // 4. Posts Data
-            const posts = [
-                {
-                    name: "Brooklyn", time: "2h ago • 公開", avatar: "Ⓜ️",
-                    content: "PulseStreet是brooklyn-terminal系統的動態社群，您可以在這裡找到股市同好、工作夥伴，以及大語言模型愛好者! 此功能開發中，敬請期待。 #LLM #BTC #Crypto",
-                    image: null, likes: "1.2k", comments: "342"
-                },
-                {
-                    name: "科技航廈", time: "4h ago • 公開", avatar: "🚇",
-                    content: "Gemini 3十分鐘解出百年數學難題　陶哲軒：表現遠超預期。",
-                    image: "https://cdn2.ettoday.net/images/8505/d8505938.jpg", likes: "8.5k", comments: "1.2k"
-                },
-                {
-                    name: "PulseStreet", time: "Just now • 系統公告", avatar: "🅿️",
-                    content: "比特幣成為戰場：白宮與摩根大通之間的無聲戰爭。",
-                    image: "https://image.blocktempo.com/2025/11/cover-image-bitcoin-battlefield-jpmorgan-white-house-silent-war.webp", likes: "1984", comments: "40"
-                }
-            ];
-            let postsHTML = posts.map(p => `
-                <div class="pulse-post">
-                    <div class="pulse-post-header">
-                        <div class="pulse-avatar">${p.avatar}</div>
-                        <div class="pulse-meta"><div class="pulse-name">${p.name}</div><div class="pulse-time">${p.time}</div></div>
-                        <div class="pulse-menu-btn">•••</div>
-                    </div>
-                    <div class="pulse-content">${p.content}</div>
-                    ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
-                    <div class="pulse-stats"><span>${pIcons.like} ${p.likes}</span><span>${p.comments} Comments</span></div>
-                    <div class="pulse-actions">
-                        <button class="pulse-action-btn">${pIcons.like} Like</button>
-                        <button class="pulse-action-btn">${pIcons.comment} Comment</button>
-                        <button class="pulse-action-btn">${pIcons.share} Share</button>
-                    </div>
-                </div>
-            `).join('');
-
-            // 5. Contacts Data
-            const contacts = [
-                "Benson Chen", "Kevin HO", "cocco", "BY5423", "火箭博士", 
-                "瘋狂小生", "飲水人", "竹北薪水小偷", "終究是我扛下了所有", "斯勾姨"
-            ];
-            let contactsHTML = contacts.map(c => `
-                <div class="contact-row">
-                    <div class="contact-img-box">
-                        <div class="contact-img" style="display:flex;align-items:center;justify-content:center;background:#444;color:#fff;font-size:12px;">${c.charAt(0)}</div>
-                        <div class="online-dot"></div>
-                    </div>
-                    <div class="contact-name" style="color:#e4e6eb; font-size:0.95em;">${c}</div>
-                </div>
-            `).join('');
-
-            // 6. 捷徑 Data (使用上面定義的 shortcutIcons)
             const shortcuts = [
                 { name: "韭菜俱樂部", icon: shortcutIcons.beauty },
                 { name: "科技先驅日報", icon: shortcutIcons.candy },
@@ -2709,20 +2654,33 @@ window.switchSpace = function(spaceMode) {
                 </div>
             `).join('');
 
-            // 7. 組合 HTML
+            const contacts = ["Benson Chen", "Kevin HO", "cocco", "BY5423", "火箭博士", "瘋狂小生", "飲水人", "竹北薪水小偷", "終究是我扛下了所有", "斯勾姨"];
+            let contactsHTML = contacts.map(c => `
+                <div class="contact-row">
+                    <div class="contact-img-box">
+                        <div class="contact-img" style="display:flex;align-items:center;justify-content:center;background:#444;color:#fff;font-size:12px;">${c.charAt(0)}</div>
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="contact-name" style="color:#e4e6eb; font-size:0.95em;">${c}</div>
+                </div>
+            `).join('');
+
+            // 3. 渲染 HTML 結構
             container.innerHTML = `
                 <div class="pulse-layout">
                     <div class="pulse-sidebar-left">
                         <div class="pulse-search-box">
                             ${pIcons.search} <input type="text" class="pulse-search-input" placeholder="搜尋 PulseStreet">
-                            
                         </div>
-
-                        <div class="pulse-side-btn">
+                        
+                        <div class="pulse-side-btn" id="pulse-profile-btn">
                             <div class="pulse-side-icon" style="overflow:hidden;">
-                                <div style="width:100%;height:100%;background:#00ffcc;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold;">B</div>
+                                ${window.currentUser && window.currentUser.photoURL 
+                                    ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;object-fit:cover;">` 
+                                    : `<div style="width:100%;height:100%;background:#00ffcc;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold;">${window.currentUser ? window.currentUser.displayName.charAt(0) : 'G'}</div>`
+                                }
                             </div>
-                            <div style="font-weight:bold;">Brooklyn</div>
+                            <div style="font-weight:bold;">${window.currentUser ? window.currentUser.displayName : 'Guest (請登入)'}</div>
                         </div>
 
                         <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.friends}</div><div>朋友</div></div>
@@ -2734,27 +2692,29 @@ window.switchSpace = function(spaceMode) {
                             <div class="pulse-side-icon" style="background:#3a3b3c;">${pIcons.arrowDown}</div>
                             <div>顯示更多</div>
                         </div>
-
                         <div class="pulse-divider"></div>
-
                         <div class="pulse-section-title">捷徑</div>
                         ${shortcutsHTML}
-                        <div style="font-size:0.8em; color:#888; padding:10px;">
-                            私隱政策 · 服務條款 · 廣告 · Cookies · Brooklyn-terminal © 2025
-                        </div>
+                        <div style="font-size:0.8em; color:#888; padding:10px;">私隱政策 · 服務條款 · 廣告 · Cookies · Brooklyn-terminal © 2025</div>
                     </div>
 
                     <div class="pulse-feed-container">
                         <div class="pulse-stories-wrapper">${storiesHTML}</div>
                         
                         <div class="pulse-create">
-                            <div class="pulse-avatar">Ⓜ️</div>
-                            <div class="pulse-input-dummy">聊聊你對AMD暴漲有什麼看法?</div>
+                            <div class="pulse-avatar">
+                                ${window.currentUser && window.currentUser.photoURL 
+                                    ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;border-radius:50%;">`
+                                    : 'Ⓜ️'}
+                            </div>
+                            <input type="text" class="pulse-input-dummy" id="pulse-real-input" placeholder="聊聊你對市場的看法? (按 Enter 發佈)" style="border:none; outline:none; color:#fff;">
                         </div>
 
-                        <div class="pulse-feed">
-                            ${postsHTML}
-                            <div style="text-align:center; padding:20px; opacity:0.5; font-size:0.8em;">— 已經到底了 —</div>
+                        <div class="pulse-feed" id="pulse-real-feed">
+                            <div style="text-align:center; padding:40px; color:#666;">
+                                <div style="font-size: 2em; margin-bottom: 10px;">📡</div>
+                                正在連線至 PulseStreet 網路...
+                            </div>
                         </div>
                     </div>
 
@@ -2766,14 +2726,142 @@ window.switchSpace = function(spaceMode) {
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
                             </div>
                         </div>
-                        <div class="pulse-nav-list">
-                            ${contactsHTML}
-                        </div>
+                        <div class="pulse-nav-list">${contactsHTML}</div>
                     </div>
                 </div>
             `;
 
             workspace.appendChild(container);
+
+            // ==========================================
+            // ★ Firestore 功能實作區 ★
+            // ==========================================
+            
+            const input = document.getElementById('pulse-real-input');
+            const feed = document.getElementById('pulse-real-feed');
+
+            // 4. 發文功能 (監聽 Enter 鍵)
+            input.addEventListener('keypress', async (e) => {
+                if (e.key === 'Enter' && input.value.trim() !== '') {
+                    // 檢查是否登入
+                    if (!window.currentUser) {
+                        alert("⚠️ 系統提示：請先登入 Google 帳號才能發文。\n(Please Login to post)");
+                        return;
+                    }
+                    
+                    const content = input.value.trim();
+                    input.value = ''; // 立即清空輸入框，提升體驗
+                    input.placeholder = "發送中...";
+
+                    try {
+                        // 從 window.fs 取得 Firestore 函式 (我們在底部 script 定義的)
+                        const { addDoc, collection, serverTimestamp } = window.fs;
+                        
+                        // 寫入資料庫
+                        await addDoc(collection(window.db, "posts"), {
+                            content: content,
+                            name: window.currentUser.displayName,
+                            avatar: window.currentUser.photoURL,
+                            uid: window.currentUser.uid,
+                            timestamp: serverTimestamp(), // 伺服器時間
+                            likes: 0,
+                            comments: 0
+                        });
+                        
+                        input.placeholder = "聊聊你對市場的看法? (按 Enter 發佈)";
+                        // 成功後不需要手動更新畫面，下面的 onSnapshot 會自動處理！
+                        
+                    } catch (err) {
+                        console.error("發文錯誤:", err);
+                        alert("發送失敗: " + err.message);
+                        input.value = content; // 失敗時把文字補回去
+                    }
+                }
+            });
+
+            // 5. 即時監聽貼文 (Real-time Listener)
+            // 這段程式碼會讓網頁與資料庫保持連線，有人發文時自動更新
+            if (window.fs && window.db) {
+                try {
+                    const { collection, query, orderBy, onSnapshot } = window.fs;
+                    
+                    // 查詢條件：posts 集合，依照時間倒序排列
+                    const q = query(collection(window.db, "posts"), orderBy("timestamp", "desc"));
+                    
+                    // 開始監聽
+                    onSnapshot(q, (snapshot) => {
+                        // 檢查元素是否還在 (防止切換頁面後報錯)
+                        const feedEl = document.getElementById('pulse-real-feed');
+                        if(!feedEl) return;
+
+                        let html = '';
+                        
+                        snapshot.forEach((doc) => {
+                            const p = doc.data();
+                            
+                            // 時間格式化
+                            let timeStr = "Just now";
+                            if(p.timestamp) {
+                                // 將 Firestore Timestamp 轉為 JS Date
+                                const date = p.timestamp.toDate();
+                                const now = new Date();
+                                const diff = (now - date) / 1000; // 秒數差
+                                
+                                if(diff < 60) timeStr = "剛剛";
+                                else if(diff < 3600) timeStr = `${Math.floor(diff/60)} 分鐘前`;
+                                else if(diff < 86400) timeStr = `${Math.floor(diff/3600)} 小時前`;
+                                else timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                            }
+
+                            // 產生貼文 HTML
+                            html += `
+                                <div class="pulse-post">
+                                    <div class="pulse-post-header">
+                                        <div class="pulse-avatar">
+                                            ${p.avatar 
+                                                ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` 
+                                                : '<div style="width:100%;height:100%;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;">👤</div>'}
+                                        </div>
+                                        <div class="pulse-meta">
+                                            <div class="pulse-name">${p.name || 'Anonymous'}</div>
+                                            <div class="pulse-time">${timeStr} <span style="margin-left:5px; opacity:0.7;">• 公開</span></div>
+                                        </div>
+                                        <div class="pulse-menu-btn">•••</div>
+                                    </div>
+                                    <div class="pulse-content">${p.content}</div>
+                                    ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
+                                    <div class="pulse-stats">
+                                        <span>${pIcons.like} ${p.likes || 0}</span>
+                                        <span>${p.comments || 0} Comments</span>
+                                    </div>
+                                    <div class="pulse-actions">
+                                        <button class="pulse-action-btn">${pIcons.like} Like</button>
+                                        <button class="pulse-action-btn">${pIcons.comment} Comment</button>
+                                        <button class="pulse-action-btn">${pIcons.share} Share</button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        // 如果資料庫是空的
+                        if(html === '') {
+                            html = `
+                                <div style="text-align:center; padding:50px; opacity:0.6;">
+                                    <div style="font-size:3em; margin-bottom:10px;">📝</div>
+                                    <div>這裡還很安靜...</div>
+                                    <div style="font-size:0.9em; margin-top:5px;">成為第一個發言的人吧！</div>
+                                </div>`;
+                        }
+                        
+                        feedEl.innerHTML = html;
+                    });
+                } catch (e) {
+                    console.error("讀取資料庫失敗:", e);
+                    feed.innerHTML = '<div style="text-align:center; color:#ff3333; padding:20px; border:1px solid #ff3333; border-radius:8px; margin-top:20px;">無法連線至資料庫<br><span style="font-size:0.8em; color:#aaa;">請確認 Firebase 設定是否正確</span></div>';
+                }
+            } else {
+                console.warn("Firebase 尚未初始化，無法讀取資料庫");
+            }
         }
         // 輔助：清空連線 (原本的 clearGrid 只有清空 items，沒有清空 SVG 連線)
         function clearAllConnections() {
@@ -4475,7 +4563,7 @@ window.closeLoginModal = function() {
 });
     </script>
 <script type="module">
-    // 1. 引入 Firebase 模組
+    // 1. 引入 Firebase 核心、驗證與資料庫
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
     import { 
@@ -4485,8 +4573,19 @@ window.closeLoginModal = function() {
         signOut, 
         onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    
+    // ★ 新增：引入 Firestore 資料庫模組 ★
+    import { 
+        getFirestore, 
+        collection, 
+        addDoc, 
+        query, 
+        orderBy, 
+        onSnapshot, 
+        serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 2. Firebase 設定 (這是您的專案設定)
+    // 2. Firebase 設定
     const firebaseConfig = {
         apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
         authDomain: "brooklyn-terminal.firebaseapp.com",
@@ -4497,118 +4596,98 @@ window.closeLoginModal = function() {
         measurementId: "G-G0GMW0XHG1"
     };
 
-    // 3. 初始化
+    // 3. 初始化 Firebase
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-
-    // 4. 取得 UI 元素
-    const headerBtn = document.getElementById('header-auth-btn'); // 右上角按鈕
-    const headerText = document.getElementById('auth-text');      // 右上角文字
-    const headerIcon = document.getElementById('auth-icon');      // 右上角圖示
-    const headerAvatar = document.getElementById('auth-avatar');  // 右上角頭像
     
-    const welcomeOverlay = document.getElementById('welcome-overlay'); // 中央歡迎畫面
-    const centerLoginBtn = document.getElementById('login-btn');       // 中央登入按鈕
+    // ★ 初始化資料庫 ★
+    const db = getFirestore(app);
 
-    // 5. 定義登入函式
+    // ★ 關鍵：將資料庫工具掛載到 window (讓 PulseStreet 可以使用) ★
+    window.db = db;
+    window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp };
+
+    // --- 4. 登入與介面邏輯 (保持不變) ---
+    
+    const headerBtn = document.getElementById('header-auth-btn');
+    const headerText = document.getElementById('auth-text');
+    const headerIcon = document.getElementById('auth-icon');
+    const headerAvatar = document.getElementById('auth-avatar');
+    
+    const welcomeOverlay = document.getElementById('welcome-overlay');
+    const centerLoginBtn = document.getElementById('login-btn');
+
+    // 定義登入函式
     const performLogin = () => {
-        // 更新按鈕文字為載入中
         if(centerLoginBtn) centerLoginBtn.innerText = "CONNECTING...";
         if(headerText) headerText.innerText = "...";
 
         signInWithPopup(auth, provider)
             .then((result) => {
                 console.log("登入成功:", result.user.displayName);
-                // 登入成功後，下方的 onAuthStateChanged 會自動處理介面更新
             }).catch((error) => {
                 console.error("登入失敗:", error);
-                alert("登入失敗 (Access Denied): " + error.message);
-                // 失敗時復原按鈕文字
+                alert("登入失敗: " + error.message);
                 if(centerLoginBtn) centerLoginBtn.innerText = "Sign in";
                 if(headerText) headerText.innerText = "LOGIN";
             });
     };
 
-    // 6. 定義登出函式
+    // 定義登出函式
     const performLogout = () => {
-        // 跳出確認視窗
-        if(confirm("確認要登出系統嗎? (Terminate Session?)")) {
+        if(confirm("確認要登出系統嗎?")) {
             signOut(auth).then(() => {
-                console.log("已登出");
-                location.reload(); // 重新整理頁面以清除狀態
+                location.reload();
             }).catch((error) => console.error(error));
         }
     };
 
-    // 7. 綁定按鈕事件
-    
-    // (A) 右上角按鈕：根據登入狀態，決定執行登入或登出
+    // 按鈕監聽
     if (headerBtn) {
         headerBtn.addEventListener('click', () => {
-            if (auth.currentUser) {
-                performLogout(); // 已登入 -> 執行登出
-            } else {
-                performLogin();  // 未登入 -> 執行登入
-            }
+            if (auth.currentUser) performLogout();
+            else performLogin();
         });
     }
 
-    // (B) 中央歡迎畫面的按鈕：執行登入
     if (centerLoginBtn) {
-        // 移除舊的 onclick 事件，改用我們的 Firebase 登入
-        centerLoginBtn.onclick = null; 
+        centerLoginBtn.onclick = null;
         centerLoginBtn.addEventListener('click', performLogin);
     }
-    // (C) 新增：教學視窗中的 Google 登入按鈕
+
+    // 教學視窗按鈕
     const tutorialLoginBtn = document.getElementById('tutorial-login-btn');
-    
     if (tutorialLoginBtn) {
         tutorialLoginBtn.addEventListener('click', () => {
-            // 1. 關閉教學視窗
             const tutOverlay = document.getElementById('tutorial-overlay');
             if(tutOverlay) tutOverlay.classList.remove('active');
-            
-            // 2. 停止教學輪播 (呼叫全域函式)
             if(window.stopSlideShow) window.stopSlideShow();
-
-            // 3. 執行登入
             performLogin();
         });
     }
 
-    // 8. 監聽登入狀態改變 (這是核心，會自動更新 UI)
+    // 監聽登入狀態
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            // =========== [使用者已登入] ===========
-            
-            // 更新右上角按鈕
-            if(headerText) headerText.innerText = user.displayName.split(' ')[0].toUpperCase(); // 顯示名字(取第一個字)
-            if(headerIcon) headerIcon.style.display = 'none'; // 隱藏鑰匙圖示
+            // 已登入
+            if(headerText) headerText.innerText = user.displayName.split(' ')[0].toUpperCase();
+            if(headerIcon) headerIcon.style.display = 'none';
             if(headerAvatar) {
-                headerAvatar.src = user.photoURL; // 設定頭像
-                headerAvatar.style.display = 'block'; // 顯示圖片
+                headerAvatar.src = user.photoURL;
+                headerAvatar.style.display = 'block';
             }
-            
-            // 隱藏中央歡迎畫面
             if(welcomeOverlay) {
                 welcomeOverlay.style.opacity = '0';
                 setTimeout(() => welcomeOverlay.style.display = 'none', 500);
             }
-
-            // 更新 PulseStreet 的使用者名稱
             updateUserProfile(user);
-
         } else {
-            // =========== [使用者未登入] ===========
-            
-            // 重置右上角按鈕
+            // 未登入
             if(headerText) headerText.innerText = "LOGIN";
             if(headerIcon) headerIcon.style.display = 'inline';
             if(headerAvatar) headerAvatar.style.display = 'none';
-
-            // 顯示中央歡迎畫面 (強制登入)
             if(welcomeOverlay) {
                 welcomeOverlay.style.display = 'flex';
                 setTimeout(() => welcomeOverlay.style.opacity = '1', 10);
@@ -4617,21 +4696,20 @@ window.closeLoginModal = function() {
         }
     });
 
-    // 輔助函式：更新 PulseStreet 介面中的使用者資料
     function updateUserProfile(user) {
-        // 儲存使用者資訊到全域變數，供其他程式碼使用
         window.currentUser = user;
-
-        // 嘗試更新左側欄位 (如果元素已存在)
+        // 更新左側欄
         const nameElements = document.querySelectorAll('.pulse-side-btn div[style*="font-weight:bold"]');
         nameElements.forEach(el => {
             if(el.innerText === 'Brooklyn') el.innerText = user.displayName;
         });
-        
-        console.log(`User connected: ${user.displayName}`);
+        // 更新頭像
+        const avatarContainer = document.querySelector('.pulse-side-icon[style*="overflow:hidden"]');
+        if(avatarContainer && user.photoURL) {
+            avatarContainer.innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;">`;
+        }
     }
 
-    // 將 auth 掛載到 window 以便除錯
     window.appAuth = auth;
 </script>
 
