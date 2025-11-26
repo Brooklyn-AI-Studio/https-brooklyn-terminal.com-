@@ -355,56 +355,86 @@
         .context-menu-item .submenu { display: none; position: absolute; right: 100%; top: 0; background: var(--bg-panel); border: 1px solid var(--border-color); min-width: 120px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .context-menu-item:hover .submenu { display: block; }
         .widget-header { cursor: move; }
-/* 1. 背景遮罩：改成半透明黑色，讓使用者隱約看得到後面 */
+/* 1. 背景遮罩：調低不透明度，讓背後畫面透出來 */
 #welcome-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.85); /* 85% 透明度的黑色 */
-    backdrop-filter: blur(8px);           /* 背景模糊效果 */
+    /* 修改這裡：0.6 代表 60% 黑色，比原本的 0.85 更透 */
+    background-color: rgba(0, 0, 0, 0.6); 
+    backdrop-filter: blur(5px); /* 稍微降低模糊度，讓背景更清楚一點 */
     z-index: 9999;
-    display: none; /* 預設隱藏，由 JS 控制顯示 */
+    display: none;
     justify-content: center;
     align-items: center;
     transition: opacity 0.5s ease;
 }
 
-/* 2. 登入視窗：這才是白色的區塊 */
+/* 2. 登入視窗主體 */
 .login-container {
-    background-color: #f5f5f5; /* 米白色背景 */
-    width: 400px;              /* 視窗寬度 */
-    max-width: 90%;            /* 手機版不超過螢幕 */
-    padding: 40px;             /* 內距 */
-    border-radius: 12px;       /* 圓角 */
+    background-color: #f5f5f5;
+    width: 380px;
+    max-width: 90%;
+    padding: 40px 30px;
+    border-radius: 20px; /* 視窗本身也圓潤一點 */
     
-    /* 裝飾：邊框與陰影 */
-    border: 1px solid var(--accent-color);
-    box-shadow: 0 0 50px rgba(0, 255, 204, 0.2); 
+    /* 發光邊框效果 */
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 0 30px rgba(0, 255, 204, 0.15);
     
-    /* 排版 */
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    color: #000; /* 強制視窗內文字為黑色 */
 }
 
-/* 3. Logo 樣式調整 */
+/* 3. Logo 樣式 */
 .brand-logo {
-    max-width: 200px; /* 稍微縮小一點，適應視窗 */
+    max-width: 180px;
     width: 100%;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     display: block;
 }
 
-/* 4. 視窗內的標題微調 */
+/* 4. 標語樣式 (Slogan) */
 .login-container h2 {
     margin-top: 0;
-    margin-bottom: 20px;
-    font-family: 'Orbitron', sans-serif;
-    color: #333; /* 深灰色標題 */
+    margin-bottom: 25px;
+    font-family: 'Orbitron', sans-serif; /* 使用科技感字體 */
+    color: #222;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+/* 5. 登入按鈕：圓潤 + 科技感 */
+#login-btn {
+    background-color: #000;
+    color: var(--accent-color); /*文字改為強調色(青色) */
+    border: 1px solid var(--accent-color);
+    
+    /* ★ 關鍵修改：讓按鈕變圓形膠囊狀 ★ */
+    border-radius: 50px; 
+    
+    padding: 12px 40px;
+    font-size: 1rem;
+    font-weight: bold;
+    font-family: 'Rajdhani', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* 按鈕懸停效果 */
+#login-btn:hover {
+    background-color: var(--accent-color);
+    color: #000;
+    box-shadow: 0 0 20px var(--accent-color); /* 發光 */
+    transform: scale(1.05); /* 微微放大 */
 }
 
 
@@ -1827,9 +1857,10 @@
 <div id="welcome-overlay">
     <div class="login-container">
         <img src="PulseStreet LOGO.png" alt="PulseStreet Logo" class="brand-logo">
-        <h2>Welcome to PulseStreet</h2>
-        <button id="login-btn">登入 (Enter)</button>
-    </div>
+        
+        <h2>DATA FLOWS. PULSE BEATS.</h2>
+        
+        <button id="login-btn">Sign in</button> </div>
 </div>
 
 <div id="main-app" style="display: none;">
