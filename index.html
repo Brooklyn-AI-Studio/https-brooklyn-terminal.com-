@@ -2005,38 +2005,41 @@
 
         </div>
 
-        <div class="header-right">
-    <div class="visitor-count" onclick="toggleVisitorStats()" title="Click for Detailed Analytics">
-        <span>VISITORS:</span> 
-        <span id="hosts_count" class="visitor-num">loading...</span>
-        <span style="font-size: 0.8em; opacity: 0.7;">▼</span>
-        <div id="visitor-stats-panel">
-            <div style="margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                TRAFFIC ANALYTICS 流量分析
+       <div class="header-right">
+            
+            <div class="visitor-count" onclick="toggleVisitorStats()" title="Click for Detailed Analytics">
+                <span>VISITORS:</span> 
+                <span id="hosts_count" class="visitor-num">loading...</span>
+                <span style="font-size: 0.8em; opacity: 0.7;">▼</span>
+                
+                <div id="visitor-stats-panel">
+                    <div style="margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+                        TRAFFIC ANALYTICS 流量分析
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item"><span class="stat-label">Today Traffic 本日流量</span><span id="busuanzi_today_pv" class="stat-value">...</span></div>
+                        <div class="stat-item"><span class="stat-label">Today Users 本日用戶</span><span id="busuanzi_today_uv" class="stat-value">...</span></div>
+                        <div class="stat-item"><span class="stat-label">Total Traffic 總流量</span><span id="hosts_count" class="stat-value">...</span></div>
+                        <div class="stat-item"><span class="stat-label">Total Users 總用戶</span><span id="busuanzi_site_uv" class="stat-value">...</span></div>
+                        <div class="stat-item"><span class="stat-label">Page Hits 頁面總閱讀量</span><span id="busuanzi_page_pv" class="stat-value">...</span></div>
+                        <div class="stat-item"><span class="stat-label">Page Users 頁面總訪</span><span id="busuanzi_page_uv" class="stat-value">...</span></div>
+                    </div>
+                    <div class="stats-footer">SYSTEM STATUS: MONITORING</div>
+                </div>
             </div>
-            <div class="stats-grid">
-                <div class="stat-item"><span class="stat-label">Today Traffic 本日流量</span><span id="busuanzi_today_pv" class="stat-value">...</span></div>
-                <div class="stat-item"><span class="stat-label">Today Users 本日用戶</span><span id="busuanzi_today_uv" class="stat-value">...</span></div>
-                <div class="stat-item"><span class="stat-label">Total Traffic 總流量</span><span id="hosts_count" class="stat-value">...</span></div>
-                <div class="stat-item"><span class="stat-label">Total Users 總用戶</span><span id="busuanzi_site_uv" class="stat-value">...</span></div>
-                <div class="stat-item"><span class="stat-label">Page Hits 頁面總閱讀量</span><span id="busuanzi_page_pv" class="stat-value">...</span></div>
-                <div class="stat-item"><span class="stat-label">Page Users 頁面總訪</span><span id="busuanzi_page_uv" class="stat-value">...</span></div>
+
+            <div class="header-btn-terms" onclick="openTerms()">
+                <svg class="info-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                INFO
             </div>
-            <div class="stats-footer">SYSTEM STATUS: MONITORING</div>
+
+            <div id="header-auth-btn" class="header-btn-auth" style="margin-right: 0;">
+                <span id="auth-icon" style="font-size: 14px;">🔑</span>
+                <span id="auth-text">LOGIN</span>
+                <img id="auth-avatar" src="" alt="User" style="display:none;">
+            </div>
+
         </div>
-    </div>
-
-    <div class="header-btn-terms" onclick="openTerms()">
-        <svg class="info-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-        INFO
-    </div>
-
-    <div id="header-auth-btn" class="header-btn-auth" style="margin-right: 0;">
-        <span id="auth-icon" style="font-size: 14px;">🔑</span>
-        <span id="auth-text">LOGIN</span>
-        <img id="auth-avatar" src="" alt="User" style="display:none;">
-    </div>
-</div>
     
     
 </div>
