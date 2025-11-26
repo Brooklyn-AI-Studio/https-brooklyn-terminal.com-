@@ -5,7 +5,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.005</title> 
+    <title>BROOKLYN-TERMINAL // V1.01</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -2934,9 +2934,7 @@ window.switchSpace = function(spaceMode) {
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
                             </div>
                         </div>
-                        <div class="pulse-nav-list" id="pulse-real-contacts">
-    <div style="padding:10px; opacity:0.5; font-size:0.9em;">Loading Users...</div>
-</div>
+                        <div class="pulse-nav-list">${contactsHTML}</div>
                     </div>
                 </div>
             `;
@@ -3234,47 +3232,6 @@ window.deletePost = async function(docId) {
             } else {
                 console.warn("Firebase 尚未初始化，無法讀取資料庫");
             }
-// ★★★ 6. 右側聯絡人：即時讀取 Firestore 用戶列表 ★★★
-    if (window.fs && window.db) {
-        try {
-            const { collection, query, orderBy, onSnapshot, limit } = window.fs;
-            // 抓取最近上線的 20 位用戶
-            const userQ = query(collection(window.db, "users"), orderBy("lastSeen", "desc"), limit(20));
-
-            onSnapshot(userQ, (snapshot) => {
-                const contactsEl = document.getElementById('pulse-real-contacts');
-                if(!contactsEl) return;
-
-                let html = '';
-                snapshot.forEach(doc => {
-                    const u = doc.data();
-                    // 不顯示自己 (可選) -> 如果你想看到自己，把下面這行註解掉
-                    // if(window.currentUser && u.uid === window.currentUser.uid) return;
-
-                    // 判斷是否為「現在」在線上 (例如 5 分鐘內有活動) - 這裡簡化顯示綠燈
-                    const isOnline = true; 
-
-                    html += `
-                        <div class="contact-row" onclick="loadProfileView('${u.uid}')" title="View Profile">
-                            <div class="contact-img-box">
-                                <img class="contact-img" src="${u.photoURL || 'https://via.placeholder.com/32'}" onerror="this.src='data:image/svg+xml;base64,...'">
-                                <div class="online-dot" style="background:${isOnline ? '#31a24c' : '#666'}"></div>
-                            </div>
-                            <div class="contact-name" style="color:#e4e6eb; font-size:0.95em;">
-                                ${u.displayName || 'Unknown'}
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                if(html === '') html = '<div style="padding:10px; opacity:0.5;">No active users</div>';
-                contactsEl.innerHTML = html;
-            });
-
-        } catch (e) {
-            console.error("Error fetching users:", e);
-        }
-    } 
         }
         // 輔助：清空連線 (原本的 clearGrid 只有清空 items，沒有清空 SVG 連線)
         function clearAllConnections() {
@@ -4992,8 +4949,6 @@ window.closeLoginModal = function() {
         getFirestore, 
         collection, 
         addDoc, 
-        setDoc,
-        doc,
         query, 
         orderBy, 
         onSnapshot, 
@@ -5022,7 +4977,7 @@ window.closeLoginModal = function() {
 
     // ★ 關鍵：將資料庫工具掛載到 window (讓 PulseStreet 可以使用) ★
     window.db = db;
-    window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc };
+    window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp };
 
     // --- 4. 登入與介面邏輯 (保持不變) ---
     
@@ -5098,22 +5053,6 @@ window.closeLoginModal = function() {
                 setTimeout(() => welcomeOverlay.style.display = 'none', 500);
             }
             updateUserProfile(user);
-
-            // ★★★ 新增這段：將用戶資料寫入 Firestore users 集合 ★★★
-            try {
-                const userRef = doc(db, "users", user.uid);
-                await setDoc(userRef, {
-                    uid: user.uid,
-                    displayName: user.displayName,
-                    photoURL: user.photoURL,
-                    email: user.email,
-                    lastSeen: serverTimestamp(), // 更新最後上線時間
-                    status: 'online'
-                }, { merge: true }); // merge: true 代表如果資料存在就更新，不覆蓋
-                console.log("User data saved to Firestore");
-            } catch (e) {
-                console.error("Error saving user:", e);
-            }
         } else {
             // 未登入
             if(headerText) headerText.innerText = "LOGIN";
