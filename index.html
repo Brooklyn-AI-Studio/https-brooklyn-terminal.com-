@@ -452,6 +452,37 @@
     box-shadow: 0 0 20px var(--accent-color); /* 發光 */
     transform: scale(1.05); /* 微微放大 */
 }
+/* 確保登入視窗可以用絕對定位來放置按鈕 */
+.login-container {
+    position: relative; /* 這行很重要，確保 X 按鈕是相對於這個視窗定位 */
+}
+
+/* 關閉按鈕樣式 */
+.close-login-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+    z-index: 10;
+    font-family: sans-serif; /* 確保 X 符號顯示正常 */
+}
+
+/* 滑鼠懸停時變紅色 */
+.close-login-btn:hover {
+    color: #ff3333;
+}
+
+
+
+
+
+
+
         
 /* --- 2024 Modern Header Design --- */
 
@@ -1917,6 +1948,7 @@
     </div>
 <div id="welcome-overlay">
     <div class="login-container">
+        <div class="close-login-btn" onclick="closeLoginModal()">×</div>
         <img src="PulseStreet LOGO.png" alt="PulseStreet Logo" class="brand-logo">
         
         <h3>SYNC WITH THE STREET.</h3>
@@ -4393,7 +4425,18 @@ function renderYouTubeContent(item) {
            item.y = rawY;
            updateLines();
         */
-  
+  // 關閉登入視窗的功能
+window.closeLoginModal = function() {
+    const overlay = document.getElementById('welcome-overlay');
+    if(overlay) {
+        // 1. 淡出動畫
+        overlay.style.opacity = '0';
+        // 2. 動畫結束後隱藏
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 500);
+    }
+}
     </script>
  <div id="terms-overlay" onclick="closeTerms(event)">
     <div class="terms-window">
