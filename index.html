@@ -355,6 +355,50 @@
         .context-menu-item .submenu { display: none; position: absolute; right: 100%; top: 0; background: var(--bg-panel); border: 1px solid var(--border-color); min-width: 120px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .context-menu-item:hover .submenu { display: block; }
         .widget-header { cursor: move; }
+/* pulsestreet歡迎頁面覆蓋層設定 */
+#welcome-overlay {
+    position: fixed; /* 固定在視窗，不隨捲軸移動 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f5f5f5; /* 背景色，建議用跟Logo底色接近的米白色 */
+    z-index: 9999; /* 確保它在最上層，蓋住所有東西 */
+    display: flex; /* 使用 Flexbox 讓內容置中 */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    transition: opacity 0.5s ease; /* 淡出動畫效果 */
+}
+
+/* Logo 樣式 */
+.brand-logo {
+    max-width: 300px; /* 限制 Logo 大小 */
+    width: 80%;       /* 手機版自適應 */
+    margin-bottom: 2rem;
+    display: block;
+}
+
+/* 按鈕樣式 (配合你的黑色/橘色主題) */
+#login-btn {
+    background-color: #000; /* 黑色背景 */
+    color: #fff;
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+#login-btn:hover {
+    background-color: #ff6600; /* 滑鼠懸停變成橘色 (PulseStreet 風格) */
+}
+
+
+
+        
 /* --- 2024 Modern Header Design --- */
 
 /* 1. Logo 區域設計 */
@@ -1737,7 +1781,20 @@
                         <div class="typing-line">> WELCOME, TRADER.</div>
                     </div>
                 </div>
+<div id="welcome-overlay">
+        <div class="login-container">
+            <img src="PulseStreet LOGO.png" alt="PulseStreet Logo" class="brand-logo">
+            
+            <h2>Welcome to PulseStreet</h2>
+            
+            <button id="login-btn">登入 (Enter)</button>
+        </div>
+    </div>
 
+    <div id="main-app" style="display: none;">
+        </div>
+
+    <script src="script.js"></script>
                 <div class="tutorial-slide" id="slide-2">
                     <div class="scene-box">
                         <div class="scene-sidebar"><div class="scene-tool"></div></div>
@@ -4212,5 +4269,26 @@ function renderYouTubeContent(item) {
     </div>
 </div>
         <script src="https://cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginBtn = document.getElementById('login-btn');
+            const overlay = document.getElementById('welcome-overlay');
+            const mainApp = document.getElementById('main-app');
+
+            loginBtn.addEventListener('click', () => {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    mainApp.style.display = 'block';
+                }, 500);
+            });
+        });
+    </script>
+
+
+
+
+
+            
 </body>
 </html>
