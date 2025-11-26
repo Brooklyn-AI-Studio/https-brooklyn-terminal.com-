@@ -2562,6 +2562,80 @@ window.switchSpace = function(spaceMode) {
                 </div> `;
             
             workspace.appendChild(container);
+            // ==========================================
+            // ★ 新增：監聽線上用戶 (Real-time Users) ★
+            // ==========================================
+            if (window.fs && window.db) {
+                try {
+                    // 從 window.fs 拿出我們需要的工具
+                    const { collection, query, orderBy, limit, onSnapshot } = window.fs;
+                    
+                    // 建立查詢：找 "users" 集合，依照 "lastSeen" 時間排序，取前 20 人
+                    const userQ = query(
+                        collection(window.db, "users"), 
+                        orderBy("lastSeen", "desc"), 
+                        limit(20)
+                    );
+
+                    // 開始監聽 (onSnapshot 會在資料庫有變動時自動執行)
+                    onSnapshot(userQ, (snapshot) => {
+                        const listEl = document.getElementById('pulse-online-list');
+                        // 如果使用者切換到別的頁面，列表元素不在了，就停止執行
+                        if(!listEl) return;
+
+                        let html = '';
+                        snapshot.forEach((doc) => {
+                            const u = doc.data();
+                            
+                            // 判斷上線狀態 (簡單邏輯：最後上線時間在 10 分鐘內算綠燈)
+                            let statusColor = '#888'; // 預設灰色 (離線)
+                            let statusText = 'Offline';
+                            
+                            if (u.lastSeen) {
+                                // 計算現在時間與最後上線時間的差距 (秒)
+                                const now = new Date();
+                                const lastSeenDate = u.lastSeen.toDate();
+                                const diffMinutes = (now - lastSeenDate) / 1000 / 60;
+
+                                if(diffMinutes < 10) {
+                                    statusColor = '#31a24c'; // 綠色 (在線)
+                                    statusText = 'Online';
+                                } else if (diffMinutes < 60) {
+                                    statusColor = '#f0ad4e'; // 橘色 (閒置)
+                                    statusText = 'Idle';
+                                }
+                            }
+
+                            // 產生每位用戶的 HTML (沿用原本的 CSS 樣式)
+                            html += `
+                            <div class="contact-row" title="Last seen: ${statusText}">
+                                <div class="contact-img-box">
+                                    <div class="contact-img" style="display:flex;align-items:center;justify-content:center;background:#222;color:#fff;font-size:12px;overflow:hidden;">
+                                        ${u.avatar 
+                                            ? `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;">` 
+                                            : (u.name ? u.name.charAt(0).toUpperCase() : '?')}
+                                    </div>
+                                    <div class="online-dot" style="background:${statusColor}; border:2px solid var(--bg-panel);"></div>
+                                </div>
+                                <div class="contact-name" style="color:#bbb; font-size:0.9em;">
+                                    ${u.name || 'Unknown Agent'}
+                                </div>
+                            </div>`;
+                        });
+
+                        // 如果沒人，顯示預設訊息
+                        if(html === '') html = '<div style="padding:20px; text-align:center; color:#666;">No active agents found.</div>';
+                        
+                        // 更新畫面
+                        listEl.innerHTML = html;
+                    });
+
+                } catch (e) {
+                    console.error("無法讀取用戶列表:", e);
+                    const listEl = document.getElementById('pulse-online-list');
+                    if(listEl) listEl.innerHTML = '<div style="color:red; padding:10px;">Connection Error</div>';
+                }
+            }
 
             // 2. 動態注入 Widgets
             setTimeout(() => {
@@ -2675,16 +2749,8 @@ window.switchSpace = function(spaceMode) {
                 </div>
             `).join('');
 
-            const contacts = ["Benson Chen", "Kevin HO", "cocco", "BY5423", "火箭博士", "瘋狂小生", "飲水人", "竹北薪水小偷", "終究是我扛下了所有", "斯勾姨"];
-            let contactsHTML = contacts.map(c => `
-                <div class="contact-row">
-                    <div class="contact-img-box">
-                        <div class="contact-img" style="display:flex;align-items:center;justify-content:center;background:#444;color:#fff;font-size:12px;">${c.charAt(0)}</div>
-                        <div class="online-dot"></div>
-                    </div>
-                    <div class="contact-name" style="color:#e4e6eb; font-size:0.95em;">${c}</div>
-                </div>
-            `).join('');
+            
+        
 
             // 渲染 HTML 結構
             container.innerHTML = `
@@ -2741,15 +2807,20 @@ window.switchSpace = function(spaceMode) {
                         </div>
                     </div>
 
+                    // --- 這是新的右側欄位 HTML ---
                     <div class="pulse-sidebar-right">
                         <div class="pulse-contact-header" style="display:flex; justify-content:space-between; align-items:center;">
-                            <span>聯絡人</span>
+                            <span>ONLINE AGENTS</span>
                             <div style="display:flex; gap:10px; opacity:0.6;">
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
                             </div>
                         </div>
-                        <div class="pulse-nav-list">${contactsHTML}</div>
+                        
+                        <div class="pulse-nav-list" id="pulse-online-list">
+                            <div style="padding:20px; text-align:center; color:#555; font-size:0.8em; border:1px dashed #333; margin-top:10px;">
+                                📡 SCANNING NET...
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -4587,6 +4658,9 @@ window.closeLoginModal = function() {
         signInWithPopup, 
         signOut, 
         onAuthStateChanged 
+        doc,      
+        setDoc,   
+        limit     
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     
     // ★ 新增：引入 Firestore 資料庫模組 ★
@@ -4622,7 +4696,7 @@ window.closeLoginModal = function() {
 
     // ★ 關鍵：將資料庫工具掛載到 window (讓 PulseStreet 可以使用) ★
     window.db = db;
-    window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp };
+   window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, limit };
 
     // --- 4. 登入與介面邏輯 (保持不變) ---
     
@@ -4698,6 +4772,22 @@ window.closeLoginModal = function() {
                 setTimeout(() => welcomeOverlay.style.display = 'none', 500);
             }
             updateUserProfile(user);
+        
+            // 功能：將登入用戶的資料寫入 Firestore 的 "users" 集合
+            try {
+                const userRef = doc(db, "users", user.uid);
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    name: user.displayName,
+                    email: user.email,
+                    avatar: user.photoURL,
+                    lastSeen: serverTimestamp(), // 記錄最後上線時間
+                    isOnline: true
+                }, { merge: true }); // merge: true 表示只更新欄位，不覆蓋整筆資料
+                console.log("用戶狀態已更新至資料庫");
+            } catch (err) {
+                console.error("更新用戶狀態失敗:", err);
+            }
         } else {
             // 未登入
             if(headerText) headerText.innerText = "LOGIN";
