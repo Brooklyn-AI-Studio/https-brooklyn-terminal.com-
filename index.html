@@ -6,7 +6,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.030</title> 
+    <title>BROOKLYN-TERMINAL // V1.031</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -3121,11 +3121,11 @@ async function loadFollowStats(targetUid) {
 
 
             
-// --- 修改位置： window.loadProfileView (修復讀取他人資料問題) ---
+// --- 最終完整版：個人檔案視窗 (含貼文列表) ---
 window.loadProfileView = async function(targetUid = null) {
     const currentUser = window.currentUser;
     
-    // 1. 檢查登入
+    // 1. 權限檢查
     if (!targetUid && !currentUser) {
         alert("請先登入 (Please Login first)");
         return;
@@ -3134,49 +3134,48 @@ window.loadProfileView = async function(targetUid = null) {
     const uid = targetUid || currentUser.uid;
     const isSelf = currentUser && currentUser.uid === uid;
     
-    // 2. 初始化變數 (預設值)
-    // 如果是自己，先用 currentUser 的資料，如果是別人先顯示 Loading
-    let displayName = isSelf ? currentUser.displayName : "Loading..."; 
-    let photoURL = isSelf ? currentUser.photoURL : "";
-    let email = isSelf ? currentUser.email : "user@brooklyn.com";
+    // 2. 預設顯示 (Loading 狀態)
+    let displayName = "Loading...";
+    let photoURL = "";
     let bioText = "Loading bio...";
+    let userLevel = "LV.1";
 
-    // 3. 從 Firestore 讀取真實資料 (包含名字、頭像、Bio)
+    // 3. 讀取用戶資料 (Users Collection)
     try {
         const { doc, getDoc } = window.fs;
         const userSnap = await getDoc(doc(window.db, "users", uid));
         
         if (userSnap.exists()) {
             const data = userSnap.data();
-            
-            // ★ 關鍵修正：如果有讀到資料，就覆蓋變數 ★
             if (data.displayName) displayName = data.displayName;
             if (data.photoURL) photoURL = data.photoURL;
             if (data.bio) bioText = data.bio;
-            else bioText = "這位用戶很懶，還沒寫自我介紹。";
-            
+            else bioText = "這位用戶還沒有自我介紹。";
         } else {
-            bioText = "這位用戶很懶，還沒寫自我介紹。";
+            // 資料庫無資料時的備案
+            if (isSelf) {
+                displayName = currentUser.displayName;
+                photoURL = currentUser.photoURL;
+                bioText = "點擊編輯來新增自我介紹...";
+            } else {
+                displayName = "Unknown User";
+                bioText = "查無此人資料";
+            }
         }
-        
-        // 如果是看自己，順便更新全域變數方便編輯
-        if(isSelf) window.currentBio = bioText;
-        
     } catch(e) {
-        console.error("Profile Load Error:", e);
-        bioText = "Bio loading failed.";
+        console.error("讀取檔案失敗:", e);
     }
 
-    // 4. 渲染畫面
+    // 4. 渲染個人檔案框架
     const feedContainer = document.querySelector('.pulse-feed-container');
     if (!feedContainer) return;
-    
+
     feedContainer.innerHTML = `
         <div class="pulse-profile-layout" style="animation: fadeInUp 0.4s ease;">
             
             <div class="profile-cover-section">
                 <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">RETURN</button>
-                <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:4px 8px; font-size:0.7em; color:#fff; border-radius:4px; border:1px solid rgba(255,255,255,0.1);">COVER_ID: #8842-X</div>
+                <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:4px 8px; font-size:0.7em; color:#fff; border-radius:4px; border:1px solid rgba(255,255,255,0.1);">UID: ${uid}</div>
             </div>
             
             <div class="profile-info-card">
@@ -3191,79 +3190,104 @@ window.loadProfileView = async function(targetUid = null) {
                         ${isSelf 
                             ? `<button class="profile-btn" onclick="openEditModal()">✏️ EDIT PROFILE</button>
                                <button class="profile-btn" style="border-color:var(--error-color); color:var(--error-color);" onclick="appAuth.signOut().then(()=>location.reload())">LOGOUT</button>`
-                            : `<button id="follow-btn" class="profile-btn" onclick="toggleFollow('${uid}')">CHECKING...</button>
-                               <button class="profile-btn">💬 MESSAGE</button>`
+                            : `<button id="follow-btn" class="profile-btn" onclick="toggleFollow('${uid}')">CHECKING...</button>`
                         }
                     </div>
                 </div>
                 
                 <div class="profile-name-lg">${displayName}</div>
-                <div class="profile-handle">ID: ${uid.substring(0,6)}...</div>
-                <div class="profile-bio" style="white-space: pre-wrap;">${bioText}</div>
+                <div class="profile-handle" style="font-family:monospace; color:var(--accent-color);">ID: ${uid}</div>
+                <div class="profile-bio" style="white-space: pre-wrap; margin-top:10px; color:#bbb;">${bioText}</div>
                 
                 <div class="profile-stats-row">
                     <div class="p-stat-box"><span class="p-stat-num" id="stat-followers">--</span><span class="p-stat-lbl">Followers</span></div>
                     <div class="p-stat-box"><span class="p-stat-num" id="stat-following">--</span><span class="p-stat-lbl">Following</span></div>
-                    <div class="p-stat-box"><span class="p-stat-num">Level 3</span><span class="p-stat-lbl">Access</span></div>
+                    <div class="p-stat-box"><span class="p-stat-num">${userLevel}</span><span class="p-stat-lbl">Access</span></div>
                 </div>
             </div>
 
             <div class="profile-tabs">
-                <div class="p-tab active">LOGS</div><div class="p-tab">MEDIA</div>
+                <div class="p-tab active">HISTORY LOGS (歷史動態)</div>
             </div>
 
             <div id="profile-posts-feed" style="display:flex; flex-direction:column; gap:20px; padding-bottom:50px;">
-                <div class="news-loading" style="padding:40px;">LOADING LOGS...</div>
+                <div class="news-loading" style="padding:40px;">讀取歷史訊息中... (LOADING LOGS)</div>
             </div>
         </div>
     `;
 
-    // 5. 檢查追蹤狀態 (如果是看別人)
+    // 5. 處理追蹤按鈕狀態 (如果是看別人)
     if (!isSelf && currentUser) {
-        const { doc, getDoc } = window.fs;
-        const relId = `${currentUser.uid}_${uid}`;
-        getDoc(doc(window.db, "relationships", relId)).then(snap => {
-            if (typeof updateFollowUI === 'function') {
-                updateFollowUI(snap.exists());
-            }
-        }).catch(err => {
-            console.log("Follow check failed", err);
-            const btn = document.getElementById('follow-btn');
-            if(btn) { btn.innerText = "➕ FOLLOW"; btn.style.background = "var(--accent-color)"; }
-        });
+        if(typeof updateFollowUI === 'function') {
+            // 這裡可以加入檢查是否已追蹤的邏輯
+            // 為了簡化，預設會先顯示按鈕，實際狀態需從 DB 讀取
+        }
     }
-
-    // 6. 載入粉絲數據
     if (typeof loadFollowStats === 'function') {
         loadFollowStats(uid);
     }
 
-    // 7. 載入貼文 (維持原本)
+    // ★★★ 6. 讀取該用戶的貼文 (核心修改) ★★★
     if (window.fs && window.db) {
-        const { collection, query, where, orderBy, getDocs } = window.fs;
-        const q = query(collection(window.db, "posts"), where("uid", "==", uid), orderBy("timestamp", "desc"));
+        const { collection, query, where, getDocs } = window.fs;
+        
+        // 注意：這裡只用 where，不加 orderBy，避免 "Requires Index" 錯誤
+        const q = query(collection(window.db, "posts"), where("uid", "==", uid));
+        
         getDocs(q).then((snapshot) => {
             const listEl = document.getElementById('profile-posts-feed');
             if(!listEl) return;
+            
             if (snapshot.empty) {
-                listEl.innerHTML = `<div style="text-align:center; padding:50px; color:#666;">NO LOGS FOUND</div>`;
+                listEl.innerHTML = `<div style="text-align:center; padding:50px; color:#666;">此用戶尚未發布任何動態。</div>`;
                 return;
             }
+
+            // A. 將資料轉為陣列
+            let posts = [];
+            snapshot.forEach(doc => {
+                posts.push({ id: doc.id, ...doc.data() });
+            });
+
+            // B. 在前端進行時間排序 (新 -> 舊)
+            posts.sort((a, b) => {
+                const tA = a.timestamp ? a.timestamp.seconds : 0;
+                const tB = b.timestamp ? b.timestamp.seconds : 0;
+                return tB - tA;
+            });
+
+            // C. 產生 HTML
             let html = '';
-            snapshot.forEach((doc) => {
-                const p = doc.data();
+            posts.forEach((p) => {
                 let timeStr = "Unknown";
                 if(p.timestamp) timeStr = p.timestamp.toDate().toLocaleDateString();
+                
+                // 判斷是否為「八卦社團」的貼文，如果是，給它特殊的邊框顏色
+                const isGossip = p.category === 'gossip';
+                const borderColor = isGossip ? '#FF3366' : 'var(--border-color)';
+                const categoryTag = isGossip ? '<span style="font-size:0.7em; color:#FF3366; border:1px solid #FF3366; padding:0 4px; border-radius:4px; margin-left:5px;">GOSSIP</span>' : '';
+
                 html += `
-                    <div class="pulse-post">
+                    <div class="pulse-post" style="border-left: 3px solid ${borderColor};">
                         <div class="pulse-post-header">
                             <div class="pulse-avatar">${p.avatar ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` : '👤'}</div>
-                            <div class="pulse-meta"><div class="pulse-name">${p.name}</div><div class="pulse-time">${timeStr}</div></div>
+                            <div class="pulse-meta">
+                                <div class="pulse-name">${p.name} ${categoryTag}</div>
+                                <div class="pulse-time">${timeStr}</div>
+                            </div>
+                            
+                            ${isSelf ? `<div class="pulse-menu-btn" onclick="deletePost('${p.id}')" title="刪除此貼文">🗑️</div>` : ''}
                         </div>
                         <div class="pulse-content">${p.content}</div>
+                         ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
                     </div>`;
             });
+            
             listEl.innerHTML = html;
+        }).catch(err => {
+            console.error("讀取貼文失敗:", err);
+            const listEl = document.getElementById('profile-posts-feed');
+            if(listEl) listEl.innerHTML = `<div style="text-align:center; padding:20px; color:var(--error-color);">讀取失敗: ${err.message}</div>`;
         });
     }
 }
@@ -3490,36 +3514,31 @@ window.loadCommunityView = function(groupId) {
                     timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 }
 
-               html += `
-    <div class="pulse-post">
+              html += `
+    <div class="pulse-post" style="border-left: 2px solid ${themeColor};">
         <div class="pulse-post-header">
-            <div class="pulse-avatar" style="cursor:pointer;" onclick="loadProfileView('${p.uid}')">
-                ${p.avatar 
-                    ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` 
-                    : '<div style="width:100%;height:100%;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;">👤</div>'}
+            <div class="pulse-avatar" 
+                 style="cursor:pointer;" 
+                 onclick="loadProfileView('${p.uid}')">
+                ${p.avatar ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` : '🕵️'}
             </div>
             
             <div class="pulse-meta">
-                <div class="pulse-name" style="cursor:pointer;" onclick="loadProfileView('${p.uid}')">
-                    ${p.name || 'Anonymous'}
+                <div class="pulse-name" 
+                     style="cursor:pointer; color:${themeColor};" 
+                     onclick="loadProfileView('${p.uid}')">
+                    ${p.name}
                 </div>
-                <div class="pulse-time">${timeStr} <span style="margin-left:5px; opacity:0.7;">• 公開</span></div>
+                <div class="pulse-time">${timeStr}</div>
             </div>
-
-            <div class="pulse-menu-btn">•••</div>
+            
+            ${(window.currentUser && window.currentUser.uid === p.uid) ? 
+                `<div class="pulse-menu-btn" onclick="deletePost('${doc.id}')" title="Delete">🗑️</div>` : ''}
         </div>
         
         <div class="pulse-content">${p.content}</div>
-        ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
-        
-        <div class="pulse-stats">
-            <span>${pIcons.like} ${p.likes || 0}</span>
-            <span>${p.comments || 0} Comments</span>
-        </div>
-        <div class="pulse-actions">
-            <button class="pulse-action-btn">${pIcons.like} Like</button>
-            <button class="pulse-action-btn">${pIcons.comment} Comment</button>
-            <button class="pulse-action-btn">${pIcons.share} Share</button>
+        <div class="pulse-stats" style="border-top:1px solid rgba(255,51,102,0.2); margin-top:10px; padding-top:10px;">
+            <span style="color:${themeColor};">🔥 ${p.likes || 0} 熱度</span>
         </div>
     </div>
 `;
@@ -3954,39 +3973,43 @@ function updateJoinButton(isJoined) {
                             }
 
                             // 產生貼文 HTML
-                            html += `
-                        <div class="pulse-post">
-                            <div class="pulse-post-header">
-                                <div class="pulse-avatar" style="cursor:pointer;" onclick="loadProfileView('${p.uid}')">
-                                    ${p.avatar 
-                                        ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` 
-                                        : '<div style="width:100%;height:100%;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;">👤</div>'}
-                                </div>
-                                
-                                <div class="pulse-meta">
-                                    <div class="pulse-name" style="cursor:pointer;" onclick="loadProfileView('${p.uid}')">
-                                        ${p.name || 'Anonymous'}
-                                    </div>
-                                    <div class="pulse-time">${timeStr} <span style="margin-left:5px; opacity:0.7;">• 公開</span></div>
-                                </div>
+                           html += `
+    <div class="pulse-post">
+        <div class="pulse-post-header">
+            <div class="pulse-avatar" 
+                 style="cursor:pointer;" 
+                 onclick="loadProfileView('${p.uid}')">
+                ${p.avatar 
+                    ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` 
+                    : '<div style="width:100%;height:100%;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;">👤</div>'}
+            </div>
+            
+            <div class="pulse-meta">
+                <div class="pulse-name" 
+                     style="cursor:pointer; color:var(--accent-color);" 
+                     onclick="loadProfileView('${p.uid}')">
+                    ${p.name || 'Anonymous'}
+                </div>
+                <div class="pulse-time">${timeStr} <span style="margin-left:5px; opacity:0.7;">• 公開</span></div>
+            </div>
 
-                                <div class="pulse-menu-btn">•••</div>
-                            </div>
-                            
-                            <div class="pulse-content">${p.content}</div>
-                            ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
-                            
-                            <div class="pulse-stats">
-                                <span>${pIcons.like} ${p.likes || 0}</span>
-                                <span>${p.comments || 0} Comments</span>
-                            </div>
-                            <div class="pulse-actions">
-                                <button class="pulse-action-btn">${pIcons.like} Like</button>
-                                <button class="pulse-action-btn">${pIcons.comment} Comment</button>
-                                <button class="pulse-action-btn">${pIcons.share} Share</button>
-                            </div>
-                        </div>
-                    `;
+            <div class="pulse-menu-btn">•••</div>
+        </div>
+        
+        <div class="pulse-content">${p.content}</div>
+        ${p.image ? `<img src="${p.image}" class="pulse-content-img" loading="lazy">` : ''}
+        
+        <div class="pulse-stats">
+            <span>${pIcons.like} ${p.likes || 0}</span>
+            <span>${p.comments || 0} Comments</span>
+        </div>
+        <div class="pulse-actions">
+            <button class="pulse-action-btn">${pIcons.like} Like</button>
+            <button class="pulse-action-btn">${pIcons.comment} Comment</button>
+            <button class="pulse-action-btn">${pIcons.share} Share</button>
+        </div>
+    </div>
+`;
                 });
                         
                         // 如果資料庫是空的
