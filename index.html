@@ -5,7 +5,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.021</title> 
+    <title>BROOKLYN-TERMINAL // V1.022</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -3116,9 +3116,11 @@ async function loadFollowStats(targetUid) {
 
 
             
-// --- 修改位置： window.loadProfileView (修復名字顯示與按鈕狀態) ---
+// --- 修改位置： window.loadProfileView (修復讀取他人資料問題) ---
 window.loadProfileView = async function(targetUid = null) {
     const currentUser = window.currentUser;
+    
+    // 1. 檢查登入
     if (!targetUid && !currentUser) {
         alert("請先登入 (Please Login first)");
         return;
@@ -3127,32 +3129,32 @@ window.loadProfileView = async function(targetUid = null) {
     const uid = targetUid || currentUser.uid;
     const isSelf = currentUser && currentUser.uid === uid;
     
-    // ★ 修正 1：改用 let，這樣後面才能更新名字
+    // 2. 初始化變數 (預設值)
+    // 如果是自己，先用 currentUser 的資料，如果是別人先顯示 Loading
     let displayName = isSelf ? currentUser.displayName : "Loading..."; 
-    const photoURL = isSelf ? currentUser.photoURL : "";
-    const email = isSelf ? currentUser.email : "user@brooklyn.com";
-
-    // 讀取 Bio 與 名字
+    let photoURL = isSelf ? currentUser.photoURL : "";
+    let email = isSelf ? currentUser.email : "user@brooklyn.com";
     let bioText = "Loading bio...";
+
+    // 3. 從 Firestore 讀取真實資料 (包含名字、頭像、Bio)
     try {
         const { doc, getDoc } = window.fs;
         const userSnap = await getDoc(doc(window.db, "users", uid));
         
         if (userSnap.exists()) {
-            // ★ 修正 2：如果有抓到名字，就更新變數
-            if (userSnap.data().displayName) {
-               displayName = userSnap.data().displayName;
-            }
+            const data = userSnap.data();
             
-            if (userSnap.data().bio) {
-                bioText = userSnap.data().bio;
-            } else {
-                bioText = "這位用戶很懶，還沒寫自我介紹。";
-            }
+            // ★ 關鍵修正：如果有讀到資料，就覆蓋變數 ★
+            if (data.displayName) displayName = data.displayName;
+            if (data.photoURL) photoURL = data.photoURL;
+            if (data.bio) bioText = data.bio;
+            else bioText = "這位用戶很懶，還沒寫自我介紹。";
+            
         } else {
             bioText = "這位用戶很懶，還沒寫自我介紹。";
         }
-        // 如果是自己，順便更新全域變數
+        
+        // 如果是看自己，順便更新全域變數方便編輯
         if(isSelf) window.currentBio = bioText;
         
     } catch(e) {
@@ -3160,15 +3162,15 @@ window.loadProfileView = async function(targetUid = null) {
         bioText = "Bio loading failed.";
     }
 
+    // 4. 渲染畫面
     const feedContainer = document.querySelector('.pulse-feed-container');
     if (!feedContainer) return;
     
-    // 渲染 HTML (這時候 displayName 已經是最新的了)
     feedContainer.innerHTML = `
         <div class="pulse-profile-layout" style="animation: fadeInUp 0.4s ease;">
             
             <div class="profile-cover-section">
-                <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">RETURN FEED</button>
+                <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">RETURN</button>
                 <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:4px 8px; font-size:0.7em; color:#fff; border-radius:4px; border:1px solid rgba(255,255,255,0.1);">COVER_ID: #8842-X</div>
             </div>
             
@@ -3211,31 +3213,27 @@ window.loadProfileView = async function(targetUid = null) {
         </div>
     `;
 
-    // 2. 檢查追蹤狀態 (★ 修正：加入錯誤處理，防止按鈕卡住)
+    // 5. 檢查追蹤狀態 (如果是看別人)
     if (!isSelf && currentUser) {
         const { doc, getDoc } = window.fs;
         const relId = `${currentUser.uid}_${uid}`;
         getDoc(doc(window.db, "relationships", relId)).then(snap => {
-            // 確保 updateFollowUI 存在
             if (typeof updateFollowUI === 'function') {
                 updateFollowUI(snap.exists());
-            } else {
-                console.warn("updateFollowUI function missing!");
             }
         }).catch(err => {
             console.log("Follow check failed", err);
-            // 發生錯誤時，預設顯示為未追蹤，避免卡在 CHECKING
             const btn = document.getElementById('follow-btn');
             if(btn) { btn.innerText = "➕ FOLLOW"; btn.style.background = "var(--accent-color)"; }
         });
     }
 
-    // 3. 載入粉絲數據
+    // 6. 載入粉絲數據
     if (typeof loadFollowStats === 'function') {
         loadFollowStats(uid);
     }
 
-    // 4. 載入貼文 (維持原本)
+    // 7. 載入貼文 (維持原本)
     if (window.fs && window.db) {
         const { collection, query, where, orderBy, getDocs } = window.fs;
         const q = query(collection(window.db, "posts"), where("uid", "==", uid), orderBy("timestamp", "desc"));
@@ -3387,7 +3385,7 @@ window.loadCommunityView = function(groupId) {
             
             <div class="profile-cover-section" style="background: linear-gradient(135deg, #2b0000 0%, #1a0505 100%); border-bottom: 2px solid ${themeColor};">
                 <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">
-                    &lt; RETURN FEED
+                    &lt; RETURN
                 </button>
                 <div style="position:absolute; bottom:10px; right:10px; font-family:'Orbitron'; font-size:4em; opacity:0.1; color:${themeColor}; font-weight:900;">
                     GOSSIP
@@ -3656,7 +3654,7 @@ window.loadCommunityView = function(groupId) {
             
             <div class="profile-cover-section" style="background: linear-gradient(135deg, #2b0000 0%, #1a0505 100%); border-bottom: 2px solid ${themeColor};">
                 <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">
-                    &lt; RETURN FEED
+                    &lt; RETURN
                 </button>
                 <div style="position:absolute; bottom:10px; right:10px; font-family:'Orbitron'; font-size:4em; opacity:0.1; color:${themeColor}; font-weight:900;">
                     GOSSIP
