@@ -552,6 +552,7 @@
     color: #000000 !important;
 }
 /* 2. 中間導覽列 (膠囊狀容器) */
+/* 找到這段 CSS 並加入新的定位設定 */
 .nav-pill-container {
     background: #1a1a1a;
     border: 1px solid #333;
@@ -561,6 +562,11 @@
     gap: 2px;
     align-items: center;
     height: 44px;
+
+    /* ★ 新增以下三行來強制置中 ★ */
+    position: absolute;          /* 脫離原本的排版流 */
+    left: 50%;                   /* 讓左側邊緣位於畫面正中央 */
+    transform: translateX(-50%); /* 將選單往回拉自身寬度的一半，達成幾何正中心 */
 }
 
 .nav-pill-btn {
