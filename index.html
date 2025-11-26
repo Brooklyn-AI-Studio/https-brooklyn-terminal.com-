@@ -5,7 +5,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.016</title> 
+    <title>BROOKLYN-TERMINAL // V1.017</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -2955,29 +2955,110 @@ window.switchSpace = function(spaceMode) {
             `;
 
             workspace.appendChild(container);
-// --- 個人檔案頁面邏輯 (已修復返回按鈕與語法錯誤) ---
+// --- 新增功能：開啟編輯視窗 ---
+window.openEditModal = function() {
+    const user = window.currentUser;
+    if(!user) return;
 
-window.loadProfileView = function(targetUid = null) {
-    // 如果沒有指定 UID，就預設為當前登入者
+    // 建立編輯視窗的 HTML
+    const editHTML = `
+        <div id="edit-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); z-index:10000; display:flex; justify-content:center; align-items:center;">
+            <div style="background:#0a0a0a; border:1px solid #00ffcc; padding:30px; width:400px; max-width:90%; border-radius:12px; box-shadow:0 0 30px rgba(0,255,204,0.2); position:relative;">
+                <h2 style="color:#fff; margin-top:0; font-family:'Orbitron'; border-bottom:1px dashed #333; padding-bottom:10px;">EDIT PROFILE</h2>
+                
+                <label style="display:block; color:#888; font-size:0.8em; margin-bottom:5px;">DISPLAY NAME</label>
+                <input type="text" id="edit-name" value="${user.displayName}" style="width:100%; background:#111; border:1px solid #333; color:#fff; padding:8px; border-radius:4px; margin-bottom:15px; outline:none;">
+                
+                <label style="display:block; color:#888; font-size:0.8em; margin-bottom:5px;">PHOTO URL (LINK)</label>
+                <input type="text" id="edit-photo" value="${user.photoURL}" style="width:100%; background:#111; border:1px solid #333; color:#fff; padding:8px; border-radius:4px; margin-bottom:15px; outline:none;">
+                
+                <label style="display:block; color:#888; font-size:0.8em; margin-bottom:5px;">BIO (自我介紹)</label>
+                <textarea id="edit-bio" rows="4" style="width:100%; background:#111; border:1px solid #333; color:#fff; padding:8px; border-radius:4px; margin-bottom:20px; outline:none; resize:none;">${window.currentBio || ""}</textarea>
+                
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button onclick="document.getElementById('edit-overlay').remove()" style="background:transparent; border:1px solid #555; color:#aaa; padding:8px 20px; border-radius:4px; cursor:pointer;">CANCEL</button>
+                    <button onclick="saveProfileChanges()" style="background:#00ffcc; border:none; color:#000; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">SAVE CHANGES</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', editHTML);
+}
+
+// --- 新增功能：儲存變更 ---
+window.saveProfileChanges = async function() {
+    const newName = document.getElementById('edit-name').value;
+    const newPhoto = document.getElementById('edit-photo').value;
+    const newBio = document.getElementById('edit-bio').value;
+    const btn = document.querySelector('#edit-overlay button[onclick^="save"]'); // 取得儲存按鈕
+
+    btn.innerText = "SAVING...";
+    
+    try {
+        const { updateProfile, doc, setDoc } = window.fs;
+        
+        // 1. 更新 Firebase Auth (暱稱與頭像)
+        await updateProfile(window.appAuth.currentUser, {
+            displayName: newName,
+            photoURL: newPhoto
+        });
+        
+        // 2. 更新 Firestore (自我介紹 Bio) - 存入 users 集合
+        await setDoc(doc(window.db, "users", window.currentUser.uid), {
+            bio: newBio,
+            updatedAt: new Date()
+        }, { merge: true }); // merge: true 代表只更新欄位，不覆蓋整份文件
+
+        // 3. 更新完成
+        alert("個人檔案已更新！(Profile Updated)");
+        document.getElementById('edit-overlay').remove();
+        
+        // 重新載入個人頁面以顯示最新資料
+        loadProfileView(); 
+
+    } catch (e) {
+        console.error(e);
+        alert("更新失敗: " + e.message);
+        btn.innerText = "SAVE CHANGES";
+    }
+}
+            
+// --- 修改位置： window.loadProfileView 函式 (支援 Bio 讀取與編輯) ---
+window.loadProfileView = async function(targetUid = null) {
     const currentUser = window.currentUser;
     if (!targetUid && !currentUser) {
-        alert("請先登入以查看個人檔案 (Please Login first)");
+        alert("請先登入 (Please Login first)");
         return;
     }
     
     const uid = targetUid || currentUser.uid;
     const isSelf = currentUser && currentUser.uid === uid;
     
-    // 取得顯示資料
-    const displayName = isSelf ? currentUser.displayName : "Unknown User";
+    // 基本資料
+    const displayName = isSelf ? currentUser.displayName : "Loading..."; 
     const photoURL = isSelf ? currentUser.photoURL : "";
     const email = isSelf ? currentUser.email : "user@brooklyn.com";
 
-    // 1. 取得中間的 Feed 容器並清空
+    // ★ 新增：從 Firestore 讀取 Bio ★
+    let bioText = "Loading bio...";
+    try {
+        const { doc, getDoc } = window.fs;
+        const userSnap = await getDoc(doc(window.db, "users", uid));
+        if (userSnap.exists() && userSnap.data().bio) {
+            bioText = userSnap.data().bio;
+        } else {
+            bioText = "這位用戶很懶，還沒寫自我介紹。 (No bio yet)";
+        }
+        // 如果是自己，把 bio 存到全域變數，方便編輯視窗讀取
+        if(isSelf) window.currentBio = bioText; 
+    } catch(e) {
+        console.log("Bio load error", e);
+        bioText = "Bio loading failed.";
+    }
+
     const feedContainer = document.querySelector('.pulse-feed-container');
     if (!feedContainer) return;
     
-    // ★ 注意：這裡是反引號 (Backtick) 開始
     feedContainer.innerHTML = `
         <div class="pulse-profile-layout" style="animation: fadeInUp 0.4s ease;">
             
@@ -2985,7 +3066,6 @@ window.loadProfileView = function(targetUid = null) {
                 <button class="profile-back-btn" onclick="currentSpace=null; switchSpace('pulse')">
                     RETURN FEED
                 </button>
-
                 <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:4px 8px; font-size:0.7em; color:#fff; border-radius:4px; border:1px solid rgba(255,255,255,0.1);">
                     COVER_ID: #8842-X
                 </div>
@@ -3001,7 +3081,8 @@ window.loadProfileView = function(targetUid = null) {
                     </div>
                     <div class="profile-actions">
                         ${isSelf 
-                            ? `<button class="profile-btn">✏️ EDIT PROFILE</button>
+                            // ★ 關鍵修改：按鈕綁定 openEditModal()
+                            ? `<button class="profile-btn" onclick="openEditModal()">✏️ EDIT PROFILE</button>
                                <button class="profile-btn" style="border-color:var(--error-color); color:var(--error-color);" onclick="appAuth.signOut().then(()=>location.reload())">LOGOUT</button>`
                             : `<button class="profile-btn">➕ FOLLOW</button>
                                <button class="profile-btn">💬 MESSAGE</button>`
@@ -3012,10 +3093,7 @@ window.loadProfileView = function(targetUid = null) {
                 <div class="profile-name-lg">${displayName}</div>
                 <div class="profile-handle">@${email.split('@')[0]} <span style="color:#555; margin-left:10px;">// NET_ID: ${uid.substring(0,6)}...</span></div>
                 
-                <div class="profile-bio">
-                    [SYSTEM MSG] This user has not updated their bio yet. 
-                    <br>目前狀態: 探索 Brooklyn-Terminal 系統中。
-                </div>
+                <div class="profile-bio" style="white-space: pre-wrap;">${bioText}</div>
                 
                 <div class="profile-stats-row">
                     <div class="p-stat-box"><span class="p-stat-num">1024</span><span class="p-stat-lbl">Followers</span></div>
@@ -3034,12 +3112,11 @@ window.loadProfileView = function(targetUid = null) {
                 <div class="news-loading" style="padding:40px;">LOADING USER LOGS...</div>
             </div>
         </div>
-    `; // ★ 注意：這裡是反引號 (Backtick) 結束
+    `;
 
-    // 2. 讀取該用戶的 Firestore 貼文
+    // 載入貼文邏輯 (維持原本不變)
     if (window.fs && window.db) {
         const { collection, query, where, orderBy, getDocs } = window.fs;
-        
         const q = query(
             collection(window.db, "posts"), 
             where("uid", "==", uid),
@@ -3067,7 +3144,6 @@ window.loadProfileView = function(targetUid = null) {
                     const date = p.timestamp.toDate();
                     timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 }
-
                 html += `
                     <div class="pulse-post">
                         <div class="pulse-post-header">
@@ -3089,15 +3165,6 @@ window.loadProfileView = function(targetUid = null) {
                 `;
             });
             listEl.innerHTML = html;
-        }).catch(err => {
-            console.error("Profile Load Error:", err);
-            if(err.message.includes("requires an index")) {
-                document.getElementById('profile-posts-feed').innerHTML = 
-                `<div style="color:var(--accent-color); padding:20px;">
-                    系統提示：Firestore 需要建立索引才能進行此查詢。<br>
-                    請檢查 Console 並點擊連結建立索引。
-                 </div>`;
-            }
         });
     }
 }
@@ -5431,7 +5498,8 @@ window.closeLoginModal = function() {
         GoogleAuthProvider, 
         signInWithPopup, 
         signOut, 
-        onAuthStateChanged 
+        onAuthStateChanged,
+        updateProfile
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     
     // ★ 新增：引入 Firestore 資料庫模組 ★
@@ -5442,7 +5510,10 @@ window.closeLoginModal = function() {
         query, 
         orderBy, 
         onSnapshot, 
-        serverTimestamp 
+        serverTimestamp,
+        doc,
+        getDoc,
+        setDoc
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // 2. Firebase 設定
@@ -5467,7 +5538,10 @@ window.closeLoginModal = function() {
 
     // ★ 關鍵：將資料庫工具掛載到 window (讓 PulseStreet 可以使用) ★
     window.db = db;
-    window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp };
+    window.fs = { 
+    collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, 
+    doc, getDoc, setDoc, updateProfile 
+    };
 
     // --- 4. 登入與介面邏輯 (保持不變) ---
     
