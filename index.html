@@ -4,7 +4,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.001</title> 
+    <title>BROOKLYN-TERMINAL // V1.002</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -3025,17 +3025,19 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// 3. 解決 ID 重複問題 (同步 Header 與 面板內的總瀏覽量)
-// 不蒜子腳本載入後，會自動填入 busuanzi_value_site_pv
-// 我們設一個定時器，把 Header 的值同步到面板內的 ..._detail
+// 修改後的同步計時器 (加入安全檢查)
 setInterval(() => {
-    const mainVal = document.getElementById('busuanzi_value_site_pv').innerText;
+    const mainValEl = document.getElementById('busuanzi_value_site_pv'); // 先取得元素
     const detailEl = document.getElementById('busuanzi_value_site_pv_detail');
-    if(mainVal && mainVal !== 'loading...' && detailEl) {
-        detailEl.innerText = mainVal;
+    
+    // 檢查元素是否存在 (mainValEl)，且是否有內容
+    if(mainValEl && detailEl) {
+        const mainVal = mainValEl.innerText;
+        if (mainVal && mainVal !== 'loading...') {
+            detailEl.innerText = mainVal;
+        }
     }
 }, 1000);
-
 
 
 
