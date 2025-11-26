@@ -1247,7 +1247,30 @@
     gap: 20px;
     min-width: 0; /* 防止 grid 爆版 */
 }
+/* 發送按鈕樣式 */
+.pulse-send-btn {
+    background: var(--accent-color); /* 跟隨主題色 (青/橘) */
+    color: #000;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 20px; /* 膠囊狀，配合輸入框 */
+    font-weight: 900;
+    font-family: var(--font-main);
+    cursor: pointer;
+    margin-left: 10px; /* 與輸入框的距離 */
+    transition: all 0.2s;
+    text-transform: uppercase;
+    white-space: nowrap; /* 防止文字換行 */
+}
 
+.pulse-send-btn:hover {
+    box-shadow: 0 0 15px var(--accent-color); /* 發光效果 */
+    transform: scale(1.05); /* 微微放大 */
+}
+
+.pulse-send-btn:active {
+    transform: scale(0.95); /* 點擊回饋 */
+}
 
         
 /* 2. 發文框 (Create Post) */
@@ -2596,14 +2619,13 @@ window.switchSpace = function(spaceMode) {
             }, 100);
         }
       // --- PulseStreet 渲染核心 (Facebook Style Update) ---
-       // --- PulseStreet 渲染核心 (Facebook Style + SVG Shortcuts) ---
-        // --- PulseStreet 渲染核心 (連線 Firestore 版) ---
+       /// --- PulseStreet 渲染核心 (含發送按鈕改良版) ---
         function renderPulseStreet() {
             const workspace = document.querySelector('.workspace');
             const container = document.createElement('div');
             container.className = 'pulse-container';
             
-            // 1. 圖示定義 (SVG)
+            // 圖示定義
             const pIcons = {
                 search: '<svg class="pulse-icon" style="margin:0" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
                 friends: '<svg class="pulse-icon" viewBox="0 0 24 24" style="stroke:#1877F2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
@@ -2617,7 +2639,6 @@ window.switchSpace = function(spaceMode) {
                 share: '<svg class="action-icon-svg" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
             };
 
-            // 2. 捷徑與 Stories 資料 (這部分目前保持靜態，之後也可以改成動態)
             const shortcutIcons = {
                 beauty: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FF69B4" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>',
                 candy: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FFD700" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>',
@@ -2665,7 +2686,7 @@ window.switchSpace = function(spaceMode) {
                 </div>
             `).join('');
 
-            // 3. 渲染 HTML 結構
+            // 渲染 HTML 結構
             container.innerHTML = `
                 <div class="pulse-layout">
                     <div class="pulse-sidebar-left">
@@ -2707,7 +2728,9 @@ window.switchSpace = function(spaceMode) {
                                     ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;border-radius:50%;">`
                                     : 'Ⓜ️'}
                             </div>
-                            <input type="text" class="pulse-input-dummy" id="pulse-real-input" placeholder="聊聊你對市場的看法? (按 Enter 發佈)" style="border:none; outline:none; color:#fff;">
+                            <input type="text" class="pulse-input-dummy" id="pulse-real-input" placeholder="聊聊你對市場的看法? (輸入後按發送)" style="border:none; outline:none; color:#fff;">
+                            
+                            <button id="pulse-submit-btn" class="pulse-send-btn">SEND</button>
                         </div>
 
                         <div class="pulse-feed" id="pulse-real-feed">
@@ -2738,59 +2761,59 @@ window.switchSpace = function(spaceMode) {
             // ==========================================
             
             const input = document.getElementById('pulse-real-input');
+            const submitBtn = document.getElementById('pulse-submit-btn');
             const feed = document.getElementById('pulse-real-feed');
 
-            // 4. 發文功能 (監聽 Enter 鍵)
-            input.addEventListener('keypress', async (e) => {
-                if (e.key === 'Enter' && input.value.trim() !== '') {
-                    // 檢查是否登入
-                    if (!window.currentUser) {
-                        alert("⚠️ 系統提示：請先登入 Google 帳號才能發文。\n(Please Login to post)");
-                        return;
-                    }
-                    
-                    const content = input.value.trim();
-                    input.value = ''; // 立即清空輸入框，提升體驗
-                    input.placeholder = "發送中...";
+            // 定義發送功能 (共用)
+            const submitPost = async () => {
+                const content = input.value.trim();
+                if (content === '') return;
 
-                    try {
-                        // 從 window.fs 取得 Firestore 函式 (我們在底部 script 定義的)
-                        const { addDoc, collection, serverTimestamp } = window.fs;
-                        
-                        // 寫入資料庫
-                        await addDoc(collection(window.db, "posts"), {
-                            content: content,
-                            name: window.currentUser.displayName,
-                            avatar: window.currentUser.photoURL,
-                            uid: window.currentUser.uid,
-                            timestamp: serverTimestamp(), // 伺服器時間
-                            likes: 0,
-                            comments: 0
-                        });
-                        
-                        input.placeholder = "聊聊你對市場的看法? (按 Enter 發佈)";
-                        // 成功後不需要手動更新畫面，下面的 onSnapshot 會自動處理！
-                        
-                    } catch (err) {
-                        console.error("發文錯誤:", err);
-                        alert("發送失敗: " + err.message);
-                        input.value = content; // 失敗時把文字補回去
-                    }
+                if (!window.currentUser) {
+                    alert("⚠️ 系統提示：請先登入 Google 帳號才能發文。\n(Please Login to post)");
+                    return;
                 }
-            });
+                
+                input.value = ''; // 清空
+                input.placeholder = "發送中...";
 
-            // 5. 即時監聽貼文 (Real-time Listener)
-            // 這段程式碼會讓網頁與資料庫保持連線，有人發文時自動更新
+                try {
+                    const { addDoc, collection, serverTimestamp } = window.fs;
+                    
+                    await addDoc(collection(window.db, "posts"), {
+                        content: content,
+                        name: window.currentUser.displayName,
+                        avatar: window.currentUser.photoURL,
+                        uid: window.currentUser.uid,
+                        timestamp: serverTimestamp(),
+                        likes: 0,
+                        comments: 0
+                    });
+                    
+                    input.placeholder = "聊聊你對市場的看法?";
+                } catch (err) {
+                    console.error("發文錯誤:", err);
+                    alert("發送失敗: " + err.message);
+                    input.value = content; // 補回文字
+                }
+            };
+
+            // 4. 綁定事件：按 Enter 或 按鈕 都可以發送
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') submitPost();
+            });
+            
+            if (submitBtn) {
+                submitBtn.addEventListener('click', submitPost);
+            }
+
+            // 5. 即時監聽貼文
             if (window.fs && window.db) {
                 try {
                     const { collection, query, orderBy, onSnapshot } = window.fs;
-                    
-                    // 查詢條件：posts 集合，依照時間倒序排列
                     const q = query(collection(window.db, "posts"), orderBy("timestamp", "desc"));
                     
-                    // 開始監聽
                     onSnapshot(q, (snapshot) => {
-                        // 檢查元素是否還在 (防止切換頁面後報錯)
                         const feedEl = document.getElementById('pulse-real-feed');
                         if(!feedEl) return;
 
@@ -2798,22 +2821,17 @@ window.switchSpace = function(spaceMode) {
                         
                         snapshot.forEach((doc) => {
                             const p = doc.data();
-                            
-                            // 時間格式化
                             let timeStr = "Just now";
                             if(p.timestamp) {
-                                // 將 Firestore Timestamp 轉為 JS Date
                                 const date = p.timestamp.toDate();
                                 const now = new Date();
-                                const diff = (now - date) / 1000; // 秒數差
-                                
+                                const diff = (now - date) / 1000;
                                 if(diff < 60) timeStr = "剛剛";
                                 else if(diff < 3600) timeStr = `${Math.floor(diff/60)} 分鐘前`;
                                 else if(diff < 86400) timeStr = `${Math.floor(diff/3600)} 小時前`;
                                 else timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                             }
 
-                            // 產生貼文 HTML
                             html += `
                                 <div class="pulse-post">
                                     <div class="pulse-post-header">
@@ -2843,7 +2861,6 @@ window.switchSpace = function(spaceMode) {
                             `;
                         });
                         
-                        // 如果資料庫是空的
                         if(html === '') {
                             html = `
                                 <div style="text-align:center; padding:50px; opacity:0.6;">
@@ -2859,8 +2876,6 @@ window.switchSpace = function(spaceMode) {
                     console.error("讀取資料庫失敗:", e);
                     feed.innerHTML = '<div style="text-align:center; color:#ff3333; padding:20px; border:1px solid #ff3333; border-radius:8px; margin-top:20px;">無法連線至資料庫<br><span style="font-size:0.8em; color:#aaa;">請確認 Firebase 設定是否正確</span></div>';
                 }
-            } else {
-                console.warn("Firebase 尚未初始化，無法讀取資料庫");
             }
         }
         // 輔助：清空連線 (原本的 clearGrid 只有清空 items，沒有清空 SVG 連線)
