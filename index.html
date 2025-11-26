@@ -4,7 +4,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.001</title> 
+    <title>BROOKLYN-TERMINAL // V1.002</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -1892,7 +1892,161 @@
     border: 1px solid #000;
     object-fit: cover;
 }
+/* --- PulseStreet 個人檔案頁面樣式 --- */
 
+/* 1. 封面區域 */
+.profile-cover-section {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background: repeating-linear-gradient(45deg, #0d0d0d 0, #0d0d0d 10px, #111 10px, #111 20px);
+    border-radius: 8px 8px 0 0;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+/* 封面裝飾網格 */
+.profile-cover-section::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: linear-gradient(rgba(0, 255, 204, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 204, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+}
+
+/* 2. 用戶資訊區塊 (懸浮卡片) */
+.profile-info-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 0 20px 20px 20px;
+    position: relative;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 3. 大頭貼與操作按鈕列 */
+.profile-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: -50px; /* 讓大頭貼往上浮動蓋住封面 */
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 5;
+}
+
+.profile-avatar-lg {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: #000;
+    border: 4px solid var(--bg-panel); /* 與背景融合的邊框 */
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    overflow: hidden;
+    position: relative;
+}
+/* 大頭貼發光圈 */
+.profile-avatar-lg::after {
+    content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
+    border-radius: 50%;
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 0 15px var(--accent-color);
+    opacity: 0.5;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 10px;
+    padding-bottom: 10px;
+}
+.profile-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9em;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 5px;
+}
+.profile-btn:hover {
+    background: var(--accent-color);
+    color: #000;
+    box-shadow: 0 0 10px var(--accent-color);
+}
+
+/* 4. 文字資訊 */
+.profile-name-lg {
+    font-size: 1.8em;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 5px;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+}
+.profile-handle {
+    color: var(--accent-color);
+    font-family: monospace;
+    font-size: 1em;
+    margin-bottom: 15px;
+    opacity: 0.8;
+}
+.profile-bio {
+    color: #bbb;
+    font-size: 0.95em;
+    line-height: 1.5;
+    max-width: 600px;
+    margin-bottom: 20px;
+}
+
+/* 5. 數據儀表板 (Stats) */
+.profile-stats-row {
+    display: flex;
+    gap: 30px;
+    padding-top: 20px;
+    border-top: 1px dashed rgba(255,255,255,0.1);
+}
+.p-stat-box {
+    display: flex; flex-direction: column;
+}
+.p-stat-num {
+    font-size: 1.2em; font-weight: bold; color: #fff;
+}
+.p-stat-lbl {
+    font-size: 0.8em; color: #666; text-transform: uppercase;
+}
+
+/* 6. 切換頁籤 (Tabs) */
+.profile-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+    background: var(--bg-panel);
+    border-radius: 8px;
+    padding: 0 10px;
+}
+.p-tab {
+    padding: 15px 20px;
+    cursor: pointer;
+    color: #888;
+    font-weight: bold;
+    position: relative;
+    transition: color 0.2s;
+}
+.p-tab:hover { color: #fff; }
+.p-tab.active { color: var(--accent-color); }
+.p-tab.active::after {
+    content: '';
+    position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px;
+    background: var(--accent-color);
+    box-shadow: 0 -2px 10px var(--accent-color);
+}
 
 
 
@@ -2595,8 +2749,7 @@ window.switchSpace = function(spaceMode) {
                 }
             }, 100);
         }
-      // --- PulseStreet 渲染核心 (Facebook Style Update) ---
-       // --- PulseStreet 渲染核心 (Facebook Style + SVG Shortcuts) ---
+     
         // --- PulseStreet 渲染核心 (連線 Firestore 版) ---
         function renderPulseStreet() {
             const workspace = document.querySelector('.workspace');
@@ -2739,7 +2892,164 @@ window.switchSpace = function(spaceMode) {
             `;
 
             workspace.appendChild(container);
+// --- 個人檔案頁面邏輯 ---
 
+window.loadProfileView = function(targetUid = null) {
+    // 如果沒有指定 UID，就預設為當前登入者
+    const currentUser = window.currentUser;
+    if (!targetUid && !currentUser) {
+        alert("請先登入以查看個人檔案 (Please Login first)");
+        return;
+    }
+    
+    const uid = targetUid || currentUser.uid;
+    const isSelf = currentUser && currentUser.uid === uid;
+    
+    // 取得顯示資料 (若是自己則用 currentUser，若是他人暫時用假資料模擬，未來可從 Firestore 抓 user collection)
+    const displayName = isSelf ? currentUser.displayName : "Unknown User";
+    const photoURL = isSelf ? currentUser.photoURL : "";
+    const email = isSelf ? currentUser.email : "user@brooklyn.com";
+
+    // 1. 取得中間的 Feed 容器並清空
+    const feedContainer = document.querySelector('.pulse-feed-container');
+    if (!feedContainer) return;
+    
+    feedContainer.innerHTML = `
+        <div class="pulse-profile-layout" style="animation: fadeInUp 0.4s ease;">
+            <div class="profile-cover-section">
+                <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:4px 8px; font-size:0.7em; color:#fff; border-radius:4px;">
+                    COVER_ID: #8842-X
+                </div>
+            </div>
+            
+            <div class="profile-info-card">
+                <div class="profile-header-row">
+                    <div class="profile-avatar-lg">
+                        ${photoURL 
+                            ? `<img src="${photoURL}" style="width:100%; height:100%; object-fit:cover;">`
+                            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3em;color:#555;">👾</div>`
+                        }
+                    </div>
+                    <div class="profile-actions">
+                        ${isSelf 
+                            ? `<button class="profile-btn">✏️ EDIT PROFILE</button>
+                               <button class="profile-btn" style="border-color:var(--error-color); color:var(--error-color);" onclick="appAuth.signOut().then(()=>location.reload())">LOGOUT</button>`
+                            : `<button class="profile-btn">➕ FOLLOW</button>
+                               <button class="profile-btn">💬 MESSAGE</button>`
+                        }
+                    </div>
+                </div>
+                
+                <div class="profile-name-lg">${displayName}</div>
+                <div class="profile-handle">@${email.split('@')[0]} <span style="color:#555; margin-left:10px;">// NET_ID: ${uid.substring(0,6)}...</span></div>
+                
+                <div class="profile-bio">
+                    [SYSTEM MSG] This user has not updated their bio yet. 
+                    <br>目前狀態: 探索 Brooklyn-Terminal 系統中。
+                </div>
+                
+                <div class="profile-stats-row">
+                    <div class="p-stat-box"><span class="p-stat-num">1024</span><span class="p-stat-lbl">Followers</span></div>
+                    <div class="p-stat-box"><span class="p-stat-num">128</span><span class="p-stat-lbl">Following</span></div>
+                    <div class="p-stat-box"><span class="p-stat-num">Level 3</span><span class="p-stat-lbl">Access</span></div>
+                </div>
+            </div>
+
+            <div class="profile-tabs">
+                <div class="p-tab active">LOGS (貼文)</div>
+                <div class="p-tab">MEDIA (媒體)</div>
+                <div class="p-tab">ABOUT (關於)</div>
+            </div>
+
+            <div id="profile-posts-feed" style="display:flex; flex-direction:column; gap:20px; padding-bottom:50px;">
+                <div class="news-loading" style="padding:40px;">LOADING USER LOGS...</div>
+            </div>
+        </div>
+    `;
+
+    // 2. 讀取該用戶的 Firestore 貼文
+    if (window.fs && window.db) {
+        const { collection, query, where, orderBy, getDocs } = window.fs;
+        
+        // 建立查詢：找出 uid 符號的貼文，並按時間倒序
+        const q = query(
+            collection(window.db, "posts"), 
+            where("uid", "==", uid),
+            orderBy("timestamp", "desc")
+        );
+
+        getDocs(q).then((snapshot) => {
+            const listEl = document.getElementById('profile-posts-feed');
+            if(!listEl) return;
+            
+            if (snapshot.empty) {
+                listEl.innerHTML = `
+                    <div style="text-align:center; padding:50px; border:1px dashed #333; border-radius:8px; color:#666;">
+                        <div style="font-size:2em; margin-bottom:10px;">📭</div>
+                        NO DATA LOGS FOUND<br>尚無發文紀錄
+                    </div>`;
+                return;
+            }
+
+            let html = '';
+            // 重用原本的貼文 HTML 結構，但稍微簡化
+            snapshot.forEach((doc) => {
+                const p = doc.data();
+                let timeStr = "Unknown Date";
+                if(p.timestamp) {
+                    const date = p.timestamp.toDate();
+                    timeStr = date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                }
+
+                // 這裡直接使用既有的 .pulse-post class 以保持風格一致
+                html += `
+                    <div class="pulse-post">
+                        <div class="pulse-post-header">
+                            <div class="pulse-avatar">
+                                ${p.avatar ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;">` : '👤'}
+                            </div>
+                            <div class="pulse-meta">
+                                <div class="pulse-name">${p.name}</div>
+                                <div class="pulse-time">${timeStr}</div>
+                            </div>
+                            <div class="pulse-menu-btn" onclick="deletePost('${doc.id}')" title="Delete Post">🗑️</div>
+                        </div>
+                        <div class="pulse-content">${p.content}</div>
+                        ${p.image ? `<img src="${p.image}" class="pulse-content-img">` : ''}
+                        <div class="pulse-stats" style="border-top:1px solid rgba(255,255,255,0.05); margin-top:10px; padding-top:10px;">
+                            <span>❤️ ${p.likes || 0}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+        }).catch(err => {
+            console.error("Profile Load Error:", err);
+            // 索引錯誤通常發生在第一次複合查詢 (where + orderBy)
+            if(err.message.includes("requires an index")) {
+                document.getElementById('profile-posts-feed').innerHTML = 
+                `<div style="color:var(--accent-color); padding:20px;">
+                    系統提示：Firestore 需要建立索引才能進行此查詢。<br>
+                    請檢查 Console 並點擊連結建立索引。
+                 </div>`;
+            }
+        });
+    }
+}
+
+// 輔助功能：刪除自己的貼文 (僅前端模擬，需後端規則配合)
+window.deletePost = async function(docId) {
+    if(!confirm("確定要刪除這條紀錄嗎? (Delete Log?)")) return;
+    try {
+        const { doc, deleteDoc } = window.fs;
+        await deleteDoc(doc(window.db, "posts", docId));
+        alert("Log Deleted.");
+        // 重新整理 Profile
+        loadProfileView(); 
+    } catch(e) {
+        alert("刪除失敗: " + e.message);
+    }
+}
             // ==========================================
             // ★ Firestore 功能實作區 ★
             // ==========================================
