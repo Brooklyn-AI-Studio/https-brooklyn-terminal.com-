@@ -575,12 +575,55 @@
     font-family: var(--font-display);
     line-height: 1;
 }
+/* --- 自我介紹與編輯按鈕 --- */
+.profile-bio {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    line-height: 1.6;
+    font-size: 1.1em;
+    white-space: pre-wrap; /* 保留換行 */
+}
 
+.edit-profile-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: 1px solid var(--text-secondary);
+    color: var(--text-primary);
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
-
-
+.edit-profile-btn:hover {
+    border-color: var(--accent-main);
+    color: var(--accent-main);
+    background: rgba(255, 255, 255, 0.05);
+}
 
         
+/* --- 強制修正 TradingView 跑馬燈高度 --- */
+.tradingview-widget-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+.tradingview-widget-container__widget {
+    width: 100% !important;
+    height: 100% !important;
+}
+/* 強制 iframe 填滿，解決變一條線的問題 */
+.tradingview-widget-container iframe {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+}
+
     </style>
 </head>
 <body onload="initApp()" data-theme-mode="pulseorange">
@@ -606,7 +649,7 @@
  <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         // ★ 新增：引入 Storage 相關功能
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
@@ -630,7 +673,7 @@
         window.db = db;
         // ★ 新增：將 storage 功能掛載到 window
         window.storage = { ref, uploadBytes, getDownloadURL, storageInstance: storage };
-        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where, deleteDoc };
+        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where, deleteDoc, getDoc, updateDoc };
         window.appAuth = auth;
         window.currentUser = null;
 
@@ -873,9 +916,9 @@
                     </div>
 
                     <div class="pulse-feed-container">
-                        <div style="height:76px; overflow:hidden; border-radius:12px; border:1px solid var(--border-color); position: relative; width: 100%;">
-                            <div class="tradingview-widget-container" style="width: 100%; height: 100%;">
-                                <div class="tradingview-widget-container__widget" style="width: 100%; height: 100%;"></div>
+                        <div style="height: 76px; min-height: 76px; width: 100%; flex-shrink: 0; overflow: hidden; border-radius: 12px; border: 1px solid var(--border-color); position: relative; z-index: 1;">
+                            <div class="tradingview-widget-container">
+                                <div class="tradingview-widget-container__widget"></div>
                                 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
                                 {
                                 "symbols": [
@@ -994,19 +1037,19 @@
                 snapshot.forEach(doc => {
                     const p = doc.data();
                     const date = p.timestamp ? p.timestamp.toDate() : new Date();
-                     const timeStr = date.toLocaleTimeString([], {month: '2-digit',day: '2-digit',hour: '2-digit', minute:'2-digit'});
-                    const user = window.currentUser;
+                    
+                    // ★ 1. 定義時間格式 (YYYY/MM/DD HH:MM)
+                    const timeStr = date.toLocaleString('zh-TW', {
+                        year: 'numeric', month: '2-digit', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit', hour12: false 
+                    });
 
-                    // 權限判斷
-                    const isAdmin = user && user.uid === ADMIN_UID; // 我是否為管理員(決定能不能刪文)
+                    const user = window.currentUser;
+                    const isAdmin = user && user.uid === ADMIN_UID;
                     const isOwner = user && user.uid === p.uid; 
                     const canDelete = isOwner || isAdmin; 
-                    
-                    // ★ 新增：判斷「這篇貼文的作者」是否為管理員
                     const isPostAuthorAdmin = p.uid === ADMIN_UID;
-                    // ★ 新增：如果是管理員發的文，就產生標籤 HTML
-                    const adminBadge = isPostAuthorAdmin ? `<span class="admin-badge">管理員</span>` : '';
-
+                    const adminBadge = isPostAuthorAdmin ? `<span class="admin-badge">平台管理員</span>` : '';
                     const postUserAvatar = p.avatar ? `<img src="${p.avatar}" alt="Avatar">` : '👤';
 
                     html += `
@@ -1016,10 +1059,12 @@
                                     ${postUserAvatar}
                                 </div>
                                 <div class="post-meta-container">
-                                 <div class="post-author-name" onclick="window.viewUserProfile('${p.uid}', '${p.name || 'Anonymous'}', '${p.avatar || ''}')">
-                                      ${p.name || 'Anonymous'}
-                                      ${adminBadge}
-                                   </div>
+                                    <div class="post-author-name" onclick="window.viewUserProfile('${p.uid}', '${p.name || 'Anonymous'}', '${p.avatar || ''}')">
+                                        ${p.name || 'Anonymous'}
+                                        ${adminBadge}
+                                    </div>
+                                    
+                                    <div class="post-time">${timeStr}</div> 
                                 </div>
                                 
                                 ${canDelete ? `
@@ -1040,7 +1085,7 @@
                                     <img src="${p.imageUrl}" alt="Post Image" style="width: 100%; height: auto; display: block;">
                                 </div>
                             ` : ''}
-                            
+
                             <div class="post-stats"> 
                                 <div class="stat-item like" onclick="alert('Like!')">
                                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
@@ -1102,7 +1147,7 @@
         }
   // --- 個人資料頁面邏輯 ---
 
-        window.navigateToProfile = function() {
+       window.navigateToProfile = async function() {
             const user = window.currentUser;
             if (!user) {
                 alert(i18n[pulseLang].loginReq);
@@ -1110,27 +1155,58 @@
                 return;
             }
 
-            // 1. 切換選單的 Active 狀態
+            // 1. 切換選單狀態
             document.querySelectorAll('.pulse-nav-btn').forEach(btn => btn.classList.remove('active'));
             const profileBtn = document.getElementById('nav-profile');
             if(profileBtn) profileBtn.classList.add('active');
 
-            // 2. 取得中間欄位容器
             const centerCol = document.querySelector('.pulse-feed-container');
             if (!centerCol) return;
 
-            // 3. 渲染個人資料 Header
+            // 2. 準備顯示資料
             const photo = user.photoURL || '';
+            const shortEmail = user.email ? `@${user.email.split('@')[0]}` : `@${user.uid.slice(0,8)}...`;
             
+            // ★ 管理員判斷
+            const ADMIN_UID = "1EALL0fq7nUzEi8B96qwXZuyG7h1"; 
+            const isAdmin = user.uid === ADMIN_UID;
+            const adminBadge = isAdmin ? `<span class="admin-badge" style="font-size: 0.4em; vertical-align: middle; margin-left: 10px;">平台管理員</span>` : '';
+
+            // ★ 從資料庫讀取自我介紹 (Bio)
+            let bioText = "這傢伙很懶，什麼都沒寫..."; // 預設文字
+            try {
+                const { doc, getDoc } = window.fs;
+                const userDocRef = doc(window.db, "users", user.uid);
+                const userSnap = await getDoc(userDocRef);
+                
+                if (userSnap.exists() && userSnap.data().bio) {
+                    bioText = userSnap.data().bio;
+                }
+            } catch (e) {
+                console.error("讀取 Bio 失敗", e);
+            }
+
+            // 3. 渲染畫面
             centerCol.innerHTML = `
                 <div class="profile-header-card">
                     <div class="profile-cover"></div>
+                    
+                    <button class="edit-profile-btn" onclick="window.editProfile()">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        編輯個人檔
+                    </button>
+
                     <div class="profile-info-section">
                         <div class="profile-avatar-big">
                             ${photo ? `<img src="${photo}" alt="Avatar">` : ''}
                         </div>
-                        <div class="profile-name-large">${user.displayName}</div>
-                        <div class="profile-email">@${user.uid.slice(0,8)}...</div>
+                        
+                        <div class="profile-name-large">
+                            ${user.displayName || 'User'}
+                            ${adminBadge} </div>
+                        <div class="profile-email">${shortEmail}</div>
+                        
+                        <div class="profile-bio" id="user-bio-display">${bioText}</div>
                         
                         <div class="profile-stats-row">
                             <span class="p-stat-box"><span class="p-stat-num" id="p-post-count">0</span> Posts</span>
@@ -1141,16 +1217,41 @@
                 </div>
 
                 <h3 style="margin: 10px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">我的貼文</h3>
-                
                 <div id="profile-feed-stream">
                     <div style="text-align:center; padding:20px; color:#666;">Loading your posts...</div>
                 </div>
             `;
 
-            // 4. 載入該使用者的貼文
             loadProfileFeed(user.uid);
         }
+     // ★ 新增：編輯自我介紹功能
+        window.editProfile = async function() {
+            const currentBio = document.getElementById('user-bio-display').innerText;
+            // 這裡簡單使用 prompt，未來您可以改成漂亮的模態視窗
+            const newBio = prompt("請輸入您的自我介紹：", currentBio === "這傢伙很懶，什麼都沒寫..." ? "" : currentBio);
+            
+            if (newBio !== null) { // 使用者沒有按取消
+                try {
+                    const { doc, setDoc } = window.fs; // 使用 setDoc (merge: true) 來更新或建立
+                    const user = window.currentUser;
+                    
+                    // 更新資料庫
+                    await setDoc(doc(window.db, "users", user.uid), {
+                        bio: newBio,
+                        email: user.email,
+                        displayName: user.displayName,
+                        photoURL: user.photoURL,
+                        lastSeen: new Date()
+                    }, { merge: true }); // merge: true 確保不會覆蓋掉其他欄位
 
+                    // 更新畫面
+                    document.getElementById('user-bio-display').innerText = newBio;
+                } catch (e) {
+                    alert("更新失敗：" + e.message);
+                }
+            }
+        }
+     
         function loadProfileFeed(targetUid) {
             if(!window.fs || !window.db) return;
             const { collection, query, orderBy, onSnapshot, where } = window.fs;
