@@ -340,9 +340,9 @@
             let msg = '';
             
             if (appId === 'workspace') {
-                msg = '正在切換至 Workspace (app.html)。\n此功能在單一文件模式下為模擬導航。';
+                window.location.href = 'app.html';
             } else if (appId === 'nodex') {
-                msg = '正在切換至 Nodex (nodex.html)。\n此功能在單一文件模式下為模擬導航。';
+                window.location.href = 'nodex.html';
             } else if (appId === 'pulse') {
                  msg = '已返回 PulseStreet。';
             }
@@ -365,7 +365,7 @@
             authContainer.innerHTML = `
                 <button id="app-switcher-btn">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                    App 切換
+                    切換
                     ${avatarHtml}
                 </button>`;
             document.getElementById('app-switcher-btn').onclick = window.toggleProfileMenu;
@@ -376,15 +376,15 @@
             profileMenu.innerHTML += `
                 <div class="menu-item" onclick="window.switchApp('pulse')">
                     <svg class="menu-item-icon" viewBox="0 0 24 24" stroke="var(--accent-main)"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                    PulseStreet (目前)
+                    PulseStreet 
                 </div>
                 <div class="menu-item" onclick="window.switchApp('workspace')">
                     <svg class="menu-item-icon" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L12 19.25L14.25 17M12 19.25V4M5.75 12H18.25"/></svg>
-                    Workspace (app.html)
+                    WorkSpace 
                 </div>
                 <div class="menu-item" onclick="window.switchApp('nodex')">
                     <svg class="menu-item-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 5.52 4.48 10 10 10s10-4.48 10-10c0-5.52-4.48-10-10-10zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM12 6c-3.31 0-6 2.69-6 6h2c0-2.21 1.79-4 4-4s4 1.79 4 4h2c0-3.31-2.69-6-6-6z"/></svg>
-                    Nodex (nodex.html)
+                    NodeX 
                 </div>
                 <div style="border-top: 1px solid var(--border-color); margin: 10px 0;"></div>
             `;
@@ -430,7 +430,7 @@
                 quickPh: "分享您的市場觀點...", post: "發佈",
                 techNews: "科技新聞頭條", market: "市場總覽",
                 loginReq: "請先登入以發文",
-                pulseorange: "橘白招牌", techbusiness: "科技商務", cyberpunk: "賽博龐克", terminal: "終端機"
+                pulseorange: "脈街經典", techbusiness: "科技商務", cyberpunk: "賽博龐克", terminal: "終端機"
             },
             en: {
                 home: "Home", profile: "Profile", notify: "Notifications", create: "Create Post", mail: "Mailbox",
@@ -533,7 +533,7 @@
                                 <div class="post-disabled-overlay">
                                     <span style="margin-bottom: 15px;">${t.loginReq}</span>
                                     <button class="login-cta-btn" onclick="performLogin()">
-                                        🔑 LOGIN
+                                        LOGIN
                                     </button>
                                 </div>
                             ` : ''}
