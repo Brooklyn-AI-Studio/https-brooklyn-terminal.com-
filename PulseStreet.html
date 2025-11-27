@@ -128,7 +128,20 @@
             flex: 1; background: transparent; border: none; font-size: 1.1em; color: var(--text-primary);
             outline: none; resize: none; padding: 10px 0; font-family: var(--font-main);
         }
-        .create-actions { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
+        .create-top {
+              display: flex;           /* 啟用彈性排版 */
+              gap: 15px;               /* 設定頭像與輸入框的間距 */
+              align-items: flex-start; /* 讓內容靠上對齊 */
+              width: 100%;             /* 確保容器寬度填滿 */
+          }
+
+        .create-actions { 
+              border-top: 1px solid rgba(255,255,255,0.1); 
+              padding-top: 15px;
+              display: flex;               /* 啟用彈性排版 */
+              justify-content: space-between; /* 重點：左右分散對齊 (圖示左，按鈕右) */
+              align-items: center;         /* 垂直置中對齊 */
+         }
         .action-icons { color: var(--accent-main); }
         .post-btn {
             background: var(--accent-main); color: #000; border: none; padding: 8px 24px;
