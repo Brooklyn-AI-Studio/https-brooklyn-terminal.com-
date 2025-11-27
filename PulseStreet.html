@@ -479,10 +479,12 @@
     </div>
 
     <!-- External Libraries -->
-    <script type="module">
+ <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // ★ 新增：引入 Storage 相關功能
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         // Firebase Configuration (Please replace with your actual configuration)
         const firebaseConfig = {
@@ -497,10 +499,14 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        // ★ 新增：初始化 Storage
+        const storage = getStorage(app);
         const provider = new GoogleAuthProvider();
 
         window.db = db;
-        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile };
+        // ★ 新增：將 storage 功能掛載到 window
+        window.storage = { ref, uploadBytes, getDownloadURL, storageInstance: storage };
+        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where, deleteDoc };
         window.appAuth = auth;
         window.currentUser = null;
 
@@ -718,7 +724,9 @@
     </a>
     
     <a class="pulse-nav-btn">${icons.notify} <span>${t.notify}</span></a>
-    <a class="pulse-nav-btn">${icons.create} <span>${t.create}</span></a>
+    <a class="pulse-nav-btn" onclick="window.openCreatePostModal()">
+        ${icons.create} <span>${t.create}</span>
+    </a>
     <a class="pulse-nav-btn">${icons.mail} <span>${t.mail}</span></a>
 
     ${isAdmin ? `
@@ -929,6 +937,14 @@
                             </div>
                             <div class="post-content">${p.content}</div>
                             
+                            ${p.imageUrl ? `
+                                <div style="margin-top: 15px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                                    <img src="${p.imageUrl}" alt="Post Image" style="width: 100%; height: auto; display: block;">
+                                </div>
+                            ` : ''}
+
+                            <div class="post-stats">
+                            
                             <div class="post-stats"> 
                                 <div class="stat-item like" onclick="alert('Like!')">
                                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
@@ -1103,6 +1119,14 @@
                                 ` : ''}
                             </div>
                             <div class="post-content">${p.content}</div>
+                            
+                            ${p.imageUrl ? `
+                                <div style="margin-top: 15px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                                    <img src="${p.imageUrl}" alt="Post Image" style="width: 100%; height: auto; display: block;">
+                                </div>
+                            ` : ''}
+
+                            <div class="post-stats">
                             <div class="post-stats"> 
                                 <div class="stat-item like"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>${p.likes || 0}</span></div>
                                 <div class="stat-item comment"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg><span>${p.comments || 0}</span></div>
@@ -1114,8 +1138,228 @@
                 feedEl.innerHTML = html;
             });
         }
-  
+  // =========================================
+        // ★ 新增：建立貼文模態視窗邏輯
+        // =========================================
+        let selectedImageFile = null; // 用來暫存使用者選擇的圖片檔案
+
+        // 1. 開啟模態視窗
+        window.openCreatePostModal = function() {
+            if (!window.currentUser) {
+                alert(i18n[pulseLang].loginReq);
+                performLogin();
+                return;
+            }
+            // 設定視窗內的頭像
+            const avatarEl = document.getElementById('modal-user-avatar');
+            const photo = window.currentUser.photoURL;
+            avatarEl.innerHTML = photo ? `<img src="${photo}" alt="Avatar">` : '👤';
+            
+            // 顯示視窗
+            document.getElementById('create-post-modal').style.display = 'flex';
+            document.getElementById('modal-post-input').focus();
+        }
+
+        // 2. 關閉模態視窗並清理資料
+        window.closeCreatePostModal = function() {
+            document.getElementById('create-post-modal').style.display = 'none';
+            document.getElementById('modal-post-input').value = '';
+            removeSelectedImage(); // 清除已選圖片
+        }
+
+        // 3. 處理檔案選擇與預覽
+        window.handleFileSelect = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert('請選擇圖片檔案 (JPG, PNG, GIF 等)。');
+                return;
+            }
+
+            selectedImageFile = file; // 暫存檔案物件
+
+            // 讀取並顯示預覽圖
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('image-preview-container').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 4. 移除已選圖片
+        window.removeSelectedImage = function() {
+            selectedImageFile = null;
+            document.getElementById('file-input').value = ''; // 清空 input
+            document.getElementById('image-preview').src = '';
+            document.getElementById('image-preview-container').style.display = 'none';
+        }
+
+        // 5. 提交貼文 (包含上傳圖片流程)
+        window.submitModalPost = async function() {
+            const input = document.getElementById('modal-post-input');
+            const val = input.value.trim();
+            // 如果沒輸入文字也沒選圖片，就不準發文
+            if (!val && !selectedImageFile) {
+                alert("請輸入內容或選擇圖片。");
+                return;
+            }
+
+            const postBtn = document.getElementById('modal-post-btn');
+            postBtn.disabled = true;
+            postBtn.innerText = '發佈中...';
+
+            try {
+                const { addDoc, collection, serverTimestamp } = window.fs;
+                const { ref, uploadBytes, getDownloadURL, storageInstance } = window.storage;
+                const user = window.currentUser;
+                
+                let imageUrl = null;
+
+                // ★ 如果有選擇圖片，先執行上傳
+                if (selectedImageFile) {
+                    // 建立一個獨特的檔案路徑: posts/使用者ID/時間戳記_檔名
+                    const filename = `${Date.now()}_${selectedImageFile.name}`;
+                    const storageRef = ref(storageInstance, `posts/${user.uid}/${filename}`);
+                    
+                    // 上傳檔案
+                    const snapshot = await uploadBytes(storageRef, selectedImageFile);
+                    // 取得公開下載連結
+                    imageUrl = await getDownloadURL(snapshot.ref);
+                }
+
+                // 建立貼文資料物件
+                const postData = {
+                    content: val,
+                    name: user.displayName,
+                    avatar: user.photoURL,
+                    uid: user.uid,
+                    timestamp: serverTimestamp(),
+                    likes: 0,
+                    comments: 0
+                };
+                // 如果有圖片連結，就加入資料中
+                if (imageUrl) {
+                    postData.imageUrl = imageUrl;
+                }
+
+                // 寫入 Firestore 資料庫
+                await addDoc(collection(window.db, "posts"), postData);
+
+                closeCreatePostModal(); // 成功後關閉視窗
+
+            } catch (e) {
+                console.error("發文失敗:", e);
+                alert("發佈失敗: " + e.message);
+            } finally {
+                // 恢復按鈕狀態
+                postBtn.disabled = false;
+                postBtn.innerText = i18n[pulseLang].post;
+            }
+        }
         window.initApp = window.renderPulseStreet;
+/* --- 建立貼文模態視窗 (Create Post Modal) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); z-index: 1000;
+            display: none; /* 預設隱藏 */
+            align-items: center; justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 600px; max-width: 95%;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        .modal-title { font-size: 1.2em; font-weight: bold; color: var(--text-primary); }
+        .modal-close-btn {
+            background: none; border: none; color: var(--text-secondary);
+            font-size: 1.5em; cursor: pointer; padding: 5px;
+        }
+        .modal-body { display: flex; flex-direction: column; gap: 15px; }
+        .modal-input-area {
+            display: flex; gap: 15px; align-items: flex-start;
+        }
+        .modal-textarea {
+            flex: 1; background: transparent; border: none;
+            font-size: 1.1em; color: var(--text-primary); outline: none; resize: none;
+            font-family: var(--font-main); min-height: 100px;
+        }
+        /* 圖片預覽區 */
+        #image-preview-container {
+            display: none; /* 有圖片時才顯示 */
+            margin-top: 10px;
+            position: relative;
+            width: fit-content;
+        }
+        #image-preview {
+            max-width: 100%; max-height: 300px; border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .remove-image-btn {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.7); color: #fff;
+            border: none; border-radius: 50%; width: 30px; height: 30px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        
+        .modal-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 20px; padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+        .upload-icon-btn {
+            color: var(--accent-main); cursor: pointer;
+            padding: 8px; border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .upload-icon-btn:hover { background: rgba(255, 102, 0, 0.1); }
+
+     
     </script>
+<div id="create-post-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">建立新貼文</div>
+                <button class="modal-close-btn" onclick="closeCreatePostModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-input-area">
+                    <div class="user-avatar-circle" id="modal-user-avatar">
+                        </div>
+                    <textarea id="modal-post-input" class="modal-textarea" placeholder="分享您的市場觀點..."></textarea>
+                </div>
+                
+                <div id="image-preview-container">
+                    <img id="image-preview" src="" alt="Image Preview">
+                    <button class="remove-image-btn" onclick="removeSelectedImage()">×</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div>
+                    <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+                    <div class="upload-icon-btn" onclick="document.getElementById('file-input').click()" title="上傳照片">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                </div>
+                <button class="post-btn" id="modal-post-btn" onclick="submitModalPost()">發佈</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module"> ... </script>
+
+
+    
 </body>
 </html>
