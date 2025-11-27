@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+    <title>PULSESTREET | Finance & Tech Community</title> 
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff6600' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='22 12 18 12 15 21 9 3 6 12 2 12'%3E%3C/polyline%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
+    <style> 
+        /* --- 基礎變數 (預設: PulseOrange) --- */
+        :root { 
+            --bg-body: #050505;
+            --bg-panel: #111111; 
+            --text-primary: #e0e0e0; 
+            --text-secondary: #888;
+            --border-color: #333; 
+            --accent-main: #ff6600; /* PulseStreet 專屬橙色 */
+            --accent-hover: #ff9933;
+            --font-main: 'Rajdhani', sans-serif;
+            --font-display: 'Orbitron', sans-serif;
+            --border-radius: 4px;
+        }
+
+        /* --- 1. TechBusiness (科技商務) --- */
+        [data-theme-mode="techbusiness"] {
+            --bg-body: #1c1c24;
+            --bg-panel: #262633;
+            --text-primary: #e5e5f0;
+            --text-secondary: #99a0b3;
+            --border-color: #3f4458;
+            --accent-main: #00bcd4; /* 冷青藍色 */
+            --accent-hover: #4dd0e1;
+        }
+
+        /* --- 2. Cyberpunk (賽博龐克) --- */
+        [data-theme-mode="cyberpunk"] {
+            --bg-body: #0a001a;
+            --bg-panel: #18002d;
+            --text-primary: #ff4d94; /* 霓虹粉 */
+            --text-secondary: #9933ff;
+            --border-color: #330066;
+            --accent-main: #cc33ff; /* 霓虹紫 */
+            --accent-hover: #e066ff;
+        }
+        [data-theme-mode="cyberpunk"] .user-avatar-circle { border-color: var(--accent-main) !important; box-shadow: 0 0 10px var(--accent-main); }
+        [data-theme-mode="cyberpunk"] .pulse-logo-svg path { stroke: var(--accent-main); }
+        [data-theme-mode="cyberpunk"] .pulse-logo-svg text { fill: #fff; }
+
+
+        /* --- 3. Terminal (終端機) --- */
+        [data-theme-mode="terminal"] {
+            --bg-body: #000000;
+            --bg-panel: #0a0a0a;
+            --text-primary: #00ff00; /* 亮綠色 */
+            --text-secondary: #008800;
+            --border-color: #004400;
+            --accent-main: #00ff00;
+            --accent-hover: #33ff33;
+        }
+        [data-theme-mode="terminal"] .pulse-nav-btn:hover { background: rgba(0, 255, 0, 0.1); color: var(--accent-main); }
+        [data-theme-mode="terminal"] .pulse-nav-btn.active { color: var(--accent-main); background: rgba(0, 255, 0, 0.05); }
+        [data-theme-mode="terminal"] .pulse-post { box-shadow: none; border-radius: 0; }
+        [data-theme-mode="terminal"] .pulse-create-box { border-radius: 0; }
+        [data-theme-mode="terminal"] .user-avatar-circle { border-radius: 0; }
+
+
+        
+        /* 通用樣式，使用 accent-main */
+        * { box-sizing: border-box; user-select: none; font-family: var(--font-main); }
+        
+        body { 
+            margin: 0; padding: 0; 
+            background-color: var(--bg-body); 
+            color: var(--text-primary); 
+            height: 100vh;
+            overflow: hidden; 
+        }
+        
+        .main-container { height: 100vh; position: relative; overflow: hidden; }
+        .pulse-container {
+            width: 100%; height: 100%; background: var(--bg-body); 
+            overflow-y: auto; display: flex; justify-content: center;
+        }
+        .pulse-layout {
+            width: 1400px; max-width: 98%; height: 100%;
+            display: grid; grid-template-columns: 260px 1fr 320px; 
+            gap: 20px; padding: 20px 0;
+        }
+
+        /* Pulse Sidebar Left */
+        .pulse-sidebar-left { position: sticky; top: 0; height: fit-content; display: flex; flex-direction: column; gap: 10px; padding-top: 15px; }
+        .pulse-logo-area { padding: 10px 0 20px 10px; }
+        .pulse-logo-svg { height: 40px; width: auto; }
+        .pulse-logo-svg path { stroke: var(--accent-main); }
+
+        .pulse-nav-btn {
+            display: flex; align-items: center; gap: 15px; padding: 12px 20px;
+            border-radius: 30px; color: var(--text-primary); text-decoration: none;
+            font-size: 1.1em; font-weight: 500; transition: all 0.2s;
+            cursor: pointer; border: 1px solid transparent;
+        }
+        .pulse-nav-btn:hover { background: rgba(255, 102, 0, 0.1); color: var(--accent-hover); }
+        .pulse-nav-btn.active { color: var(--accent-main); font-weight: bold; }
+        .pulse-nav-icon { width: 24px; height: 24px; stroke-width: 2px; }
+
+        .pulse-lang-toggle, .pulse-theme-toggle {
+            margin-top: 10px; display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+            cursor: pointer; color: var(--text-secondary); transition: color 0.3s;
+        }
+        .pulse-lang-toggle:hover, .pulse-theme-toggle:hover { color: var(--text-primary); }
+        
+        /* Pulse Center Feed */
+        .pulse-feed-container { display: flex; flex-direction: column; gap: 20px; min-width: 0; padding-bottom: 50px; }
+        
+        .pulse-create-box {
+            background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 20px; display: flex; flex-direction: column; gap: 15px;
+            position: relative; 
+        }
+        .user-avatar-circle {
+            width: 48px; height: 48px; border-radius: 50%; background: #222; 
+            border: 2px solid var(--accent-main); overflow: hidden; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .user-avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .quick-input {
+            flex: 1; background: transparent; border: none; font-size: 1.1em; color: var(--text-primary);
+            outline: none; resize: none; padding: 10px 0; font-family: var(--font-main);
+        }
+        .create-actions { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
+        .action-icons { color: var(--accent-main); }
+        .post-btn {
+            background: var(--accent-main); color: #000; border: none; padding: 8px 24px;
+            border-radius: 20px; font-weight: bold; cursor: pointer; font-family: var(--font-display);
+        }
+        .post-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 102, 0, 0.4); }
+
+        /* Disabled Post Box Overlay */
+        .post-disabled-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.9); 
+            display: flex; flex-direction: column; 
+            align-items: center; justify-content: center;
+            font-size: 1.2em; color: #ddd; cursor: not-allowed; z-index: 10;
+            padding-bottom: 20px; 
+        }
+        .post-disabled-overlay .login-cta-btn {
+            margin-top: 15px; 
+            background: var(--accent-main);
+            color: #000; border: none; padding: 10px 30px;
+            border-radius: 20px; font-weight: bold; cursor: pointer;
+            font-family: var(--font-display); font-size: 0.9em;
+            pointer-events: auto; 
+        }
+        .post-disabled-overlay .login-cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.4);
+        }
+
+        /* --- 貼文設計調整 (Post Design Adjustments) --- */
+        .pulse-post {
+            background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 20px; margin-bottom: 20px; animation: fadeIn 0.5s ease;
+        }
+        .post-header { 
+            display: flex; 
+            align-items: center; /* 垂直置中 */
+            gap: 12px; 
+            margin-bottom: 10px; 
+        }
+        
+        .post-meta-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 1.2;
+        }
+        
+        .post-author-name {
+            font-weight: bold;
+            color: #fff;
+            font-size: 1.1em; /* 放大名稱 */
+            margin-bottom: 2px;
+        }
+        
+        .post-time {
+            font-size: 0.8em; /* 維持大小 */
+            color: #a0a0a0; /* 改為淺灰色 (次要) */
+        }
+        /* --- End Post Design Adjustments --- */
+        
+        
+        .widget-box {
+            background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px;
+            overflow: hidden; display: flex; flex-direction: column;
+        }
+        .widget-title {
+            padding: 10px 15px; background: rgba(255, 102, 0, 0.1); color: var(--accent-main);
+            font-weight: bold; border-bottom: 1px solid var(--border-color); font-size: 0.9em; letter-spacing: 1px;
+        }
+        .news-item:hover { background: rgba(255,255,255,0.05); }
+
+        /* --- Auth Button & Dropdown Menu --- */
+        #auth-container { position: fixed; top: 10px; right: 20px; z-index: 100; }
+        
+        /* New App Switcher Button Style */
+        #app-switcher-btn {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-family: var(--font-display);
+        }
+        #app-switcher-btn:hover {
+            border-color: var(--accent-main);
+            background: rgba(255, 102, 0, 0.1);
+            color: var(--accent-main);
+        }
+
+        #profile-menu {
+            position: absolute; top: 50px; right: 0; background: var(--bg-panel);
+            border: 1px solid var(--accent-main); border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); min-width: 240px; z-index: 99;
+            padding: 10px 0; display: none; animation: slideIn 0.3s ease-out;
+        }
+        .menu-item { display: flex; align-items: center; padding: 12px 15px; font-size: 1em; color: var(--text-primary); cursor: pointer; transition: background 0.2s; }
+        .menu-item:hover { background: rgba(255, 102, 0, 0.15); color: var(--accent-main); }
+        .menu-item-icon { width: 20px; height: 20px; margin-right: 15px; stroke: currentColor; fill: none; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-main); }
+    </style>
+</head>
+<body onload="initApp()" data-theme-mode="pulseorange">
+
+    <!-- Right-aligned Auth/Profile Button and Dropdown Menu -->
+    <div id="auth-container">
+        <!-- Button/Avatar injected here by JS -->
+    </div>
+    
+    <div id="profile-menu">
+        <!-- Menu items injected here by JS -->
+    </div>
+
+    <!-- Main Content Area (Full Height) -->
+    <div class="main-container" id="main-app">
+        <!-- PulseStreet Container -->
+        <div class="pulse-container" id="pulse-app">
+            <!-- Content injected by JS -->
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase Configuration (Please replace with your actual configuration)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
+            authDomain: "brooklyn-terminal.firebaseapp.com",
+            projectId: "brooklyn-terminal",
+            storageBucket: "brooklyn-terminal.firebasestorage.app",
+            messagingSenderId: "438411734316",
+            appId: "1:438411734316:web:649051890cf381eb0fd089"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        window.db = db;
+        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile };
+        window.appAuth = auth;
+        window.currentUser = null;
+
+        // --- Theme Management ---
+        const THEMES = ['pulseorange', 'techbusiness', 'cyberpunk', 'terminal'];
+        let currentThemeIndex = 0;
+
+        window.toggleNextTheme = function() {
+            currentThemeIndex = (currentThemeIndex + 1) % THEMES.length;
+            const newTheme = THEMES[currentThemeIndex];
+            document.body.setAttribute('data-theme-mode', newTheme);
+            localStorage.setItem('pulsestreet_theme', newTheme);
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const themeToggle = document.getElementById('theme-toggle-label');
+            if (themeToggle) {
+                const currentTheme = document.body.getAttribute('data-theme-mode');
+                const t = i18n[pulseLang];
+                themeToggle.querySelector('span').innerText = t[currentTheme] || currentTheme.toUpperCase();
+            }
+        }
+
+        // --- App Switcher / Auth Menu Logic ---
+
+        const performLogin = () => {
+            signInWithPopup(auth, provider).catch(e => alert("登入失敗: " + e.message));
+        };
+        
+        window.toggleProfileMenu = function() {
+            const menu = document.getElementById('profile-menu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        document.addEventListener('click', (event) => {
+            const menu = document.getElementById('profile-menu');
+            const authContainer = document.getElementById('auth-container');
+            
+            if (menu && authContainer && menu.style.display === 'block') {
+                if (!menu.contains(event.target) && !authContainer.contains(event.target)) {
+                    menu.style.display = 'none';
+                }
+            }
+        });
+
+        window.viewProfile = function(name) {
+            alert(`正在載入 ${name} 的個人資料頁面...`);
+            window.toggleProfileMenu(); 
+        }
+        
+        window.switchApp = function(appId) {
+            window.toggleProfileMenu(); // 關閉選單
+            let msg = '';
+            
+            if (appId === 'workspace') {
+                msg = '正在切換至 Workspace (app.html)。\n此功能在單一文件模式下為模擬導航。';
+            } else if (appId === 'nodex') {
+                msg = '正在切換至 Nodex (nodex.html)。\n此功能在單一文件模式下為模擬導航。';
+            } else if (appId === 'pulse') {
+                 msg = '已返回 PulseStreet。';
+            }
+            alert(msg);
+        }
+
+        const updateAuthUI = (user) => {
+            const authContainer = document.getElementById('auth-container');
+            const profileMenu = document.getElementById('profile-menu');
+
+            if (!authContainer) return;
+            authContainer.innerHTML = ''; 
+            profileMenu.innerHTML = '';
+            
+            // 1. Render App Switcher Button
+            const avatarHtml = user 
+                ? `<img src="${user.photoURL}" alt="Avatar" style="width:24px; height:24px; border-radius:50%; margin-left:8px;">`
+                : '';
+
+            authContainer.innerHTML = `
+                <button id="app-switcher-btn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    App 切換
+                    ${avatarHtml}
+                </button>`;
+            document.getElementById('app-switcher-btn').onclick = window.toggleProfileMenu;
+
+            // 2. Render Menu Content
+            
+            // App Switcher Section
+            profileMenu.innerHTML += `
+                <div class="menu-item" onclick="window.switchApp('pulse')">
+                    <svg class="menu-item-icon" viewBox="0 0 24 24" stroke="var(--accent-main)"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    PulseStreet (目前)
+                </div>
+                <div class="menu-item" onclick="window.switchApp('workspace')">
+                    <svg class="menu-item-icon" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L12 19.25L14.25 17M12 19.25V4M5.75 12H18.25"/></svg>
+                    Workspace (app.html)
+                </div>
+                <div class="menu-item" onclick="window.switchApp('nodex')">
+                    <svg class="menu-item-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 5.52 4.48 10 10 10s10-4.48 10-10c0-5.52-4.48-10-10-10zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM12 6c-3.31 0-6 2.69-6 6h2c0-2.21 1.79-4 4-4s4 1.79 4 4h2c0-3.31-2.69-6-6-6z"/></svg>
+                    Nodex (nodex.html)
+                </div>
+                <div style="border-top: 1px solid var(--border-color); margin: 10px 0;"></div>
+            `;
+
+
+            // Auth Section
+            if (user) {
+                profileMenu.innerHTML += `
+                    <div class="menu-item" style="border-bottom: 1px solid var(--border-color); cursor: default;">
+                         <img src="${user.photoURL}" alt="Avatar" style="width:20px; height:20px; border-radius:50%; margin-right:15px;">
+                        <div style="font-weight: bold;">${user.displayName}</div>
+                    </div>
+                    <div class="menu-item" onclick="window.viewProfile('${user.displayName}')">
+                        <svg class="menu-item-icon" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        個人資料
+                    </div>
+                    <div class="menu-item" onclick="signOut(auth).then(()=>location.reload())">
+                        <svg class="menu-item-icon" viewBox="0 0 24 24"><path d="M10 22H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h5"></path><polyline points="17 16 21 12 17 8"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        登出 (Logout)
+                    </div>`;
+
+            } else {
+                profileMenu.innerHTML += `
+                    <div class="menu-item" onclick="performLogin()" style="color: var(--accent-main); font-weight: bold;">
+                        <svg class="menu-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                        Google 登入
+                    </div>`;
+            }
+        }
+
+        // --- Initialization & State Change Listener ---
+        onAuthStateChanged(auth, user => {
+            window.currentUser = user;
+            updateAuthUI(user);
+            if(window.initApp) window.initApp(); 
+        });
+
+        // --- Core Application Logic (Outside Auth) ---
+
+        const i18n = {
+            zh: {
+                home: "首頁", profile: "個人資料", notify: "通知", create: "建立貼文", mail: "信箱",
+                quickPh: "分享您的市場觀點...", post: "發佈",
+                techNews: "科技新聞頭條", market: "市場總覽",
+                loginReq: "請先登入以發文",
+                pulseorange: "橘白招牌", techbusiness: "科技商務", cyberpunk: "賽博龐克", terminal: "終端機"
+            },
+            en: {
+                home: "Home", profile: "Profile", notify: "Notifications", create: "Create Post", mail: "Mailbox",
+                quickPh: "Share your market insights...", post: "Post",
+                techNews: "Tech Headlines", market: "Market Overview",
+                loginReq: "Please login to post",
+                pulseorange: "Orange Signature", techbusiness: "Tech Business", cyberpunk: "Cyberpunk", terminal: "Terminal"
+            }
+        };
+        
+        // ★ 修正：將 icons 移至全域作用域
+        const icons = {
+            home: `<svg class="pulse-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>`,
+            profile: `<svg class="menu-item-icon" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`, // Used in dropdown
+            notify: `<svg class="pulse-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>`,
+            create: `<svg class="pulse-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>`,
+            mail: `<svg class="pulse-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`,
+            earth: `<svg class="pulse-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>`,
+            logo: `<svg class="pulse-logo-svg" viewBox="0 0 240 60">
+                    <path d="M10 40 L30 40 L40 10 L50 50 L60 30 L80 40 L230 40" fill="none" stroke="#ff6600" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <text x="70" y="35" font-family="Orbitron" font-size="28" fill="#fff" font-weight="900">Pulse</text>
+                    <text x="160" y="35" font-family="Orbitron" font-size="28" fill="#fff" font-weight="500">Street</text>
+                   </svg>`
+        };
+
+        let pulseLang = 'zh';
+
+        window.togglePulseLanguage = function() {
+            pulseLang = pulseLang === 'zh' ? 'en' : 'zh';
+            renderPulseStreet();
+        }
+
+        window.renderPulseStreet = function() {
+            const container = document.getElementById('pulse-app');
+            const t = i18n[pulseLang];
+            const user = window.currentUser;
+            const photo = user ? user.photoURL : ''; 
+            const isLoggedIn = !!user;
+
+            // Render main content
+            container.innerHTML = `
+                <div class="pulse-layout">
+                    <!-- LEFT COLUMN -->
+                    <div class="pulse-sidebar-left">
+                        <div class="pulse-logo-area">
+                            ${icons.logo}
+                        </div>
+                        
+                        <a class="pulse-nav-btn active">${icons.home} <span>${t.home}</span></a>
+                        <a class="pulse-nav-btn">${icons.profile} <span>${t.profile}</span></a>
+                        <a class="pulse-nav-btn">${icons.notify} <span>${t.notify}</span></a>
+                        <a class="pulse-nav-btn">${icons.create} <span>${t.create}</span></a>
+                        <a class="pulse-nav-btn">${icons.mail} <span>${t.mail}</span></a>
+
+                        <div style="border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 10px;"></div>
+
+                        <a class="pulse-lang-toggle" onclick="window.togglePulseLanguage()">
+                            ${icons.earth} <span>${pulseLang === 'zh' ? 'English' : '繁體中文'}</span>
+                        </a>
+
+                         <a class="pulse-theme-toggle" id="theme-toggle-label" onclick="window.toggleNextTheme()">
+                            <svg class="pulse-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="stroke-width: 2.5px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a2 2 0 01-2-2v-4a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2H7z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 14h.01M17 10h.01M17 6h.01M17 2h.01M13 2h.01M9 2h.01M5 2h.01"></path>
+                                <path d="M17 18a2 2 0 002-2v-4a2 2 0 00-2-2h-4a2 2 0 00-2 2v4a2 2 0 002 2h4z"></path>
+                            </svg>
+                            <span>${t[document.body.getAttribute('data-theme-mode')] || document.body.getAttribute('data-theme-mode').toUpperCase()}</span>
+                        </a>
+                    </div>
+
+                    <!-- CENTER FEED -->
+                    <div class="pulse-feed-container">
+                        <!-- Ticker Tape (Stock Info) -->
+                        <div style="height:76px; overflow:hidden; border-radius:12px; border:1px solid var(--border-color);">
+                            <div class="tradingview-widget-container">
+                                <div class="tradingview-widget-container__widget"></div>
+                                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+                                {
+                                "symbols": [
+                                    {"proName": "FOREXCOM:SPXUSD", "title": "S&P 500"},
+                                    {"proName": "FOREXCOM:NSXUSD", "title": "US 100"},
+                                    {"proName": "BITSTAMP:BTCUSD", "title": "Bitcoin"},
+                                    {"proName": "NASDAQ:NVDA", "title": "NVIDIA"},
+                                    {"proName": "NASDAQ:TSLA", "title": "Tesla"}
+                                ],
+                                "showSymbolLogo": true,
+                                "colorTheme": "dark",
+                                "isTransparent": true,
+                                "displayMode": "adaptive",
+                                "locale": "${pulseLang === 'zh' ? 'zh_TW' : 'en'}"
+                                }
+                                <\/script>
+                            </div>
+                        </div>
+
+                        <!-- Quick Post (Conditionally Disabled) -->
+                        <div class="pulse-create-box">
+                            <!-- 遮罩層：未登入時顯示 -->
+                            ${!isLoggedIn ? `
+                                <div class="post-disabled-overlay">
+                                    <span style="margin-bottom: 15px;">${t.loginReq}</span>
+                                    <button class="login-cta-btn" onclick="performLogin()">
+                                        🔑 LOGIN
+                                    </button>
+                                </div>
+                            ` : ''}
+
+                            <div class="create-top">
+                                <div class="user-avatar-circle">
+                                    ${photo ? `<img src="${photo}" alt="Avatar">` : '👤'}
+                                </div>
+                                <textarea id="pulse-input" class="quick-input" rows="2" placeholder="${t.quickPh}" ${!isLoggedIn ? 'disabled' : ''}></textarea>
+                            </div>
+                            <div class="create-actions">
+                                <div class="action-icons" style="${!isLoggedIn ? 'opacity:0.5; cursor:not-allowed;' : ''}">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                </div>
+                                <button class="post-btn" onclick="window.submitPost()" ${!isLoggedIn ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>${t.post}</button>
+                            </div>
+                        </div>
+
+                        <!-- Feed Stream (Always visible) -->
+                        <div id="feed-stream">
+                            <div style="text-align:center; padding:40px; color:#666;">
+                                Connecting to Pulse Network...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN -->
+                    <div class="pulse-sidebar-right">
+                        <!-- Tech News Widget -->
+                        <div class="widget-box">
+                            <div class="widget-title">${t.techNews}</div>
+                            <div class="news-item">
+                                <div class="news-headline">OpenAI Releases GPT-5 Preview</div>
+                                <div class="news-sub">AI • 2h ago</div>
+                            </div>
+                            <div class="news-item">
+                                <div class="news-headline">NVIDIA Earnings Crush Estimates</div>
+                                <div class="news-sub">Chips • 4h ago</div>
+                            </div>
+                            <div class="news-item">
+                                <div class="news-headline">SpaceX Starship Successful Launch</div>
+                                <div class="news-sub">Space • 6h ago</div>
+                            </div>
+                            <div class="news-item">
+                                <div class="news-headline">Apple Vision Pro 2 Leaked</div>
+                                <div class="news-sub">Hardware • 8h ago</div>
+                            </div>
+                        </div>
+
+                        <!-- Market Widget -->
+                        <div class="widget-box" style="flex:1; min-height:400px;">
+                            <div class="widget-title">${t.market}</div>
+                            <div class="tradingview-widget-container" style="height:100%; width:100%">
+                                <div class="tradingview-widget-container__widget" style="height:100%; width:100%"></div>
+                                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+                                {
+                                "feedMode": "market",
+                                "market": "crypto",
+                                "colorTheme": "dark",
+                                "isTransparent": true,
+                                "displayMode": "regular",
+                                "width": "100%",
+                                "height": "100%",
+                                "locale": "${pulseLang === 'zh' ? 'zh_TW' : 'en'}"
+                                }
+                                <\/script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Update accent color for dynamic elements like the avatar border
+            document.body.style.setProperty('--accent-main', getComputedStyle(document.body).getPropertyValue('--accent-main'));
+
+            // Init Feed Listener (Always called regardless of login status)
+            loadFeed();
+            updateThemeIcon(); // Refresh theme name after language change
+            updateAuthUI(user); // Refresh avatar border color
+        }
+
+        function loadFeed() {
+            if(!window.fs || !window.db) return;
+            const { collection, query, orderBy, onSnapshot } = window.fs;
+            const q = query(collection(window.db, "posts"), orderBy("timestamp", "desc"));
+            
+            onSnapshot(q, (snapshot) => {
+                const feedEl = document.getElementById('feed-stream');
+                if(!feedEl) return;
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const p = doc.data();
+                    const date = p.timestamp ? p.timestamp.toDate() : new Date();
+                    const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    const user = window.currentUser;
+                    // Check if current user is logged in AND is the post owner
+                    const isSelf = user && user.uid === p.uid; 
+                    const postUserAvatar = p.avatar ? `<img src="${p.avatar}" alt="Avatar">` : '👤';
+
+
+                    html += `
+                        <div class="pulse-post">
+                            <div class="post-header">
+                                <div class="user-avatar-circle" style="width:40px; height:40px; border-width:1px;">
+                                    ${postUserAvatar}
+                                </div>
+                                <div class="post-meta-container">
+                                    <div class="post-author-name">${p.name || 'Anonymous'}</div>
+                                    <div class="post-time">${timeStr}</div>
+                                </div>
+                                ${isSelf ? `<button onclick="alert('Delete post: ${doc.id}')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; margin-left:auto;">🗑️</button>` : ''}
+                            </div>
+                            <div class="post-content">${p.content}</div>
+                            <div class="post-stats">
+                                <span>❤️ ${p.likes || 0}</span>
+                                <span>💬 ${p.comments || 0}</span>
+                                <span>↗ Share</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                feedEl.innerHTML = html;
+            });
+        }
+
+        window.submitPost = async function() {
+            if(!window.currentUser) {
+                alert(i18n[pulseLang].loginReq);
+                return;
+            }
+            const input = document.getElementById('pulse-input');
+            const val = input.value.trim();
+            if(!val) return;
+
+            try {
+                const { addDoc, collection, serverTimestamp } = window.fs;
+                await addDoc(collection(window.db, "posts"), {
+                    content: val,
+                    name: window.currentUser.displayName,
+                    avatar: window.currentUser.photoURL,
+                    uid: window.currentUser.uid,
+                    timestamp: serverTimestamp(),
+                    likes: 0
+                });
+                input.value = '';
+            } catch(e) { alert("Error: " + e.message); }
+        }
+        
+        window.initApp = function() {
+            // Load saved theme
+            const savedTheme = localStorage.getItem('pulsestreet_theme');
+            if (savedTheme && THEMES.includes(savedTheme)) {
+                 document.body.setAttribute('data-theme-mode', savedTheme);
+                 currentThemeIndex = THEMES.indexOf(savedTheme);
+            } else {
+                 document.body.setAttribute('data-theme-mode', 'pulseorange');
+            }
+
+            renderPulseStreet();
+        };
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+             // If auth state is already known, update UI immediately
+             if (window.appAuth && window.appAuth.currentUser !== undefined) {
+                 updateAuthUI(window.appAuth.currentUser);
+             }
+        });
+    </script>
+</body>
+</html>
