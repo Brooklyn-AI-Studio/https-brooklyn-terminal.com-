@@ -701,8 +701,11 @@
         // 4. 跳轉函式 (核心) - 已修改
         window.redirectToApp = (section) => {
             // ★ 修改點：針對 'nodex' 進行特殊判斷
+            if (section === 'PulseStreet') {
+                window.location.href = "PulseStreet.html";
+                console.log("Redirecting to PulseStreet.html");        
+            }
             if (section === 'nodex') {
-                // 如果是 Nodex，直接跳轉到獨立的 nodex.html 頁面
                 window.location.href = "nodex.html";
                 console.log("Redirecting to nodex.html");
             } else {
