@@ -422,66 +422,91 @@
 
     <!-- 左側導航欄 -->
     <div class="nx-sidebar">
-        <!-- Logo NodeX -->
-        <div class="nx-brand" onclick="window.location.reload()">
-            <!-- 節點形狀的 X Logo -->
-            <svg class="nx-logo-svg" viewBox="0 0 24 24">
-                <path d="M4 4l16 16" stroke-linecap="round"/>
-                <path d="M20 4l-16 16" stroke-linecap="round"/>
-                <circle cx="4" cy="4" r="2.5" fill="currentColor" stroke="none"/>
-                <circle cx="20" cy="20" r="2.5" fill="currentColor" stroke="none"/>
-                <circle cx="20" cy="4" r="2.5" fill="currentColor" stroke="none"/>
-                <circle cx="4" cy="20" r="2.5" fill="currentColor" stroke="none"/>
-                <circle cx="12" cy="12" r="1.5" fill="var(--nx-accent)" stroke="none"/>
-            </svg>
-            <span>NodeX</span>
+    <div class="nx-brand" onclick="window.location.reload()">
+        <svg class="nx-logo-svg" viewBox="0 0 24 24">
+            <path d="M4 4l16 16" stroke-linecap="round"/>
+            <path d="M20 4l-16 16" stroke-linecap="round"/>
+            <circle cx="4" cy="4" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="20" cy="20" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="20" cy="4" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="4" cy="20" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="12" cy="12" r="1.5" fill="var(--nx-accent)" stroke="none"/>
+        </svg>
+        <span>NodeX</span>
+    </div>
+    
+    <div class="nx-menu-group">
+        <div class="nx-menu-item active" id="menu-home" onclick="switchView('home')">
+            <svg class="nx-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span style="font-weight:600;">首頁</span>
         </div>
-        
-        <!-- 新對話按鈕 -->
-        <button class="nx-btn-new" onclick="alert('Starting New Chat Session...')">
-            <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span id="txt-newChat">新對話</span>
-        </button>
+    </div>
 
-        <!-- 選單 1: 搜尋 -->
-        <div class="nx-menu-group">
-            <div class="nx-menu-item" style="color:var(--nx-text-muted); padding-left:12px;">
-                <svg class="nx-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <span id="txt-search" style="font-size:0.9em;">搜尋對話...</span>
-            </div>
+    <div class="nx-menu-group">
+        <div class="nx-menu-title">EXPLORE</div>
+        <div class="nx-menu-item" onclick="switchView('dashboard')">
+            <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span id="txt-finance">金融</span>
         </div>
+        <div class="nx-menu-item">
+            <svg class="nx-icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            <span id="txt-tech">科技</span>
+        </div>
+    </div>
 
-        <!-- 選單 2: 分類 (非 Agent) -->
-        <div class="nx-menu-group">
-            <div class="nx-menu-title">EXPLORE</div>
-            <div class="nx-menu-item active">
-                <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                <span id="txt-finance">金融</span>
-            </div>
-            <div class="nx-menu-item">
-                <svg class="nx-icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                <span id="txt-tech">科技</span>
-            </div>
-            <div class="nx-menu-item">
-                <svg class="nx-icon" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
-                <span id="txt-studio">主題工作室</span>
-            </div>
-        </div>
+    <button class="nx-btn-new" onclick="alert('Starting New Chat Session...')" style="margin-bottom: 20px; width: 100%;">
+        <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span id="txt-newChat">新對話</span>
+    </button>
 
-        <!-- 選單 3: 歷史紀錄 -->
-        <div class="nx-menu-group" style="flex:1;">
-            <div class="nx-menu-title" id="txt-history">歷史紀錄</div>
-            <div class="nx-menu-item" style="font-size:0.85em;">• AAPL vs MSFT Analysis</div>
-            <div class="nx-menu-item" style="font-size:0.85em;">• Crypto Market Cap</div>
+    <div class="nx-menu-group">
+        <div class="nx-menu-item" style="color:var(--nx-text-muted);">
+            <svg class="nx-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span id="txt-search">搜尋對話...</span>
         </div>
+    </div>
 
-        <!-- 真正的 Create Agent -->
-        <div class="nx-menu-group">
-            <div class="nx-menu-item" style="color:var(--nx-accent); border:1px dashed var(--nx-border);">
-                <svg class="nx-icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
-                <span id="txt-createAgent">創建 AI Agent</span>
+    <div class="nx-menu-group" style="flex:1;">
+        <div class="nx-menu-title" id="txt-history">歷史紀錄</div>
+        <div class="nx-menu-item" style="font-size:0.85em;">• AAPL vs MSFT Analysis</div>
+        <div class="nx-menu-item" style="font-size:0.85em;">• Crypto Market Cap</div>
+    </div>
+
+    <div class="nx-menu-group">
+        <div class="nx-menu-item" style="color:var(--nx-accent); border:1px dashed var(--nx-border);">
+            <svg class="nx-icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+            <span id="txt-createAgent">創建 AI Agent</span>
+        </div>
+    </div>
+
+    <div class="nx-sidebar-footer">
+        <div class="nx-tool-row">
+             <div style="position:relative;">
+                <button class="nx-footer-btn" onclick="toggleMenu('lang-menu')">
+                    <svg class="nx-icon" style="width:20px;height:20px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                </button>
+                <div class="nx-dropdown-menu" id="lang-menu" style="bottom: 110%; left: 0;">
+                    <div class="nx-dropdown-item active" onclick="setLanguage('zh-TW')">繁體中文</div>
+                    <div class="nx-dropdown-item" onclick="setLanguage('en')">English</div>
+                </div>
+            </div>
+            <div style="position:relative;">
+                <button class="nx-footer-btn" onclick="toggleMenu('theme-menu')">
+                    <svg class="nx-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                </button>
+                <div class="nx-dropdown-menu" id="theme-menu" style="bottom: 110%; left: -50px;">
+                    <div class="nx-dropdown-item" onclick="setTheme('business')">Business</div>
+                    <div class="nx-dropdown-item active" onclick="setTheme('tech')">Tech</div>
+                    <div class="nx-dropdown-item" onclick="setTheme('terminal')">Terminal</div>
+                </div>
             </div>
         </div>
+        <div class="nx-user-profile" id="user-profile-section">
+            <img src="" class="nx-avatar" id="nx-user-avatar" style="display:none;">
+            <div class="nx-username" id="nx-user-name">GUEST</div>
+        </div>
+    </div>
+</div>
 
         <!-- 底部工具列 -->
         <div class="nx-sidebar-footer">
@@ -535,16 +560,34 @@
         </div>
 
         <div class="nx-chat-area">
-            <div class="nx-welcome">
-                <h1 id="txt-welcome">早安，<br><span>開始您製作一份分析報告？</span></h1>
-                <div class="nx-suggestion-grid">
-                    <div class="nx-suggestion-card"><span id="txt-sug1">分析 NVDA 財報重點</span> <span class="nx-sug-arrow">↗</span></div>
-                    <div class="nx-suggestion-card"><span id="txt-sug2">比特幣下週走勢預測</span> <span class="nx-sug-arrow">↗</span></div>
-                    <div class="nx-suggestion-card"><span id="txt-sug3">制定台股當沖策略</span> <span class="nx-sug-arrow">↗</span></div>
-                    <div class="nx-suggestion-card"><span id="txt-sug4">總體經濟數據解讀</span> <span class="nx-sug-arrow">↗</span></div>
-                </div>
+    
+    <div id="view-home" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 0; animation: fadeIn 0.5s forwards;">
+        <svg viewBox="0 0 24 24" style="width: 120px; height: 120px; stroke: var(--nx-accent); fill: none; stroke-width: 0.5; margin-bottom: 20px;">
+            <path d="M4 4l16 16" stroke-linecap="round"/>
+            <path d="M20 4l-16 16" stroke-linecap="round"/>
+            <circle cx="4" cy="4" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="20" cy="20" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="20" cy="4" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="4" cy="20" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="12" cy="12" r="1.5" fill="var(--nx-accent)" stroke="none"/>
+        </svg>
+        <h1 style="font-family: 'Orbitron', sans-serif; font-size: 3rem; letter-spacing: 4px; color: var(--nx-text);">NODEX</h1>
+        <p style="color: var(--nx-text-muted); margin-top: 10px; font-size: 0.9em; letter-spacing: 1px;">INTELLIGENT TERMINAL SYSTEM</p>
+    </div>
+
+    <div id="view-dashboard" style="display: none; width: 100%; flex-direction: column; align-items: center;">
+        <div class="nx-welcome">
+            <h1 id="txt-welcome">早安，<br><span>開始您製作一份分析報告？</span></h1>
+            <div class="nx-suggestion-grid">
+                <div class="nx-suggestion-card"><span id="txt-sug1">分析 NVDA 財報重點</span> <span class="nx-sug-arrow">↗</span></div>
+                <div class="nx-suggestion-card"><span id="txt-sug2">比特幣下週走勢預測</span> <span class="nx-sug-arrow">↗</span></div>
+                <div class="nx-suggestion-card"><span id="txt-sug3">制定台股當沖策略</span> <span class="nx-sug-arrow">↗</span></div>
+                <div class="nx-suggestion-card"><span id="txt-sug4">總體經濟數據解讀</span> <span class="nx-sug-arrow">↗</span></div>
             </div>
         </div>
+    </div>
+
+</div>
 
         <!-- 全新設計的輸入框區塊 -->
         <div class="nx-input-container">
@@ -723,6 +766,38 @@
             this.style.height = (this.scrollHeight) + 'px';
             if(this.value === '') this.style.height = 'auto';
         });
+
+        // --- 視圖切換邏輯 ---
+        window.switchView = (viewName) => {
+        const homeView = document.getElementById('view-home');
+        const dashView = document.getElementById('view-dashboard');
+        const homeMenuItem = document.getElementById('menu-home');
+    
+         // 重置所有選單項目的 active 狀態 (這裡簡化處理，先移除首頁的 active)
+        document.querySelectorAll('.nx-menu-item').forEach(el => el.classList.remove('active'));
+
+        if (viewName === 'home') {
+        // 顯示首頁
+           homeView.style.display = 'flex';
+           dashView.style.display = 'none';
+        
+        // 激活首頁選單
+        if(homeMenuItem) homeMenuItem.classList.add('active');
+        
+    } else {
+        // 顯示儀表板 (當點擊 Explore 下的項目時)
+        homeView.style.display = 'none';
+        dashView.style.display = 'flex';
+        
+        // 注意：這裡應該要根據點擊的項目加上 active，這裡僅處理視圖切換
+    }
+}
+
+// 初始化：確保頁面載入時是首頁
+window.addEventListener('DOMContentLoaded', () => {
+    switchView('home');
+});
+
     </script>
 </body>
 </html>
