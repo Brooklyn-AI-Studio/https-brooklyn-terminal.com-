@@ -482,7 +482,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Firebase Configuration (Please replace with your actual configuration)
         const firebaseConfig = {
@@ -899,7 +899,7 @@
                     // ★ 新增：判斷「這篇貼文的作者」是否為管理員
                     const isPostAuthorAdmin = p.uid === ADMIN_UID;
                     // ★ 新增：如果是管理員發的文，就產生標籤 HTML
-                    const adminBadge = isPostAuthorAdmin ? `<span class="admin-badge">平台管理員</span>` : '';
+                    const adminBadge = isPostAuthorAdmin ? `<span class="admin-badge">管理員</span>` : '';
 
                     const postUserAvatar = p.avatar ? `<img src="${p.avatar}" alt="Avatar">` : '👤';
 
@@ -1074,7 +1074,7 @@
                     const isOwner = user && user.uid === p.uid; 
                     const canDelete = isOwner || isAdmin;
                     const isPostAuthorAdmin = p.uid === "1EALL0fq7nUzEi8B96qwXZuyG7h1";
-                    const adminBadge = isPostAuthorAdmin ? `<span class="admin-badge">平台管理員</span>` : '';
+                    const adminBadge = isPostAuthorAdmin ? `<span class="admin-badge">管理員</span>` : '';
                     const postUserAvatar = p.avatar ? `<img src="${p.avatar}" alt="Avatar">` : '👤';
 
                     // 這裡重複使用 pulse-post 的樣式，保持風格一致
