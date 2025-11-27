@@ -4,7 +4,7 @@
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.036</title> 
+    <title>BROOKLYN-TERMINAL // V1.037</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -2877,87 +2877,89 @@ window.switchSpace = function(spaceMode) {
 
             // 3. 渲染 HTML 結構
             container.innerHTML = `
-                <div class="pulse-layout">
-                    <div class="pulse-sidebar-left">
-                        <div class="pulse-search-box">
-                            ${pIcons.search} <input type="text" class="pulse-search-input" placeholder="搜尋 PulseStreet">
-                        </div>
-                        
-                        <div class="pulse-side-btn" id="pulse-profile-btn" onclick="loadProfileView()">
-                            <div class="pulse-side-icon" style="overflow:hidden;">
-                                ${window.currentUser && window.currentUser.photoURL 
-                                    ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;object-fit:cover;">` 
-                                    : `<div style="width:100%;height:100%;background:#00ffcc;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold;">${window.currentUser ? window.currentUser.displayName.charAt(0) : 'G'}</div>`
-                                }
-                            </div>
-                            <div style="font-weight:bold;">${window.currentUser ? window.currentUser.displayName : 'Guest (請登入)'}</div>
-                        </div>
-
-                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.friends}</div><div>朋友</div></div>
-                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.memories}</div><div>動態回顧</div></div>
-                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.saved}</div><div>我的珍藏</div></div>
-                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.groups}</div><div>社團</div></div>
-                        <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.video}</div><div>Video</div></div>
-                        <div class="pulse-side-btn">
-                            <div class="pulse-side-icon" style="background:#3a3b3c;">${pIcons.arrowDown}</div>
-                            <div>顯示更多</div>
-                        </div>
-                        <div class="pulse-divider"></div>
-                        <div class="pulse-section-title">捷徑</div>
-                        ${shortcutsHTML}
-                        <div style="font-size:0.8em; color:#888; padding:10px;">私隱政策 · 服務條款 · 廣告 · Cookies · Brooklyn-terminal © 2025</div>
+        <div class="pulse-layout">
+            <div class="pulse-sidebar-left">
+                <div class="pulse-search-box">
+                    ${pIcons.search} <input type="text" class="pulse-search-input" placeholder="搜尋 PulseStreet">
+                </div>
+                
+                <div class="pulse-side-btn" id="pulse-profile-btn" onclick="loadProfileView()">
+                    <div class="pulse-side-icon" style="overflow:hidden;">
+                        ${window.currentUser && window.currentUser.photoURL 
+                            ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;object-fit:cover;">` 
+                            : `<div style="width:100%;height:100%;background:#00ffcc;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold;">${window.currentUser ? window.currentUser.displayName.charAt(0) : 'G'}</div>`
+                        }
                     </div>
+                    <div style="font-weight:bold;">${window.currentUser ? window.currentUser.displayName : 'Guest (請登入)'}</div>
+                </div>
 
-                    <div class="pulse-feed-container">
-                       <div class="tradingview-widget-container" id="tv-overview-widget" style="margin-bottom: 20px; height: 600px; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
-    <div class="tradingview-widget-container__widget"></div>
-</div>
-                       <div class="pulse-create"> 
-                            <div class="pulse-avatar">
-                                ${window.currentUser && window.currentUser.photoURL 
-                                    ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;border-radius:50%;">`
-                                    : 'Ⓜ️'}
-                            </div>
-                           <input type="text" 
-       class="pulse-input-dummy" 
-       id="pulse-real-input" 
-       placeholder="聊聊你對市場的看法..." 
-       style="border:none; outline:none; color:#fff;"
-       onkeypress="if(event.key === 'Enter') submitPost()">  <button id="pulse-submit-btn" 
-        onclick="submitPost()"  style="
-        background: var(--accent-color);
-        color: #000; 
-        border: none; 
-        padding: 6px 16px; 
-        border-radius: 20px; 
-        font-weight: bold; 
-        cursor: pointer; 
-        font-family: var(--font-main);
-        white-space: nowrap;">
-        POST
-</button>
-                        </div>
+                <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.friends}</div><div>朋友</div></div>
+                <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.memories}</div><div>動態回顧</div></div>
+                <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.saved}</div><div>我的珍藏</div></div>
+                <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.groups}</div><div>社團</div></div>
+                <div class="pulse-side-btn"><div class="pulse-side-icon">${pIcons.video}</div><div>Video</div></div>
+                <div class="pulse-side-btn">
+                    <div class="pulse-side-icon" style="background:#3a3b3c;">${pIcons.arrowDown}</div>
+                    <div>顯示更多</div>
+                </div>
+                <div class="pulse-divider"></div>
+                <div class="pulse-section-title">捷徑</div>
+                ${shortcutsHTML}
+                <div style="font-size:0.8em; color:#888; padding:10px;">私隱政策 · 服務條款 · 廣告 · Cookies · Brooklyn-terminal © 2025</div>
+            </div>
 
-                        <div class="pulse-feed" id="pulse-real-feed">
-                            <div style="text-align:center; padding:40px; color:#666;">
-                                <div style="font-size: 2em; margin-bottom: 10px;">📡</div>
-                                正在連線至 PulseStreet 網路...
-                            </div>
-                        </div>
+            <div class="pulse-feed-container">
+               <div class="tradingview-widget-container" id="tv-overview-widget" style="margin-bottom: 20px; height: 350px; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+                   <div class="tradingview-widget-container__widget"></div>
+               </div>
+               
+               <div class="pulse-create"> 
+                    <div class="pulse-avatar">
+                        ${window.currentUser && window.currentUser.photoURL 
+                            ? `<img src="${window.currentUser.photoURL}" style="width:100%;height:100%;border-radius:50%;">`
+                            : 'Ⓜ️'}
                     </div>
+                    <input type="text" 
+                        class="pulse-input-dummy" 
+                        id="pulse-real-input" 
+                        placeholder="聊聊你對市場的看法..." 
+                        style="border:none; outline:none; color:#fff;"
+                        onkeypress="if(event.key === 'Enter') submitPost()">
+                    <button id="pulse-submit-btn" 
+                        onclick="submitPost()" 
+                        style="background: var(--accent-color); color: #000; border: none; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-family: var(--font-main); white-space: nowrap;">
+                        POST
+                    </button>
+                </div>
 
-                    <div class="pulse-sidebar-right">
-                        <div class="pulse-contact-header" style="display:flex; justify-content:space-between; align-items:center;">
-                            <span>聯絡人</span>
-                            <div style="display:flex; gap:10px; opacity:0.6;">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                            </div>
-                        </div>
-                        <div class="pulse-nav-list">${contactsHTML}</div>
+                <div class="pulse-feed" id="pulse-real-feed">
+                    <div style="text-align:center; padding:40px; color:#666;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">📡</div>
+                        正在連線至 PulseStreet 網路...
                     </div>
                 </div>
-            `;
+            </div>
+
+            <div class="pulse-sidebar-right">
+                <div class="pulse-contact-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>聯絡人</span>
+                    <div style="display:flex; gap:10px; opacity:0.6;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                    </div>
+                </div>
+                <div class="pulse-nav-list">${contactsHTML}</div>
+
+                <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                    <div class="pulse-contact-header">市場熱點 (Hotlists)</div>
+                    <div class="tradingview-widget-container" id="tv-hotlists-widget" style="width: 100%; height: 550px;">
+                        <div class="tradingview-widget-container__widget"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    `;
 
             workspace.appendChild(container);
 
@@ -3066,8 +3068,7 @@ if (tvContainer) {
     });
     tvContainer.appendChild(script);
 }
-  // ★ 修改 2：右側新增的 Hotlists Widget 注入腳本
-    const hotlistsContainer = document.getElementById('tv-hotlists-widget');
+  const hotlistsContainer = document.getElementById('tv-hotlists-widget');
     if (hotlistsContainer) {
         const script = document.createElement('script');
         script.type = 'text/javascript';
@@ -3092,12 +3093,12 @@ if (tvContainer) {
             "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
             "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
             "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
-            "width": "100%", // ★ 設定為 100% 以適應側邊欄寬度 (避免 400px 破版)
+            "width": "100%",
             "height": "550"
         });
         hotlistsContainer.appendChild(script);
     }
-}  
+}
 // --- 新增功能：開啟編輯視窗 ---
 window.openEditModal = function() {
     const user = window.currentUser;
