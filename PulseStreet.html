@@ -79,9 +79,13 @@
         
         .main-container { height: 100vh; position: relative; overflow: hidden; }
         .pulse-container {
-            width: 100%; height: 100%; background: var(--bg-body); 
-            overflow-y: auto; display: flex; justify-content: center;
-        }
+                  width: 100%;
+                  height: 100%; 
+                  background: var(--bg-body); 
+                  overflow: hidden; /* ★ 修改：禁止外層捲動，改為內部獨立捲動 */
+                  display: flex; 
+                  justify-content: center;
+         }
         .pulse-layout {
             width: 1400px; max-width: 98%; height: 100%;
             display: grid; grid-template-columns: 260px 1fr 320px; 
@@ -89,7 +93,25 @@
         }
 
         /* Pulse Sidebar Left */
-        .pulse-sidebar-left { position: sticky; top: 0; height: fit-content; display: flex; flex-direction: column; gap: 10px; padding-top: 15px; }
+        .pulse-sidebar-left { 
+            /* position: sticky;  <-- 這行可以刪除，因為外層不動了，它自然會固定 */
+            /* top: 0;            <-- 這行可以刪除 */
+            height: 100%;         /* 改為填滿高度 */
+           overflow-y: auto;     /* 如果螢幕太矮，允許左側單獨捲動 */
+           display: flex; 
+           flex-direction: column; 
+           gap: 10px; 
+           padding-top: 15px;
+         }
+
+        .pulse-sidebar-right {
+           height: 100%;
+           overflow-y: auto;     /* 允許右側小工具過長時單獨捲動 */
+           padding-top: 15px;    /* 保持頂部間距 */
+         }
+
+
+        
         .pulse-logo-area { padding: 10px 0 20px 10px; }
         .pulse-logo-svg { height: 40px; width: auto; }
         .pulse-logo-svg path { stroke: var(--accent-main); }
@@ -111,7 +133,19 @@
         .pulse-lang-toggle:hover, .pulse-theme-toggle:hover { color: var(--text-primary); }
         
         /* Pulse Center Feed */
-        .pulse-feed-container { display: flex; flex-direction: column; gap: 20px; min-width: 0; padding-bottom: 50px; }
+       .pulse-feed-container { 
+                display: flex;
+                flex-direction: column; 
+                gap: 20px; 
+                min-width: 0; 
+                padding-bottom: 50px; 
+    
+               /* ★ 新增以下三行 */
+                height: 100%;         /* 強制填滿高度 */
+                overflow-y: auto;     /* 只有這個區塊會產生直向捲軸 */
+                padding-right: 5px;   /* 避免捲軸蓋住內容 (選用) */
+             }
+        .pulse-feed-container::-webkit-scrollbar {display: none;}
         
         .pulse-create-box {
             background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px;
@@ -440,7 +474,7 @@
         const i18n = {
             zh: {
                 home: "首頁", profile: "個人資料", notify: "通知", create: "建立貼文", mail: "信箱",
-                quickPh: "分享您的市場觀點...", post: "發佈",
+                quickPh: "分享您的市場觀點。", post: "發佈",
                 techNews: "科技新聞頭條", market: "市場總覽",
                 loginReq: "請先登入以發文",
                 pulseorange: "脈街經典", techbusiness: "科技商務", cyberpunk: "賽博龐克", terminal: "終端機"
