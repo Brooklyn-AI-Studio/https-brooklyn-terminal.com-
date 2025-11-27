@@ -151,71 +151,7 @@
                 padding-right: 5px;   /* 避免捲軸蓋住內容 (選用) */
              }
         .pulse-feed-container::-webkit-scrollbar {display: none;}
-       /* --- 個人資料頁面樣式 --- */
-.profile-header-card {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 30px;
-    position: relative;
-}
-.profile-cover {
-    height: 220px;
-    background: linear-gradient(45deg, var(--bg-body), var(--accent-main));
-    opacity: 0.3;
-}
-.profile-info-section {
-    padding: 25px 30px;
-    margin-top: -90px; /* 讓頭像往上蓋住封面 */
-    position: relative;
-    display: flex;
-    flex-direction: column;
-}
-.profile-avatar-big {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    border: 6px solid var(--bg-panel);
-    background: #000;
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-}
-.profile-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
-.profile-name-large {
-    font-size: 2.5em;
-    font-weight: 900;
-    color: #fff;
-    font-family: var(--font-display);
-}
-.profile-email { 
-    color: var(--text-secondary); 
-    margin-bottom: 25px; 
-    font-size: 1.1em;               /* Email 字體微調大 */
-}
-.profile-stats-row {
-    display: flex;
-    gap: 40px;                      /* ★ 修改：統計數據之間的間距加大 */
-    padding-top: 20px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-}
 
-.p-stat-box { 
-    font-size: 1.1em;               /* 統計標籤字體加大 */
-    color: var(--text-secondary); 
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.p-stat-num { 
-    color: #fff; 
-    font-weight: 900; 
-    font-size: 1.4em;               /* ★ 修改：數字字體加大 */
-    font-family: var(--font-display);
-}
-        
         
         .pulse-create-box {
             background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px;
@@ -555,7 +491,96 @@
             transition: background 0.2s;
         }
         .upload-icon-btn:hover { background: rgba(255, 102, 0, 0.1); }
+/* --- 個人資料頁面樣式 (霸氣版) --- */
+.profile-header-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    position: relative;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+    min-height: 350px; /* ★ 強制最小高度，避免塌陷 */
+    flex-shrink: 0;    /* ★ 禁止被 Flex 容器壓縮 */
+}
 
+.profile-cover {
+    height: 300px;
+    background: linear-gradient(45deg, #000000, var(--accent-main));
+    opacity: 0.4;
+}
+
+.profile-info-section {
+    padding: 30px 40px;
+    margin-top: -100px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-avatar-big {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: 8px solid var(--bg-panel);
+    background: #000;
+    overflow: hidden;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.profile-avatar-big img { 
+    width: 100%; height: 100%; object-fit: cover; 
+}
+
+.profile-name-large {
+    font-size: 3.2em;
+    font-weight: 900;
+    color: #fff;
+    font-family: var(--font-display);
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.profile-email { 
+    color: var(--text-secondary); 
+    margin-bottom: 35px; 
+    font-size: 1.3em;
+    opacity: 0.8;
+}
+
+.profile-stats-row {
+    display: flex;
+    gap: 50px;
+    padding-top: 25px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+}
+
+.p-stat-box { 
+    font-size: 1.2em;
+    color: var(--text-secondary); 
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.p-stat-box:hover { color: var(--accent-main); }
+
+.p-stat-num { 
+    color: #fff; 
+    font-weight: 900; 
+    font-size: 2em;
+    font-family: var(--font-display);
+    line-height: 1;
+}
+
+
+
+
+
+        
     </style>
 </head>
 <body onload="initApp()" data-theme-mode="pulseorange">
@@ -795,64 +820,61 @@
             renderPulseStreet();
         }
 
-        window.renderPulseStreet = function() {
+      window.renderPulseStreet = function() {
             const container = document.getElementById('pulse-app');
             const t = i18n[pulseLang];
             const user = window.currentUser;
             const photo = user ? user.photoURL : ''; 
             const isLoggedIn = !!user;
             
-            // ★ 安全設定：使用 UID 來判斷管理員
+            // 安全設定：使用 UID 來判斷管理員
             const ADMIN_UID = "1EALL0fq7nUzEi8B96qwXZuyG7h1"; 
             const isAdmin = user && user.uid === ADMIN_UID;
 
-            // 1. 先將 HTML 字串組好 (包含您新的 TradingView Widget)
             const htmlContent = `
                 <div class="pulse-layout">
                     <div class="pulse-sidebar-left">
-    <div class="pulse-logo-area">
-        ${icons.logo}
-    </div>
-    
-    <a class="pulse-nav-btn active" id="nav-home" onclick="window.renderPulseStreet()">
-        ${icons.home} <span>${t.home}</span>
-    </a>
-    
-    <a class="pulse-nav-btn" id="nav-profile" onclick="window.navigateToProfile()">
-        ${icons.profile} <span>${t.profile}</span>
-    </a>
-    
-    <a class="pulse-nav-btn">${icons.notify} <span>${t.notify}</span></a>
-    <a class="pulse-nav-btn" onclick="window.openCreatePostModal()">
-        ${icons.create} <span>${t.create}</span>
-    </a>
-    <a class="pulse-nav-btn">${icons.mail} <span>${t.mail}</span></a>
+                        <div class="pulse-logo-area">${icons.logo}</div>
+                        
+                        <a class="pulse-nav-btn active" id="nav-home" onclick="window.renderPulseStreet()">
+                             ${icons.home} <span>${t.home}</span>
+                        </a>
+                        
+                        <a class="pulse-nav-btn" id="nav-profile" onclick="window.navigateToProfile()">
+                            ${icons.profile} <span>${t.profile}</span>
+                        </a>
+                        
+                        <a class="pulse-nav-btn">${icons.notify} <span>${t.notify}</span></a>
+                        <a class="pulse-nav-btn" onclick="window.openCreatePostModal()">
+                            ${icons.create} <span>${t.create}</span>
+                        </a>
+                        <a class="pulse-nav-btn">${icons.mail} <span>${t.mail}</span></a>
 
-    ${isAdmin ? `
-        <a class="pulse-nav-btn" onclick="alert('管理員模式已啟用')" style="color: var(--accent-main); border: 1px solid rgba(255, 102, 0, 0.3); margin-top: 5px;">
-            ${icons.admin || '🛡️'} <span>${t.admin}</span>
-        </a>
-    ` : ''}
+                        ${isAdmin ? `
+                            <a class="pulse-nav-btn" onclick="alert('管理員模式已啟用')" style="color: var(--accent-main); border: 1px solid rgba(255, 102, 0, 0.3); margin-top: 5px;">
+                                ${icons.admin || '🛡️'} <span>${t.admin}</span>
+                            </a>
+                        ` : ''}
 
-    <div style="border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 10px;"></div>
+                        <div style="border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 10px;"></div>
 
-    <a class="pulse-lang-toggle" onclick="window.togglePulseLanguage()">
-        ${icons.earth} <span>${pulseLang === 'zh' ? 'English' : '繁體中文'}</span>
-    </a>
+                        <a class="pulse-lang-toggle" onclick="window.togglePulseLanguage()">
+                            ${icons.earth} <span>${pulseLang === 'zh' ? 'English' : '繁體中文'}</span>
+                        </a>
 
-    <a class="pulse-theme-toggle" id="theme-toggle-label" onclick="window.toggleNextTheme()">
-        <svg class="pulse-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="stroke-width: 2.5px;">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a2 2 0 01-2-2v-4a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2H7z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 14h.01M17 10h.01M17 6h.01M17 2h.01M13 2h.01M9 2h.01M5 2h.01"></path>
-            <path d="M17 18a2 2 0 002-2v-4a2 2 0 00-2-2h-4a2 2 0 00-2 2v4a2 2 0 002 2h4z"></path>
-        </svg>
-        <span>${t[document.body.getAttribute('data-theme-mode')] || document.body.getAttribute('data-theme-mode').toUpperCase()}</span>
-    </a>
-</div>
+                        <a class="pulse-theme-toggle" id="theme-toggle-label" onclick="window.toggleNextTheme()">
+                            <svg class="pulse-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="stroke-width: 2.5px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a2 2 0 01-2-2v-4a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2H7z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 14h.01M17 10h.01M17 6h.01M17 2h.01M13 2h.01M9 2h.01M5 2h.01"></path>
+                                <path d="M17 18a2 2 0 002-2v-4a2 2 0 00-2-2h-4a2 2 0 00-2 2v4a2 2 0 002 2h4z"></path>
+                            </svg>
+                            <span>${t[document.body.getAttribute('data-theme-mode')] || document.body.getAttribute('data-theme-mode').toUpperCase()}</span>
+                        </a>
+                    </div>
 
                     <div class="pulse-feed-container">
                         <div style="height:76px; overflow:hidden; border-radius:12px; border:1px solid var(--border-color);">
-                            <div class="tradingview-widget-container">
+                            <div class="tradingview-widget-container" style="width: 100%; height: 100%;">
                                 <div class="tradingview-widget-container__widget"></div>
                                 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
                                 {
@@ -904,37 +926,25 @@
                     </div>
 
                     <div class="pulse-sidebar-right">
-                        
                         <div class="widget-box" style="height: 550px;">
                             <div class="widget-title">${t.techNews}</div>
                             <div class="tradingview-widget-container" style="width: 100%; height: 100%;">
                                 <div class="tradingview-widget-container__widget" style="width: 100%; height: 100%;"></div>
                                 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-hotlists.js" async>
                                 {
-                                    "exchange": "US",
-                                    "colorTheme": "dark",
-                                    "dateRange": "12M",
-                                    "showChart": true,
-                                    "locale": "${pulseLang === 'zh' ? 'zh_TW' : 'en'}",
-                                    "largeChartUrl": "",
-                                    "isTransparent": true,
-                                    "showSymbolLogo": false,
-                                    "showFloatingTooltip": false,
-                                    "plotLineColorGrowing": "rgba(41, 98, 255, 1)",
-                                    "plotLineColorFalling": "rgba(41, 98, 255, 1)",
-                                    "gridLineColor": "rgba(240, 243, 250, 0)",
-                                    "scaleFontColor": "#DBDBDB",
-                                    "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
-                                    "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
-                                    "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
-                                    "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
-                                    "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
-                                    "width": "100%",
-                                    "height": "100%"
+                                    "exchange": "US", "colorTheme": "dark", "dateRange": "12M",
+                                    "showChart": true, "locale": "${pulseLang === 'zh' ? 'zh_TW' : 'en'}",
+                                    "largeChartUrl": "", "isTransparent": true, "showSymbolLogo": false,
+                                    "showFloatingTooltip": false, "plotLineColorGrowing": "rgba(41, 98, 255, 1)",
+                                    "plotLineColorFalling": "rgba(41, 98, 255, 1)", "gridLineColor": "rgba(240, 243, 250, 0)",
+                                    "scaleFontColor": "#DBDBDB", "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
+                                    "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)", "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
+                                    "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)", "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
+                                    "width": "100%", "height": "100%"
                                 }
                                 <\/script>
                             </div>
-                            </div>
+                        </div>
 
                         <div class="widget-box" style="flex:1; min-height:400px; margin-top:16px;">
                             <div class="widget-title">${t.market}</div>
@@ -942,14 +952,9 @@
                                 <div class="tradingview-widget-container__widget" style="height:100%; width:100%"></div>
                                 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
                                 {
-                                "feedMode": "market",
-                                "market": "crypto",
-                                "colorTheme": "dark",
-                                "isTransparent": true,
-                                "displayMode": "regular",
-                                "width": "100%",
-                                "height": "100%",
-                                "locale": "${pulseLang === 'zh' ? 'zh_TW' : 'en'}"
+                                "feedMode": "market", "market": "crypto", "colorTheme": "dark",
+                                "isTransparent": true, "displayMode": "regular", "width": "100%",
+                                "height": "100%", "locale": "${pulseLang === 'zh' ? 'zh_TW' : 'en'}"
                                 }
                                 <\/script>
                             </div>
@@ -958,19 +963,13 @@
                 </div>
             `;
             
-            // 2. 注入 HTML 到頁面
             container.innerHTML = htmlContent;
 
-            // 3. ★ 關鍵修復：手動喚醒 script 標籤 (解決一片空白的問題)
-            // 原理：瀏覽器不執行 innerHTML 中的 script，所以我們必須把它們「複製」出來並重新加入 DOM
             const scripts = container.querySelectorAll("script");
             scripts.forEach(oldScript => {
                 const newScript = document.createElement("script");
-                // 複製屬性 (src, async, type...)
                 Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                // 複製內容 (JSON 設定檔)
                 newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                // 替換舊標籤，這會強制瀏覽器執行它
                 oldScript.parentNode.replaceChild(newScript, oldScript);
             });
 
