@@ -78,18 +78,40 @@
         }
         
         .main-container { height: 100vh; position: relative; overflow: hidden; }
+        /* --- 修正捲動邏輯 (Fixed Sidebar & Scrollable Feed) --- */
+        /* 1. 鎖住最外層，不讓整個頁面捲動 */
         .pulse-container {
-            width: 100%; height: 100%; background: var(--bg-body); 
-            overflow-y: auto; display: flex; justify-content: center;
+            overflow: hidden !important; /* 覆蓋原本的 auto */
         }
+        /* 2. 設定佈局高度佔滿視窗 */
         .pulse-layout {
-            width: 1400px; max-width: 98%; height: 100%;
-            display: grid; grid-template-columns: 260px 1fr 320px; 
-            gap: 20px; padding: 20px 0;
+            height: 100vh; 
+            padding-bottom: 0;
+            overflow: hidden;
         }
 
-        /* Pulse Sidebar Left */
-        .pulse-sidebar-left { position: sticky; top: 0; height: fit-content; display: flex; flex-direction: column; gap: 10px; padding-top: 15px; }
+       /* 3. 左側選單：固定高度，若內容太長可獨立捲動 */
+        .pulse-sidebar-left {
+            height: 100%;
+            overflow-y: auto;
+            scrollbar-width: none; /* 隱藏卷軸 (Firefox) */
+        }
+        .pulse-sidebar-left::-webkit-scrollbar { display: none; } /* 隱藏卷軸 (Chrome/Safari) */
+
+        /* 4. 中間動態牆：★ 這是唯一主要捲動的區域 ★ */
+        .pulse-feed-container {
+            height: 100%;
+            overflow-y: auto;  /* 允許垂直捲動 */
+            padding-bottom: 150px; /* 底部留白，方便閱讀 */
+            scroll-behavior: smooth; /* 點擊按鈕時平滑捲動 */
+        }
+        /* 5. 右側欄位：固定高度，若內容太長可獨立捲動 */
+        .pulse-sidebar-right {
+            height: 100%;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .pulse-sidebar-right::-webkit-scrollbar { display: none; }
         .pulse-logo-area { padding: 10px 0 20px 10px; }
         .pulse-logo-svg { height: 40px; width: auto; }
         .pulse-logo-svg path { stroke: var(--accent-main); }
@@ -265,7 +287,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Firebase Configuration (Please replace with your actual configuration)
         const firebaseConfig = {
@@ -283,7 +305,7 @@
         const provider = new GoogleAuthProvider();
 
         window.db = db;
-        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile };
+        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where };
         window.appAuth = auth;
         window.currentUser = null;
 
@@ -469,7 +491,68 @@
             const user = window.currentUser;
             const photo = user ? user.photoURL : ''; 
             const isLoggedIn = !!user;
+            // [新增] 解析網址 Hash
+            const hash = window.location.hash; // 例如 "#profile?uid=abc..."
+            const urlParams = new URLSearchParams(hash.split('?')[1]);
+            const viewMode = hash.startsWith('#profile') ? 'profile' : 'feed';
+            const targetUid = urlParams.get('uid');
+            const targetName = urlParams.get('name') || 'User'; // 從網址取得名字(選用)
+            // 定義中間區塊的 HTML
+            let centerContentHtml = '';
+            if (viewMode === 'profile') {
+            // --- A. 個人檔案模式 ---
+                centerContentHtml = `
+                <div class="widget-box" style="padding: 20px; margin-bottom: 20px; text-align: center;">
+                <div class="user-avatar-circle" style="width: 80px; height: 80px; margin: 0 auto 15px auto;">
+                <img src="https://ui-avatars.com/api/?name=${targetName}&background=random" alt="${targetName}">
+                </div>
+                <h2 style="color: var(--accent-main); margin: 0;">${decodeURIComponent(targetName)}</h2>
+                <p style="color: var(--text-secondary);">User Profile & History</p>
+                <button onclick="window.location.hash=''" style="margin-top:10px; background:transparent; border:1px solid var(--text-secondary); color:var(--text-secondary); padding:5px 15px; border-radius:20px; cursor:pointer;">
+                    ← Back to Home
+                </button>
+                </div>
+                <div id="feed-stream">
+                <div style="text-align:center; padding:20px; color:#666;">Loading user history...</div>
+             </div>
+          `;
+        } else {
+        // --- B. 首頁模式 (原本的內容) ---
+        // 這裡放原本 Ticker [cite: 148] 和 Create Box [cite: 155] 的 HTML 字串
+        // 為了簡潔，請保留原本第 148 到 165 行的程式碼放在這裡
+                centerContentHtml = `
+                <div style="height:76px; overflow:hidden; border-radius:12px; border:1px solid var(--border-color); margin-bottom: 20px;">
+                ${getTickerHTML(pulseLang)} 
+            </div>
 
+            <div class="pulse-create-box">
+                ${getCreateBoxHTML(isLoggedIn, t, user)}
+             </div>
+
+            <div id="feed-stream">
+                 <div style="text-align:center; padding:40px; color:#666;">Connecting to Pulse Network...</div>
+            </div>
+        `;
+    }
+
+    // 渲染主框架 (保留原本的結構，只替換中間部分)
+    container.innerHTML = `
+        <div class="pulse-layout">
+            <div class="pulse-sidebar-left">
+                ${getSidebarHTML(t, icons, pulseLang)}
+            </div>
+
+            <div class="pulse-feed-container">
+                ${centerContentHtml}
+            </div>
+
+            <div class="pulse-sidebar-right">
+                ${getRightSidebarHTML(t, pulseLang)}
+            </div>
+        </div>
+    `;
+            // [重要] 呼叫資料讀取，並傳入 uid 過濾
+            loadFeed(viewMode === 'profile' ? targetUid : null);
             // Render main content
             container.innerHTML = `
                 <div class="pulse-layout">
@@ -479,7 +562,7 @@
                             ${icons.logo}
                         </div>
                         
-                        <a class="pulse-nav-btn active">${icons.home} <span>${t.home}</span></a>
+                        <a class="pulse-nav-btn active" onclick="scrollToTop()" style="cursor: pointer;">${icons.home} <span>${t.home}</span></a>
                         <a class="pulse-nav-btn">${icons.profile} <span>${t.profile}</span></a>
                         <a class="pulse-nav-btn">${icons.notify} <span>${t.notify}</span></a>
                         <a class="pulse-nav-btn">${icons.create} <span>${t.create}</span></a>
@@ -615,50 +698,70 @@
             updateAuthUI(user); // Refresh avatar border color
         }
 
-        function loadFeed() {
-            if(!window.fs || !window.db) return;
-            const { collection, query, orderBy, onSnapshot } = window.fs;
-            const q = query(collection(window.db, "posts"), orderBy("timestamp", "desc"));
-            
-            onSnapshot(q, (snapshot) => {
-                const feedEl = document.getElementById('feed-stream');
-                if(!feedEl) return;
-                
-                let html = '';
-                snapshot.forEach(doc => {
-                    const p = doc.data();
-                    const date = p.timestamp ? p.timestamp.toDate() : new Date();
-                    const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    const user = window.currentUser;
-                    // Check if current user is logged in AND is the post owner
-                    const isSelf = user && user.uid === p.uid; 
-                    const postUserAvatar = p.avatar ? `<img src="${p.avatar}" alt="Avatar">` : '👤';
+        // [修改] 接收 filterUid 參數
+function loadFeed(filterUid = null) {
+    if(!window.fs || !window.db) return;
+    // 加入 where 查詢條件
+    const { collection, query, orderBy, onSnapshot, where } = window.fs; // 記得在第 95 行 window.fs 定義中加入 where
+    
+    let q;
+    const postsRef = collection(window.db, "posts");
 
+    if (filterUid) {
+        // 如果有指定用戶，只抓該用戶的文章 (注意：Firestore 複合查詢需要索引，若報錯請看 Console 建立索引)
+        // 簡單做法：先只用 where，暫時拿掉 orderBy 避免索引錯誤，或者去 Firebase Console 建立索引
+        q = query(postsRef, where("uid", "==", filterUid), orderBy("timestamp", "desc"));
+    } else {
+        // 首頁：抓全部
+        q = query(postsRef, orderBy("timestamp", "desc"));
+    }
+    
+    onSnapshot(q, (snapshot) => {
+        const feedEl = document.getElementById('feed-stream');
+        if(!feedEl) return;
+        
+        let html = '';
+        snapshot.forEach(doc => {
+            const p = doc.data();
+            const date = p.timestamp ? p.timestamp.toDate() : new Date();
+            const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const user = window.currentUser;
+            const isSelf = user && user.uid === p.uid; 
+            const postUserAvatar = p.avatar ? `<img src="${p.avatar}" alt="Avatar">` : '👤';
 
-                    html += `
-                        <div class="pulse-post">
-                            <div class="post-header">
-                                <div class="user-avatar-circle" style="width:40px; height:40px; border-width:1px;">
-                                    ${postUserAvatar}
-                                </div>
-                                <div class="post-meta-container">
-                                    <div class="post-author-name">${p.name || 'Anonymous'}</div>
-                                    <div class="post-time">${timeStr}</div>
-                                </div>
-                                ${isSelf ? `<button onclick="alert('Delete post: ${doc.id}')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; margin-left:auto;">🗑️</button>` : ''}
-                            </div>
-                            <div class="post-content">${p.content}</div>
-                            <div class="post-stats">
-                                <span>❤️ ${p.likes || 0}</span>
-                                <span>💬 ${p.comments || 0}</span>
-                                <span>↗ Share</span>
-                            </div>
+            // [修改重點] 點擊頭像或名字時，跳轉到個人頁面
+            // 使用 encodeURIComponent 處理名字中的特殊字元
+            const profileLink = `#profile?uid=${p.uid}&name=${encodeURIComponent(p.name)}`;
+
+            html += `
+                <div class="pulse-post">
+                    <div class="post-header">
+                        <div class="user-avatar-circle" style="width:40px; height:40px; cursor:pointer;" 
+                             onclick="window.location.hash='${profileLink}'">
+                            ${postUserAvatar}
                         </div>
-                    `;
-                });
-                feedEl.innerHTML = html;
-            });
-        }
+                        
+                        <div class="post-meta-container">
+                            <div class="post-author-name" style="cursor:pointer;" 
+                                 onclick="window.location.hash='${profileLink}'">
+                                 ${p.name || 'Anonymous'}
+                            </div>
+                            <div class="post-time">${timeStr}</div>
+                        </div>
+                        
+                        ${isSelf ? `<button onclick="deletePost('${doc.id}')" ...>🗑️</button>` : ''}
+                    </div>
+                    <div class="post-content">${p.content}</div>
+                    <div class="post-stats">
+                        <span>❤️ ${p.likes || 0}</span>
+                        <span>💬 ${p.comments || 0}</span>
+                    </div>
+                </div>
+            `;
+        });
+        feedEl.innerHTML = html || '<div style="text-align:center; padding:20px;">No posts found.</div>';
+    });
+}
 
         window.submitPost = async function() {
             if(!window.currentUser) {
@@ -703,6 +806,32 @@
                  updateAuthUI(window.appAuth.currentUser);
              }
         });
+
+        // [新增] 路由監聽器：當網址 # 改變時，重新渲染頁面
+        window.addEventListener('hashchange', () => {
+        renderPulseStreet();
+        });
+
+        // [修改] 修改原本的 initApp，加入路由判斷
+       window.initApp = function() {
+       // ... (保留原本的主題讀取邏輯 [cite: 203-206])
+       // 渲染頁面
+       renderPulseStreet();
+};
+       // [新增] 點擊首頁時，將中間動態牆捲動到最上方
+       window.scrollToTop = function() {
+       const feedContainer = document.querySelector('.pulse-feed-container');
+       if (feedContainer) {
+           feedContainer.scrollTo({
+           top: 0,
+           behavior: 'smooth'
+          });
+      }
+       // 如果你有實作路由切換，這裡也可以順便加入切換回首頁的邏輯
+       if(window.location.hash) {
+          window.location.hash = ''; 
+      }
+   }  
     </script>
 </body>
 </html>
