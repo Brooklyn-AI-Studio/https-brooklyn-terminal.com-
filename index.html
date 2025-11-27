@@ -489,8 +489,8 @@
                         <line x1="9" y1="21" x2="9" y2="9"></line>
                     </svg>
                 </div>
-                <div class="card-title">WORKSPACE</div>
-                <div class="card-desc" data-i18n="card_workspace_desc">全方位自定義金融儀表板</div>
+                <div class="card-title">WorkSpace</div>
+                <div class="card-desc" data-i18n="card_workspace_desc">全方位自定義AI工作站</div>
             </div>
 
             <!-- 2. PulseStreet -->
@@ -500,7 +500,7 @@
                         <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                     </svg>
                 </div>
-                <div class="card-title">PULSESTREET</div>
+                <div class="card-title">PulseStreet</div>
                 <div class="card-desc" data-i18n="card_pulse_desc">市場社群與即時動態</div>
             </div>
 
@@ -515,8 +515,8 @@
                         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                     </svg>
                 </div>
-                <div class="card-title">NODEX AI</div>
-                <div class="card-desc" data-i18n="card_nodex_desc">專屬大語言模型智能分析</div>
+                <div class="card-title">NODEX </div>
+                <div class="card-desc" data-i18n="card_nodex_desc">商業財經大語言模型</div>
             </div>
         </div>
 
@@ -685,12 +685,17 @@
         // 3. 監聽登入狀態
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 如果已登入，直接更新文字，並保留 data-i18n 以便切換語言
+                // ★ 修改：如果是已登入狀態，將按鈕文字改為 "進入系統 (已登入)"
+                // 並設置點擊事件直接導向 app.html
+                
                 // 這裡簡化處理：直接改文字，若切換語言 setLanguage 會再次覆蓋
                 loginBtn.innerHTML = i18n[currentLang].status_entered;
                 
-                if(freeAccessBtn) freeAccessBtn.style.display = 'none'; 
+                // 綁定點擊事件，導向 app.html
                 loginBtn.onclick = () => redirectToApp('workspace');
+                
+                // 隱藏下方的免費試用按鈕，因為已經登入且可以點擊上面的按鈕進入
+                if(freeAccessBtn) freeAccessBtn.style.display = 'none'; 
             }
         });
 
