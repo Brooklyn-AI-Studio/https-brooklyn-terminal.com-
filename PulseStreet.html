@@ -76,7 +76,32 @@
             height: 100vh;
             overflow: hidden; 
         }
-        
+        /* --- 追蹤按鈕樣式 --- */
+.follow-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: var(--font-main);
+    transition: all 0.2s;
+    margin-left: auto; /* 自動推到右邊 */
+}
+.follow-btn:hover { background: #e0e0e0; }
+
+/* 已追蹤狀態 (樣式變暗) */
+.follow-btn.following {
+    background: transparent;
+    color: #fff;
+    border: 1px solid var(--border-color);
+}
+.follow-btn.following:hover {
+    border-color: #ff4d4d;
+    color: #ff4d4d;
+    background: rgba(255, 77, 77, 0.1);
+}
         .main-container { height: 100vh; position: relative; overflow: hidden; }
         .pulse-container {
                   width: 100%;
@@ -649,7 +674,7 @@
  <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc, getDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         // ★ 新增：引入 Storage 相關功能
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
@@ -673,7 +698,7 @@
         window.db = db;
         // ★ 新增：將 storage 功能掛載到 window
         window.storage = { ref, uploadBytes, getDownloadURL, storageInstance: storage };
-        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where, deleteDoc, getDoc, updateDoc };
+        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where, deleteDoc, getDoc, updateDoc, getDocs };
         window.appAuth = auth;
         window.currentUser = null;
 
@@ -1481,6 +1506,8 @@
                         
                         <div class="profile-stats-row">
                             <span class="p-stat-box"><span class="p-stat-num" id="p-post-count">0</span> Posts</span>
+                            <span class="p-stat-box"><span class="p-stat-num" id="p-following-count">0</span> Following</span>
+                            <span class="p-stat-box"><span class="p-stat-num" id="p-followers-count">0</span> Followers</span>
                             </div>
                     </div>
                 </div>
@@ -1491,11 +1518,120 @@
                     <div style="text-align:center; padding:20px; color:#666;">Loading posts...</div>
                 </div>
             `;
-
+            loadProfileFeed(uid);
+            checkFollowStatus(uid); // ★ 檢查按鈕狀態
+            loadFollowStats(uid);   // ★ 載入粉絲數字
             // 4. 載入該使用者的貼文
             loadProfileFeed(uid);
         }
+// =========================================
+        // ★ 新增：追蹤系統核心邏輯
+        // =========================================
 
+        // 1. 切換追蹤狀態 (追蹤 / 取消追蹤)
+        window.toggleFollow = async function(targetUid) {
+            const user = window.currentUser;
+            if (!user) { alert("請先登入"); performLogin(); return; }
+            if (user.uid === targetUid) return; // 不能追蹤自己
+
+            const btn = document.getElementById('follow-btn');
+            if(btn) btn.disabled = true; // 防止連點
+
+            try {
+                const { collection, addDoc, query, where, getDocs, deleteDoc, doc } = window.fs;
+                const relRef = collection(window.db, "relationships");
+                
+                // 檢查是否已經追蹤
+                const q = query(relRef, 
+                    where("followerId", "==", user.uid),
+                    where("followingId", "==", targetUid)
+                );
+                const snapshot = await getDocs(q);
+
+                if (!snapshot.empty) {
+                    // --- 已經追蹤 -> 執行「取消追蹤」 ---
+                    const docId = snapshot.docs[0].id;
+                    await deleteDoc(doc(window.db, "relationships", docId));
+                    if(btn) {
+                        btn.innerText = "追蹤";
+                        btn.classList.remove('following');
+                    }
+                    updateFollowCounts(targetUid, -1); // 粉絲數 -1
+                } else {
+                    // --- 尚未追蹤 -> 執行「追蹤」 ---
+                    await addDoc(relRef, {
+                        followerId: user.uid,
+                        followingId: targetUid,
+                        timestamp: new Date()
+                    });
+                    if(btn) {
+                        btn.innerText = "已追蹤";
+                        btn.classList.add('following');
+                    }
+                    updateFollowCounts(targetUid, 1); // 粉絲數 +1
+                }
+            } catch (e) {
+                console.error("追蹤失敗", e);
+                alert("操作失敗，請稍後再試");
+            } finally {
+                if(btn) btn.disabled = false;
+            }
+        }
+
+        // 2. 檢查追蹤狀態 (用於初始化按鈕)
+        async function checkFollowStatus(targetUid) {
+            const user = window.currentUser;
+            if (!user || user.uid === targetUid) return; // 自己不用檢查
+
+            const { collection, query, where, getDocs } = window.fs;
+            const q = query(collection(window.db, "relationships"), 
+                where("followerId", "==", user.uid),
+                where("followingId", "==", targetUid)
+            );
+            const snapshot = await getDocs(q);
+            
+            const btn = document.getElementById('follow-btn');
+            if (btn && !snapshot.empty) {
+                btn.innerText = "已追蹤";
+                btn.classList.add('following');
+                
+                // 滑鼠移上去變成 "取消追蹤"
+                btn.onmouseover = () => btn.innerText = "取消追蹤";
+                btn.onmouseout = () => btn.innerText = "已追蹤";
+            }
+        }
+
+        // 3. 更新介面上的數字
+        function updateFollowCounts(targetUid, change = 0) {
+            // 這裡為了效能，我們先用前端假裝加減數字
+            // 實際專案通常會讀取資料庫的 count，或者使用 Firebase Functions
+            const followerEl = document.getElementById('p-followers-count');
+            if(followerEl) {
+                let current = parseInt(followerEl.innerText) || 0;
+                followerEl.innerText = Math.max(0, current + change);
+            }
+        }
+
+        // 4. 讀取真實的粉絲數據 (Count)
+        async function loadFollowStats(targetUid) {
+            const { collection, query, where, getCountFromServer } = window.fs; // 需要引入 getCountFromServer (選用，若沒引入可用 getDocs.size)
+            // 簡單版：直接用 getDocs (量大時較慢，但目前夠用)
+            const { getDocs } = window.fs;
+            
+            // 查粉絲數 (誰追蹤了 target)
+            const followersQ = query(collection(window.db, "relationships"), where("followingId", "==", targetUid));
+            const followersSnap = await getDocs(followersQ);
+            document.getElementById('p-followers-count').innerText = followersSnap.size;
+
+            // 查追蹤中 (target 追蹤了誰)
+            const followingQ = query(collection(window.db, "relationships"), where("followerId", "==", targetUid));
+            const followingSnap = await getDocs(followingQ);
+            document.getElementById('p-following-count').innerText = followingSnap.size;
+        }
+
+
+
+     
         window.initApp = window.renderPulseStreet;
 
     </script>
