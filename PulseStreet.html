@@ -725,19 +725,32 @@
                     </div>
 
                     <div class="pulse-sidebar-right">
-                         <div class="widget-box" style="height: 500px;">
+                        <div class="widget-box" style="height: 550px;">
                             <div class="widget-title">${t.techNews}</div>
                             <div class="tradingview-widget-container" style="width: 100%; height: 100%;">
                                 <div class="tradingview-widget-container__widget" style="width: 100%; height: 100%;"></div>
-                                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+                                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-hotlists.js" async>
                                 {
-                                    "feedMode": "all_symbols",
-                                    "isTransparent": true,
-                                    "displayMode": "regular",
-                                    "width": "100%",
-                                    "height": "100%",
+                                    "exchange": "US",
                                     "colorTheme": "dark",
-                                    "locale": "${pulseLang === 'zh' ? 'zh_TW' : 'en'}"
+                                    "dateRange": "12M",
+                                    "showChart": true,
+                                    "locale": "${pulseLang === 'zh' ? 'zh_TW' : 'en'}", 
+                                    "largeChartUrl": "",
+                                    "isTransparent": true,
+                                    "showSymbolLogo": false,
+                                    "showFloatingTooltip": false,
+                                    "plotLineColorGrowing": "rgba(41, 98, 255, 1)",
+                                    "plotLineColorFalling": "rgba(41, 98, 255, 1)",
+                                    "gridLineColor": "rgba(240, 243, 250, 0)",
+                                    "scaleFontColor": "#DBDBDB",
+                                    "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
+                                    "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
+                                    "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
+                                    "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
+                                    "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
+                                    "width": "100%",
+                                    "height": "100%"
                                 }
                                 <\/script>
                             </div>
@@ -762,7 +775,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
             `;
 
             document.body.style.setProperty('--accent-main', getComputedStyle(document.body).getPropertyValue('--accent-main'));
