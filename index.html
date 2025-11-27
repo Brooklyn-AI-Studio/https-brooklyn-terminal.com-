@@ -698,15 +698,20 @@
                 if(freeAccessBtn) freeAccessBtn.style.display = 'none'; 
             }
         });
-
-        // 4. 跳轉函式 (核心)
+        // 4. 跳轉函式 (核心) - 已修改
         window.redirectToApp = (section) => {
-            // 假設您的主程式檔名是 index.html，請根據實際情況修改
-            const mainAppFile = "app.html"; // ★ 重要：請改成您真正的主程式檔名
-            
-             window.location.href = `${mainAppFile}#${section}`;
-            
-            console.log(`Redirecting to ${mainAppFile}#${section}`);
+            // ★ 修改點：針對 'nodex' 進行特殊判斷
+            if (section === 'nodex') {
+                // 如果是 Nodex，直接跳轉到獨立的 nodex.html 頁面
+                window.location.href = "nodex.html";
+                console.log("Redirecting to nodex.html");
+            } else {
+                // 其他按鈕 (Workspace, PulseStreet) 維持原本邏輯
+                // 跳轉到 app.html 並加上對應的錨點 (#workspace 或 #pulse)
+                const mainAppFile = "app.html"; 
+                window.location.href = `${mainAppFile}#${section}`;
+                console.log(`Redirecting to ${mainAppFile}#${section}`);
+            }
         }
     </script>
 
