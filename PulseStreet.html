@@ -358,18 +358,16 @@
         }
         
         window.switchApp = function(appId) {
-            window.toggleProfileMenu(); // 關閉選單
-            let msg = '';
-            
-            if (appId === 'workspace') {
-                window.location.href = 'app.html';
-            } else if (appId === 'nodex') {
-                window.location.href = 'nodex.html';
-            } else if (appId === 'pulse') {
-                 msg = '已返回 PulseStreet。';
-            }
-            alert(msg);
+        window.toggleProfileMenu(); // 關閉選單
+
+        if (appId === 'workspace') {
+            window.location.href = 'app.html';
+        } else if (appId === 'nodex') {
+           window.location.href = 'nodex.html';
+        } else if (appId === 'pulse') {
+           alert('已返回 PulseStreet。');
         }
+     };
 
         const updateAuthUI = (user) => {
             const authContainer = document.getElementById('auth-container');
@@ -811,13 +809,7 @@ function loadFeed(filterUid = null) {
         window.addEventListener('hashchange', () => {
         renderPulseStreet();
         });
-
-        // [修改] 修改原本的 initApp，加入路由判斷
-       window.initApp = function() {
-       // ... (保留原本的主題讀取邏輯 [cite: 203-206])
-       // 渲染頁面
-       renderPulseStreet();
-};
+        
        // [新增] 點擊首頁時，將中間動態牆捲動到最上方
        window.scrollToTop = function() {
        const feedContainer = document.querySelector('.pulse-feed-container');
