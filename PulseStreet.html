@@ -105,11 +105,16 @@
          }
 
         .pulse-sidebar-right {
-           height: 100%;
-           overflow-y: auto;     /* 允許右側小工具過長時單獨捲動 */
-           padding-top: 15px;    /* 保持頂部間距 */
-         }
-
+         height: 100%;
+         padding-top: 15px;
+    
+          /* ★ 關鍵修正：加入這兩行來啟用彈性排版 */
+         display: flex;          
+         flex-direction: column; 
+    
+         overflow-y: auto;     /* 內容過多時保留捲動功能 */
+         padding-bottom: 20px; /* 底部留一點空間比較好看 */
+        }
 
         
         .pulse-logo-area { padding: 10px 0 20px 10px; }
@@ -587,7 +592,7 @@
                 home: "首頁", profile: "個人資料", notify: "通知", create: "建立貼文", mail: "信箱",
                 admin: "平台管理員",  
                 quickPh: "分享您的市場觀點。", post: "發佈",
-                techNews: "科技新聞頭條", market: "市場總覽",
+                techNews: "股市排行榜", market: "頭條新聞",
                 loginReq: "請先登入以發文",
                 pulseorange: "脈街經典", techbusiness: "科技商務", cyberpunk: "賽博龐克", terminal: "終端機"
             },
@@ -595,7 +600,7 @@
                 home: "Home", profile: "Profile", notify: "Notifications", create: "Create Post", mail: "Mailbox",
                 admin: "Platform Admin", 
                 quickPh: "Share your market insights...", post: "Post",
-                techNews: "Tech Headlines", market: "Market Overview",
+                techNews: "Stock Market", market: "News",
                 loginReq: "Please login to post",
                 pulseorange: "Orange Signature", techbusiness: "Tech Business", cyberpunk: "Cyberpunk", terminal: "Terminal"
             }
