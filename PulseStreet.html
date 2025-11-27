@@ -648,6 +648,45 @@
     height: 100% !important;
     display: block !important;
 }
+/* --- 點讚樣式 --- */
+.stat-item.liked svg {
+    fill: #f91880;
+    stroke: #f91880;
+}
+.stat-item.liked {
+    color: #f91880;
+}
+
+/* --- 留言模態視窗 (繼承部分 modal 樣式) --- */
+#comment-modal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+.comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.comment-item {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.comment-content-box {
+    flex: 1;
+}
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+.comment-author { font-weight: bold; color: #fff; }
+.comment-time { color: var(--text-secondary); font-size: 0.8em; }
+.comment-text { color: var(--text-primary); line-height: 1.4; white-space: pre-wrap; }
+
 
     </style>
 </head>
@@ -674,7 +713,7 @@
  <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc, getDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc, getDoc, updateDoc, getDocs, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         // ★ 新增：引入 Storage 相關功能
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
@@ -698,7 +737,7 @@
         window.db = db;
         // ★ 新增：將 storage 功能掛載到 window
         window.storage = { ref, uploadBytes, getDownloadURL, storageInstance: storage };
-        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where, deleteDoc, getDoc, updateDoc, getDocs };
+        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where, deleteDoc, getDoc, updateDoc, increment, getDocs };
         window.appAuth = auth;
         window.currentUser = null;
 
@@ -1112,14 +1151,17 @@
                             ` : ''}
 
                             <div class="post-stats"> 
-                                <div class="stat-item like" onclick="alert('Like!')">
+                                <div class="stat-item like" id="like-btn-${doc.id}" onclick="window.toggleLike('${doc.id}', this)">
                                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                                     <span>${p.likes || 0}</span>
                                 </div>
-                                <div class="stat-item comment">
+                                <script>setTimeout(() => window.checkLikeStatus && window.checkLikeStatus('${doc.id}', 'like-btn-${doc.id}'), 100)</script>
+
+                                <div class="stat-item comment" onclick="window.openCommentModal('${doc.id}')">
                                     <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                                     <span>${p.comments || 0}</span>
                                 </div>
+
                                 <div class="stat-item repost">
                                     <svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
                                     <span>轉推</span>
@@ -1634,7 +1676,154 @@
             const followingSnap = await getDocs(followingQ);
             document.getElementById('p-following-count').innerText = followingSnap.size;
         }
+// =========================================
+        // ★ 新增：點讚與留言系統
+        // =========================================
+        
+        let currentPostIdForComment = null; // 記錄目前正在留言哪一篇貼文
 
+        // --- 1. 點讚功能 (Toggle Like) ---
+        window.toggleLike = async function(postId, btnElement) {
+            const user = window.currentUser;
+            if (!user) { alert("請先登入"); performLogin(); return; }
+
+            // 為了讓體驗更好，先在前端切換樣式 (Optimistic UI)
+            const iconContainer = btnElement.closest('.stat-item');
+            const countSpan = iconContainer.querySelector('span');
+            let currentCount = parseInt(countSpan.innerText) || 0;
+            const isLiked = iconContainer.classList.contains('liked');
+
+            // 切換樣式
+            if (isLiked) {
+                iconContainer.classList.remove('liked');
+                countSpan.innerText = Math.max(0, currentCount - 1);
+            } else {
+                iconContainer.classList.add('liked');
+                countSpan.innerText = currentCount + 1;
+            }
+
+            try {
+                const { doc, getDoc, setDoc, deleteDoc, updateDoc, increment } = window.fs;
+                const postRef = doc(window.db, "posts", postId);
+                const likeRef = doc(window.db, "posts", postId, "likes", user.uid);
+
+                const likeSnap = await getDoc(likeRef);
+
+                if (likeSnap.exists()) {
+                    // 已經讚過 -> 取消讚
+                    await deleteDoc(likeRef);
+                    await updateDoc(postRef, { likes: increment(-1) });
+                } else {
+                    // 還沒讚過 -> 按讚
+                    await setDoc(likeRef, { uid: user.uid, timestamp: new Date() });
+                    await updateDoc(postRef, { likes: increment(1) });
+                }
+            } catch (e) {
+                console.error("點讚失敗", e);
+                // 失敗時回復樣式 (略)
+            }
+        }
+
+        // --- 2. 檢查貼文是否已按讚 (初始化用) ---
+        async function checkLikeStatus(postId, elementId) {
+            const user = window.currentUser;
+            if (!user) return;
+            
+            // 這裡為了效能，通常只在看單一貼文時檢查，或使用更進階的方法
+            // 簡單版：去讀取子集合
+            const { doc, getDoc } = window.fs;
+            try {
+                const likeSnap = await getDoc(doc(window.db, "posts", postId, "likes", user.uid));
+                if (likeSnap.exists()) {
+                    const el = document.getElementById(elementId);
+                    if (el) el.classList.add('liked');
+                }
+            } catch(e) {}
+        }
+
+        // --- 3. 開啟留言視窗 ---
+        window.openCommentModal = function(postId) {
+            currentPostIdForComment = postId;
+            document.getElementById('comment-modal').style.display = 'flex';
+            document.getElementById('comment-list-container').innerHTML = '<div style="text-align:center; padding:20px; color:#666;">載入留言中...</div>';
+            loadComments(postId);
+        }
+
+        window.closeCommentModal = function() {
+            document.getElementById('comment-modal').style.display = 'none';
+            currentPostIdForComment = null;
+        }
+
+        // --- 4. 載入留言列表 ---
+        function loadComments(postId) {
+            const { collection, query, orderBy, onSnapshot } = window.fs;
+            const commentsRef = collection(window.db, "posts", postId, "comments");
+            const q = query(commentsRef, orderBy("timestamp", "asc"));
+
+            onSnapshot(q, (snapshot) => {
+                const list = document.getElementById('comment-list-container');
+                if (!list) return;
+                
+                if (snapshot.empty) {
+                    list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary);">還沒有人留言，搶頭香！</div>';
+                    return;
+                }
+
+                let html = '';
+                snapshot.forEach(doc => {
+                    const c = doc.data();
+                    const date = c.timestamp ? c.timestamp.toDate() : new Date();
+                    const timeStr = date.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+                    const avatar = c.avatar || '';
+
+                    html += `
+                        <div class="comment-item">
+                            <div class="user-avatar-circle" style="width:32px; height:32px; border-width:1px;">
+                                ${avatar ? `<img src="${avatar}" alt="Avatar">` : '👤'}
+                            </div>
+                            <div class="comment-content-box">
+                                <div class="comment-header">
+                                    <span class="comment-author">${c.name}</span>
+                                    <span class="comment-time">${timeStr}</span>
+                                </div>
+                                <div class="comment-text">${c.content}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+                list.scrollTop = list.scrollHeight; // 自動捲到底部
+            });
+        }
+
+        // --- 5. 發送留言 ---
+        window.submitComment = async function() {
+            const input = document.getElementById('comment-input');
+            const val = input.value.trim();
+            if (!val || !currentPostIdForComment || !window.currentUser) return;
+
+            try {
+                const { addDoc, collection, serverTimestamp, doc, updateDoc, increment } = window.fs;
+                const user = window.currentUser;
+                
+                // 1. 新增留言到子集合
+                await addDoc(collection(window.db, "posts", currentPostIdForComment, "comments"), {
+                    content: val,
+                    uid: user.uid,
+                    name: user.displayName,
+                    avatar: user.photoURL,
+                    timestamp: serverTimestamp()
+                });
+
+                // 2. 更新貼文的留言計數
+                const postRef = doc(window.db, "posts", currentPostIdForComment);
+                await updateDoc(postRef, { comments: increment(1) });
+
+                input.value = ''; // 清空輸入框
+            } catch (e) {
+                alert("留言失敗: " + e.message);
+            }
+        }
 
 
      
@@ -1670,6 +1859,24 @@
             </div>
         </div>
     </div>
-    
+  <div id="comment-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">留言</div>
+                <button class="modal-close-btn" onclick="closeCommentModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="comment-list-container" class="comment-list">
+                    <div style="text-align:center; padding:20px; color:#666;">載入留言中...</div>
+                </div>
+            </div>
+            <div class="modal-footer" style="display:block; border-top: 1px solid var(--border-color); padding-top:15px;">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="comment-input" class="modal-textarea" style="min-height: 40px; height:40px; border: 1px solid var(--border-color); border-radius: 20px; padding: 0 15px;" placeholder="發佈你的回覆...">
+                    <button class="post-btn" onclick="submitComment()">回覆</button>
+                </div>
+            </div>
+        </div>
+    </div>  
 </body>
 </html>
