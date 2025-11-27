@@ -564,23 +564,22 @@
                     <!-- RIGHT COLUMN -->
                     <div class="pulse-sidebar-right">
                         <!-- Tech News Widget -->
-                        <div class="widget-box">
+                        <div class="widget-box" style="height: 500px;">
                             <div class="widget-title">${t.techNews}</div>
-                            <div class="news-item">
-                                <div class="news-headline">OpenAI Releases GPT-5 Preview</div>
-                                <div class="news-sub">AI • 2h ago</div>
+                            <div class="tradingview-widget-container" style="width: 100%; height: 100%;">
+                            <div class="tradingview-widget-container__widget" style="width: 100%; height: 100%;"></div>
+                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+                                {
+                                    "feedMode": "all_symbols",
+                                    "isTransparent": true,
+                                    "displayMode": "regular",
+                                    "width": "100%",
+                                    "height": "100%",
+                                    "colorTheme": "dark",
+                                    "locale": "${pulseLang === 'zh' ? 'zh_TW' : 'en'}"
+                                }
+                                <\/script>
                             </div>
-                            <div class="news-item">
-                                <div class="news-headline">NVIDIA Earnings Crush Estimates</div>
-                                <div class="news-sub">Chips • 4h ago</div>
-                            </div>
-                            <div class="news-item">
-                                <div class="news-headline">SpaceX Starship Successful Launch</div>
-                                <div class="news-sub">Space • 6h ago</div>
-                            </div>
-                            <div class="news-item">
-                                <div class="news-headline">Apple Vision Pro 2 Leaked</div>
-                                <div class="news-sub">Hardware • 8h ago</div>
                             </div>
                         </div>
 
