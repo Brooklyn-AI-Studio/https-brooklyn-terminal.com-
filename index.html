@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head> 
+<head>
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-    <title>BROOKLYN-TERMINAL // V1.034</title> 
+    <title>BROOKLYN-TERMINAL // V1.035</title> 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 17 10 11 4 5'%3E%3C/polyline%3E%3Cline x1='12' y1='19' x2='20' y2='19'%3E%3C/line%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
     <style> 
@@ -2962,7 +2962,6 @@ window.switchSpace = function(spaceMode) {
             workspace.appendChild(container);
 // 在 workspace.appendChild(container); 之後貼上：
 
-// 在 workspace.appendChild(container); 之後：
 const tvContainer = document.getElementById('tv-overview-widget');
 if (tvContainer) {
     const script = document.createElement('script');
@@ -2971,65 +2970,99 @@ if (tvContainer) {
     script.async = true;
     script.innerHTML = JSON.stringify({
           "lineWidth": 2,
-          "lineType": 0,
-          "chartType": "area",
-          "fontColor": "#707070",
-          "gridLineColor": "rgba(242, 242, 242, 0.06)",
-          "volumeUpColor": "rgba(34, 171, 148, 0.5)",
-          "volumeDownColor": "rgba(247, 82, 95, 0.5)",
-          "backgroundColor": "#0F0F0F",
-          "widgetFontColor": "#DBDBDB",
-          "upColor": "#22ab94",
-          "downColor": "#f7525f",
-          "borderUpColor": "#22ab94",
-          "borderDownColor": "#f7525f",
-          "wickUpColor": "#22ab94",
-          "wickDownColor": "#f7525f",
-          "colorTheme": "dark",
-          "isTransparent": true,
-          "locale": "zh_TW",
-          "chartOnly": false,
-          "scalePosition": "right",
-          "scaleMode": "Normal",
-          "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
-          "valuesTracking": "1",
-          "changeMode": "price-and-percent",
-          "symbols": [
-            ["NASDAQ:AAPL|1M"],
-            ["NASDAQ:NVDA|1M"],
-            ["NASDAQ:TSLA|1M"],
-            ["NASDAQ:AMD|1M"],
-            ["NASDAQ:NFLX|1M"],
-            ["NYSE:TSM|1M"],
-            ["NASDAQ:AMZN|1M"],
-            ["NASDAQ:AVGO|1M"],
-            ["NYSE:LLY|1M"],
-            ["NASDAQ:MSFT|1M"],
-            ["NASDAQ:GOOGL|1M"],
-            ["NYSE:BRK.B|1M"],
-            ["NYSE:TGT|1M"],
-            ["NYSE:T|1M"],
-            ["NASDAQ:INTC|1M"]
-          ],
-          "dateRanges": [
-            "1d|1",
-            "1m|30",
-            "3m|60",
-            "12m|1D",
-            "60m|1W",
-            "all|1M"
-          ],
-          "fontSize": "10",
-          "headerFontSize": "medium",
-          // ★★★ 修改這裡開始 ★★★
-          "autosize": true,   // 改為 true，讓它自動適應容器寬度
-          // "width": 650,    // 這一行刪除或註解掉
-          "height": "100%",   // 設定高度填滿容器 (配合容器 CSS height: 600px)
-          // ★★★ 修改這裡結束 ★★★
-          "noTimeScale": false,
-          "hideDateRanges": false,
-          "hideMarketStatus": false,
-          "hideSymbolLogo": false
+  "lineType": 0,
+  "chartType": "area",
+  "fontColor": "#707070",
+  "gridLineColor": "rgba(242, 242, 242, 0.06)",
+  "volumeUpColor": "rgba(34, 171, 148, 0.5)",
+  "volumeDownColor": "rgba(247, 82, 95, 0.5)",
+  "backgroundColor": "#0F0F0F",
+  "widgetFontColor": "#DBDBDB",
+  "upColor": "#22ab94",
+  "downColor": "#f7525f",
+  "borderUpColor": "#22ab94",
+  "borderDownColor": "#f7525f",
+  "wickUpColor": "#22ab94",
+  "wickDownColor": "#f7525f",
+  "colorTheme": "dark",
+  "isTransparent": true,
+  "locale": "zh_TW",
+  "chartOnly": false,
+  "scalePosition": "right",
+  "scaleMode": "Normal",
+  "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
+  "valuesTracking": "1",
+  "changeMode": "price-and-percent",
+  "symbols": [
+    [
+      "NASDAQ:AAPL|1M"
+    ],
+    [
+      "NASDAQ:NVDA|1M"
+    ],
+    [
+      "NASDAQ:TSLA|1M"
+    ],
+    [
+      "NASDAQ:AMD|1M"
+    ],
+    [
+      "NASDAQ:NFLX|1M"
+    ],
+    [
+      "NYSE:TSM|1M"
+    ],
+    [
+      "NASDAQ:AMZN|1M"
+    ],
+    [
+      "NASDAQ:AVGO|1M"
+    ],
+    [
+      "NYSE:LLY|1M"
+    ],
+    [
+      "NASDAQ:MSFT|1M"
+    ],
+    [
+      "NASDAQ:GOOGL|1M"
+    ],
+    [
+      "NYSE:BRK.B|1M"
+    ],
+    [
+      "NASDAQ:AAMZYXX|1M"
+    ],
+    [
+      "NYSE:TGT|1M"
+    ],
+    [
+      "NASDAQ:GESLX|1M"
+    ],
+    [
+      "NYSE:T|1M"
+    ],
+    [
+      "NASDAQ:INTC|1M"
+    ]
+  ],
+  "dateRanges": [
+    "1d|1",
+    "1m|30",
+    "3m|60",
+    "12m|1D",
+    "60m|1W",
+    "all|1M"
+  ],
+  "fontSize": "10",
+  "headerFontSize": "medium",
+  "autosize": false,
+  "width": 600,
+  "height": 300,
+  "noTimeScale": false,
+  "hideDateRanges": false,
+  "hideMarketStatus": false,
+  "hideSymbolLogo": false
     });
     tvContainer.appendChild(script);
 }
