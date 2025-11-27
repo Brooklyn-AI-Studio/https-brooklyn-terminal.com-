@@ -1480,16 +1480,16 @@
                 postBtn.innerText = i18n[pulseLang].post;
             }
         }
-// --- 查看他人個人資料邏輯 ---
+// --- 查看他人個人資料邏輯 (修正按鈕位置) ---
         window.viewUserProfile = function(uid, name, avatar) {
-            // 1. 取消所有選單的 Active 狀態 (因為這不是首頁也不是我的資料)
+            // 1. 取消所有選單的 Active 狀態
             document.querySelectorAll('.pulse-nav-btn').forEach(btn => btn.classList.remove('active'));
 
             // 2. 取得中間欄位容器
             const centerCol = document.querySelector('.pulse-feed-container');
             if (!centerCol) return;
 
-            // 3. 處理顯示資料 (因為貼文內沒有對方 Email，我們改顯示 UID 後8碼當作帳號)
+            // 3. 處理顯示資料
             const displayHandle = `@${uid.slice(0,8)}...`;
             const photoHtml = avatar && avatar !== 'null' && avatar !== 'undefined' ? 
                               `<img src="${avatar}" alt="Avatar">` : '';
@@ -1501,14 +1501,20 @@
                         <div class="profile-avatar-big">
                             ${photoHtml}
                         </div>
-                        <div class="profile-name-large">${name}</div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <div class="profile-name-large" style="margin-bottom: 0;">${name}</div>
+                            
+                            <button id="follow-btn" class="follow-btn" onclick="window.toggleFollow('${uid}')">追蹤</button>
+                        </div>
+
                         <div class="profile-email">${displayHandle}</div>
                         
                         <div class="profile-stats-row">
                             <span class="p-stat-box"><span class="p-stat-num" id="p-post-count">0</span> Posts</span>
                             <span class="p-stat-box"><span class="p-stat-num" id="p-following-count">0</span> Following</span>
                             <span class="p-stat-box"><span class="p-stat-num" id="p-followers-count">0</span> Followers</span>
-                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1518,11 +1524,11 @@
                     <div style="text-align:center; padding:20px; color:#666;">Loading posts...</div>
                 </div>
             `;
+
+            // 4. 執行後續載入
             loadProfileFeed(uid);
-            checkFollowStatus(uid); // ★ 檢查按鈕狀態
-            loadFollowStats(uid);   // ★ 載入粉絲數字
-            // 4. 載入該使用者的貼文
-            loadProfileFeed(uid);
+            checkFollowStatus(uid); // 檢查按鈕狀態
+            loadFollowStats(uid);   // 載入粉絲數字
         }
 // =========================================
         // ★ 新增：追蹤系統核心邏輯
