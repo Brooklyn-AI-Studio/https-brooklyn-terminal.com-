@@ -436,9 +436,16 @@
         };
         
         window.toggleProfileMenu = function() {
-            const menu = document.getElementById('profile-menu');
-            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-        }
+        const menu = document.getElementById('profile-menu');
+        if (!menu) return;
+ 
+        const cur = menu.style.display;
+        if (!cur || cur === 'none') {
+         menu.style.display = 'block';
+        } else {
+         menu.style.display = 'none';
+         }
+        };
         
         document.addEventListener('click', (event) => {
             const menu = document.getElementById('profile-menu');
@@ -814,6 +821,8 @@
                 input.value = '';
             } catch(e) { alert("Error: " + e.message); }
         }
+        // ★ 關鍵修正：將 initApp 連結到主要的渲染函式
+        window.initApp = window.renderPulseStreet;
     </script>
 </body>
 </html>
