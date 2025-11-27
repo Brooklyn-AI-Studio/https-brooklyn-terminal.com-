@@ -495,17 +495,17 @@
 .profile-header-card {
     background: var(--bg-panel);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 40px;
+    margin-bottom: 25px;
     position: relative;
     box-shadow: 0 15px 50px rgba(0,0,0,0.6);
-    min-height: 350px; /* ★ 強制最小高度，避免塌陷 */
+    min-height: auto; /* ★ 強制最小高度，避免塌陷 */
     flex-shrink: 0;    /* ★ 禁止被 Flex 容器壓縮 */
 }
 
 .profile-cover {
-    height: 300px;
+    height: 200px;
     background: linear-gradient(45deg, #000000, var(--accent-main));
     opacity: 0.4;
 }
@@ -519,8 +519,8 @@
 }
 
 .profile-avatar-big {
-    width: 180px;
-    height: 180px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     border: 8px solid var(--bg-panel);
     background: #000;
@@ -534,7 +534,7 @@
 }
 
 .profile-name-large {
-    font-size: 3.2em;
+    font-size: 2.5em;
     font-weight: 900;
     color: #fff;
     font-family: var(--font-display);
