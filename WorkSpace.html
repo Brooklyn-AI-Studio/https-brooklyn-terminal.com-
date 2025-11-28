@@ -34,17 +34,20 @@
 
     <style>
       /* 加入 style 標籤內 */
-      #canvas-scroll-container {
-      /* 隱藏捲軸但保留功能 (選用，若希望像圖片一樣乾淨) */
-       scrollbar-width: thin; /* Firefox */
-     }
-       #canvas-scroll-container::-webkit-scrollbar {
-       width: 8px;
-       height: 8px;
-    }
-       .cursor-grabbing {
-       cursor: grabbing !important;
-    }
+      /* 隱藏捲軸 */
+#canvas-scroll-container {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE */
+}
+#canvas-scroll-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+/* 確保拉伸功能的游標正確 */
+.resize {
+    resize: both;
+    overflow: hidden;
+}
 
         /* 定義主題變數 */
         :root {
@@ -1248,20 +1251,26 @@
             }
         }
 // --- 新增：滑鼠中鍵拖曳畫布 (Panning) ---
-const scrollContainer = document.getElementById('canvas-scroll-container');
+// --- Middle Mouse Pan Logic (從 APP.txt 復刻) ---
+const scrollContainer = document.getElementById('canvas-scroll-container'); // 對應 APP.txt 的 .workspace
 let isPanning = false;
 let startX, startY, scrollLeft, scrollTop;
 
 scrollContainer.addEventListener('mousedown', (e) => {
-    // e.button === 1 代表滑鼠滾輪(中鍵)
-    // 或是您可以改成 e.button === 0 && e.altKey (Alt + 左鍵)
+    // e.button === 1 代表滑鼠中鍵 (滾輪點擊)
     if (e.button === 1) {
-        e.preventDefault(); // 防止出現瀏覽器預設的捲動圖示
+        e.preventDefault(); // 防止瀏覽器預設的自動捲動圖示出現
         isPanning = true;
-        scrollContainer.style.cursor = 'grabbing'; // 改變游標樣式
         
+        // 改變游標樣式 (對應 CSS .cursor-grabbing)
+        scrollContainer.style.cursor = 'grabbing'; 
+        
+        // 記錄初始位置 (相對於容器)
+        // APP.txt 使用: e.pageX - workspace.offsetLeft
         startX = e.pageX - scrollContainer.offsetLeft;
         startY = e.pageY - scrollContainer.offsetTop;
+        
+        // 記錄目前的捲動位置
         scrollLeft = scrollContainer.scrollLeft;
         scrollTop = scrollContainer.scrollTop;
     }
@@ -1281,15 +1290,18 @@ scrollContainer.addEventListener('mousemove', (e) => {
     if (!isPanning) return;
     e.preventDefault();
     
+    // 計算滑鼠移動的新位置
     const x = e.pageX - scrollContainer.offsetLeft;
     const y = e.pageY - scrollContainer.offsetTop;
     
-    const walkX = (x - startX) * 1; // 捲動速度倍率，可自行調整
-    const walkY = (y - startY) * 1;
+    // 計算位移量 (APP.txt 邏輯: 原始位置 - 新位置)
+    const walkX = (x - startX); 
+    const walkY = (y - startY);
     
+    // 更新捲軸位置 (反向移動實現拖曳效果)
     scrollContainer.scrollLeft = scrollLeft - walkX;
     scrollContainer.scrollTop = scrollTop - walkY;
-});  
+});
         // --- 新增：動態調整畫布大小 ---
 window.resizeCanvasPrompt = function() {
     const sizer = document.getElementById('canvas-sizer');
@@ -1320,6 +1332,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
