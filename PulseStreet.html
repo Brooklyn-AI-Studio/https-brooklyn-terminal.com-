@@ -2489,68 +2489,74 @@
 
         // 7. 載入並監聽聊天室訊息 (這是您原本遺漏的第三步)
         function loadChatRoom(chatId, currentUid) {
-            const chatArea = document.getElementById('mailbox-chat-area');
-            if(!chatArea) return;
+    const chatArea = document.getElementById('mailbox-chat-area');
+    if (!chatArea) return;
 
-            // 切換聊天室時，先取消上一個聊天室的監聽，避免重複收到訊息
-            if (currentChatUnsubscribe) {
-                currentChatUnsubscribe();
-            }
+    if (currentChatUnsubscribe) {
+        currentChatUnsubscribe();
+    }
 
-            const { collection, query, orderBy, onSnapshot, limit } = window.fs;
-            
-            // 查詢該聊天室底下的 messages，依時間排序，只抓最後 50 筆
-            const q = query(
-                collection(window.db, "chats", chatId, "messages"), 
-                orderBy("timestamp", "asc"),
-                limit(50) 
-            );
+    const { collection, query, orderBy, onSnapshot, limit } = window.fs;
 
-            // 設置即時監聽
-            currentChatUnsubscribe = onSnapshot(q, (snapshot) => {
-                let html = '';
-                snapshot.forEach(doc => {
-                    const msg = doc.data();
-                    const isMe = (msg.senderId === currentUid);
-                    
-                    // 時間格式化
-                    const date = msg.timestamp ? msg.timestamp.toDate() : new Date();
-                    const timeStr = date.toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+    // 抓「最新」50 筆
+    const q = query(
+        collection(window.db, "chats", chatId, "messages"),
+        orderBy("timestamp", "desc"),
+        limit(50)
+    );
 
-                    // 產生訊息氣泡 (右邊是自己，左邊是對方)
-                    html += `
-                        <div style="
-                            display:flex; 
-                            justify-content: ${isMe ? 'flex-end' : 'flex-start'};
-                            margin-bottom: 10px;
-                            animation: fadeIn 0.3s ease;
-                        ">
-                            <div style="
-                                max-width: 70%;
-                                background: ${isMe ? 'var(--accent-main)' : 'rgba(255,255,255,0.1)'};
-                                color: ${isMe ? '#000' : 'var(--text-primary)'};
-                                padding: 8px 15px;
-                                border-radius: 18px;
-                                border-bottom-${isMe ? 'right' : 'left'}-radius: 4px;
-                                position: relative;
-                            ">
-                                <div style="font-size:0.95em; white-space: pre-wrap; word-break: break-word;">${msg.content}</div>
-                                <div style="font-size:0.7em; text-align:right; margin-top:5px; opacity:0.6;">
-                                    ${timeStr}
-                                </div>
-                            </div>
+    currentChatUnsubscribe = onSnapshot(q, (snapshot) => {
+        // 先把文件轉成陣列
+        let messages = snapshot.docs.map(doc => {
+            return { id: doc.id, ...doc.data() };
+        });
+
+        // 因為我們 orderBy desc，所以反轉回「由舊到新」
+        messages = messages.sort((a, b) => {
+            const ta = a.timestamp ? a.timestamp.toMillis() : 0;
+            const tb = b.timestamp ? b.timestamp.toMillis() : 0;
+            return ta - tb;
+        });
+
+        let html = '';
+        messages.forEach(msg => {
+            const isMe = (msg.senderId === currentUid);
+            const date = msg.timestamp ? msg.timestamp.toDate() : new Date();
+            const timeStr = date.toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+
+            html += `
+                <div style="
+                    display:flex; 
+                    justify-content: ${isMe ? 'flex-end' : 'flex-start'};
+                    margin-bottom: 10px;
+                    animation: fadeIn 0.3s ease;
+                ">
+                    <div style="
+                        max-width: 70%;
+                        background: ${isMe ? 'var(--accent-main)' : 'rgba(255,255,255,0.1)'};
+                        color: ${isMe ? '#000' : 'var(--text-primary)'};
+                        padding: 8px 15px;
+                        border-radius: 18px;
+                        border-bottom-${isMe ? 'right' : 'left'}-radius: 4px;
+                        position: relative;
+                    ">
+                        <div style="font-size:0.95em; white-space: pre-wrap; word-break: break-word;">${msg.content}</div>
+                        <div style="font-size:0.7em; text-align:right; margin-top:5px; opacity:0.6;">
+                            ${timeStr}
                         </div>
-                    `;
-                });
+                    </div>
+                </div>
+            `;
+        });
 
-                if (html === '') {
-                    html = '<div style="text-align:center; padding:20px; color:#666;">開始新的對話...</div>';
-                }
-
-                chatArea.innerHTML = html;
-                chatArea.scrollTop = chatArea.scrollHeight; // 自動捲動到底部
-            });
+        if (html === '') {
+            html = '<div style="text-align:center; padding:20px; color:#666;">開始新的對話...</div>';
         }
+
+        chatArea.innerHTML = html;
+        chatArea.scrollTop = chatArea.scrollHeight; // 仍然自動捲到最底
+    });
+}
 
 
      
