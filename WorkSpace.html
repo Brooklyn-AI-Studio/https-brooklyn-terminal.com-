@@ -359,7 +359,7 @@
                     </div>
 
                     <!-- 登出選單 -->
-                    <div class="absolute bottom-full left-0 w-full mb-2 hidden group-hover:block pb-1">
+                    <div class="absolute bottom-full left-0 w-full mb-2 hidden pb-1 z-50">
                         <button id="btn-logout" class="w-full bg-surface border border-border text-red-500 px-3 py-2 rounded shadow-xl text-xs font-bold hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                             Log Out
@@ -444,6 +444,7 @@
         // UI Elements
         const loginBtn = document.getElementById('btn-login');
         const userProfile = document.getElementById('user-profile');
+        const logoutMenu = document.getElementById('logout-menu');
         const userAvatar = document.getElementById('user-avatar');
         const userName = document.getElementById('user-name');
         const userEmail = document.getElementById('user-email');
@@ -696,6 +697,24 @@
                 nameInput.classList.add('border-red-500'); setTimeout(() => nameInput.classList.remove('border-red-500'), 1000);
             }
         };
+// 點擊使用者頭像切換登出選單
+userProfile.addEventListener('click', (e) => {
+    e.stopPropagation(); // 防止觸發 document 的關閉事件
+    // 切換 hidden class
+    if (logoutMenu.classList.contains('hidden')) {
+        // 先關閉其他所有選單
+        langMenu.classList.add('hidden');
+        themeMenu.classList.add('hidden');
+        globalContextMenu.classList.add('hidden');
+        
+        logoutMenu.classList.remove('hidden');
+        logoutMenu.classList.add('popover-enter-active'); // 加入進場動畫
+    } else {
+        logoutMenu.classList.add('hidden');
+        logoutMenu.classList.remove('popover-enter-active');
+    }
+});
+        
 
         function renderWorkspaceList() {
             workspaceList.innerHTML = '';
@@ -892,10 +911,18 @@
         });
 
         document.addEventListener('click', (e) => {
-            langMenu.classList.add('hidden'); themeMenu.classList.add('hidden'); globalContextMenu.classList.add('hidden');
-            if (e.target === modal) closeModal();
-            if (e.target === editModal) closeEditModal();
-        });
+    langMenu.classList.add('hidden'); 
+    themeMenu.classList.add('hidden'); 
+    globalContextMenu.classList.add('hidden');
+    
+    // 新增這一行：如果點擊的目標不是 userProfile 內部，就關閉登出選單
+    if (!userProfile.contains(e.target)) {
+        if(logoutMenu) logoutMenu.classList.add('hidden');
+    }
+
+    if (e.target === modal) closeModal();
+    if (e.target === editModal) closeEditModal();
+});
 
         window.setLanguage = (lang) => {
             state.lang = lang; const t = translations[lang];
@@ -912,4 +939,5 @@
         window.onload = () => { setTheme('cyberpunk'); setLanguage('zh'); };
     </script>
 </body>
+
 </html>
