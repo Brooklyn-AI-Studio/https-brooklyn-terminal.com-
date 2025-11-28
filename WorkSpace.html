@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextGen Workspace</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bg: 'var(--bg-primary)',
+                        surface: 'var(--bg-secondary)',
+                        sidebar: 'var(--bg-sidebar)',
+                        text: 'var(--text-primary)',
+                        muted: 'var(--text-secondary)',
+                        accent: 'var(--accent-color)',
+                        border: 'var(--border-color)',
+                        grid: 'var(--grid-color)',
+                    },
+                    fontFamily: {
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        sans: ['"Inter"', '"Noto Sans TC"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* 定義主題變數 */
+        :root {
+            /* 預設: 賽博龐克 (Cyberpunk) - 新增霓虹變數 */
+            --bg-primary: #050505;
+            --bg-secondary: #0a0a0a;
+            --bg-sidebar: #080808;
+            --text-primary: #e0e0e0;
+            --text-secondary: #6b7280;
+            --accent-color: #00ff9d; /* Neon Green */
+            --accent-secondary: #ff0055; /* Neon Pink */
+            --border-color: #1f1f1f;
+            --grid-color: rgba(0, 255, 157, 0.15);
+            --font-main: 'JetBrains Mono', monospace;
+            
+            /* 霓虹光暈變數 (僅在 Cyberpunk 模式下生效) */
+            --neon-text-shadow: 0 0 5px var(--accent-color), 0 0 10px var(--accent-color);
+            --neon-box-shadow: 0 0 5px var(--accent-color), inset 0 0 5px rgba(0, 255, 157, 0.1);
+        }
+
+        /* 主題: 高級商務 (Premium Business) */
+        [data-theme="business"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f1f5f9;
+            --bg-sidebar: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --accent-color: #0284c7;
+            --accent-secondary: #f59e0b; 
+            --border-color: #cbd5e1;
+            --grid-color: rgba(15, 23, 42, 0.08);
+            --font-main: 'Inter', 'Noto Sans TC', sans-serif;
+            --neon-text-shadow: none;
+            --neon-box-shadow: none;
+        }
+
+        /* 主題: 開發者 (Developer) */
+        [data-theme="developer"] {
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #252526;
+            --bg-sidebar: #252526;
+            --text-primary: #d4d4d4;
+            --text-secondary: #a1a1a1;
+            --accent-color: #007acc;
+            --accent-secondary: #ce9178;
+            --border-color: #3e3e42;
+            --grid-color: rgba(255, 255, 255, 0.05);
+            --font-main: 'JetBrains Mono', monospace;
+            --neon-text-shadow: none;
+            --neon-box-shadow: none;
+        }
+
+        /* 主題: 終端機 (Terminal) - 改為駭客綠 (Green Phosphor) */
+        [data-theme="terminal"] {
+            --bg-primary: #051105;      /* 極深綠黑 */
+            --bg-secondary: #0a1a0a;
+            --bg-sidebar: #000000;
+            --text-primary: #00ff33;    /* 經典螢光綠 */
+            --text-secondary: #00cc29;  /* 稍暗的綠色 */
+            --accent-color: #00ff33;
+            --accent-secondary: #00ff33;
+            --border-color: #003300;
+            --grid-color: rgba(0, 255, 51, 0.2);
+            --font-main: 'Courier New', 'JetBrains Mono', monospace;
+            --neon-text-shadow: none; /* 終端機風格保持銳利，不加暈光 */
+            --neon-box-shadow: none;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            transition: background-color 0.3s, color 0.3s;
+            overflow: hidden;
+        }
+
+        svg { color: var(--text-primary); }
+        .text-muted svg { color: currentColor; }
+        .text-accent svg { color: currentColor; }
+        .text-red-500 svg { color: currentColor; }
+
+        /* 網格背景特效 */
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+            mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+        }
+
+        .dots-bg {
+            background-image: radial-gradient(var(--text-secondary) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.2;
+        }
+
+        .sidebar-transition {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+
+        .popover-enter { opacity: 0; transform: translateY(10px) scale(0.95); }
+        .popover-enter-active { opacity: 1; transform: translateY(0) scale(1); transition: opacity 0.2s, transform 0.2s; }
+        
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
+
+        .nav-item:hover { background-color: rgba(255,255,255, 0.05); color: var(--accent-color); }
+        
+        [data-theme="business"] .nav-item:hover { background-color: rgba(0,0,0, 0.08); }
+        [data-theme="business"] .nav-item:hover svg, [data-theme="business"] .nav-item:hover span { color: var(--accent-color); }
+        
+        .rotate-90 { transform: rotate(90deg); }
+        
+        .nav-active { color: var(--accent-color); background-color: rgba(255,255,255, 0.05); border-right: 2px solid var(--accent-color); }
+        [data-theme="business"] .nav-active { background-color: rgba(0,0,0, 0.05); }
+        [data-theme="terminal"] .nav-active { background-color: var(--text-primary); color: var(--bg-primary); border-right: none; }
+        [data-theme="terminal"] .nav-active svg { color: var(--bg-primary); }
+
+        /* --- 賽博龐克專屬霓虹特效 --- */
+        /* 當沒有 data-theme (預設) 或 data-theme="cyberpunk" 時生效 */
+        :not([data-theme="business"]):not([data-theme="developer"]):not([data-theme="terminal"]) .text-accent,
+        [data-theme="cyberpunk"] .text-accent {
+            text-shadow: var(--neon-text-shadow);
+        }
+
+        :not([data-theme="business"]):not([data-theme="developer"]):not([data-theme="terminal"]) .border-accent,
+        [data-theme="cyberpunk"] .border-accent {
+            box-shadow: var(--neon-box-shadow);
+            border-color: var(--accent-color); /* 確保邊框顏色最亮 */
+        }
+        
+        /* 專案內容的節點動畫 */
+        .node-appear { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.5); }
+        @keyframes popIn { to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body class="h-screen w-screen flex overflow-hidden selection:bg-accent selection:text-bg">
+
+    <!-- 全域 Context Menu -->
+    <div id="global-context-menu" class="fixed hidden bg-surface border border-border rounded shadow-xl z-50 p-1 w-32 backdrop-blur-md">
+        <button id="global-edit-btn" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded transition-colors flex items-center gap-2">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+            <span data-i18n="edit">Edit</span>
+        </button>
+    </div>
+
+    <!-- 新增工具區間 Modal -->
+    <div id="add-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+        <div class="bg-surface border border-border p-6 rounded-lg w-96 shadow-2xl transform transition-all modal-enter border-accent" id="modal-content">
+            <h3 class="text-lg font-bold text-accent mb-4 tracking-wider" data-i18n="modal_title">NEW WORKSPACE NODE</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-muted mb-1 uppercase font-bold" data-i18n="modal_name">Section Name</label>
+                    <input type="text" id="new-section-name" class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors" placeholder="e.g. Project Omega">
+                </div>
+                <div>
+                    <label class="block text-xs text-muted mb-1 uppercase font-bold" data-i18n="modal_desc">Description</label>
+                    <textarea id="new-section-desc" rows="3" class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors" placeholder="Brief description..."></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeModal()" class="px-4 py-2 text-xs font-bold text-muted hover:text-text transition-colors" data-i18n="modal_cancel">CANCEL</button>
+                <button onclick="confirmAddSection()" class="px-4 py-2 text-xs font-bold bg-accent text-bg rounded hover:bg-opacity-90 transition-colors" data-i18n="modal_confirm">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 編輯工具區間 Modal -->
+    <div id="edit-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+        <div class="bg-surface border border-border p-6 rounded-lg w-[450px] shadow-2xl transform transition-all modal-enter border-accent" id="edit-modal-content">
+            <h3 class="text-lg font-bold text-accent mb-4 tracking-wider" data-i18n="edit_modal_title">EDIT WORKSPACE</h3>
+            
+            <div class="space-y-4">
+                <!-- 基本資料 -->
+                <div>
+                    <label class="block text-xs text-muted mb-1 uppercase font-bold" data-i18n="modal_name">Section Name</label>
+                    <input type="text" id="edit-section-name" class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs text-muted mb-1 uppercase font-bold" data-i18n="modal_desc">Description</label>
+                    <textarea id="edit-section-desc" rows="2" class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors"></textarea>
+                </div>
+
+                <!-- 成員管理 -->
+                <div>
+                    <label class="block text-xs text-muted mb-2 uppercase font-bold" data-i18n="edit_members">Invite Members (Email)</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="email" id="new-member-input" class="flex-1 bg-bg border border-border rounded px-3 py-1.5 text-xs text-text focus:border-accent focus:outline-none" placeholder="friend@example.com" onkeypress="handleMemberInputKey(event)">
+                        <button onclick="addMember()" class="px-3 py-1.5 bg-white/5 border border-border rounded text-xs hover:text-accent hover:border-accent transition-colors">+</button>
+                    </div>
+                    <div id="members-list" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1">
+                        <!-- 成員 Chips 動態生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部動作區 -->
+            <div class="border-t border-border mt-6 pt-4 flex justify-between items-center">
+                <!-- 刪除按鈕 -->
+                <button onclick="deleteWorkspace()" class="px-3 py-2 text-xs font-bold text-red-500 border border-red-500/50 bg-red-500/10 rounded hover:bg-red-500 hover:text-white transition-all flex items-center gap-2 group">
+                    <svg class="w-3 h-3 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    <span data-i18n="delete_workspace">DELETE</span>
+                </button>
+
+                <div class="flex gap-3">
+                    <button onclick="closeEditModal()" class="px-4 py-2 text-xs font-bold text-muted hover:text-text transition-colors" data-i18n="modal_cancel">CANCEL</button>
+                    <button onclick="saveEditWorkspace()" class="px-4 py-2 text-xs font-bold bg-accent text-bg rounded hover:bg-opacity-90 transition-colors" data-i18n="modal_save">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 左側邊欄 -->
+    <aside id="sidebar" class="sidebar-transition h-full flex flex-col justify-between border-r border-border bg-sidebar z-20 w-64 relative group">
+        
+        <!-- 頂部：Logo 與 收闔按鈕 -->
+        <div class="flex flex-col">
+            <div class="h-16 flex items-center justify-between px-4 border-b border-border">
+                <div id="logo-container" class="flex items-center gap-3 overflow-hidden whitespace-nowrap">
+                    <!-- Logo SVG -->
+                    <svg class="w-8 h-8 text-accent min-w-[32px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path>
+                    </svg>
+                    <span class="font-bold tracking-wider text-lg transition-opacity duration-300 sidebar-text text-text">WORKSPACE</span>
+                </div>
+                <!-- 收闔按鈕 -->
+                <button id="toggle-sidebar" class="p-1 rounded hover:bg-white/10 text-muted hover:text-accent transition-colors">
+                    <svg id="toggle-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- 選單區域 -->
+            <nav class="flex-1 py-6 px-3 space-y-4 overflow-y-auto" id="sidebar-nav">
+                
+                <!-- 新增工具區間按鈕 -->
+                <button onclick="openModal()" class="w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm border border-dashed border-border text-muted hover:text-accent hover:border-accent transition-all group">
+                    <svg class="w-5 h-5 min-w-[20px] text-muted group-hover:text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <span class="sidebar-text whitespace-nowrap" data-i18n="add_tool_section">Add Tool Section</span>
+                </button>
+
+                <!-- 我的工作區間 (可收闔) -->
+                <div>
+                    <button onclick="toggleWorkspace()" class="w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all group">
+                        <!-- 三角形箭頭 -->
+                        <svg id="workspace-arrow" class="w-4 h-4 min-w-[16px] text-muted transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="sidebar-text whitespace-nowrap font-semibold tracking-wide" data-i18n="my_workspace">My Workspace</span>
+                    </button>
+                    <!-- 子選單內容 (容器) -->
+                    <div id="workspace-list" class="hidden pl-4 mt-1 border-l border-border ml-4 space-y-1">
+                        <!-- 專案列表將由 JS 動態生成 -->
+                        <div class="px-3 py-2 text-xs text-muted italic" id="loading-text">Loading...</div>
+                    </div>
+                </div>
+
+            </nav>
+        </div>
+
+        <!-- 底部工具列：語言與主題 + Google 登入 -->
+        <div class="p-3 border-t border-border bg-surface/50 relative">
+            
+            <!-- 語言與外觀工具列 (緊湊排列) -->
+            <div class="flex gap-2 mb-3">
+                <!-- 語言切換 -->
+                <div class="relative flex-1">
+                    <button id="lang-btn" class="w-full flex items-center justify-center gap-2 px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors" title="Language">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </button>
+                    <div id="lang-menu" class="hidden absolute bottom-full left-0 w-32 mb-2 bg-sidebar border border-border rounded-lg shadow-xl overflow-hidden z-50 p-1">
+                        <button onclick="setLanguage('en')" class="w-full text-left px-3 py-2 text-xs hover:bg-accent hover:text-bg rounded">English</button>
+                        <button onclick="setLanguage('zh')" class="w-full text-left px-3 py-2 text-xs hover:bg-accent hover:text-bg rounded">繁體中文</button>
+                    </div>
+                </div>
+
+                <!-- 外觀風格切換 -->
+                <div class="relative flex-1">
+                    <button id="theme-btn" class="w-full flex items-center justify-center gap-2 px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors" title="Appearance">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    </button>
+                    <div id="theme-menu" class="hidden absolute bottom-full left-0 w-48 mb-2 bg-sidebar border border-border rounded-lg shadow-xl overflow-hidden z-50 p-1">
+                        <button onclick="setTheme('business')" id="opt-business" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded flex items-center gap-2">Business</button>
+                        <button onclick="setTheme('developer')" id="opt-developer" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded flex items-center gap-2">Developer</button>
+                        <button onclick="setTheme('terminal')" id="opt-terminal" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded flex items-center gap-2">Terminal</button>
+                        <button onclick="setTheme('cyberpunk')" id="opt-cyberpunk" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded flex items-center gap-2">Cyberpunk</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google 帳戶 / 登入區塊 -->
+            <div id="auth-container" class="pt-3 border-t border-border">
+                
+                <!-- 狀態 A: 未登入 (顯示 Google 圖示按鈕) -->
+                <button id="btn-login" class="w-full flex items-center justify-center gap-2 bg-white text-black px-3 py-2 rounded-md hover:bg-gray-200 transition-colors font-bold text-sm shadow-lg shadow-white/10">
+                    <svg width="16" height="16" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.64 9.2c0-.637-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"></path>
+                        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.715H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"></path>
+                        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"></path>
+                        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.159 6.656 3.58 9 3.58z" fill="#EA4335"></path>
+                    </svg>
+                    <span class="whitespace-nowrap">Sign in</span>
+                </button>
+
+                <!-- 狀態 B: 已登入 (顯示使用者卡片) -->
+                <div id="user-profile" class="hidden flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors group relative border border-transparent hover:border-border">
+                    <!-- 頭像 -->
+                    <img id="user-avatar" src="" alt="User" class="w-8 h-8 rounded-full border border-border group-hover:border-accent transition-colors object-cover bg-surface">
+                    
+                    <!-- 文字資訊 -->
+                    <div class="flex flex-col overflow-hidden sidebar-text flex-1">
+                        <span id="user-name" class="text-xs font-bold text-text truncate">User Name</span>
+                        <span id="user-email" class="text-[10px] text-muted truncate">email@example.com</span>
+                    </div>
+
+                    <!-- 登出選單 -->
+                    <div class="absolute bottom-full left-0 w-full mb-2 hidden group-hover:block pb-1">
+                        <button id="btn-logout" class="w-full bg-surface border border-border text-red-500 px-3 py-2 rounded shadow-xl text-xs font-bold hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            Log Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </aside>
+
+    <!-- 主要內容區 -->
+    <main class="flex-1 relative flex flex-col h-full bg-bg">
+        <div class="absolute inset-0 dots-bg pointer-events-none z-0"></div>
+
+        <!-- 頂部 Breadcrumb Bar -->
+        <div class="h-12 border-b border-border flex items-center px-6 bg-surface/50 backdrop-blur z-10 shrink-0 border-accent">
+            <div class="text-sm font-mono text-muted flex items-center">
+                <span class="text-accent mr-2">&gt;</span>
+                <span class="hover:text-text cursor-pointer transition-colors" onclick="resetBreadcrumb()">Workspace</span>
+                <span id="breadcrumb-separator" class="mx-2 hidden">/</span>
+                <span id="breadcrumb-current" class="text-text font-bold hidden ml-2 text-accent"></span>
+            </div>
+        </div>
+        
+        <!-- 中央網格工作區 -->
+        <div class="flex-1 relative p-8 overflow-hidden flex items-center justify-center">
+            
+            <div class="relative w-full h-full border border-grid flex flex-col overflow-hidden">
+                <!-- 網格背景 -->
+                <div class="absolute inset-0 grid-bg opacity-50 pointer-events-none"></div>
+
+                <!-- 狀態 1: 初始化/空狀態 -->
+                <div id="empty-state-container" class="relative z-10 p-6 h-full flex items-center justify-center transition-opacity duration-300">
+                    <div class="text-center space-y-4">
+                        <!-- + 號按鈕 -->
+                        <button onclick="handlePlusClick()" class="w-24 h-24 mx-auto border-2 border-accent rounded-full flex items-center justify-center relative group cursor-pointer hover:bg-accent/10 transition-all focus:outline-none">
+                            <svg class="w-10 h-10 text-accent group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <div class="absolute inset-0 rounded-full border border-accent animate-ping opacity-20"></div>
+                        </button>
+                        <h2 class="text-2xl font-bold text-text text-accent" data-i18n="empty_state">Initialize Project</h2>
+                        <p id="empty-desc-text" class="text-muted max-w-md mx-auto" data-i18n="empty_desc">Select a tool from the left sidebar or click above to create a new component node.</p>
+                    </div>
+                </div>
+
+                <!-- 狀態 2: 專案內容區域 -->
+                <div id="project-content-container" class="hidden relative z-10 w-full h-full p-6 overflow-hidden">
+                     <!-- 內容動態生成 -->
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDK (Module) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // 1. Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
+            authDomain: "brooklyn-terminal.firebaseapp.com",
+            projectId: "brooklyn-terminal",
+            storageBucket: "brooklyn-terminal.firebasestorage.app",
+            messagingSenderId: "438411734316",
+            appId: "1:438411734316:web:649051890cf381eb0fd089",
+            measurementId: "G-G0GMW0XHG1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+        
+        // 確保有 App ID
+        const appId = 'brooklyn-terminal-v1'; // 固定 App ID 確保路徑一致
+
+        // UI Elements
+        const loginBtn = document.getElementById('btn-login');
+        const userProfile = document.getElementById('user-profile');
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
+        const userEmail = document.getElementById('user-email');
+        const logoutBtn = document.getElementById('btn-logout');
+        const emptyDescText = document.getElementById('empty-desc-text');
+
+        let currentUser = null;
+        let unsubscribeProjects = null;
+
+        // 2. Auth Logic
+        loginBtn.addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch((error) => alert("Login Error: " + error.message));
+        });
+
+        logoutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            signOut(auth);
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                // Show User Profile
+                loginBtn.classList.add('hidden');
+                userProfile.classList.remove('hidden');
+                userProfile.classList.add('flex');
+                userAvatar.src = user.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid;
+                userName.textContent = user.displayName || 'User';
+                userEmail.textContent = user.email;
+                
+                emptyDescText.textContent = "Click + to create a workspace. You can invite friends to join via email.";
+                
+                // Start Listening to Workspaces
+                initWorkspaceListener(user);
+            } else {
+                // Show Login Button
+                loginBtn.classList.remove('hidden');
+                userProfile.classList.add('hidden');
+                userProfile.classList.remove('flex');
+                
+                emptyDescText.textContent = "Please sign in to access or create workspaces.";
+                
+                // Clear Data
+                if (unsubscribeProjects) unsubscribeProjects();
+                window.updateProjectsList([]);
+                window.resetBreadcrumb();
+            }
+        });
+
+        // 3. Firestore Logic
+        function initWorkspaceListener(user) {
+            // 查詢：所有成員陣列中包含當前使用者 Email 的工作區
+            // 使用 'array-contains' 運算符
+            const q = query(
+                collection(db, 'artifacts', appId, 'public', 'data', 'workspaces'),
+                where('members', 'array-contains', user.email)
+            );
+
+            unsubscribeProjects = onSnapshot(q, (snapshot) => {
+                const projects = [];
+                snapshot.forEach((doc) => {
+                    projects.push({ id: doc.id, ...doc.data() });
+                });
+                // 更新全域狀態
+                window.updateProjectsList(projects);
+            }, (error) => {
+                console.error("Data fetch error:", error);
+            });
+        }
+
+        // 4. Expose Functions for Global Scope (to be used by other script)
+        
+        // 建立新工作區
+        window.dbCreateProject = async (name, desc, nodes) => {
+            if (!currentUser) return alert("Please login first!");
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'workspaces'), {
+                    name: name,
+                    desc: desc,
+                    ownerId: currentUser.uid,
+                    ownerEmail: currentUser.email,
+                    members: [currentUser.email], // 初始成員包含自己
+                    nodes: nodes,
+                    createdAt: new Date().toISOString()
+                });
+            } catch (e) {
+                console.error("Error adding doc: ", e);
+                alert("Error creating workspace: " + e.message);
+            }
+        };
+
+        // 更新工作區 (包含邀請成員)
+        window.dbUpdateProject = async (projectId, data) => {
+            if (!currentUser) return;
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId);
+            try {
+                await updateDoc(docRef, data);
+            } catch (e) {
+                console.error("Error updating doc: ", e);
+            }
+        };
+
+        // 刪除工作區
+        window.dbDeleteProject = async (projectId) => {
+            if (!currentUser) return;
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId);
+            try {
+                await deleteDoc(docRef);
+            } catch (e) {
+                console.error("Error deleting doc: ", e);
+            }
+        };
+        
+        // 檢查是否已登入
+        window.isUserLoggedIn = () => {
+            return !!currentUser;
+        }
+    </script>
+
+    <!-- UI Logic Script -->
+    <script>
+        // State
+        const state = {
+            sidebarOpen: true,
+            theme: 'cyberpunk',
+            lang: 'en',
+            currentProjectId: null,
+            editingProjectId: null,
+            tempMembers: [],
+            projects: [] // 來自 Firestore
+        };
+
+        // Translations
+        const translations = {
+            en: {
+                add_tool_section: 'Add Tool Section',
+                my_workspace: 'My Workspace',
+                language: 'Language',
+                appearance: 'Appearance',
+                select_theme: 'SELECT THEME',
+                theme_business: 'Premium Business',
+                theme_dev: 'Developer',
+                theme_terminal: 'Terminal',
+                theme_cyber: 'Cyberpunk',
+                empty_state: 'Initialize Project',
+                empty_desc: 'Sign in to create your first workspace node.',
+                modal_title: 'NEW WORKSPACE NODE',
+                modal_name: 'SECTION NAME',
+                modal_desc: 'DESCRIPTION',
+                modal_cancel: 'CANCEL',
+                modal_confirm: 'CONFIRM',
+                edit_modal_title: 'EDIT WORKSPACE',
+                edit_members: 'MEMBERS (EMAIL)',
+                delete_workspace: 'DELETE WORKSPACE',
+                modal_save: 'SAVE',
+                edit: 'Edit'
+            },
+            zh: {
+                add_tool_section: '新增工具區間',
+                my_workspace: '我的工作區間',
+                language: '語言設定',
+                appearance: '外觀風格',
+                select_theme: '選擇主題',
+                theme_business: '高級商務',
+                theme_dev: '開發者模式',
+                theme_terminal: '終端機',
+                theme_cyber: '賽博龐克',
+                empty_state: '初始化專案',
+                empty_desc: '請先登入以建立您的第一個工作區間節點。',
+                modal_title: '建立新工作區間',
+                modal_name: '區間名稱',
+                modal_desc: '描述',
+                modal_cancel: '取消',
+                modal_confirm: '確認新增',
+                edit_modal_title: '編輯工作區間',
+                edit_members: '成員名單 (Email)',
+                delete_workspace: '刪除工作區',
+                modal_save: '儲存',
+                edit: '編輯'
+            }
+        };
+
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        const toggleIcon = document.getElementById('toggle-icon');
+        const textElements = document.querySelectorAll('.sidebar-text');
+        const langBtn = document.getElementById('lang-btn');
+        const langMenu = document.getElementById('lang-menu');
+        const themeBtn = document.getElementById('theme-btn');
+        const themeMenu = document.getElementById('theme-menu');
+        const modal = document.getElementById('add-modal');
+        const modalContent = document.getElementById('modal-content');
+        const nameInput = document.getElementById('new-section-name');
+        const descInput = document.getElementById('new-section-desc');
+        const editModal = document.getElementById('edit-modal');
+        const editModalContent = document.getElementById('edit-modal-content');
+        const editNameInput = document.getElementById('edit-section-name');
+        const editDescInput = document.getElementById('edit-section-desc');
+        const membersList = document.getElementById('members-list');
+        const newMemberInput = document.getElementById('new-member-input');
+        const breadcrumbSep = document.getElementById('breadcrumb-separator');
+        const breadcrumbCurrent = document.getElementById('breadcrumb-current');
+        const emptyState = document.getElementById('empty-state-container');
+        const projectContent = document.getElementById('project-content-container');
+        const workspaceList = document.getElementById('workspace-list');
+        const workspaceArrow = document.getElementById('workspace-arrow');
+        const globalContextMenu = document.getElementById('global-context-menu');
+        const globalEditBtn = document.getElementById('global-edit-btn');
+        let activeContextProjectId = null;
+
+        // --- Data Sync ---
+        window.updateProjectsList = (projects) => {
+            state.projects = projects;
+            renderWorkspaceList();
+            
+            // 如果當前選中的專案被刪除了，回到首頁
+            if (state.currentProjectId && !projects.find(p => p.id === state.currentProjectId)) {
+                resetBreadcrumb();
+            } else if (state.currentProjectId) {
+                // 如果還在，更新顯示內容 (例如成員變動)
+                const current = projects.find(p => p.id === state.currentProjectId);
+                renderProjectGrid(current);
+            }
+        };
+
+        // --- UI Logic ---
+
+        window.handlePlusClick = () => {
+            if (window.isUserLoggedIn && window.isUserLoggedIn()) {
+                openModal();
+            } else {
+                alert("Please Sign In first using the button in the sidebar.");
+            }
+        };
+
+        window.openModal = () => { modal.classList.remove('hidden'); setTimeout(() => modalContent.classList.add('modal-enter-active'), 10); nameInput.focus(); };
+        window.closeModal = () => { modalContent.classList.remove('modal-enter-active'); setTimeout(() => { modal.classList.add('hidden'); nameInput.value = ''; descInput.value = ''; }, 200); };
+        
+        window.confirmAddSection = () => {
+            const name = nameInput.value.trim();
+            const desc = descInput.value.trim();
+            if (name) {
+                // Call Firestore Bridge
+                if(window.dbCreateProject) {
+                    window.dbCreateProject(name, desc, generateRandomNodes());
+                }
+                closeModal();
+            } else {
+                nameInput.classList.add('border-red-500'); setTimeout(() => nameInput.classList.remove('border-red-500'), 1000);
+            }
+        };
+
+        function renderWorkspaceList() {
+            workspaceList.innerHTML = '';
+            if (state.projects.length === 0) {
+                workspaceList.innerHTML = '<div class="px-3 py-2 text-xs text-muted italic opacity-50">No workspaces found.</div>';
+                return;
+            }
+
+            state.projects.forEach(proj => {
+                const container = document.createElement('div');
+                container.className = "group relative flex items-center w-full rounded hover:bg-white/5 transition-colors pr-1 mb-1 border-accent";
+                if(proj.id === state.currentProjectId) {
+                     container.classList.add('bg-white/5', 'border-r-2');
+                     if(state.theme === 'terminal') { container.classList.remove('border-r-2', 'border-accent'); container.classList.add('bg-text', 'text-bg'); }
+                }
+
+                const btn = document.createElement('button');
+                btn.className = "flex-1 text-left block px-3 py-2 text-xs text-muted hover:text-accent transition-colors sidebar-text truncate";
+                btn.textContent = proj.name;
+                if(state.theme === 'terminal' && proj.id === state.currentProjectId) { btn.classList.remove('text-muted', 'hover:text-accent'); btn.classList.add('text-bg'); }
+                btn.onclick = function() { selectWorkspaceItem(proj.id); };
+
+                // Three Dots
+                const menuBtn = document.createElement('button');
+                menuBtn.className = "p-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-accent shrink-0 focus:outline-none";
+                menuBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>`;
+                menuBtn.onclick = function(e) { e.stopPropagation(); showGlobalContextMenu(e, proj.id); };
+
+                container.appendChild(btn);
+                container.appendChild(menuBtn);
+                workspaceList.appendChild(container);
+            });
+            
+            // Auto expand list if items exist
+            if (workspaceList.classList.contains('hidden') && state.projects.length > 0) {
+                workspaceList.classList.remove('hidden');
+                workspaceArrow.classList.add('rotate-90');
+            }
+        }
+
+        function showGlobalContextMenu(e, projectId) {
+            activeContextProjectId = projectId;
+            const rect = e.currentTarget.getBoundingClientRect();
+            globalEditBtn.onclick = () => { openEditProjectModal(activeContextProjectId); globalContextMenu.classList.add('hidden'); };
+            globalContextMenu.style.top = `${rect.bottom}px`;
+            globalContextMenu.style.left = `${rect.right - 10}px`;
+            globalContextMenu.classList.remove('hidden');
+        }
+
+        window.openEditProjectModal = (projectId) => {
+            const project = state.projects.find(p => p.id === projectId);
+            if(!project) return;
+            state.editingProjectId = projectId;
+            state.tempMembers = project.members ? [...project.members] : [];
+            editNameInput.value = project.name;
+            editDescInput.value = project.desc || '';
+            renderEditMembers();
+            editModal.classList.remove('hidden');
+            setTimeout(() => editModalContent.classList.add('modal-enter-active'), 10);
+        };
+
+        window.closeEditModal = () => {
+            editModalContent.classList.remove('modal-enter-active');
+            setTimeout(() => { editModal.classList.add('hidden'); state.editingProjectId = null; state.tempMembers = []; }, 200);
+        };
+
+        function renderEditMembers() {
+            membersList.innerHTML = '';
+            state.tempMembers.forEach((member, index) => {
+                const chip = document.createElement('div');
+                chip.className = "flex items-center gap-1 px-2 py-1 bg-white/5 border border-border rounded text-xs text-text border-accent";
+                // 第一個通常是擁有者，可以加個標記，但這裡簡化處理
+                chip.innerHTML = `<span class="text-accent">${member}</span><button onclick="removeMember(${index})" class="text-muted hover:text-red-500 ml-1">×</button>`;
+                membersList.appendChild(chip);
+            });
+        }
+
+        window.addMember = () => { 
+            const email = newMemberInput.value.trim(); 
+            if(email && email.includes('@')) { 
+                if(!state.tempMembers.includes(email)) {
+                    state.tempMembers.push(email); 
+                }
+                newMemberInput.value = ''; 
+                renderEditMembers(); 
+            } else {
+                alert("Please enter a valid email.");
+            }
+        };
+        window.removeMember = (index) => { state.tempMembers.splice(index, 1); renderEditMembers(); };
+        window.handleMemberInputKey = (e) => { if(e.key === 'Enter') addMember(); }
+
+        window.saveEditWorkspace = () => {
+            if(!state.editingProjectId) return;
+            // Call Firestore
+            if(window.dbUpdateProject) {
+                window.dbUpdateProject(state.editingProjectId, {
+                    name: editNameInput.value.trim(),
+                    desc: editDescInput.value.trim(),
+                    members: state.tempMembers
+                });
+            }
+            closeEditModal();
+        };
+
+        window.deleteWorkspace = () => {
+            if(!state.editingProjectId) return;
+            if(confirm('Are you sure you want to delete this workspace? All members will lose access.')) {
+                if(window.dbDeleteProject) {
+                    window.dbDeleteProject(state.editingProjectId);
+                }
+                closeEditModal();
+            }
+        };
+
+        function updateThemeMenuHighlight() {
+            ['business', 'developer', 'terminal', 'cyberpunk'].forEach(t => {
+                const btn = document.getElementById(`opt-${t}`);
+                if(btn) { btn.classList.remove('text-accent', 'font-bold'); btn.classList.add('text-text'); }
+            });
+            const activeBtn = document.getElementById(`opt-${state.theme}`);
+            if(activeBtn) { activeBtn.classList.remove('text-text'); activeBtn.classList.add('text-accent', 'font-bold'); }
+        }
+
+        function generateRandomNodes() {
+            const count = Math.floor(Math.random() * 5) + 3; 
+            const nodes = [];
+            for (let i = 0; i < count; i++) { nodes.push({ top: Math.floor(Math.random() * 80) + '%', left: Math.floor(Math.random() * 80) + '%', type: Math.random() > 0.5 ? 'data' : 'process' }); }
+            return nodes;
+        }
+
+        window.selectWorkspaceItem = (id) => {
+            state.currentProjectId = id;
+            const project = state.projects.find(p => p.id === id);
+            renderWorkspaceList(); // Update highlight in sidebar
+            if(project) {
+                breadcrumbSep.classList.remove('hidden'); breadcrumbCurrent.classList.remove('hidden'); breadcrumbCurrent.textContent = project.name;
+                emptyState.classList.add('hidden'); projectContent.classList.remove('hidden'); renderProjectGrid(project);
+            }
+        };
+
+        function renderProjectGrid(project) {
+            projectContent.innerHTML = '';
+            const title = document.createElement('div');
+            title.className = "absolute top-4 left-4 text-xs font-mono text-muted opacity-50";
+            title.innerText = `OWNER: ${project.ownerEmail} // MEMBERS: ${project.members ? project.members.length : 0} // ${project.desc || 'No description'}`;
+            projectContent.appendChild(title);
+            
+            const nodes = project.nodes || [];
+            nodes.forEach((node, index) => {
+                const el = document.createElement('div');
+                el.className = "absolute w-32 h-24 bg-surface border border-accent/50 rounded flex items-center justify-center text-xs text-accent shadow-lg backdrop-blur-sm node-appear group cursor-move hover:border-accent border-accent";
+                el.style.top = node.top; el.style.left = node.left; el.style.animationDelay = `${index * 0.1}s`;
+                el.innerHTML = `<div class="flex flex-col items-center gap-2"><svg class="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">${node.type === 'data' ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>' : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>'}</svg><span class="font-bold text-accent">NODE_${index + 1}</span></div><div class="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>`;
+                projectContent.appendChild(el);
+            });
+        }
+
+        window.resetBreadcrumb = () => { state.currentProjectId = null; breadcrumbSep.classList.add('hidden'); breadcrumbCurrent.classList.add('hidden'); renderWorkspaceList(); emptyState.classList.remove('hidden'); projectContent.classList.add('hidden'); };
+        
+        window.toggleWorkspace = () => { 
+            if (!state.sidebarOpen) toggleBtn.click(); 
+            workspaceList.classList.toggle('hidden'); 
+            workspaceArrow.classList.toggle('rotate-90'); 
+        };
+
+        toggleBtn.addEventListener('click', () => {
+            state.sidebarOpen = !state.sidebarOpen;
+            if (!state.sidebarOpen) {
+                sidebar.classList.remove('w-64'); sidebar.classList.add('w-16');
+                textElements.forEach(el => el.classList.add('opacity-0', 'pointer-events-none', 'hidden'));
+                toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>';
+                workspaceList.classList.add('hidden'); workspaceArrow.classList.remove('rotate-90');
+            } else {
+                sidebar.classList.remove('w-16'); sidebar.classList.add('w-64');
+                setTimeout(() => textElements.forEach(el => el.classList.remove('opacity-0', 'pointer-events-none', 'hidden')), 100);
+                toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>';
+            }
+        });
+
+        function toggleMenu(menu) {
+            const isHidden = menu.classList.contains('hidden');
+            langMenu.classList.add('hidden'); themeMenu.classList.add('hidden'); globalContextMenu.classList.add('hidden');
+            if (isHidden) { menu.classList.remove('hidden'); menu.classList.add('popover-enter-active'); }
+        }
+
+        langBtn.addEventListener('click', (e) => { e.stopPropagation(); if(!state.sidebarOpen) toggleBtn.click(); toggleMenu(langMenu); });
+        
+        themeBtn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            if(!state.sidebarOpen) toggleBtn.click(); 
+            toggleMenu(themeMenu); 
+            updateThemeMenuHighlight(); 
+        });
+
+        document.addEventListener('click', (e) => {
+            langMenu.classList.add('hidden'); themeMenu.classList.add('hidden'); globalContextMenu.classList.add('hidden');
+            if (e.target === modal) closeModal();
+            if (e.target === editModal) closeEditModal();
+        });
+
+        window.setLanguage = (lang) => {
+            state.lang = lang; const t = translations[lang];
+            document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (t[key]) el.textContent = t[key]; });
+            if(lang === 'zh') { document.getElementById('new-section-name').placeholder = '例如: 專案 Omega'; document.getElementById('new-section-desc').placeholder = '簡短描述...'; } else { document.getElementById('new-section-name').placeholder = 'e.g. Project Omega'; document.getElementById('new-section-desc').placeholder = 'Brief description...'; }
+        };
+
+        window.setTheme = (themeName) => {
+            state.theme = themeName;
+            if (themeName === 'cyberpunk') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', themeName);
+            updateThemeMenuHighlight();
+        };
+
+        window.onload = () => { setTheme('cyberpunk'); setLanguage('zh'); };
+    </script>
+</body>
+</html>
