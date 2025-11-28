@@ -1938,13 +1938,13 @@
                 alert("留言失敗: " + e.message);
             }
         }
-// =========================================
-        // ★ 新增：信箱 (Mailbox) 與每日限制功能
+        // =========================================
+        // ★ 新增：信箱 (Mailbox) - 收件匣列表版
         // =========================================
         
-        let currentChatUnsubscribe = null; // 用來取消監聽，避免切換頁面後還在收訊息
+        let currentChatUnsubscribe = null; 
 
-        // 1. 渲染信箱主畫面
+        // 1. 渲染信箱主畫面 (左右兩欄式設計)
         window.renderMailbox = async function() {
             const user = window.currentUser;
             if (!user) { alert(i18n[pulseLang].loginReq); performLogin(); return; }
@@ -1957,64 +1957,243 @@
             const centerCol = document.querySelector('.pulse-feed-container');
             if (!centerCol) return;
 
-            // 取得今日額度資訊
+            // 取得今日額度
             const { used, limit, isAdmin } = await checkDailyQuota(user.uid);
             const limitDisplay = isAdmin ? "無限 (管理員)" : `${used} / ${limit}`;
-            const limitColor = (!isAdmin && used >= limit) ? '#ff4d4d' : 'var(--accent-main)';
 
             centerCol.innerHTML = `
-                <div class="pulse-create-box">
-                    <h2 style="margin:0 0 15px 0; color:var(--text-primary);">
-                        ${icons.mail} 信箱中心
-                    </h2>
-                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                        <span>今日發信額度：</span>
-                        <span style="font-weight:bold; font-family:var(--font-display); color:${limitColor}; font-size:1.2em;">
-                            ${limitDisplay}
-                        </span>
+                <div class="pulse-create-box" style="padding-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h2 style="margin:0; color:var(--text-primary); font-size:1.5em;">
+                            ${icons.mail} 信箱中心
+                        </h2>
+                        <div style="font-size:0.9em; color:var(--text-secondary);">
+                            今日額度: <span style="color:var(--accent-main); font-weight:bold;">${limitDisplay}</span>
+                        </div>
                     </div>
 
-                    <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
-                        <label style="color:var(--text-secondary); font-size:0.9em;">收件人 User ID (UID):</label>
-                        <input type="text" id="mail-target-uid" class="quick-input" 
-                               style="border:1px solid var(--border-color); padding:10px; border-radius:8px;" 
-                               placeholder="貼上對方的 UID...">
-                        
-                        <div id="target-user-preview" style="font-size:0.9em; color:var(--accent-main); height:20px;"></div>
-
-                        <label style="color:var(--text-secondary); font-size:0.9em; margin-top:10px;">訊息內容:</label>
-                        <textarea id="mail-content" class="quick-input" rows="3" 
-                                  style="border:1px solid var(--border-color); padding:10px; border-radius:8px;" 
-                                  placeholder="想說什麼..."></textarea>
-                        
-                        <button class="post-btn" onclick="window.sendDirectMessage()" style="margin-top:10px; align-self:flex-end;">
-                            發送信件
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <input type="text" id="new-chat-uid" class="quick-input" 
+                               style="border:1px solid var(--border-color); padding:8px 15px; border-radius:20px; font-size:0.9em;" 
+                               placeholder="輸入對方 UID 開啟新對話...">
+                        <button class="post-btn" onclick="window.startNewChat()" style="padding:5px 15px; font-size:0.9em;">
+                            開啟
                         </button>
                     </div>
                 </div>
 
-                <h3 style="margin: 20px 0 10px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">對話視窗</h3>
-                
-                <div id="mailbox-chat-area" style="
-                    flex:1; 
-                    background:var(--bg-panel); 
-                    border:1px solid var(--border-color); 
-                    border-radius:12px; 
-                    padding:20px; 
-                    overflow-y:auto; 
-                    display:flex; 
-                    flex-direction:column; 
-                    gap:15px;
-                    min-height: 300px;
-                ">
-                    <div style="text-align:center; color:#666; margin-top:50px;">
-                        輸入 UID 並發送訊息以開始對話，<br>或是點擊對話記錄載入。
+                <div style="display:flex; gap:15px; height: 600px; margin-top:15px;">
+                    
+                    <div id="inbox-list" style="
+                        width: 30%; 
+                        background:var(--bg-panel); 
+                        border:1px solid var(--border-color); 
+                        border-radius:12px; 
+                        overflow-y:auto;
+                        padding:10px;
+                        display:flex; flex-direction:column; gap:5px;
+                    ">
+                        <div style="text-align:center; padding:20px; color:#666;">載入列表...</div>
+                    </div>
+
+                    <div style="
+                        flex:1; 
+                        display:flex; flex-direction:column; 
+                        background:var(--bg-panel); 
+                        border:1px solid var(--border-color); 
+                        border-radius:12px; 
+                        overflow:hidden;
+                    ">
+                        <div id="chat-header" style="
+                            padding:15px; 
+                            border-bottom:1px solid var(--border-color); 
+                            font-weight:bold; 
+                            background:rgba(255,255,255,0.02);
+                        ">
+                            尚未選擇對話
+                        </div>
+
+                        <div id="mailbox-chat-area" style="
+                            flex:1; 
+                            padding:20px; 
+                            overflow-y:auto; 
+                            display:flex; flex-direction:column; gap:15px;
+                        ">
+                            <div style="text-align:center; color:#666; margin-top:50px;">
+                                👈 請從左側選擇聯絡人
+                            </div>
+                        </div>
+
+                        <div style="padding:15px; border-top:1px solid var(--border-color); display:flex; gap:10px;">
+                            <input type="text" id="mail-content" class="quick-input" 
+                                   style="flex:1; border:1px solid var(--border-color); padding:10px; border-radius:8px;" 
+                                   placeholder="輸入訊息..." disabled>
+                            <button id="mail-send-btn" class="post-btn" onclick="window.sendDirectMessage()" disabled>
+                                發送
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
+            
+            // 載入左側「我的對話列表」
+            loadInboxList(user.uid);
         }
 
-        // 2. 檢查每日額度 (回傳：已用量, 上限, 是否管理員)
+        // 2. 載入收件匣列表 (列出所有參與過的對話)
+        async function loadInboxList(uid) {
+            const listEl = document.getElementById('inbox-list');
+            if(!listEl) return;
+
+            try {
+                const { collection, query, where, getDocs, orderBy } = window.fs;
+                // 查詢：participants 陣列中包含我的 UID
+                const q = query(
+                    collection(window.db, "chats"), 
+                    where("participants", "array-contains", uid),
+                    orderBy("lastUpdated", "desc") // 依照最後更新時間排序
+                );
+
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#666; font-size:0.9em;">尚無對話記錄</div>';
+                    return;
+                }
+
+                let html = '';
+                // 這裡我們需要一點小技巧來顯示「對方的名字」
+                // 因為 chat 文件只有 participants UID，我們通常需要去 users 集合查名字
+                // 為了簡化，我們先顯示對方的 UID 或預覽文字
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const otherUid = data.participants.find(id => id !== uid) || "未知";
+                    const shortUid = otherUid.slice(0, 6); 
+                    // 檢查最後一則訊息
+                    const lastMsg = data.lastMessage ? (data.lastMessage.length > 10 ? data.lastMessage.slice(0,10)+'...' : data.lastMessage) : '無訊息';
+                    
+                    // 產生列表項目 (點擊後載入該聊天室)
+                    html += `
+                        <div onclick="window.selectChat('${doc.id}', '${otherUid}')" style="
+                            padding:12px; 
+                            border-radius:8px; 
+                            cursor:pointer; 
+                            transition:0.2s;
+                            border:1px solid transparent;
+                            background:rgba(255,255,255,0.03);
+                        " onmouseover="this.style.background='rgba(255,255,255,0.1)'" 
+                           onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+                            
+                            <div style="font-weight:bold; color:var(--text-primary); font-size:0.95em;">User: ${shortUid}..</div>
+                            <div style="font-size:0.85em; color:var(--text-secondary); margin-top:4px;">${lastMsg}</div>
+                        </div>
+                    `;
+                });
+
+                listEl.innerHTML = html;
+
+            } catch (e) {
+                console.error("載入列表失敗", e);
+                listEl.innerHTML = `<div style="color:red; font-size:0.8em; padding:10px;">載入失敗: ${e.message}</div>`;
+            }
+        }
+
+        // 3. 選擇並開啟某個對話
+        window.currentActiveChatId = null; // 全域變數：記錄當前聊天室 ID
+        window.currentActiveTargetUid = null; // 全域變數：記錄當前對象 UID
+
+        window.selectChat = function(chatId, targetUid) {
+            window.currentActiveChatId = chatId;
+            window.currentActiveTargetUid = targetUid;
+
+            // 更新標題
+            document.getElementById('chat-header').innerHTML = `與 <span style="color:var(--accent-main)">${targetUid}</span> 的對話`;
+            
+            // 啟用輸入框
+            document.getElementById('mail-content').disabled = false;
+            document.getElementById('mail-send-btn').disabled = false;
+
+            // 載入訊息內容
+            loadChatRoom(chatId, window.currentUser.uid);
+        }
+
+        // 4. 手動輸入 UID 開啟新對話
+        window.startNewChat = function() {
+            const uidInput = document.getElementById('new-chat-uid');
+            const targetUid = uidInput.value.trim();
+            if(!targetUid) return;
+            
+            const user = window.currentUser;
+            if(targetUid === user.uid) { alert("不能跟自己聊天"); return; }
+
+            // 計算 Chat ID
+            const participants = [user.uid, targetUid].sort();
+            const chatId = participants.join('_');
+
+            // 直接選中這個聊天室 (如果之前沒聊過，會在發送第一則訊息時自動建立)
+            window.selectChat(chatId, targetUid);
+            uidInput.value = ''; // 清空輸入框
+        }
+
+        // 5. 修改後的發送函式 (適應新 UI)
+        window.sendDirectMessage = async function() {
+            const user = window.currentUser;
+            const contentInput = document.getElementById('mail-content');
+            const content = contentInput.value.trim();
+            
+            // 從全域變數取得當前對象
+            const chatId = window.currentActiveChatId;
+            const targetUid = window.currentActiveTargetUid;
+
+            if (!chatId || !targetUid) { alert("請先選擇對話對象"); return; }
+            if (!content) return;
+
+            // A. 檢查額度
+            const { used, limit, isAdmin } = await checkDailyQuota(user.uid);
+            if (!isAdmin && used >= limit) {
+                alert(`今日額度已滿 (${used}/${limit})。`);
+                return;
+            }
+
+            try {
+                const { doc, setDoc, addDoc, collection, serverTimestamp, increment } = window.fs;
+                
+                // 1. 確保聊天室文件存在 (更新 lastMessage)
+                const chatRef = doc(window.db, "chats", chatId);
+                const participants = [user.uid, targetUid].sort();
+
+                await setDoc(chatRef, {
+                    participants: participants,
+                    lastMessage: content,
+                    lastUpdated: serverTimestamp()
+                }, { merge: true });
+
+                // 2. 寫入訊息
+                await addDoc(collection(window.db, "chats", chatId, "messages"), {
+                    content: content,
+                    senderId: user.uid,
+                    timestamp: serverTimestamp()
+                });
+
+                // 3. 更新額度
+                if (!isAdmin) {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const statsRef = doc(window.db, "users", user.uid, "dailyStats", todayStr);
+                    await setDoc(statsRef, { sentCount: increment(1) }, { merge: true });
+                }
+
+                contentInput.value = ''; // 清空輸入框
+                
+                // 4. 重新整理左側列表 (讓最新的訊息排到上面)
+                loadInboxList(user.uid);
+
+            } catch (e) {
+                console.error(e);
+                alert("發送失敗: " + e.message);
+            }
+        }
+// 6. 檢查每日額度 (補上這個函式，否則會報錯)
         async function checkDailyQuota(uid) {
             const ADMIN_UID = "1EALL0fq7nUzEi8B96qwXZuyG7h1";
             const isAdmin = (uid === ADMIN_UID);
@@ -2039,129 +2218,55 @@
             return { used, limit: 20, isAdmin: false };
         }
 
-        // 3. 發送私訊核心邏輯
-        window.sendDirectMessage = async function() {
-            const user = window.currentUser;
-            const targetInput = document.getElementById('mail-target-uid');
-            const contentInput = document.getElementById('mail-content');
-            
-            if (!user || !targetInput || !contentInput) return;
-
-            const targetUid = targetInput.value.trim();
-            const content = contentInput.value.trim();
-
-            if (!targetUid) { alert("請輸入對方 UID"); return; }
-            if (targetUid === user.uid) { alert("不能寄給自己"); return; }
-            if (!content) { alert("請輸入內容"); return; }
-
-            // A. 檢查額度
-            const { used, limit, isAdmin } = await checkDailyQuota(user.uid);
-            if (!isAdmin && used >= limit) {
-                alert(`今日額度已滿 (${used}/${limit})。請明天再試。`);
-                return;
-            }
-
-            // B. 開始發送流程
-            try {
-                const { doc, setDoc, addDoc, collection, serverTimestamp, updateDoc, increment, getDoc } = window.fs;
-                
-                // 1. 產生 Chat ID (確保 A-B 和 B-A 是同一個房間)
-                // 原理：將兩個 UID 放入陣列並排序，用底線連接
-                const participants = [user.uid, targetUid].sort(); 
-                const chatId = participants.join('_');
-
-                // 2. 確保聊天室文件存在 (如果第一次聊)
-                const chatRef = doc(window.db, "chats", chatId);
-                await setDoc(chatRef, {
-                    participants: participants,
-                    lastMessage: content,
-                    lastUpdated: serverTimestamp(),
-                    updatedBy: user.uid
-                }, { merge: true });
-
-                // 3. 寫入訊息到子集合
-                await addDoc(collection(window.db, "chats", chatId, "messages"), {
-                    content: content,
-                    senderId: user.uid,
-                    senderName: user.displayName,
-                    senderAvatar: user.photoURL,
-                    timestamp: serverTimestamp()
-                });
-
-                // 4. 更新每日額度 (扣打)
-                if (!isAdmin) {
-                    const todayStr = new Date().toISOString().split('T')[0];
-                    const statsRef = doc(window.db, "users", user.uid, "dailyStats", todayStr);
-                    // 使用 setDoc merge 確保如果今天還沒記錄過會自動建立
-                    await setDoc(statsRef, { 
-                        sentCount: increment(1) 
-                    }, { merge: true });
-                }
-
-                // 5. 介面更新
-                contentInput.value = ''; // 清空內容
-                alert("發送成功！");
-                
-                // 重新渲染畫面以更新額度顯示
-                window.renderMailbox();
-
-                // 自動載入該聊天室
-                loadChatRoom(chatId, user.uid);
-
-            } catch (e) {
-                console.error("發送失敗", e);
-                alert("發送失敗: " + e.message);
-            }
-        }
-
-        // 4. 載入並監聽聊天室訊息
+        // 7. 載入並監聽聊天室訊息 (這是您原本遺漏的第三步)
         function loadChatRoom(chatId, currentUid) {
             const chatArea = document.getElementById('mailbox-chat-area');
             if(!chatArea) return;
 
-            // 先取消舊的監聽 (如果有)
+            // 切換聊天室時，先取消上一個聊天室的監聽，避免重複收到訊息
             if (currentChatUnsubscribe) {
                 currentChatUnsubscribe();
             }
 
             const { collection, query, orderBy, onSnapshot, limit } = window.fs;
             
-            // 查詢最近 50 筆訊息 (節省讀取額度)
+            // 查詢該聊天室底下的 messages，依時間排序，只抓最後 50 筆
             const q = query(
                 collection(window.db, "chats", chatId, "messages"), 
                 orderBy("timestamp", "asc"),
                 limit(50) 
             );
 
-            // 實時監聽
+            // 設置即時監聽
             currentChatUnsubscribe = onSnapshot(q, (snapshot) => {
                 let html = '';
                 snapshot.forEach(doc => {
                     const msg = doc.data();
                     const isMe = (msg.senderId === currentUid);
                     
-                    // 簡單的時間顯示
+                    // 時間格式化
                     const date = msg.timestamp ? msg.timestamp.toDate() : new Date();
                     const timeStr = date.toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit' });
 
-                    // 訊息泡泡樣式
+                    // 產生訊息氣泡 (右邊是自己，左邊是對方)
                     html += `
                         <div style="
                             display:flex; 
                             justify-content: ${isMe ? 'flex-end' : 'flex-start'};
                             margin-bottom: 10px;
+                            animation: fadeIn 0.3s ease;
                         ">
                             <div style="
                                 max-width: 70%;
                                 background: ${isMe ? 'var(--accent-main)' : 'rgba(255,255,255,0.1)'};
                                 color: ${isMe ? '#000' : 'var(--text-primary)'};
-                                padding: 10px 15px;
+                                padding: 8px 15px;
                                 border-radius: 18px;
                                 border-bottom-${isMe ? 'right' : 'left'}-radius: 4px;
                                 position: relative;
                             ">
                                 <div style="font-size:0.95em; white-space: pre-wrap; word-break: break-word;">${msg.content}</div>
-                                <div style="font-size:0.7em; text-align:right; margin-top:5px; opacity:0.7;">
+                                <div style="font-size:0.7em; text-align:right; margin-top:5px; opacity:0.6;">
                                     ${timeStr}
                                 </div>
                             </div>
@@ -2174,11 +2279,9 @@
                 }
 
                 chatArea.innerHTML = html;
-                chatArea.scrollTop = chatArea.scrollHeight; // 自動捲到底部
+                chatArea.scrollTop = chatArea.scrollHeight; // 自動捲動到底部
             });
         }
-
-
 
 
      
