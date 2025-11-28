@@ -404,18 +404,24 @@
     <main class="flex-1 relative flex flex-col h-full bg-bg">
         <div class="absolute inset-0 dots-bg pointer-events-none z-0"></div>
 
-        <div class="h-12 border-b border-border flex items-center px-6 bg-surface/50 backdrop-blur z-10 shrink-0 border-accent">
-            <div class="text-sm font-mono text-muted flex items-center">
-                <span class="text-accent mr-2">&gt;</span>
-                <span class="hover:text-text cursor-pointer transition-colors" onclick="resetBreadcrumb()">Workspace</span>
-                <span id="breadcrumb-separator" class="mx-2 hidden">/</span>
-                <span id="breadcrumb-current" class="text-text font-bold hidden ml-2 text-accent"></span>
-            </div>
-        </div>
+        <div class="h-12 border-b border-border flex items-center justify-between px-6 bg-surface/50 backdrop-blur z-10 shrink-0 border-accent">
+    
+    <div class="text-sm font-mono text-muted flex items-center">
+        <span class="text-accent mr-2">&gt;</span>
+        <span class="hover:text-text cursor-pointer transition-colors" onclick="resetBreadcrumb()">Workspace</span>
+        <span id="breadcrumb-separator" class="mx-2 hidden">/</span>
+        <span id="breadcrumb-current" class="text-text font-bold hidden ml-2 text-accent"></span>
+    </div>
+
+    <button onclick="resizeCanvasPrompt()" class="text-xs font-bold text-muted hover:text-accent border border-border hover:border-accent px-3 py-1 rounded transition-all flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+        <span class="hidden sm:inline">CANVAS SIZE</span>
+    </button>
+</div>
         
        <div id="canvas-scroll-container" class="flex-1 relative overflow-auto w-full h-full bg-bg cursor-default">
     
-    <div class="relative w-[4000px] h-[4000px] border border-grid flex flex-col overflow-hidden">
+    <div class="relative w-[1000px] h-[1000px] border border-grid flex flex-col overflow-hidden">
         
         <div id="grid-canvas" class="relative w-full h-full bg-grid">
             <svg id="connections-layer" class="w-full h-full"></svg>
@@ -1284,10 +1290,37 @@ scrollContainer.addEventListener('mousemove', (e) => {
     scrollContainer.scrollLeft = scrollLeft - walkX;
     scrollContainer.scrollTop = scrollTop - walkY;
 });  
+        // --- 新增：動態調整畫布大小 ---
+window.resizeCanvasPrompt = function() {
+    const sizer = document.getElementById('canvas-sizer');
+    const currentW = parseInt(sizer.style.width);
+    const currentH = parseInt(sizer.style.height);
+
+    // 簡單使用 prompt 讓使用者輸入 (您也可以改成漂亮的 modal)
+    const newW = prompt("請輸入畫布寬度 (Width px):", currentW);
+    if (newW === null) return; // 取消
+    
+    const newH = prompt("請輸入畫布高度 (Height px):", currentH);
+    if (newH === null) return; // 取消
+
+    if (newW && newH && !isNaN(newW) && !isNaN(newH)) {
+        sizer.style.width = newW + 'px';
+        sizer.style.height = newH + 'px';
+        
+        // 重新置中「初始化按鈕」的位置
+        const emptyState = document.getElementById('empty-state-container');
+        if (emptyState) {
+            // 雖然 CSS 已經是用視窗計算，但若畫布小於視窗，可能需要微調，這裡保持原樣即可
+        }
+    } else {
+        alert("請輸入有效的數字！");
+    }
+}
         window.onload = () => { setTheme('cyberpunk'); setLanguage('zh'); };
     </script>
 </body>
 </html>
+
 
 
 
