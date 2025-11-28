@@ -1562,24 +1562,51 @@
                 postBtn.innerText = i18n[pulseLang].post;
             }
         }
-// --- 查看他人個人資料邏輯 (修正 ID 顯示與增加 Bio) ---
+// --- 查看他人個人資料邏輯 (完整修復版：支援管理員標示、編輯按鈕、自動抓取 Bio) ---
         window.viewUserProfile = async function(uid, name, avatar) {
-            // 1. 取消所有選單的 Active 狀態
+            // 1. 基本防呆與 UI 切換
+            const currentUser = window.currentUser;
+            if (!currentUser) { alert("請先登入"); performLogin(); return; }
+
             document.querySelectorAll('.pulse-nav-btn').forEach(btn => btn.classList.remove('active'));
-            
-            // 2. 取得中間欄位容器
             const centerCol = document.querySelector('.pulse-feed-container');
             if (!centerCol) return;
 
-            // 3. 預設顯示 (先用 UID 當暫時 ID，避免畫面空白)
-            let displayHandle = `@${uid.slice(0,8)}...`;
-            let bioText = "載入中..."; // 預設 Bio
+            // 2. 定義變數
+            // ★ 判斷是否為管理員 (被查看的人是否為管理員)
+            const ADMIN_UID = "1EALL0fq7nUzEi8B96qwXZuyG7h1"; 
+            const isTargetAdmin = (uid === ADMIN_UID);
             
-            // 處理頭像
+            // ★ 判斷是否為自己 (決定顯示 "編輯" 還是 "追蹤")
+            const isMe = (currentUser.uid === uid);
+
+            // 3. 準備顯示內容
+            const adminBadge = isTargetAdmin ? 
+                `<span class="admin-badge" style="font-size: 0.4em; vertical-align: middle; margin-left: 10px;">平台管理員</span>` : '';
+            
+            // 預設顯示 (先用 UID 切割當作 ID)
+            let displayHandle = `@${uid.slice(0,8)}...`;
+            let bioText = "載入中..."; 
+            
             const photoHtml = avatar && avatar !== 'null' && avatar !== 'undefined' ? 
                               `<img src="${avatar}" alt="Avatar">` : '';
 
-            // ★ 4. 渲染基本骨架 (注意：我幫您加上了 id="target-user-handle" 和 id="target-user-bio")
+            // ★ 根據身分決定按鈕 (自己->編輯 / 別人->追蹤)
+            let actionBtnHtml = '';
+            if (isMe) {
+                actionBtnHtml = `
+                    <button class="edit-profile-btn" onclick="window.editProfile()" style="position: static; margin-left: auto;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        編輯個人檔
+                    </button>
+                `;
+            } else {
+                actionBtnHtml = `
+                    <button id="follow-btn" class="follow-btn" onclick="window.toggleFollow('${uid}')">追蹤</button>
+                `;
+            }
+
+            // 4. 渲染 HTML
             centerCol.innerHTML = `
                 <div class="profile-header-card">
                     <div class="profile-cover"></div>
@@ -1589,10 +1616,11 @@
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <div class="profile-name-large" style="margin-bottom: 0;">${name}</div>
+                            <div class="profile-name-large" style="margin-bottom: 0;">
+                                ${name}
+                                ${adminBadge} </div>
                             
-                            <button id="follow-btn" class="follow-btn" onclick="window.toggleFollow('${uid}')">追蹤</button>
-                        </div>
+                            ${actionBtnHtml} </div>
 
                         <div class="profile-email" id="target-user-handle">${displayHandle}</div>
                         
@@ -1600,8 +1628,8 @@
                         
                         <div class="profile-stats-row">
                             <span class="p-stat-box"><span class="p-stat-num" id="p-post-count">0</span> Posts</span>
-                            <span class="p-stat-box"><span class="p-stat-num" id="p-followers-count">0</span> Followers</span>
                             <span class="p-stat-box"><span class="p-stat-num" id="p-following-count">0</span> Following</span>
+                            <span class="p-stat-box"><span class="p-stat-num" id="p-followers-count">0</span> Followers</span>
                         </div>
                     </div>
                 </div>
@@ -1613,37 +1641,39 @@
                 </div>
             `;
 
-            // 5. 執行後續載入 (貼文與追蹤數據)
+            // 5. 執行後續載入
             loadProfileFeed(uid);
-            checkFollowStatus(uid);
+            
+            // 如果是看別人，才需要檢查追蹤狀態；看自己就不需要
+            if (!isMe) {
+                checkFollowStatus(uid);
+            }
+            
+            // 載入粉絲數據
             loadFollowStats(uid);
             
-            // ★★★ 關鍵新增：去資料庫抓取該用戶的真實 Email 與 Bio ★★★
+            // ★ 去資料庫抓取該用戶的真實 Email 與 Bio
             try {
                 const { doc, getDoc } = window.fs;
-                // 讀取 users 集合中的該用戶文件
                 const userDocRef = doc(window.db, "users", uid);
                 const userSnap = await getDoc(userDocRef);
                 
                 if (userSnap.exists()) {
                     const data = userSnap.data();
                     
-                    // 1. 如果有 Email，更新顯示 ID
                     if (data.email) {
                         const emailPrefix = data.email.split('@')[0];
                         const handleEl = document.getElementById('target-user-handle');
                         if(handleEl) handleEl.innerText = `@${emailPrefix}`;
                     }
                     
-                    // 2. 如果有 Bio，更新自我介紹
                     const bioEl = document.getElementById('target-user-bio');
                     if (bioEl) {
                         bioEl.innerText = data.bio || "這傢伙很懶，什麼都沒寫...";
                     }
                 } else {
-                    // 如果對方從來沒有編輯過個人檔案 (資料庫沒資料)，就維持顯示 UID 或顯示無介紹
-                    const bioEl = document.getElementById('target-user-bio');
-                    if(bioEl) bioEl.innerText = "這傢伙很懶，什麼都沒寫...";
+                     const bioEl = document.getElementById('target-user-bio');
+                     if(bioEl) bioEl.innerText = "這傢伙很懶，什麼都沒寫...";
                 }
             } catch (e) {
                 console.error("讀取用戶詳細資料失敗", e);
