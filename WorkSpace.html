@@ -286,7 +286,7 @@
 
         <div class="p-3 border-t border-border bg-surface/50 relative">
             
-            <div class="flex gap-2 mb-3">
+            <div id="tool-row" class="flex gap-2 mb-3">
                 <div class="relative flex-1">
                     <button id="lang-btn" class="w-full flex items-center justify-center gap-2 px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors" title="Language">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -551,7 +551,7 @@
                 theme_terminal: 'Terminal',
                 theme_cyber: 'Cyberpunk',
                 empty_state: 'Initialize Project',
-                empty_desc: 'Sign in to create your first workspace node.',
+                empty_desc: 'Create your first Workspace.',
                 modal_title: 'NEW WORKSPACE NODE',
                 modal_name: 'SECTION NAME',
                 modal_desc: 'DESCRIPTION',
@@ -574,7 +574,7 @@
                 theme_terminal: '終端機',
                 theme_cyber: '賽博龐克',
                 empty_state: '初始化專案',
-                empty_desc: '請先登入以建立您的第一個工作區間節點。',
+                empty_desc: '建立您的第一個工作區間。',
                 modal_title: '建立新工作區間',
                 modal_name: '區間名稱',
                 modal_desc: '描述',
@@ -656,7 +656,8 @@
             if (name) {
                 // Call Firestore Bridge
                 if(window.dbCreateProject) {
-                    window.dbCreateProject(name, desc, generateRandomNodes());
+                   // 改為傳入空陣列 []，代表不生成任何初始節點
+                   window.dbCreateProject(name, desc, []);
                 }
                 closeModal();
             } else {
@@ -847,19 +848,51 @@
             workspaceArrow.classList.toggle('rotate-90'); 
         };
 
-        toggleBtn.addEventListener('click', () => {
-            state.sidebarOpen = !state.sidebarOpen;
-            if (!state.sidebarOpen) {
-                sidebar.classList.remove('w-64'); sidebar.classList.add('w-16');
-                textElements.forEach(el => el.classList.add('opacity-0', 'pointer-events-none', 'hidden'));
-                toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>';
-                workspaceList.classList.add('hidden'); workspaceArrow.classList.remove('rotate-90');
-            } else {
-                sidebar.classList.remove('w-16'); sidebar.classList.add('w-64');
-                setTimeout(() => textElements.forEach(el => el.classList.remove('opacity-0', 'pointer-events-none', 'hidden')), 100);
-                toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>';
-            }
-        });
+        // 定義工具列容器
+const toolRow = document.getElementById('tool-row');
+
+toggleBtn.addEventListener('click', () => {
+    state.sidebarOpen = !state.sidebarOpen;
+    
+    if (!state.sidebarOpen) {
+        // --- 收合狀態 (Sidebar Closed) ---
+        sidebar.classList.remove('w-64'); 
+        sidebar.classList.add('w-16');
+        
+        // 隱藏文字
+        textElements.forEach(el => el.classList.add('opacity-0', 'pointer-events-none', 'hidden'));
+        
+        // 變更收合圖示
+        toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>';
+        
+        // 隱藏工作列表
+        workspaceList.classList.add('hidden'); 
+        workspaceArrow.classList.remove('rotate-90');
+
+        // [新增] 工具列改為垂直排列 (flex-col)，以便塞入狹窄的側邊欄
+        if(toolRow) {
+            toolRow.classList.remove('flex-row');
+            toolRow.classList.add('flex-col');
+        }
+
+    } else {
+        // --- 展開狀態 (Sidebar Open) ---
+        sidebar.classList.remove('w-16'); 
+        sidebar.classList.add('w-64');
+        
+        // 顯示文字
+        setTimeout(() => textElements.forEach(el => el.classList.remove('opacity-0', 'pointer-events-none', 'hidden')), 100);
+        
+        // 變更展開圖示
+        toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>';
+
+        // [新增] 工具列恢復水平排列 (flex-row)
+        if(toolRow) {
+            toolRow.classList.remove('flex-col');
+            toolRow.classList.add('flex-row');
+        }
+    }
+});
 
         function toggleMenu(menu) {
             const isHidden = menu.classList.contains('hidden');
@@ -906,3 +939,4 @@
     </script>
 </body>
 </html>
+
