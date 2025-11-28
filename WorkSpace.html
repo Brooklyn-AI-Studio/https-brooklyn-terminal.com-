@@ -49,12 +49,12 @@
 }
 /* 2. 操作區 (綠色區域)：設定邊框與網格 */
 #canvas-sizer {
-    background-color: #0a100d; /* 稍微不一樣的深色，區分操作區 */
-    border: 2px solid var(--accent-color); /* 綠色邊框 */
-    box-shadow: 0 0 30px rgba(0, 255, 157, 0.15); /* 邊框發光效果 */
-    margin: 0 auto; /* 水平置中 (如果空間足夠) */
+    background-color: #0a100d;
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.15);
     
-    /* 確保網格只顯示在這裡 */
+    margin: 0; /* 改成 0，取消水平置中 */
+    container-type: size;
     background-image: 
         linear-gradient(to right, rgba(0, 255, 157, 0.1) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(0, 255, 157, 0.1) 1px, transparent 1px);
@@ -449,16 +449,27 @@
         <div id="empty-state-container" class="absolute top-0 left-0 w-full h-[calc(100vh-100px)] z-10 flex items-center justify-center pointer-events-none">
     <div class="text-center space-y-4 pointer-events-auto">
 
-                <button onclick="handlePlusClick()" class="w-24 h-24 mx-auto border-2 border-accent rounded-full flex items-center justify-center relative group cursor-pointer hover:bg-accent/10 transition-all focus:outline-none">
-                    <svg class="w-10 h-10 text-accent group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    <div class="absolute inset-0 rounded-full border border-accent animate-ping opacity-20"></div>
-                </button>
-                <h2 class="text-2xl font-bold text-text text-accent" data-i18n="empty_state">Initialize Project</h2>
-                <p id="empty-desc-text" class="text-muted max-w-md mx-auto" data-i18n="empty_desc">Select a tool from the left sidebar or click above to create a new component node.</p>
-            </div>
-        </div>
+        <button onclick="handlePlusClick()" class="mx-auto border-2 border-accent rounded-full flex items-center justify-center relative group cursor-pointer hover:bg-accent/10 transition-all focus:outline-none" 
+                style="width: 8cqmin; height: 8cqmin; min-width: 60px; min-height: 60px;">
+            
+            <svg class="text-accent group-hover:scale-110 transition-transform" style="width: 40%; height: 40%;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <div class="absolute inset-0 rounded-full border border-accent animate-ping opacity-20"></div>
+        </button>
+        
+        <h2 class="font-bold text-text text-accent" data-i18n="empty_state" 
+            style="font-size: 2.5cqmin; line-height: 1.2;">
+            Initialize Project
+        </h2>
+        
+        <p id="empty-desc-text" class="text-muted max-w-md mx-auto" data-i18n="empty_desc" 
+           style="font-size: 1.5cqmin;">
+            Select a tool from the left sidebar or click above to create a new component node.
+        </p>
+
+    </div>
+</div>
 
         <div id="project-content-container" class="hidden relative z-10 w-full h-full p-6 overflow-hidden">
              </div>
@@ -1360,6 +1371,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
