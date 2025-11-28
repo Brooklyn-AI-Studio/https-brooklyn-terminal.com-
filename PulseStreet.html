@@ -2132,15 +2132,6 @@
                 </div>
             `;
 
-            document.getElementById('chat-header').innerHTML = headerHtml;
-            
-            // 啟用輸入框
-            document.getElementById('mail-content').disabled = false;
-            document.getElementById('mail-send-btn').disabled = false;
-
-            // 載入訊息
-            loadChatRoom(chatId, window.currentUser.uid);
-
             // ★ 3. 關鍵邏輯：如果沒有傳入名字 (或是名字目前顯示的是 UID)，就去資料庫查
             if (!targetName) {
                 try {
