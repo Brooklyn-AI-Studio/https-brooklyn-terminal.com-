@@ -931,8 +931,9 @@ const currentUser = () => window.currentUser;
             }
         };
         window.removeMember = (index) => { state.tempMembers.splice(index, 1); renderEditMembers(); };
-        window.handleMemberInputKey = (e) => { if(e.key === 'Enter') addMember(); }
-
+        window.handleMemberInputKey = (e) => { 
+    if(e.key === 'Enter') window.addMember(); 
+};
         window.saveEditWorkspace = () => {
             if(!state.editingProjectId) return;
             if(window.dbUpdateProject) {
@@ -1128,7 +1129,7 @@ const currentUser = () => window.currentUser;
                     h: 200,
                     color: '#ffffff',
                     label: '',
-                    updatedBy: currentUser() ? currentUser().uid : null
+                    updatedBy: currentUser() ? currentUser().uid : null,
                     updatedAt: new Date().toISOString()
                 });
             } catch(err) {
@@ -1619,6 +1620,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
