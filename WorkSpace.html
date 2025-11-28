@@ -9,9 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     
     <script>
-        
-
-        
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -482,200 +479,145 @@
     </main>
 
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 1. Firebase Config
-    const firebaseConfig = {
-        apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
-        authDomain: "brooklyn-terminal.firebaseapp.com",
-        projectId: "brooklyn-terminal",
-        storageBucket: "brooklyn-terminal.firebasestorage.app",
-        messagingSenderId: "438411734316",
-        appId: "1:438411734316:web:649051890cf381eb0fd089",
-        measurementId: "G-G0GMW0XHG1"
-    };
+        // 1. Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
+            authDomain: "brooklyn-terminal.firebaseapp.com",
+            projectId: "brooklyn-terminal",
+            storageBucket: "brooklyn-terminal.firebasestorage.app",
+            messagingSenderId: "438411734316",
+            appId: "1:438411734316:web:649051890cf381eb0fd089",
+            measurementId: "G-G0GMW0XHG1"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-    const appId = 'brooklyn-terminal-v1';
-
-    // ★★★ 關鍵修正 1：將變數掛載到 window，讓下方的 UI Script 可以使用 ★★★
-    window.db = db;
-    window.collection = collection;
-    window.addDoc = addDoc;
-    window.doc = doc;
-    window.updateDoc = updateDoc;
-    window.deleteDoc = deleteDoc;
-    window.appId = appId;
-    window.currentUser = null; // 初始化
-
-    // ... (原本的 loginBtn, userProfile 等 DOM 宣告保持不變) ...
-    const loginBtn = document.getElementById('btn-login');
-    const userProfile = document.getElementById('user-profile');
-    const logoutMenu = document.getElementById('logout-menu');
-    const userAvatar = document.getElementById('user-avatar');
-    const userName = document.getElementById('user-name');
-    const userEmail = document.getElementById('user-email');
-    const logoutBtn = document.getElementById('btn-logout');
-    const emptyDescText = document.getElementById('empty-desc-text');
-    let unsubscribeProjects = null;
-
-    // ... (Login/Logout 監聽器保持不變) ...
-    loginBtn.addEventListener('click', () => { signInWithPopup(auth, provider).catch((error) => alert("Login Error: " + error.message)); });
-    logoutBtn.addEventListener('click', (e) => { e.stopPropagation(); signOut(auth); });
-
-    onAuthStateChanged(auth, (user) => {
-        window.currentUser = user; // 更新全域 user
-        if (user) {
-            loginBtn.classList.add('hidden');
-            userProfile.classList.remove('hidden');
-            userProfile.classList.add('flex');
-            userAvatar.src = user.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid;
-            userName.textContent = user.displayName || 'User';
-            userEmail.textContent = user.email;
-            emptyDescText.textContent = "Click + to create a workspace. You can invite friends to join via email.";
-            initWorkspaceListener(user);
-        } else {
-            loginBtn.classList.remove('hidden');
-            userProfile.classList.add('hidden');
-            userProfile.classList.remove('flex');
-            emptyDescText.textContent = "Please sign in to access or create workspaces.";
-            if (unsubscribeProjects) unsubscribeProjects();
-            if (window.updateProjectsList) window.updateProjectsList([]);
-            if (window.resetBreadcrumb) window.resetBreadcrumb();
-        }
-    });
-
-    function initWorkspaceListener(user) {
-        const q = query(
-            collection(db, 'artifacts', appId, 'public', 'data', 'workspaces'),
-            where('members', 'array-contains', user.email)
-        );
-        unsubscribeProjects = onSnapshot(q, (snapshot) => {
-            const projects = [];
-            snapshot.forEach((doc) => { projects.push({ id: doc.id, ...doc.data() }); });
-            if (window.updateProjectsList) window.updateProjectsList(projects);
-        }, (error) => { console.error("Data fetch error:", error); });
-    }
-
-    // ★★★ 關鍵修正 2：將 initCanvasSync 貼在這裡 (並確保能呼叫 window 上的函式) ★★★
-    let unsubscribeItems = null;
-
-    window.initCanvasSync = (projectId) => {
-        // 1. 取消舊監聽
-        if (unsubscribeItems) { unsubscribeItems(); unsubscribeItems = null; }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
         
-        // 2. 清空畫面
-        const canvas = document.getElementById('grid-canvas');
-        if(canvas) canvas.innerHTML = '<svg id="connections-layer" class="w-full h-full"></svg>'; 
-        // 這裡無法直接清空 items 陣列，交由 UI Script 的 resetBreadcrumb 處理，或依靠 renderRemoteItem 的防呆
+        const appId = 'brooklyn-terminal-v1';
 
-        // 3. 設定路徑
-        const itemsRef = collection(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId, 'items');
+        const loginBtn = document.getElementById('btn-login');
+        const userProfile = document.getElementById('user-profile');
+        const logoutMenu = document.getElementById('logout-menu');
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
+        const userEmail = document.getElementById('user-email');
+        const logoutBtn = document.getElementById('btn-logout');
+        const emptyDescText = document.getElementById('empty-desc-text');
 
-        // 4. 開始監聽
-        unsubscribeItems = onSnapshot(itemsRef, (snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                const data = change.doc.data();
-                const id = change.doc.id;
+        let currentUser = null;
+        let unsubscribeProjects = null;
 
-                if (change.type === "added") {
-                    if(window.renderRemoteItem) window.renderRemoteItem({ ...data, id });
-                }
-                if (change.type === "modified") {
-                    if(window.updateRemoteItem) window.updateRemoteItem(id, data);
-                }
-                if (change.type === "removed") {
-                    if(window.removeRemoteItem) window.removeRemoteItem(id);
-                }
-            });
+        loginBtn.addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch((error) => alert("Login Error: " + error.message));
         });
-    };
 
-    window.dbCreateProject = async (name, desc, nodes = []) => {
-    if (!window.currentUser) {
-        alert("請先登入再建立工作區。");
-        return;
-    }
-    const user = window.currentUser;
+        logoutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            signOut(auth);
+        });
 
-    try {
-        const wsRef = await addDoc(
-            collection(db, 'artifacts', appId, 'public', 'data', 'workspaces'),
-            {
-                name,
-                desc,
-                ownerUid: user.uid,
-                ownerEmail: user.email,
-                members: [user.email],      // 預設自己在 members 裡
-                nodes: nodes || [],
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                loginBtn.classList.add('hidden');
+                userProfile.classList.remove('hidden');
+                userProfile.classList.add('flex');
+                userAvatar.src = user.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid;
+                userName.textContent = user.displayName || 'User';
+                userEmail.textContent = user.email;
+                
+                emptyDescText.textContent = "Click + to create a workspace. You can invite friends to join via email.";
+                
+                initWorkspaceListener(user);
+            } else {
+                loginBtn.classList.remove('hidden');
+                userProfile.classList.add('hidden');
+                userProfile.classList.remove('flex');
+                
+                emptyDescText.textContent = "Please sign in to access or create workspaces.";
+                
+                if (unsubscribeProjects) unsubscribeProjects();
+                window.updateProjectsList([]);
+                window.resetBreadcrumb();
             }
-        );
-        console.log('Workspace created:', wsRef.id);
-    } catch (err) {
-        console.error('dbCreateProject error:', err);
-        alert('建立工作區失敗，請稍後再試。');
-    }
-};
-
-window.dbUpdateProject = async (projectId, data) => {
-    try {
-        const ref = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId);
-        await updateDoc(ref, {
-            ...data,
-            updatedAt: serverTimestamp()
         });
-        console.log('Workspace updated:', projectId);
-    } catch (err) {
-        console.error('dbUpdateProject error:', err);
-        alert('更新工作區失敗。');
-    }
-};
 
-window.dbDeleteProject = async (projectId) => {
-    try {
-        const ref = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId);
-        await deleteDoc(ref);
-        console.log('Workspace deleted:', projectId);
-        // ⚠ 這裡只刪「workspace 文件本身」，items 子集合如果要一起刪，要另外寫遞迴刪除或 Cloud Function
-    } catch (err) {
-        console.error('dbDeleteProject error:', err);
-        alert('刪除工作區失敗。');
-    }
-};
+        function initWorkspaceListener(user) {
+            const q = query(
+                collection(db, 'artifacts', appId, 'public', 'data', 'workspaces'),
+                where('members', 'array-contains', user.email)
+            );
 
-    window.isUserLoggedIn = () => { return !!window.currentUser; }
-    
-</script>
+            unsubscribeProjects = onSnapshot(q, (snapshot) => {
+                const projects = [];
+                snapshot.forEach((doc) => {
+                    projects.push({ id: doc.id, ...doc.data() });
+                });
+                window.updateProjectsList(projects);
+            }, (error) => {
+                console.error("Data fetch error:", error);
+            });
+        }
+        
+        window.dbCreateProject = async (name, desc, nodes) => {
+            if (!currentUser) return alert("Please login first!");
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'workspaces'), {
+                    name: name,
+                    desc: desc,
+                    ownerId: currentUser.uid,
+                    ownerEmail: currentUser.email,
+                    members: [currentUser.email], 
+                    nodes: nodes,
+                    createdAt: new Date().toISOString()
+                });
+            } catch (e) {
+                console.error("Error adding doc: ", e);
+                alert("Error creating workspace: " + e.message);
+            }
+        };
+         window.toggleWorkspace = () => {
+             if (!state.sidebarOpen) toggleBtn.click(); 
+
+             const list = document.getElementById('workspace-list');
+             const arrow = document.getElementById('workspace-arrow');
+
+              list.classList.toggle('hidden');
+              arrow.classList.toggle('rotate-90');
+         };
+
+        window.dbUpdateProject = async (projectId, data) => {
+            if (!currentUser) return;
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId);
+            try {
+                await updateDoc(docRef, data);
+            } catch (e) {
+                console.error("Error updating doc: ", e);
+            }
+        };
+
+        window.dbDeleteProject = async (projectId) => {
+            if (!currentUser) return;
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId);
+            try {
+                await deleteDoc(docRef);
+            } catch (e) {
+                console.error("Error deleting doc: ", e);
+            }
+        };
+        
+        window.isUserLoggedIn = () => {
+            return !!currentUser;
+        }
+    </script>
 
     <script>
-// === 讓這個 <script> 可以用到 Firestore ===
-const db    = window.db;
-const appId = window.appId;
-
-// 從 window 把 Firestore 函式拉進來用
-const collection = window.collection;
-const addDoc     = window.addDoc;
-const doc        = window.doc;
-const updateDoc  = window.updateDoc;
-const deleteDoc  = window.deleteDoc;
-const currentUser = () => window.currentUser;  
-
-
-
-
-
-
-
-
-
-        
         // State
         const state = {
             sidebarOpen: true,
@@ -775,13 +717,6 @@ const currentUser = () => window.currentUser;
         let activeColor = '#00ff9d'; // 預設強調色
 
         let activeContextProjectId = null;
-
-        // 取得當前工作區的 items 集合參照
-        function getItemsRef() {
-            if (!state.currentProjectId) return null;
-            // 路徑: artifacts -> APP_ID -> public -> data -> workspaces -> {ProjID} -> items
-            return collection(db, 'artifacts', appId, 'public', 'data', 'workspaces', state.currentProjectId, 'items');
-        }
 
         // --- Data Sync ---
         window.updateProjectsList = (projects) => {
@@ -923,9 +858,8 @@ const currentUser = () => window.currentUser;
             }
         };
         window.removeMember = (index) => { state.tempMembers.splice(index, 1); renderEditMembers(); };
-        window.handleMemberInputKey = (e) => { 
-    if(e.key === 'Enter') window.addMember(); 
-};
+        window.handleMemberInputKey = (e) => { if(e.key === 'Enter') addMember(); }
+
         window.saveEditWorkspace = () => {
             if(!state.editingProjectId) return;
             if(window.dbUpdateProject) {
@@ -971,7 +905,6 @@ const currentUser = () => window.currentUser;
             if(project) {
                 breadcrumbSep.classList.remove('hidden'); breadcrumbCurrent.classList.remove('hidden'); breadcrumbCurrent.textContent = project.name;
                 emptyState.classList.add('hidden'); projectContent.classList.remove('hidden'); renderProjectGrid(project);
-                initCanvasSync(id);
             }
         };
 
@@ -995,14 +928,6 @@ const currentUser = () => window.currentUser;
             list.classList.toggle('hidden');
             arrow.classList.toggle('rotate-90');
         };
-        // 將 toggleWorkspace 也掛載到 window 以便呼叫
-window.toggleWorkspace = () => {
-     if (!state.sidebarOpen) toggleBtn.click(); 
-     const list = document.getElementById('workspace-list');
-     const arrow = document.getElementById('workspace-arrow');
-     list.classList.toggle('hidden');
-     arrow.classList.toggle('rotate-90');
-};
 
         const toolRow = document.getElementById('tool-row');
 
@@ -1098,9 +1023,8 @@ window.toggleWorkspace = () => {
 
         // Drop Listener
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
-        gridCanvas.addEventListener('drop', async (e) => {
+        gridCanvas.addEventListener('drop', (e) => {
             e.preventDefault();
-            if (!state.currentProjectId) return alert("請先選擇一個工作區！");
             
             // 只有在 grid-canvas 顯示時才允許放下 (雖然 main 隱藏時也拖不進來)
             if (gridCanvas.offsetParent === null) return;
@@ -1118,149 +1042,64 @@ window.toggleWorkspace = () => {
 
             if (type === 'empty-window') {
                 if(!checkCollision({x, y, w: 300, h: 200})) {
-                   // ★ 修改：不再呼叫 createItem，而是寫入資料庫
-            try {
-                const itemsRef = getItemsRef();
-                await addDoc(itemsRef, {
-                    type: 'empty-window',
-                    x: x,
-                    y: y,
-                    w: 300,
-                    h: 200,
-                    color: '#ffffff',
-                    label: '',
-                    updatedBy: currentUser() ? currentUser().uid : null,
-                    updatedAt: new Date().toISOString()
-                });
-            } catch(err) {
-                console.error("建立失敗", err);
+                    createItem(x, y, 300, 200, '#ffffff', 'empty-window');
+                }
             }
-        }
-    }
-});
-// 專門負責「畫」出別人(或自己)建立的物件 (來自 Firestore)
-function renderRemoteItem(data) {
-    // 1. 避免重複建立
-    if (items.find(i => i.id === data.id)) return;
+        });
 
-    // 2. 解構資料
-    const { id, x, y, w, h, color, type, label } = data;
-    
-    // 3. 建立 DOM
-    const el = document.createElement('div'); 
-    el.className = 'grid-item'; 
-    el.id = id; 
-    el.style.left = x + 'px'; 
-    el.style.top = y + 'px';
-    el.style.width = w + 'px'; 
-    el.style.height = h + 'px';
-    
-    // --- ★ 修正重點：補回顏色設定 (Color Logic) ★ ---
-    // 必須使用 hexToRgb (請確保此函式已定義)
-    const useColor = color || '#ffffff'; // 預設白色，防止 color 為空
-    const rgb = hexToRgb(useColor); 
-    el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
-    el.style.borderColor = useColor;
-    // ------------------------------------------------
-
-    el.innerHTML = `
-        <div class="content-container" style="width:100%; height:100%;"></div>
-        <div class="item-label-container" id="lbl-${id}">${label || ''}</div>
-        <div class="menu-trigger">⋮</div>
-        <div class="context-menu">
-            <div class="context-menu-item" onclick="editLabel('${id}')">編輯名稱 (Name)</div>
-            <div class="context-menu-item danger" onclick="deleteItem('${id}')">移除 (Remove)</div>
-        </div>
-        <div class="item-resize"></div>`;
+        function createItem(x, y, w, h, color, type) {
+            const id = 'item_' + Date.now() + Math.random().toString(36).substr(2, 5);
+            const el = document.createElement('div'); 
+            el.className = 'grid-item'; 
             
-    const menu = el.querySelector('.context-menu');
-    const trigger = el.querySelector('.menu-trigger');
-    
-    // 綁定選單開關
-    trigger.onclick = (e) => { 
-        e.stopPropagation(); 
-        document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); 
-        menu.classList.toggle('show'); 
-    };
+            el.id = id; 
+            el.style.left = x + 'px'; 
+            el.style.top = y + 'px';
+            el.style.width = w + 'px'; 
+            el.style.height = h + 'px';
+            
+            const rgb = hexToRgb(color); 
+            el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+            el.style.borderColor = color;
 
-    gridCanvas.appendChild(el);
-    
-    // 4. 加入本地陣列
-    const itemObj = { id, x, y, w, h, el, type, label: label || '' };
-    items.push(itemObj);
+            el.innerHTML = `
+                <div class="content-container" style="width:100%; height:100%;"></div>
+                <div class="item-label-container" id="lbl-${id}"></div>
+                <div class="menu-trigger">⋮</div>
+                <div class="context-menu">
+                    <div class="context-menu-item" onclick="editLabel('${id}')">編輯名稱 (Name)</div>
+                    <div class="context-menu-item danger" onclick="deleteItem('${id}')">移除 (Remove)</div>
+                </div>
+                <div class="item-resize"></div>`;
+            
+            const menu = el.querySelector('.context-menu');
+            const trigger = el.querySelector('.menu-trigger');
 
-    // 5. 隱藏空狀態提示
-    const emptyState = document.getElementById('empty-state-container');
-    if (emptyState && !emptyState.classList.contains('hidden')) {
-        emptyState.classList.add('hidden');
-        emptyState.style.display = 'none';
-    }
+            trigger.onclick = (e) => { 
+                e.stopPropagation(); 
+                document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); 
+                menu.classList.toggle('show'); 
+            };
 
-    // 6. 渲染內容 (例如 Empty Window 的內容)
-    if (type === 'empty-window') renderEmptyWindowContent(itemObj);
-    
-    // 7. ★ 重要：綁定互動事件 (拖曳/縮放)
-    setupInteractions(itemObj); 
-    
-    // 8. 綁定全域點擊關閉選單
-    document.addEventListener('click', () => menu.classList.remove('show'));
-}
+            gridCanvas.appendChild(el);
+            
+            const itemObj = { id, x, y, w, h, el, type, label: '' };
+            items.push(itemObj);
+            // --- 新增這段：當有物件建立時，隱藏初始化按鈕 ---
+            const emptyState = document.getElementById('empty-state-container');
+            if (emptyState && !emptyState.classList.contains('hidden')) {
+                emptyState.classList.add('hidden');
+                emptyState.style.display = 'none'; // 雙重確保隱藏
+              }
 
-// 本地建立物件 (通常用於拖放 Drop 時呼叫，或寫入資料庫前預覽)
-function createItem(x, y, w, h, color, type) {
-    const id = 'item_' + Date.now() + Math.random().toString(36).substr(2, 5);
-    const el = document.createElement('div'); 
-    el.className = 'grid-item'; 
-    
-    el.id = id; 
-    el.style.left = x + 'px'; 
-    el.style.top = y + 'px';
-    el.style.width = w + 'px'; 
-    el.style.height = h + 'px';
-    
-    const rgb = hexToRgb(color); 
-    el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
-    el.style.borderColor = color;
+            // Render Content
+            if (type === 'empty-window') renderEmptyWindowContent(itemObj);
 
-    el.innerHTML = `
-        <div class="content-container" style="width:100%; height:100%;"></div>
-        <div class="item-label-container" id="lbl-${id}"></div>
-        <div class="menu-trigger">⋮</div>
-        <div class="context-menu">
-            <div class="context-menu-item" onclick="editLabel('${id}')">編輯名稱 (Name)</div>
-            <div class="context-menu-item danger" onclick="deleteItem('${id}')">移除 (Remove)</div>
-        </div>
-        <div class="item-resize"></div>`;
-    
-    const menu = el.querySelector('.context-menu');
-    const trigger = el.querySelector('.menu-trigger');
-
-    trigger.onclick = (e) => { 
-        e.stopPropagation(); 
-        document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); 
-        menu.classList.toggle('show'); 
-    };
-
-    gridCanvas.appendChild(el);
-    
-    const itemObj = { id, x, y, w, h, el, type, label: '' };
-    items.push(itemObj);
-    
-    // 隱藏初始化按鈕
-    const emptyState = document.getElementById('empty-state-container');
-    if (emptyState && !emptyState.classList.contains('hidden')) {
-        emptyState.classList.add('hidden');
-        emptyState.style.display = 'none'; 
-    }
-
-    // Render Content
-    if (type === 'empty-window') renderEmptyWindowContent(itemObj);
-
-    setupInteractions(itemObj); 
-    document.addEventListener('click', () => menu.classList.remove('show')); 
-    
-    return { el, obj: itemObj };
-}
+            setupInteractions(itemObj); 
+            document.addEventListener('click', () => menu.classList.remove('show')); 
+            
+            return { el, obj: itemObj };
+        }
 
         // Render Functions
         function renderEmptyWindowContent(item) {
@@ -1343,44 +1182,35 @@ function createItem(x, y, w, h, color, type) {
                     else el.classList.remove('collision');
                 }
 
-                function onUp(ev) {
-    document.removeEventListener('mousemove', onMove);
-    document.removeEventListener('mouseup', onUp);
-    document.removeEventListener('touchmove', onMove);
-    document.removeEventListener('touchend', onUp);
-    el.style.zIndex = '';
+                function onUp(ev) { 
+                    document.removeEventListener('mousemove', onMove); 
+                    document.removeEventListener('mouseup', onUp);
+                    document.removeEventListener('touchmove', onMove); 
+                    document.removeEventListener('touchend', onUp); 
+                    el.style.zIndex = ''; 
+                    const finalX = snap(parseInt(el.style.left)); 
+                    const finalY = snap(parseInt(el.style.top));
+                    if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { 
+                        // 如果碰撞，彈回原位 (或者你要允許重疊也可以移除這段)
+                        el.style.left = item.x + 'px'; 
+                        el.style.top = item.y + 'px';
+                    } else { 
+                        item.x = finalX; 
+                        item.y = finalY; 
+                        el.style.left = finalX + 'px'; 
+                        el.style.top = finalY + 'px';
+                    } 
+                    el.classList.remove('collision'); 
+                }
 
-    const finalX = snap(parseInt(el.style.left));
-    const finalY = snap(parseInt(el.style.top));
-
-    if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) {
-        el.style.left = item.x + 'px';
-        el.style.top  = item.y + 'px';
-    } else {
-        item.x = finalX;
-        item.y = finalY;
-        el.style.left = finalX + 'px';
-        el.style.top  = finalY + 'px';
-    }
-    el.classList.remove('collision');
-
-    // ★ 在這裡同步 Firestore
-    if (state.currentProjectId) {
-        const docRef = doc(
-            db,
-            'artifacts', appId, 'public', 'data',
-            'workspaces', state.currentProjectId, 'items', item.id
-        );
-        updateDoc(docRef, {
-            x: item.x,
-            y: item.y,
-            w: item.w,
-            h: item.h,
-            updatedBy: currentUser() ? currentUser().uid : null,
-            updatedAt: new Date().toISOString()
-        });
-    }
-}
+                if (e.type === 'mousedown') {
+                    document.addEventListener('mousemove', onMove); 
+                    document.addEventListener('mouseup', onUp);
+                } else {
+                    document.addEventListener('touchmove', onMove, {passive: false}); 
+                    document.addEventListener('touchend', onUp);
+                }
+            }
 
             // Resize Logic
             resizeHandle.addEventListener('mousedown', handleResizeStart);
@@ -1443,101 +1273,22 @@ function createItem(x, y, w, h, color, type) {
             }
         }
 
-       // C-1. 主動刪除：使用者點擊刪除按鈕時觸發
-window.deleteItem = async function(id) {
-    if (!state.currentProjectId) return;
-
-    if (confirm("確定要刪除此物件嗎? (此操作會同步移除)")) {
-        try {
-            const docRef = doc(
-                db,
-                'artifacts', appId, 'public', 'data',
-                'workspaces', state.currentProjectId, 'items', id
-            );
-            await deleteDoc(docRef);
-            // DOM 移除 & connections 清理由 onSnapshot → removeRemoteItem 負責
-        } catch (e) {
-            console.error("刪除失敗:", e);
-            alert("同步刪除失敗，請檢查網路連線。");
-        }
-    }
-};
-        // ★★★ 請在這裡插入 updateRemoteItem ★★★
-        
-        window.updateRemoteItem = function(id, data) {
-    const item = items.find(i => i.id === id);
-    if (!item) return;
-
-    // ★ 如果是我自己正在拖曳這個物件，暫時忽略資料庫的位置更新，避免畫面抖動
-    // (利用 zIndex 判斷，因為拖曳時會設為 999)
-    if (item.el.style.zIndex === '999') return;
-
-    // 更新座標與大小
-    item.x = data.x;
-    item.y = data.y;
-    item.w = data.w;
-    item.h = data.h;
-    
-    // 更新 DOM
-    item.el.style.left = data.x + 'px';
-    item.el.style.top = data.y + 'px';
-    item.el.style.width = data.w + 'px';
-    item.el.style.height = data.h + 'px';
-
-    // ★ 修正：標籤防呆 (只有當資料庫有 label 時才更新)
-    if (data.label !== undefined) {
-        item.label = data.label;
-        const labelEl = document.getElementById(`lbl-${id}`);
-        if (labelEl) labelEl.innerText = data.label;
-    }
-
-    // 更新顏色 (如果有的話)
-    if (data.color) {
-        const rgb = hexToRgb(data.color);
-        item.el.style.borderColor = data.color;
-        item.el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
-    }
-
-    // 連線跟隨
-    if (typeof updateLines === 'function') updateLines();
-};
-
-        // ★★★ 請在這裡插入 removeRemoteItem ★★★
-
-        window.removeRemoteItem = function(id) {
-            // 1. 在陣列中找到索引
+        window.deleteItem = function(id) {
             const idx = items.findIndex(i => i.id === id);
-            
-            if (idx > -1) {
-                // 2. 移除 DOM 元素
-                const item = items[idx];
-                if (item.el) item.el.remove();
-                
-                // 3. 從本地陣列中移除
-                items.splice(idx, 1);
-                
-                // 4. 清理相關連線 (如果有連線連在這個物件上，也要刪掉)
-                // 檢查 connections 是否存在 (避免報錯)
-                if (typeof connections !== 'undefined' && Array.isArray(connections)) {
-                    // 找出相關的連線並移除 SVG 線條
-                    const linesToRemove = connections.filter(c => c.s === id || c.t === id);
-                    linesToRemove.forEach(c => {
-                        if (c.line) c.line.remove(); 
-                    });
-                    // 更新 connections 陣列，只保留沒被刪除的
-                    connections = connections.filter(c => c.s !== id && c.t !== id);
-                }
-
-                // 5. 如果畫面空了，顯示「初始化專案」按鈕
-                if (items.length === 0) {
-                    const emptyState = document.getElementById('empty-state-container');
-                    if (emptyState) {
-                        emptyState.classList.remove('hidden');
-                        emptyState.style.display = 'flex';
-                    }
-                }
+            if (idx > -1) { 
+                items[idx].el.remove(); 
+                items.splice(idx, 1); 
+            // --- 新增：如果畫面清空了，顯示初始化按鈕 ---
+            if (items.length === 0) {
+                const emptyState = document.getElementById('empty-state-container');
+                if (emptyState) {
+                    emptyState.classList.remove('hidden');
+                    emptyState.style.display = 'flex';
+               }
             }
-        };
+            // ------------------------------------------
+            }
+        }
 // --- 新增：滑鼠中鍵拖曳畫布 (Panning) ---
 // --- Middle Mouse Pan Logic (從 APP.txt 復刻) ---
 const scrollContainer = document.getElementById('canvas-scroll-container'); // 對應 APP.txt 的 .workspace
@@ -1620,9 +1371,6 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
-
-
-
 
 
 
