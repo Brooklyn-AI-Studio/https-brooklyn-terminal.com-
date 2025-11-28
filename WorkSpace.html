@@ -508,6 +508,15 @@
                 alert("Error creating workspace: " + e.message);
             }
         };
+         window.toggleWorkspace = () => {
+             if (!state.sidebarOpen) toggleBtn.click(); // 收合時先展開 sidebar
+
+             const list = document.getElementById('workspace-list');
+             const arrow = document.getElementById('workspace-arrow');
+
+              list.classList.toggle('hidden');
+              arrow.classList.toggle('rotate-90');
+         };
 
         // 更新工作區 (包含邀請成員)
         window.dbUpdateProject = async (projectId, data) => {
@@ -955,6 +964,7 @@ toggleBtn.addEventListener('click', () => {
     </script>
 </body>
 </html>
+
 
 
 
