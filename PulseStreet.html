@@ -2083,8 +2083,7 @@
         window.currentActiveChatId = null; // 全域變數：記錄當前聊天室 ID
         window.currentActiveTargetUid = null; // 全域變數：記錄當前對象 UID
 
-        // 3. 選擇並開啟某個對話 (更新版：加入右上角選單)
-        // 3. 選擇並開啟某個對話 (最終版：支援刪除選單 + 自動抓取對方名字)
+    
         // 3. 選擇並開啟某個對話 (修正版)
         window.selectChat = async function(chatId, targetUid, targetName = null) {
             window.currentActiveChatId = chatId;
@@ -2163,16 +2162,6 @@
                 }
             }
         }
-
-            // 更新標題 HTML
-            document.getElementById('chat-header').innerHTML = headerHtml;
-            
-            // 啟用輸入框
-            document.getElementById('mail-content').disabled = false;
-            document.getElementById('mail-send-btn').disabled = false;
-
-            // 載入訊息內容
-            loadChatRoom(chatId, window.currentUser.uid);
         
      
      // ★ 新增：切換選單顯示/隱藏
