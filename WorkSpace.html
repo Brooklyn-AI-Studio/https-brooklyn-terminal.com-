@@ -33,6 +33,19 @@
     </script>
 
     <style>
+      /* 加入 style 標籤內 */
+      #canvas-scroll-container {
+      /* 隱藏捲軸但保留功能 (選用，若希望像圖片一樣乾淨) */
+       scrollbar-width: thin; /* Firefox */
+     }
+       #canvas-scroll-container::-webkit-scrollbar {
+       width: 8px;
+       height: 8px;
+    }
+       .cursor-grabbing {
+       cursor: grabbing !important;
+    }
+
         /* 定義主題變數 */
         :root {
             /* 預設: 賽博龐克 (Cyberpunk) - 新增霓虹變數 */
@@ -400,34 +413,33 @@
             </div>
         </div>
         
-        <div class="flex-1 relative p-8 overflow-hidden flex items-center justify-center">
-            
-            <div class="relative w-full h-full border border-grid flex flex-col overflow-hidden">
-                <div id="grid-canvas" class="relative w-full h-full bg-grid">
-                    <svg id="connections-layer"></svg>
-                    <!-- grid items will be dropped here -->
-                </div>
-                
-                <div class="absolute inset-0 grid-bg opacity-50 pointer-events-none"></div>
+       <div id="canvas-scroll-container" class="flex-1 relative overflow-auto w-full h-full bg-bg cursor-default">
+    
+    <div class="relative w-[4000px] h-[4000px] border border-grid flex flex-col overflow-hidden">
+        
+        <div id="grid-canvas" class="relative w-full h-full bg-grid">
+            <svg id="connections-layer" class="w-full h-full"></svg>
+            <div class="absolute inset-0 grid-bg opacity-50 pointer-events-none"></div>
+        </div>
 
-                <div id="empty-state-container" class="relative z-10 p-6 h-full flex items-center justify-center transition-opacity duration-300 pointer-events-none">
-                    <div class="text-center space-y-4 pointer-events-auto">
-                        <button onclick="handlePlusClick()" class="w-24 h-24 mx-auto border-2 border-accent rounded-full flex items-center justify-center relative group cursor-pointer hover:bg-accent/10 transition-all focus:outline-none">
-                            <svg class="w-10 h-10 text-accent group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            <div class="absolute inset-0 rounded-full border border-accent animate-ping opacity-20"></div>
-                        </button>
-                        <h2 class="text-2xl font-bold text-text text-accent" data-i18n="empty_state">Initialize Project</h2>
-                        <p id="empty-desc-text" class="text-muted max-w-md mx-auto" data-i18n="empty_desc">Select a tool from the left sidebar or click above to create a new component node.</p>
-                    </div>
-                </div>
-
-                <div id="project-content-container" class="hidden relative z-10 w-full h-full p-6 overflow-hidden">
-                     </div>
-
+        <div id="empty-state-container" class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+             <div class="text-center space-y-4 pointer-events-auto sticky top-1/2 -translate-y-1/2">
+                <button onclick="handlePlusClick()" class="w-24 h-24 mx-auto border-2 border-accent rounded-full flex items-center justify-center relative group cursor-pointer hover:bg-accent/10 transition-all focus:outline-none">
+                    <svg class="w-10 h-10 text-accent group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <div class="absolute inset-0 rounded-full border border-accent animate-ping opacity-20"></div>
+                </button>
+                <h2 class="text-2xl font-bold text-text text-accent" data-i18n="empty_state">Initialize Project</h2>
+                <p id="empty-desc-text" class="text-muted max-w-md mx-auto" data-i18n="empty_desc">Select a tool from the left sidebar or click above to create a new component node.</p>
             </div>
         </div>
+
+        <div id="project-content-container" class="hidden relative z-10 w-full h-full p-6 overflow-hidden">
+             </div>
+
+    </div>
+</div>
     </main>
 
     <script type="module">
@@ -1213,8 +1225,51 @@
                 items.splice(idx, 1); 
             }
         }
+// --- 新增：滑鼠中鍵拖曳畫布 (Panning) ---
+const scrollContainer = document.getElementById('canvas-scroll-container');
+let isPanning = false;
+let startX, startY, scrollLeft, scrollTop;
 
+scrollContainer.addEventListener('mousedown', (e) => {
+    // e.button === 1 代表滑鼠滾輪(中鍵)
+    // 或是您可以改成 e.button === 0 && e.altKey (Alt + 左鍵)
+    if (e.button === 1) {
+        e.preventDefault(); // 防止出現瀏覽器預設的捲動圖示
+        isPanning = true;
+        scrollContainer.style.cursor = 'grabbing'; // 改變游標樣式
+        
+        startX = e.pageX - scrollContainer.offsetLeft;
+        startY = e.pageY - scrollContainer.offsetTop;
+        scrollLeft = scrollContainer.scrollLeft;
+        scrollTop = scrollContainer.scrollTop;
+    }
+});
+
+scrollContainer.addEventListener('mouseleave', () => {
+    isPanning = false;
+    scrollContainer.style.cursor = 'default';
+});
+
+scrollContainer.addEventListener('mouseup', () => {
+    isPanning = false;
+    scrollContainer.style.cursor = 'default';
+});
+
+scrollContainer.addEventListener('mousemove', (e) => {
+    if (!isPanning) return;
+    e.preventDefault();
+    
+    const x = e.pageX - scrollContainer.offsetLeft;
+    const y = e.pageY - scrollContainer.offsetTop;
+    
+    const walkX = (x - startX) * 1; // 捲動速度倍率，可自行調整
+    const walkY = (y - startY) * 1;
+    
+    scrollContainer.scrollLeft = scrollLeft - walkX;
+    scrollContainer.scrollTop = scrollTop - walkY;
+});  
         window.onload = () => { setTheme('cyberpunk'); setLanguage('zh'); };
     </script>
 </body>
 </html>
+
