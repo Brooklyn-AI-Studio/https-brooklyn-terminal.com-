@@ -712,7 +712,7 @@
  <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc, getDoc, updateDoc, increment, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc, getDoc, updateDoc, increment, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         // ★ 新增：引入 Storage 相關功能
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
@@ -736,7 +736,7 @@
         window.db = db;
         // ★ 新增：將 storage 功能掛載到 window
         window.storage = { ref, uploadBytes, getDownloadURL, storageInstance: storage };
-        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where, deleteDoc, getDoc, updateDoc, increment, getDocs };
+        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where, deleteDoc, getDoc, updateDoc, increment, getDocs, limit };
         window.appAuth = auth;
         window.currentUser = null;
 
