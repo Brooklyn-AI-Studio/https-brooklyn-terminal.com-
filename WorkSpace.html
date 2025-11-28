@@ -652,14 +652,6 @@ window.dbDeleteProject = async (projectId) => {
 
     window.isUserLoggedIn = () => { return !!window.currentUser; }
     
-    // 將 toggleWorkspace 也掛載到 window 以便呼叫
-    window.toggleWorkspace = () => {
-         if (!state.sidebarOpen) toggleBtn.click(); 
-         const list = document.getElementById('workspace-list');
-         const arrow = document.getElementById('workspace-arrow');
-         list.classList.toggle('hidden');
-         arrow.classList.toggle('rotate-90');
-    };
 </script>
 
     <script>
@@ -1003,6 +995,14 @@ const currentUser = () => window.currentUser;
             list.classList.toggle('hidden');
             arrow.classList.toggle('rotate-90');
         };
+        // 將 toggleWorkspace 也掛載到 window 以便呼叫
+window.toggleWorkspace = () => {
+     if (!state.sidebarOpen) toggleBtn.click(); 
+     const list = document.getElementById('workspace-list');
+     const arrow = document.getElementById('workspace-arrow');
+     list.classList.toggle('hidden');
+     arrow.classList.toggle('rotate-90');
+};
 
         const toolRow = document.getElementById('tool-row');
 
@@ -1620,6 +1620,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
