@@ -171,6 +171,35 @@
         /* 專案內容的節點動畫 */
         .node-appear { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.5); }
         @keyframes popIn { to { opacity: 1; transform: scale(1); } }
+
+        /* --- 網格拖曳項目樣式 (仿 APP.txt) --- */
+        .grid-item { position: absolute; border: 1px solid rgba(255,255,255,0.3); box-sizing: border-box; display: flex; flex-direction: column; backdrop-filter: blur(5px); transition: box-shadow 0.2s, border-color 0.2s; border-radius: 4px; }
+        .grid-item:hover { box-shadow: 0 0 20px rgba(255,255,255,0.2); z-index: 100; border-color: var(--accent-color); }
+        .grid-item.collision { background-color: rgba(255, 0, 51, 0.2) !important; border-color: #ff0033 !important; box-shadow: 0 0 20px #ff0033; }
+        .grid-item.circle { border-radius: 50%; }
+        .grid-item.circle .content-container { display: flex; align-items: center; justify-content: center; }
+        
+        .item-label-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; text-align: center; pointer-events: none; z-index: 5; color: var(--text-primary); font-weight: bold; font-size: 1.2em; text-shadow: 0 0 5px rgba(0,0,0,0.8); word-wrap: break-word; }
+        
+        .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
+        
+        .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
+        .grid-item:hover .menu-trigger { opacity: 1; }
+        .menu-trigger:hover { background: var(--accent-color); color: #000; }
+        
+        .context-menu { position: absolute; top: 30px; right: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(0,0,0,0.8); border-radius: 4px; z-index: 9999; display: none; min-width: 140px; }
+        .context-menu.show { display: block; }
+        .context-menu-item { padding: 8px 12px; cursor: pointer; font-size: 12px; color: var(--text-primary); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .context-menu-item:hover { background: rgba(255,255,255,0.1); }
+        .context-menu-item.danger:hover { background: rgba(255,255,255,0.1); color: #ff0033; }
+
+        /* 連線 SVG */
+        #connections-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        .connection-line { stroke: var(--accent-color); stroke-width: 2px; opacity: 0.6; transition: stroke 0.3s; pointer-events: auto; cursor: pointer; }
+        .connection-line:hover { stroke: #fff; opacity: 1; stroke-width: 4px; }
+
+        /* 視窗化 Widget 樣式 */
+        .widget-header { cursor: move; }
     </style>
 </head>
 <body class="h-screen w-screen flex overflow-hidden selection:bg-accent selection:text-bg">
@@ -280,17 +309,23 @@
                         <div class="px-3 py-2 text-xs text-muted italic" id="loading-text">Loading...</div>
                     </div>
                 </div>
+                
+                <!-- 工具間 (Tool Room) -->
                 <div>
-    <button onclick="toggleTools()" class="w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all group">
-        <svg id="tools-arrow" class="w-4 h-4 min-w-[16px] text-muted transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-        </svg>
-        <span class="sidebar-text whitespace-nowrap font-semibold tracking-wide" data-i18n="tools_section">Tool Room</span>
-    </button>
-    <div id="tools-list" class="hidden pl-4 mt-1 border-l border-border ml-4 space-y-1">
-        <div class="px-3 py-2 text-xs text-muted italic">No tools available.</div>
-    </div>
-</div>
+                    <button onclick="toggleTools()" class="w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all group">
+                        <svg id="tools-arrow" class="w-4 h-4 min-w-[16px] text-muted transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="sidebar-text whitespace-nowrap font-semibold tracking-wide" data-i18n="tools_section">Tool Room</span>
+                    </button>
+                    <div id="tools-list" class="hidden pl-4 mt-1 border-l border-border ml-4 space-y-1">
+                        <!-- 新增的工具：空視窗 -->
+                        <div class="tool-item flex items-center gap-3 px-3 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all cursor-grab group border border-transparent hover:border-accent" draggable="true" id="tool-empty">
+                            <div class="w-5 h-5 flex items-center justify-center bg-white/10 rounded text-xs border border-muted group-hover:border-accent">□</div>
+                            <span class="sidebar-text whitespace-nowrap">Empty Window</span>
+                        </div>
+                    </div>
+                </div>
 
             </nav>
         </div>
@@ -368,10 +403,15 @@
         <div class="flex-1 relative p-8 overflow-hidden flex items-center justify-center">
             
             <div class="relative w-full h-full border border-grid flex flex-col overflow-hidden">
+                <div id="grid-canvas" class="relative w-full h-full bg-grid">
+                    <svg id="connections-layer"></svg>
+                    <!-- grid items will be dropped here -->
+                </div>
+                
                 <div class="absolute inset-0 grid-bg opacity-50 pointer-events-none"></div>
 
-                <div id="empty-state-container" class="relative z-10 p-6 h-full flex items-center justify-center transition-opacity duration-300">
-                    <div class="text-center space-y-4">
+                <div id="empty-state-container" class="relative z-10 p-6 h-full flex items-center justify-center transition-opacity duration-300 pointer-events-none">
+                    <div class="text-center space-y-4 pointer-events-auto">
                         <button onclick="handlePlusClick()" class="w-24 h-24 mx-auto border-2 border-accent rounded-full flex items-center justify-center relative group cursor-pointer hover:bg-accent/10 transition-all focus:outline-none">
                             <svg class="w-10 h-10 text-accent group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -411,10 +451,8 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
         
-        // 確保有 App ID
-        const appId = 'brooklyn-terminal-v1'; // 固定 App ID 確保路徑一致
+        const appId = 'brooklyn-terminal-v1';
 
-        // UI Elements
         const loginBtn = document.getElementById('btn-login');
         const userProfile = document.getElementById('user-profile');
         const logoutMenu = document.getElementById('logout-menu');
@@ -427,7 +465,6 @@
         let currentUser = null;
         let unsubscribeProjects = null;
 
-        // 2. Auth Logic
         loginBtn.addEventListener('click', () => {
             signInWithPopup(auth, provider).catch((error) => alert("Login Error: " + error.message));
         });
@@ -440,7 +477,6 @@
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             if (user) {
-                // Show User Profile
                 loginBtn.classList.add('hidden');
                 userProfile.classList.remove('hidden');
                 userProfile.classList.add('flex');
@@ -450,27 +486,21 @@
                 
                 emptyDescText.textContent = "Click + to create a workspace. You can invite friends to join via email.";
                 
-                // Start Listening to Workspaces
                 initWorkspaceListener(user);
             } else {
-                // Show Login Button
                 loginBtn.classList.remove('hidden');
                 userProfile.classList.add('hidden');
                 userProfile.classList.remove('flex');
                 
                 emptyDescText.textContent = "Please sign in to access or create workspaces.";
                 
-                // Clear Data
                 if (unsubscribeProjects) unsubscribeProjects();
                 window.updateProjectsList([]);
                 window.resetBreadcrumb();
             }
         });
 
-        // 3. Firestore Logic
         function initWorkspaceListener(user) {
-            // 查詢：所有成員陣列中包含當前使用者 Email 的工作區
-            // 使用 'array-contains' 運算符
             const q = query(
                 collection(db, 'artifacts', appId, 'public', 'data', 'workspaces'),
                 where('members', 'array-contains', user.email)
@@ -481,16 +511,12 @@
                 snapshot.forEach((doc) => {
                     projects.push({ id: doc.id, ...doc.data() });
                 });
-                // 更新全域狀態
                 window.updateProjectsList(projects);
             }, (error) => {
                 console.error("Data fetch error:", error);
             });
         }
-
-        // 4. Expose Functions for Global Scope (to be used by other script)
         
-        // 建立新工作區
         window.dbCreateProject = async (name, desc, nodes) => {
             if (!currentUser) return alert("Please login first!");
             try {
@@ -499,7 +525,7 @@
                     desc: desc,
                     ownerId: currentUser.uid,
                     ownerEmail: currentUser.email,
-                    members: [currentUser.email], // 初始成員包含自己
+                    members: [currentUser.email], 
                     nodes: nodes,
                     createdAt: new Date().toISOString()
                 });
@@ -509,7 +535,7 @@
             }
         };
          window.toggleWorkspace = () => {
-             if (!state.sidebarOpen) toggleBtn.click(); // 收合時先展開 sidebar
+             if (!state.sidebarOpen) toggleBtn.click(); 
 
              const list = document.getElementById('workspace-list');
              const arrow = document.getElementById('workspace-arrow');
@@ -518,7 +544,6 @@
               arrow.classList.toggle('rotate-90');
          };
 
-        // 更新工作區 (包含邀請成員)
         window.dbUpdateProject = async (projectId, data) => {
             if (!currentUser) return;
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId);
@@ -529,7 +554,6 @@
             }
         };
 
-        // 刪除工作區
         window.dbDeleteProject = async (projectId) => {
             if (!currentUser) return;
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId);
@@ -540,7 +564,6 @@
             }
         };
         
-        // 檢查是否已登入
         window.isUserLoggedIn = () => {
             return !!currentUser;
         }
@@ -555,10 +578,9 @@
             currentProjectId: null,
             editingProjectId: null,
             tempMembers: [],
-            projects: [] // 來自 Firestore
+            projects: [] 
         };
 
-        // Translations
         const translations = {
             en: {
                 add_tool_section: 'Add Tool Section',
@@ -610,7 +632,6 @@
             }
         };
 
-        // DOM Elements
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('toggle-sidebar');
         const toggleIcon = document.getElementById('toggle-icon');
@@ -638,9 +659,14 @@
         const globalContextMenu = document.getElementById('global-context-menu');
         const globalEditBtn = document.getElementById('global-edit-btn');
         
-        // 修正: 在此定義 userProfile 與 logoutMenu 以供下方的 Event Listener 使用
         const userProfile = document.getElementById('user-profile');
         const logoutMenu = document.getElementById('logout-menu');
+        
+        // 拖曳相關全域變數
+        const gridCanvas = document.getElementById('grid-canvas');
+        const CELL_SIZE = 20, MIN_W = CELL_SIZE * 4, MIN_H = CELL_SIZE * 4;
+        let items = []; // 存儲畫面上的物件
+        let activeColor = '#00ff9d'; // 預設強調色
 
         let activeContextProjectId = null;
 
@@ -649,11 +675,9 @@
             state.projects = projects;
             renderWorkspaceList();
             
-            // 如果當前選中的專案被刪除了，回到首頁
             if (state.currentProjectId && !projects.find(p => p.id === state.currentProjectId)) {
                 resetBreadcrumb();
             } else if (state.currentProjectId) {
-                // 如果還在，更新顯示內容 (例如成員變動)
                 const current = projects.find(p => p.id === state.currentProjectId);
                 renderProjectGrid(current);
             }
@@ -676,9 +700,7 @@
             const name = nameInput.value.trim();
             const desc = descInput.value.trim();
             if (name) {
-                // Call Firestore Bridge
                 if(window.dbCreateProject) {
-                   // 改為傳入空陣列 []，代表不生成任何初始節點
                    window.dbCreateProject(name, desc, []);
                 }
                 closeModal();
@@ -687,18 +709,15 @@
             }
         };
 
-        // 點擊使用者頭像切換登出選單
         userProfile.addEventListener('click', (e) => {
-            e.stopPropagation(); // 防止觸發 document 的關閉事件
-            // 切換 hidden class
+            e.stopPropagation(); 
             if (logoutMenu.classList.contains('hidden')) {
-                // 先關閉其他所有選單
                 langMenu.classList.add('hidden');
                 themeMenu.classList.add('hidden');
                 globalContextMenu.classList.add('hidden');
                 
                 logoutMenu.classList.remove('hidden');
-                logoutMenu.classList.add('popover-enter-active'); // 加入進場動畫
+                logoutMenu.classList.add('popover-enter-active'); 
             } else {
                 logoutMenu.classList.add('hidden');
                 logoutMenu.classList.remove('popover-enter-active');
@@ -726,7 +745,6 @@
                 if(state.theme === 'terminal' && proj.id === state.currentProjectId) { btn.classList.remove('text-muted', 'hover:text-accent'); btn.classList.add('text-bg'); }
                 btn.onclick = function() { selectWorkspaceItem(proj.id); };
 
-                // Three Dots
                 const menuBtn = document.createElement('button');
                 menuBtn.className = "p-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-accent shrink-0 focus:outline-none";
                 menuBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>`;
@@ -737,7 +755,6 @@
                 workspaceList.appendChild(container);
             });
             
-            // Auto expand list if items exist
             if (workspaceList.classList.contains('hidden') && state.projects.length > 0) {
                 workspaceList.classList.remove('hidden');
                 workspaceArrow.classList.add('rotate-90');
@@ -775,7 +792,6 @@
             state.tempMembers.forEach((member, index) => {
                 const chip = document.createElement('div');
                 chip.className = "flex items-center gap-1 px-2 py-1 bg-white/5 border border-border rounded text-xs text-text border-accent";
-                // 第一個通常是擁有者，可以加個標記，但這裡簡化處理
                 chip.innerHTML = `<span class="text-accent">${member}</span><button onclick="removeMember(${index})" class="text-muted hover:text-red-500 ml-1">×</button>`;
                 membersList.appendChild(chip);
             });
@@ -798,7 +814,6 @@
 
         window.saveEditWorkspace = () => {
             if(!state.editingProjectId) return;
-            // Call Firestore
             if(window.dbUpdateProject) {
                 window.dbUpdateProject(state.editingProjectId, {
                     name: editNameInput.value.trim(),
@@ -838,7 +853,7 @@
         window.selectWorkspaceItem = (id) => {
             state.currentProjectId = id;
             const project = state.projects.find(p => p.id === id);
-            renderWorkspaceList(); // Update highlight in sidebar
+            renderWorkspaceList(); 
             if(project) {
                 breadcrumbSep.classList.remove('hidden'); breadcrumbCurrent.classList.remove('hidden'); breadcrumbCurrent.textContent = project.name;
                 emptyState.classList.add('hidden'); projectContent.classList.remove('hidden'); renderProjectGrid(project);
@@ -852,72 +867,51 @@
             title.innerText = `OWNER: ${project.ownerEmail} // MEMBERS: ${project.members ? project.members.length : 0} // ${project.desc || 'No description'}`;
             projectContent.appendChild(title);
             
-            const nodes = project.nodes || [];
-            nodes.forEach((node, index) => {
-                const el = document.createElement('div');
-                el.className = "absolute w-32 h-24 bg-surface border border-accent/50 rounded flex items-center justify-center text-xs text-accent shadow-lg backdrop-blur-sm node-appear group cursor-move hover:border-accent border-accent";
-                el.style.top = node.top; el.style.left = node.left; el.style.animationDelay = `${index * 0.1}s`;
-                el.innerHTML = `<div class="flex flex-col items-center gap-2"><svg class="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">${node.type === 'data' ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>' : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>'}</svg><span class="font-bold text-accent">NODE_${index + 1}</span></div><div class="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>`;
-                projectContent.appendChild(el);
-            });
+            // 這裡可以選擇是否要還原 project.nodes，但目前 createItem 邏輯是獨立的
+            // 如果需要還原，需呼叫 createItem 並傳入參數
         }
 
         window.resetBreadcrumb = () => { state.currentProjectId = null; breadcrumbSep.classList.add('hidden'); breadcrumbCurrent.classList.add('hidden'); renderWorkspaceList(); emptyState.classList.remove('hidden'); projectContent.classList.add('hidden'); };
         
         window.toggleTools = () => {
-    if (!state.sidebarOpen) toggleBtn.click(); // 如果側邊欄是收合的，先展開
-    const list = document.getElementById('tools-list');
-    const arrow = document.getElementById('tools-arrow');
-    list.classList.toggle('hidden');
-    arrow.classList.toggle('rotate-90');
-};
+            if (!state.sidebarOpen) toggleBtn.click();
+            const list = document.getElementById('tools-list');
+            const arrow = document.getElementById('tools-arrow');
+            list.classList.toggle('hidden');
+            arrow.classList.toggle('rotate-90');
+        };
 
-        // 定義工具列容器
-const toolRow = document.getElementById('tool-row');
+        const toolRow = document.getElementById('tool-row');
 
-toggleBtn.addEventListener('click', () => {
-    state.sidebarOpen = !state.sidebarOpen;
-    
-    if (!state.sidebarOpen) {
-        // --- 收合狀態 (Sidebar Closed) ---
-        sidebar.classList.remove('w-64'); 
-        sidebar.classList.add('w-16');
-        
-        // 隱藏文字
-        textElements.forEach(el => el.classList.add('opacity-0', 'pointer-events-none', 'hidden'));
-        // 變更收合圖示
-        toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>';
-        // 隱藏工作列表
-        workspaceList.classList.add('hidden'); 
-        workspaceArrow.classList.remove('rotate-90');
-        const toolsList = document.getElementById('tools-list');
-        const toolsArrow = document.getElementById('tools-arrow');
-        if(toolsList) toolsList.classList.add('hidden');
-        if(toolsArrow) toolsArrow.classList.remove('rotate-90');
-        // [新增] 工具列改為垂直排列 (flex-col)，以便塞入狹窄的側邊欄
-        if(toolRow) {
-            toolRow.classList.remove('flex-row');
-            toolRow.classList.add('flex-col');
-        }
-
-    } else {
-        // --- 展開狀態 (Sidebar Open) ---
-        sidebar.classList.remove('w-16'); 
-        sidebar.classList.add('w-64');
-        
-        // 顯示文字
-        setTimeout(() => textElements.forEach(el => el.classList.remove('opacity-0', 'pointer-events-none', 'hidden')), 100);
-        
-        // 變更展開圖示
-        toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>';
-
-        // [新增] 工具列恢復水平排列 (flex-row)
-        if(toolRow) {
-            toolRow.classList.remove('flex-col');
-            toolRow.classList.add('flex-row');
-        }
-    }
-});
+        toggleBtn.addEventListener('click', () => {
+            state.sidebarOpen = !state.sidebarOpen;
+            
+            if (!state.sidebarOpen) {
+                sidebar.classList.remove('w-64'); 
+                sidebar.classList.add('w-16');
+                textElements.forEach(el => el.classList.add('opacity-0', 'pointer-events-none', 'hidden'));
+                toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>';
+                workspaceList.classList.add('hidden'); 
+                workspaceArrow.classList.remove('rotate-90');
+                const toolsList = document.getElementById('tools-list');
+                const toolsArrow = document.getElementById('tools-arrow');
+                if(toolsList) toolsList.classList.add('hidden');
+                if(toolsArrow) toolsArrow.classList.remove('rotate-90');
+                if(toolRow) {
+                    toolRow.classList.remove('flex-row');
+                    toolRow.classList.add('flex-col');
+                }
+            } else {
+                sidebar.classList.remove('w-16'); 
+                sidebar.classList.add('w-64');
+                setTimeout(() => textElements.forEach(el => el.classList.remove('opacity-0', 'pointer-events-none', 'hidden')), 100);
+                toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>';
+                if(toolRow) {
+                    toolRow.classList.remove('flex-col');
+                    toolRow.classList.add('flex-row');
+                }
+            }
+        });
 
         function toggleMenu(menu) {
             const isHidden = menu.classList.contains('hidden');
@@ -939,7 +933,6 @@ toggleBtn.addEventListener('click', () => {
             themeMenu.classList.add('hidden'); 
             globalContextMenu.classList.add('hidden');
             
-            // 新增這一行：如果點擊的目標不是 userProfile 內部，就關閉登出選單
             if (userProfile && !userProfile.contains(e.target)) {
                 if(logoutMenu) logoutMenu.classList.add('hidden');
             }
@@ -960,12 +953,268 @@ toggleBtn.addEventListener('click', () => {
             updateThemeMenuHighlight();
         };
 
+        // --- Drag and Drop Logic (新增部分) ---
+        
+        // Helper Functions
+        function snap(v) { return Math.round(v / CELL_SIZE) * CELL_SIZE; }
+        function checkCollision(target, ignoreId) { 
+            return items.some(i => { 
+                if (i.id === ignoreId) return false; 
+                return (target.x < i.x + i.w && target.x + target.w > i.x && target.y < i.y + i.h && target.y + target.h > i.y); 
+            }); 
+        }
+        function hexToRgb(hex) { const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 }; }
+
+        // Setup Drag Listeners
+        const toolEmpty = document.getElementById('tool-empty');
+        if (toolEmpty) {
+            toolEmpty.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('type', 'empty-window');
+            });
+        }
+
+        // Drop Listener
+        gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+        gridCanvas.addEventListener('drop', (e) => {
+            e.preventDefault();
+            
+            // 只有在 grid-canvas 顯示時才允許放下 (雖然 main 隱藏時也拖不進來)
+            if (gridCanvas.offsetParent === null) return;
+
+            const type = e.dataTransfer.getData('type');
+            const rect = gridCanvas.getBoundingClientRect();
+            // 計算相對位置，並考慮捲軸
+            const scrollTop = gridCanvas.scrollTop || 0; // 如果 gridCanvas 本身有捲動
+            const scrollLeft = gridCanvas.scrollLeft || 0;
+            
+            // 由於 gridCanvas 是 relative 且 full size，這裡使用 client 座標轉換
+            // 並且吸附網格
+            const x = snap(e.clientX - rect.left);
+            const y = snap(e.clientY - rect.top);
+
+            if (type === 'empty-window') {
+                if(!checkCollision({x, y, w: 300, h: 200})) {
+                    createItem(x, y, 300, 200, '#ffffff', 'empty-window');
+                }
+            }
+        });
+
+        function createItem(x, y, w, h, color, type) {
+            const id = 'item_' + Date.now() + Math.random().toString(36).substr(2, 5);
+            const el = document.createElement('div'); 
+            el.className = 'grid-item'; 
+            
+            el.id = id; 
+            el.style.left = x + 'px'; 
+            el.style.top = y + 'px';
+            el.style.width = w + 'px'; 
+            el.style.height = h + 'px';
+            
+            const rgb = hexToRgb(color); 
+            el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+            el.style.borderColor = color;
+
+            el.innerHTML = `
+                <div class="content-container" style="width:100%; height:100%;"></div>
+                <div class="item-label-container" id="lbl-${id}"></div>
+                <div class="menu-trigger">⋮</div>
+                <div class="context-menu">
+                    <div class="context-menu-item" onclick="editLabel('${id}')">編輯名稱 (Name)</div>
+                    <div class="context-menu-item danger" onclick="deleteItem('${id}')">移除 (Remove)</div>
+                </div>
+                <div class="item-resize"></div>`;
+            
+            const menu = el.querySelector('.context-menu');
+            const trigger = el.querySelector('.menu-trigger');
+
+            trigger.onclick = (e) => { 
+                e.stopPropagation(); 
+                document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); 
+                menu.classList.toggle('show'); 
+            };
+
+            gridCanvas.appendChild(el);
+            
+            const itemObj = { id, x, y, w, h, el, type, label: '' };
+            items.push(itemObj);
+
+            // Render Content
+            if (type === 'empty-window') renderEmptyWindowContent(itemObj);
+
+            setupInteractions(itemObj); 
+            document.addEventListener('click', () => menu.classList.remove('show')); 
+            
+            return { el, obj: itemObj };
+        }
+
+        // Render Functions
+        function renderEmptyWindowContent(item) {
+            const container = item.el.querySelector('.content-container');
+            if (container.querySelector('.empty-window-layout')) return;
+
+            container.innerHTML = `
+                <div class="empty-window-layout flex flex-col w-full h-full bg-surface/50 backdrop-blur-sm overflow-hidden rounded">
+                    <div class="widget-header p-2 bg-bg border-b border-border flex justify-between items-center cursor-move select-none">
+                        <span class="font-bold text-xs tracking-wider text-text">WINDOW</span>
+                        <span class="text-[10px] text-muted opacity-50 uppercase tracking-widest">EMPTY</span>
+                    </div>
+                    <div class="flex-1 p-4 overflow-auto text-muted text-sm relative">
+                        <div class="absolute inset-2 border-2 border-dashed border-border rounded flex items-center justify-center opacity-30 pointer-events-none">
+                            <span class="text-xs uppercase tracking-widest">Content Area</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Interaction Setup (Drag & Resize)
+        function setupInteractions(item) {
+            const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
+            el.addEventListener('mousedown', handleStart);
+            el.addEventListener('touchstart', handleStart, {passive: false});
+
+            function handleStart(e) {
+                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; 
+                if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; 
+                
+                // ★ 限制只能拖曳 Header 的工具類型 ★
+                // 這裡加入了 'empty-window'，確保使用者必須按住標題列才能拖動視窗
+                if (['empty-window'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                
+                if(e.type === 'touchstart') e.preventDefault();
+
+                const startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+                const startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+                const startLeft = item.x;
+                const startTop = item.y; 
+                el.style.zIndex = 999;
+
+                function onMove(ev) { 
+                    const clientX = ev.type === 'mousemove' ? ev.clientX : ev.touches[0].clientX;
+                    const clientY = ev.type === 'mousemove' ? ev.clientY : ev.touches[0].clientY;
+                    const dx = clientX - startX;
+                    const dy = clientY - startY; 
+                    let rawX = startLeft + dx;
+                    let rawY = startTop + dy; 
+                    const maxW = parseInt(gridCanvas.clientWidth); // Use clientWidth for accurate sizing
+                    const maxH = parseInt(gridCanvas.clientHeight); 
+                    
+                    if(rawX < 0) rawX = 0; 
+                    if(rawY < 0) rawY = 0; 
+                    // 簡易邊界檢查，不需要太嚴格以免卡住
+                    
+                    el.style.left = rawX + 'px'; 
+                    el.style.top = rawY + 'px'; 
+                    
+                    item.x = rawX;
+                    item.y = rawY;
+                    
+                    const snapX = snap(rawX);
+                    const snapY = snap(rawY);
+                    if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); 
+                    else el.classList.remove('collision');
+                }
+
+                function onUp(ev) { 
+                    document.removeEventListener('mousemove', onMove); 
+                    document.removeEventListener('mouseup', onUp);
+                    document.removeEventListener('touchmove', onMove); 
+                    document.removeEventListener('touchend', onUp); 
+                    el.style.zIndex = ''; 
+                    const finalX = snap(parseInt(el.style.left)); 
+                    const finalY = snap(parseInt(el.style.top));
+                    if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { 
+                        // 如果碰撞，彈回原位 (或者你要允許重疊也可以移除這段)
+                        el.style.left = item.x + 'px'; 
+                        el.style.top = item.y + 'px';
+                    } else { 
+                        item.x = finalX; 
+                        item.y = finalY; 
+                        el.style.left = finalX + 'px'; 
+                        el.style.top = finalY + 'px';
+                    } 
+                    el.classList.remove('collision'); 
+                }
+
+                if (e.type === 'mousedown') {
+                    document.addEventListener('mousemove', onMove); 
+                    document.addEventListener('mouseup', onUp);
+                } else {
+                    document.addEventListener('touchmove', onMove, {passive: false}); 
+                    document.addEventListener('touchend', onUp);
+                }
+            }
+
+            // Resize Logic
+            resizeHandle.addEventListener('mousedown', handleResizeStart);
+            resizeHandle.addEventListener('touchstart', handleResizeStart, {passive: false});
+
+            function handleResizeStart(e) {
+                e.stopPropagation(); 
+                if(e.type === 'touchstart') e.preventDefault();
+
+                const startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+                const startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+                const startW = item.w; 
+                const startH = item.h;
+
+                function onResize(ev) { 
+                    const clientX = ev.type === 'mousemove' ? ev.clientX : ev.touches[0].clientX;
+                    const clientY = ev.type === 'mousemove' ? ev.clientY : ev.touches[0].clientY;
+                    const dx = clientX - startX; 
+                    const dy = clientY - startY; 
+                    let nw = snap(Math.max(MIN_W, startW + dx)); 
+                    let nh = snap(Math.max(MIN_H, startH + dy)); 
+                    
+                    if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision'); 
+                    else { 
+                        el.classList.remove('collision'); 
+                        el.style.width = nw + 'px'; 
+                        el.style.height = nh + 'px'; 
+                        item.w = nw;
+                        item.h = nh;
+                    } 
+                }
+
+                function onResizeUp() { 
+                    document.removeEventListener('mousemove', onResize); 
+                    document.removeEventListener('mouseup', onResizeUp);
+                    document.removeEventListener('touchmove', onResize); 
+                    document.removeEventListener('touchend', onResizeUp); 
+                    el.classList.remove('collision'); 
+                }
+
+                if(e.type === 'mousedown') {
+                    document.addEventListener('mousemove', onResize); 
+                    document.addEventListener('mouseup', onResizeUp);
+                } else {
+                    document.addEventListener('touchmove', onResize, {passive: false}); 
+                    document.addEventListener('touchend', onResizeUp);
+                }
+            }
+        }
+
+        // Global functions for context menu
+        window.editLabel = function(id) {
+            const item = items.find(i => i.id === id);
+            if(!item) return;
+            item.el.querySelector('.context-menu').classList.remove('show');
+            const text = prompt("請輸入名稱 (Enter Name):", item.label || "");
+            if (text !== null) {
+                item.label = text;
+                document.getElementById(`lbl-${id}`).innerText = text;
+            }
+        }
+
+        window.deleteItem = function(id) {
+            const idx = items.findIndex(i => i.id === id);
+            if (idx > -1) { 
+                items[idx].el.remove(); 
+                items.splice(idx, 1); 
+            }
+        }
+
         window.onload = () => { setTheme('cyberpunk'); setLanguage('zh'); };
     </script>
 </body>
 </html>
-
-
-
-
-
