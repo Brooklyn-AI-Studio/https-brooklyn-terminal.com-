@@ -2042,15 +2042,13 @@
             // 載入左側「我的對話列表」
             loadInboxList(user.uid);
         }
-
-        // 2. 載入收件匣列表 (列出所有參與過的對話)
+     
        // 2. 載入收件匣列表 (升級版：自動抓取對方名字)
         async function loadInboxList(uid) {
             const listEl = document.getElementById('inbox-list');
             if(!listEl) return;
 
             try {
-                // 這裡多引入 doc, getDoc 來查使用者資料
                 const { collection, query, where, getDocs, orderBy, doc, getDoc } = window.fs;
                 
                 const q = query(
@@ -2066,16 +2064,24 @@
                     return;
                 }
 
-                // ★ 關鍵修改：使用 Promise.all 平行查詢所有對話對象的名字
                 const listItemsHtml = await Promise.all(snapshot.docs.map(async (docSnapshot) => {
                     const data = docSnapshot.data();
                     const otherUid = data.participants.find(id => id !== uid) || "unknown";
                     
-                    // 預設顯示 (如果在 users 找不到資料時的備案)
+                    // ★ 讀取未讀數量 (如果欄位不存在預設為 0)
+                    const myUnreadCount = (data.unreadCounts && data.unreadCounts[uid]) ? data.unreadCounts[uid] : 0;
+                    
+                    // 根據未讀數決定樣式
+                    const unreadBadge = myUnreadCount > 0 
+                        ? `<span style="background:#ff4d4d; color:white; padding:2px 6px; border-radius:10px; font-size:0.7em; font-weight:bold; margin-left:auto;">${myUnreadCount}</span>` 
+                        : '';
+                    
+                    const itemBg = myUnreadCount > 0 ? 'rgba(255, 77, 77, 0.1)' : 'rgba(255,255,255,0.03)';
+                    const textColor = myUnreadCount > 0 ? '#fff' : 'var(--text-secondary)';
+
+                    // 查詢名字 (保持之前的邏輯)
                     let displayName = "User " + otherUid.slice(0, 4);
                     let avatarSrc = ""; 
-
-                    // 去 users 資料庫查真實名字
                     if (otherUid !== "unknown") {
                         try {
                             const userSnap = await getDoc(doc(window.db, "users", otherUid));
@@ -2084,15 +2090,11 @@
                                 if (userData.displayName) displayName = userData.displayName;
                                 if (userData.photoURL) avatarSrc = userData.photoURL;
                             }
-                        } catch (err) {
-                            console.log("查無此人資料", err);
-                        }
+                        } catch (err) {}
                     }
 
-                    const lastMsg = data.lastMessage ? 
-                        (data.lastMessage.length > 12 ? data.lastMessage.slice(0,12)+'...' : data.lastMessage) : '無訊息';
+                    const lastMsg = data.lastMessage ? (data.lastMessage.length > 12 ? data.lastMessage.slice(0,12)+'...' : data.lastMessage) : '無訊息';
                     
-                    // 組合 HTML (這裡順便幫您加上了頭像顯示，看起來更高級)
                     return `
                         <div onclick="window.selectChat('${docSnapshot.id}', '${otherUid}')" style="
                             padding: 12px; 
@@ -2100,30 +2102,25 @@
                             cursor: pointer; 
                             transition: 0.2s;
                             border: 1px solid transparent;
-                            background: rgba(255,255,255,0.03);
+                            background: ${itemBg}; 
                             margin-bottom: 8px;
                             display: flex;
                             align-items: center;
                             gap: 10px;
                         " onmouseover="this.style.background='rgba(255,255,255,0.1)'" 
-                           onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+                           onmouseout="this.style.background='${itemBg}'">
                             
-                            <div style="
-                                width: 36px; height: 36px; 
-                                border-radius: 50%; 
-                                background: #333; 
-                                flex-shrink: 0;
-                                overflow: hidden;
-                                border: 1px solid var(--accent-main);
-                            ">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: #333; flex-shrink: 0; overflow: hidden; border: 1px solid var(--accent-main);">
                                 ${avatarSrc ? `<img src="${avatarSrc}" style="width:100%; height:100%; object-fit:cover;">` : '<div style="display:flex;justify-content:center;align-items:center;height:100%;color:#666;font-size:0.8em;">👤</div>'}
                             </div>
 
                             <div style="flex: 1; overflow: hidden;">
-                                <div style="font-weight: bold; color: var(--text-primary); font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                    ${displayName}
-                                </div>
-                                <div style="font-size: 0.85em; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="font-weight: bold; color: var(--text-primary); font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        ${displayName}
+                                    </div>
+                                    ${unreadBadge} </div>
+                                <div style="font-size: 0.85em; color: ${textColor}; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                     ${lastMsg}
                                 </div>
                             </div>
@@ -2131,7 +2128,6 @@
                     `;
                 }));
 
-                // 將所有生成的 HTML 串接起來放入容器
                 listEl.innerHTML = listItemsHtml.join('');
 
             } catch (e) {
@@ -2198,7 +2194,22 @@
             // 啟用輸入框
             document.getElementById('mail-content').disabled = false;
             document.getElementById('mail-send-btn').disabled = false;
-
+           // ★ 新增：將自己的未讀數字歸零
+            try {
+                const { doc, updateDoc } = window.fs;
+                const user = window.currentUser;
+                const chatRef = doc(window.db, "chats", chatId);
+                
+                // 使用點記法 (Dot Notation) 只更新自己的欄位
+                await updateDoc(chatRef, {
+                    [`unreadCounts.${user.uid}`]: 0
+                });
+                
+                // 更新完後，順便重新整理左側列表，讓紅點消失
+                loadInboxList(user.uid);
+            } catch(e) {
+                console.error("清除未讀失敗", e);
+            }
             // 載入訊息內容
             loadChatRoom(chatId, window.currentUser.uid);
 
@@ -2294,12 +2305,12 @@
         }
 
         // 5. 修改後的發送函式 (適應新 UI)
+        // 5. 修改後的發送函式 (加入未讀計數邏輯)
         window.sendDirectMessage = async function() {
             const user = window.currentUser;
             const contentInput = document.getElementById('mail-content');
             const content = contentInput.value.trim();
             
-            // 從全域變數取得當前對象
             const chatId = window.currentActiveChatId;
             const targetUid = window.currentActiveTargetUid;
 
@@ -2316,24 +2327,28 @@
             try {
                 const { doc, setDoc, addDoc, collection, serverTimestamp, increment } = window.fs;
                 
-                // 1. 確保聊天室文件存在 (更新 lastMessage)
+                // 1. 更新聊天室資訊 (★ 關鍵修改：幫對方的未讀數 +1)
                 const chatRef = doc(window.db, "chats", chatId);
                 const participants = [user.uid, targetUid].sort();
 
                 await setDoc(chatRef, {
                     participants: participants,
                     lastMessage: content,
-                    lastUpdated: serverTimestamp()
+                    lastUpdated: serverTimestamp(),
+                    // 使用 merge: true 時，這樣寫會自動更新 Map 裡的特定欄位，不會覆蓋別人的數據
+                    unreadCounts: {
+                        [targetUid]: increment(1)
+                    }
                 }, { merge: true });
 
-                // 2. 寫入訊息
+                // 2. 寫入訊息 (保持不變)
                 await addDoc(collection(window.db, "chats", chatId, "messages"), {
                     content: content,
                     senderId: user.uid,
                     timestamp: serverTimestamp()
                 });
 
-                // 3. 更新額度
+                // 3. 更新額度 (保持不變)
                 if (!isAdmin) {
                     const todayStr = new Date().toISOString().split('T')[0];
                     const statsRef = doc(window.db, "users", user.uid, "dailyStats", todayStr);
@@ -2342,7 +2357,7 @@
 
                 contentInput.value = ''; // 清空輸入框
                 
-                // 4. 重新整理左側列表 (讓最新的訊息排到上面)
+                // 4. 重新整理列表
                 loadInboxList(user.uid);
 
             } catch (e) {
