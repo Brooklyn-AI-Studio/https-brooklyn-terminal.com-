@@ -2044,17 +2044,19 @@
         }
 
         // 2. 載入收件匣列表 (列出所有參與過的對話)
+       // 2. 載入收件匣列表 (升級版：自動抓取對方名字)
         async function loadInboxList(uid) {
             const listEl = document.getElementById('inbox-list');
             if(!listEl) return;
 
             try {
-                const { collection, query, where, getDocs, orderBy } = window.fs;
-                // 查詢：participants 陣列中包含我的 UID
+                // 這裡多引入 doc, getDoc 來查使用者資料
+                const { collection, query, where, getDocs, orderBy, doc, getDoc } = window.fs;
+                
                 const q = query(
                     collection(window.db, "chats"), 
                     where("participants", "array-contains", uid),
-                    orderBy("lastUpdated", "desc") // 依照最後更新時間排序
+                    orderBy("lastUpdated", "desc") 
                 );
 
                 const snapshot = await getDocs(q);
@@ -2064,37 +2066,73 @@
                     return;
                 }
 
-                let html = '';
-                // 這裡我們需要一點小技巧來顯示「對方的名字」
-                // 因為 chat 文件只有 participants UID，我們通常需要去 users 集合查名字
-                // 為了簡化，我們先顯示對方的 UID 或預覽文字
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const otherUid = data.participants.find(id => id !== uid) || "未知";
-                    const shortUid = otherUid.slice(0, 6); 
-                    // 檢查最後一則訊息
-                    const lastMsg = data.lastMessage ? (data.lastMessage.length > 10 ? data.lastMessage.slice(0,10)+'...' : data.lastMessage) : '無訊息';
+                // ★ 關鍵修改：使用 Promise.all 平行查詢所有對話對象的名字
+                const listItemsHtml = await Promise.all(snapshot.docs.map(async (docSnapshot) => {
+                    const data = docSnapshot.data();
+                    const otherUid = data.participants.find(id => id !== uid) || "unknown";
                     
-                    // 產生列表項目 (點擊後載入該聊天室)
-                    html += `
-                        <div onclick="window.selectChat('${doc.id}', '${otherUid}')" style="
-                            padding:12px; 
-                            border-radius:8px; 
-                            cursor:pointer; 
-                            transition:0.2s;
-                            border:1px solid transparent;
-                            background:rgba(255,255,255,0.03);
+                    // 預設顯示 (如果在 users 找不到資料時的備案)
+                    let displayName = "User " + otherUid.slice(0, 4);
+                    let avatarSrc = ""; 
+
+                    // 去 users 資料庫查真實名字
+                    if (otherUid !== "unknown") {
+                        try {
+                            const userSnap = await getDoc(doc(window.db, "users", otherUid));
+                            if (userSnap.exists()) {
+                                const userData = userSnap.data();
+                                if (userData.displayName) displayName = userData.displayName;
+                                if (userData.photoURL) avatarSrc = userData.photoURL;
+                            }
+                        } catch (err) {
+                            console.log("查無此人資料", err);
+                        }
+                    }
+
+                    const lastMsg = data.lastMessage ? 
+                        (data.lastMessage.length > 12 ? data.lastMessage.slice(0,12)+'...' : data.lastMessage) : '無訊息';
+                    
+                    // 組合 HTML (這裡順便幫您加上了頭像顯示，看起來更高級)
+                    return `
+                        <div onclick="window.selectChat('${docSnapshot.id}', '${otherUid}')" style="
+                            padding: 12px; 
+                            border-radius: 8px; 
+                            cursor: pointer; 
+                            transition: 0.2s;
+                            border: 1px solid transparent;
+                            background: rgba(255,255,255,0.03);
+                            margin-bottom: 8px;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
                         " onmouseover="this.style.background='rgba(255,255,255,0.1)'" 
                            onmouseout="this.style.background='rgba(255,255,255,0.03)'">
                             
-                            <div style="font-weight:bold; color:var(--text-primary); font-size:0.95em;">User: ${shortUid}..</div>
-                            <div style="font-size:0.85em; color:var(--text-secondary); margin-top:4px;">${lastMsg}</div>
+                            <div style="
+                                width: 36px; height: 36px; 
+                                border-radius: 50%; 
+                                background: #333; 
+                                flex-shrink: 0;
+                                overflow: hidden;
+                                border: 1px solid var(--accent-main);
+                            ">
+                                ${avatarSrc ? `<img src="${avatarSrc}" style="width:100%; height:100%; object-fit:cover;">` : '<div style="display:flex;justify-content:center;align-items:center;height:100%;color:#666;font-size:0.8em;">👤</div>'}
+                            </div>
+
+                            <div style="flex: 1; overflow: hidden;">
+                                <div style="font-weight: bold; color: var(--text-primary); font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    ${displayName}
+                                </div>
+                                <div style="font-size: 0.85em; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    ${lastMsg}
+                                </div>
+                            </div>
                         </div>
                     `;
-                });
+                }));
 
-                listEl.innerHTML = html;
+                // 將所有生成的 HTML 串接起來放入容器
+                listEl.innerHTML = listItemsHtml.join('');
 
             } catch (e) {
                 console.error("載入列表失敗", e);
