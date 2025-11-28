@@ -1248,7 +1248,7 @@
        window.navigateToProfile = async function() {
             const user = window.currentUser;
             if (!user) {
-                alert(i18n[pulseLang].loginReq);
+                alert(i18n[pulseLang].loginReq); // [cite: 345]
                 performLogin();
                 return;
             }
@@ -1256,7 +1256,7 @@
             // 1. 切換選單狀態
             document.querySelectorAll('.pulse-nav-btn').forEach(btn => btn.classList.remove('active'));
             const profileBtn = document.getElementById('nav-profile');
-            if(profileBtn) profileBtn.classList.add('active');
+            if(profileBtn) profileBtn.classList.add('active'); // [cite: 347]
 
             const centerCol = document.querySelector('.pulse-feed-container');
             if (!centerCol) return;
@@ -1266,25 +1266,25 @@
             const shortEmail = user.email ? `@${user.email.split('@')[0]}` : `@${user.uid.slice(0,8)}...`;
             
             // ★ 管理員判斷
-            const ADMIN_UID = "1EALL0fq7nUzEi8B96qwXZuyG7h1"; 
+            const ADMIN_UID = "1EALL0fq7nUzEi8B96qwXZuyG7h1";
             const isAdmin = user.uid === ADMIN_UID;
-            const adminBadge = isAdmin ? `<span class="admin-badge" style="font-size: 0.4em; vertical-align: middle; margin-left: 10px;">平台管理員</span>` : '';
+            const adminBadge = isAdmin ?
+                `<span class="admin-badge" style="font-size: 0.4em; vertical-align: middle; margin-left: 10px;">平台管理員</span>` : '';
 
             // ★ 從資料庫讀取自我介紹 (Bio)
-            let bioText = "這傢伙很懶，什麼都沒寫..."; // 預設文字
+            let bioText = "這傢伙很懶，什麼都沒寫...";
             try {
                 const { doc, getDoc } = window.fs;
                 const userDocRef = doc(window.db, "users", user.uid);
                 const userSnap = await getDoc(userDocRef);
-                
                 if (userSnap.exists() && userSnap.data().bio) {
-                    bioText = userSnap.data().bio;
+                    bioText = userSnap.data().bio; // [cite: 355]
                 }
             } catch (e) {
                 console.error("讀取 Bio 失敗", e);
             }
 
-            // 3. 渲染畫面
+            // 3. 渲染畫面 (★ 修正重點：加上 id="p-following-count" 與 id="p-followers-count")
             centerCol.innerHTML = `
                 <div class="profile-header-card">
                     <div class="profile-cover"></div>
@@ -1300,17 +1300,18 @@
                         </div>
                         
                         <div class="profile-name-large">
-                            ${user.displayName || 'User'}
+                             ${user.displayName || 'User'}
                             ${adminBadge} </div>
                         <div class="profile-email">${shortEmail}</div>
                         
-                        <div class="profile-bio" id="user-bio-display">${bioText}</div>
+                         <div class="profile-bio" id="user-bio-display">${bioText}</div>
                         
                         <div class="profile-stats-row">
                             <span class="p-stat-box"><span class="p-stat-num" id="p-post-count">0</span> Posts</span>
-                            <span class="p-stat-box"><span class="p-stat-num">0</span> Following</span>
-                            <span class="p-stat-box"><span class="p-stat-num">0</span> Followers</span>
-                        </div>
+                            
+                            <span class="p-stat-box"><span class="p-stat-num" id="p-following-count">0</span> Following</span>
+                            <span class="p-stat-box"><span class="p-stat-num" id="p-followers-count">0</span> Followers</span>
+                            </div>
                     </div>
                 </div>
 
@@ -1321,6 +1322,9 @@
             `;
 
             loadProfileFeed(user.uid);
+            
+            // ★ 新增這行：載入追蹤數據
+            loadFollowStats(user.uid); 
         }
      // ★ 新增：編輯自我介紹功能
         window.editProfile = async function() {
