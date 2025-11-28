@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
+<head> 
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5bfc21c8d13e485a9f5fbb44151e7360"}'></script>
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
@@ -1562,26 +1562,30 @@
                 postBtn.innerText = i18n[pulseLang].post;
             }
         }
-// --- 查看他人個人資料邏輯 (修正按鈕位置) ---
-        window.viewUserProfile = function(uid, name, avatar) {
+// --- 查看他人個人資料邏輯 (修正 ID 顯示與增加 Bio) ---
+        window.viewUserProfile = async function(uid, name, avatar) {
             // 1. 取消所有選單的 Active 狀態
             document.querySelectorAll('.pulse-nav-btn').forEach(btn => btn.classList.remove('active'));
-
+            
             // 2. 取得中間欄位容器
             const centerCol = document.querySelector('.pulse-feed-container');
             if (!centerCol) return;
 
-            // 3. 處理顯示資料
-            const displayHandle = `@${uid.slice(0,8)}...`;
+            // 3. 預設顯示 (先用 UID 當暫時 ID，避免畫面空白)
+            let displayHandle = `@${uid.slice(0,8)}...`;
+            let bioText = "載入中..."; // 預設 Bio
+            
+            // 處理頭像
             const photoHtml = avatar && avatar !== 'null' && avatar !== 'undefined' ? 
                               `<img src="${avatar}" alt="Avatar">` : '';
 
+            // ★ 4. 渲染基本骨架 (注意：我幫您加上了 id="target-user-handle" 和 id="target-user-bio")
             centerCol.innerHTML = `
                 <div class="profile-header-card">
                     <div class="profile-cover"></div>
                     <div class="profile-info-section">
                         <div class="profile-avatar-big">
-                            ${photoHtml}
+                             ${photoHtml}
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
@@ -1590,12 +1594,14 @@
                             <button id="follow-btn" class="follow-btn" onclick="window.toggleFollow('${uid}')">追蹤</button>
                         </div>
 
-                        <div class="profile-email">${displayHandle}</div>
+                        <div class="profile-email" id="target-user-handle">${displayHandle}</div>
+                        
+                        <div class="profile-bio" id="target-user-bio">${bioText}</div>
                         
                         <div class="profile-stats-row">
                             <span class="p-stat-box"><span class="p-stat-num" id="p-post-count">0</span> Posts</span>
-                            <span class="p-stat-box"><span class="p-stat-num" id="p-following-count">0</span> Following</span>
                             <span class="p-stat-box"><span class="p-stat-num" id="p-followers-count">0</span> Followers</span>
+                            <span class="p-stat-box"><span class="p-stat-num" id="p-following-count">0</span> Following</span>
                         </div>
                     </div>
                 </div>
@@ -1607,10 +1613,41 @@
                 </div>
             `;
 
-            // 4. 執行後續載入
+            // 5. 執行後續載入 (貼文與追蹤數據)
             loadProfileFeed(uid);
-            checkFollowStatus(uid); // 檢查按鈕狀態
-            loadFollowStats(uid);   // 載入粉絲數字
+            checkFollowStatus(uid);
+            loadFollowStats(uid);
+            
+            // ★★★ 關鍵新增：去資料庫抓取該用戶的真實 Email 與 Bio ★★★
+            try {
+                const { doc, getDoc } = window.fs;
+                // 讀取 users 集合中的該用戶文件
+                const userDocRef = doc(window.db, "users", uid);
+                const userSnap = await getDoc(userDocRef);
+                
+                if (userSnap.exists()) {
+                    const data = userSnap.data();
+                    
+                    // 1. 如果有 Email，更新顯示 ID
+                    if (data.email) {
+                        const emailPrefix = data.email.split('@')[0];
+                        const handleEl = document.getElementById('target-user-handle');
+                        if(handleEl) handleEl.innerText = `@${emailPrefix}`;
+                    }
+                    
+                    // 2. 如果有 Bio，更新自我介紹
+                    const bioEl = document.getElementById('target-user-bio');
+                    if (bioEl) {
+                        bioEl.innerText = data.bio || "這傢伙很懶，什麼都沒寫...";
+                    }
+                } else {
+                    // 如果對方從來沒有編輯過個人檔案 (資料庫沒資料)，就維持顯示 UID 或顯示無介紹
+                    const bioEl = document.getElementById('target-user-bio');
+                    if(bioEl) bioEl.innerText = "這傢伙很懶，什麼都沒寫...";
+                }
+            } catch (e) {
+                console.error("讀取用戶詳細資料失敗", e);
+            }
         }
 // =========================================
         // ★ 新增：追蹤系統核心邏輯
