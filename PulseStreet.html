@@ -2028,7 +2028,11 @@
                             <div style="text-align:center; color:#666; margin-top:50px;">👈 請從左側選擇聯絡人，<br>或是上方搜尋新朋友</div>
                         </div>
                         <div style="padding:15px; border-top:1px solid var(--border-color); display:flex; gap:10px;">
-                            <input type="text" id="mail-content" class="quick-input" style="flex:1; border:1px solid var(--border-color); padding:10px; border-radius:8px;" placeholder="輸入訊息..." disabled>
+                            <input type="text" id="mail-content" class="quick-input" 
+                               style="flex:1; border:1px solid var(--border-color); padding:10px; border-radius:8px;" 
+                               placeholder="輸入訊息..." 
+                               disabled
+                               onkeydown="if(event.key === 'Enter') window.sendDirectMessage()">
                             <button id="mail-send-btn" class="post-btn" onclick="window.sendDirectMessage()" disabled>發送</button>
                         </div>
                     </div>
