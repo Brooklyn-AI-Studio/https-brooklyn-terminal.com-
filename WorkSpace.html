@@ -36,17 +36,33 @@
       /* 加入 style 標籤內 */
       /* 隱藏捲軸 */
 #canvas-scroll-container {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE */
+    background-color: #000000 !important; /* 強制全黑背景 */
+    /* 讓操作區在畫面中留一點邊距，看起來像一張桌子上的圖紙 */
+    padding: 50px; 
+    
+    /* 隱藏捲軸 */
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
 }
 #canvas-scroll-container::-webkit-scrollbar {
     display: none; /* Chrome/Safari */
 }
-
-/* 確保拉伸功能的游標正確 */
-.resize {
-    resize: both;
-    overflow: hidden;
+/* 2. 操作區 (綠色區域)：設定邊框與網格 */
+#canvas-sizer {
+    background-color: #0a100d; /* 稍微不一樣的深色，區分操作區 */
+    border: 2px solid var(--accent-color); /* 綠色邊框 */
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.15); /* 邊框發光效果 */
+    margin: 0 auto; /* 水平置中 (如果空間足夠) */
+    
+    /* 確保網格只顯示在這裡 */
+    background-image: 
+        linear-gradient(to right, rgba(0, 255, 157, 0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 255, 157, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+/* 3. 修正原本的 grid-canvas 背景，移除重複的網格設定 */
+#grid-canvas {
+    background: transparent !important; /* 讓它透明，顯示 canvas-sizer 的背景 */
 }
 
         /* 定義主題變數 */
@@ -426,10 +442,9 @@
     
    <div id="canvas-sizer" class="relative border border-grid flex flex-col overflow-hidden resize" style="width: 1000px; height: 1000px;">
         
-        <div id="grid-canvas" class="relative w-full h-full bg-grid">
-            <svg id="connections-layer" class="w-full h-full"></svg>
-            <div class="absolute inset-0 grid-bg opacity-50 pointer-events-none"></div>
-        </div>
+       <div id="grid-canvas" class="relative w-full h-full">
+    <svg id="connections-layer" class="w-full h-full"></svg>
+    </div>
 
         <div id="empty-state-container" class="absolute top-0 left-0 w-full h-[calc(100vh-100px)] z-10 flex items-center justify-center pointer-events-none">
     <div class="text-center space-y-4 pointer-events-auto">
@@ -1124,19 +1139,32 @@
                     const dy = clientY - startY; 
                     let rawX = startLeft + dx;
                     let rawY = startTop + dy; 
-                    const maxW = parseInt(gridCanvas.clientWidth); // Use clientWidth for accurate sizing
-                    const maxH = parseInt(gridCanvas.clientHeight); 
+
+                    const containerW = gridCanvas.clientWidth;
+                    const containerH = gridCanvas.clientHeight;
                     
+                    // 左側限制
                     if(rawX < 0) rawX = 0; 
-                    if(rawY < 0) rawY = 0; 
-                    // 簡易邊界檢查，不需要太嚴格以免卡住
                     
+                    // 上方限制
+                    if(rawY < 0) rawY = 0;
+                    
+                    // 右側限制：如果 (X座標 + 物件寬度) 超過 容器寬度，就卡在邊緣
+                    if(rawX + item.w > containerW) rawX = containerW - item.w; 
+                    
+                    // 下方限制：如果 (Y座標 + 物件高度) 超過 容器高度，就卡在底部
+                    if(rawY + item.h > containerH) rawY = containerH - item.h;
+
+                    // --- 修改結束 ---
+
                     el.style.left = rawX + 'px'; 
-                    el.style.top = rawY + 'px'; 
+                    el.style.top = rawY + 'px';
                     
+                    // 更新數據與連線
                     item.x = rawX;
                     item.y = rawY;
-                    
+                    if (typeof updateLines === 'function') updateLines(); // 確保連線跟隨
+
                     const snapX = snap(rawX);
                     const snapY = snap(rawY);
                     if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); 
@@ -1332,6 +1360,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
