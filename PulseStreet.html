@@ -761,10 +761,34 @@
             }
         }
 
-        // --- App Switcher / Auth Menu Logic ---
+       // --- App Switcher / Auth Menu Logic ---
 
-        const performLogin = () => {
-            signInWithPopup(auth, provider).catch(e => alert("登入失敗: " + e.message));
+        // 1. 修改登入：加入參數，強制下次登入時跳出帳號選擇視窗
+        window.performLogin = () => {
+            // ★ 關鍵：這行會讓 Google 每次都跳出「選擇帳號」的畫面，而不是自動登入
+            provider.setCustomParameters({ prompt: 'select_account' });
+            
+            signInWithPopup(window.appAuth, provider)
+                .then(() => {
+                    // 登入成功後，重新整理頁面或更新 UI
+                    if(window.renderPulseStreet) window.renderPulseStreet();
+                })
+                .catch(e => alert("登入失敗: " + e.message));
+        };
+
+        // 2. 新增登出：建立全域登出函式
+        window.performLogout = () => {
+            if (!confirm("確定要登出嗎？")) return;
+
+            signOut(window.appAuth)
+                .then(() => {
+                    alert("已成功登出");
+                    // ★ 登出後重新載入頁面，確保清除所有暫存狀態
+                    window.location.reload(); 
+                })
+                .catch((e) => {
+                    alert("登出發生錯誤：" + e.message);
+                });
         };
         
         window.toggleProfileMenu = function() {
@@ -861,7 +885,7 @@
                         <svg class="menu-item-icon" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         個人資料
                     </div>
-                    <div class="menu-item" onclick="signOut(auth).then(()=>location.reload())">
+                   <div class="menu-item" onclick="window.performLogout()">
                         <svg class="menu-item-icon" viewBox="0 0 24 24"><path d="M10 22H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h5"></path><polyline points="17 16 21 12 17 8"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                         登出 (Logout)
                     </div>`;
