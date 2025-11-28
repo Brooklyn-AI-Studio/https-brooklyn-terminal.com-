@@ -280,6 +280,17 @@
                         <div class="px-3 py-2 text-xs text-muted italic" id="loading-text">Loading...</div>
                     </div>
                 </div>
+                <div>
+    <button onclick="toggleTools()" class="w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all group">
+        <svg id="tools-arrow" class="w-4 h-4 min-w-[16px] text-muted transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+        </svg>
+        <span class="sidebar-text whitespace-nowrap font-semibold tracking-wide" data-i18n="tools_section">Tool Room</span>
+    </button>
+    <div id="tools-list" class="hidden pl-4 mt-1 border-l border-border ml-4 space-y-1">
+        <div class="px-3 py-2 text-xs text-muted italic">No tools available.</div>
+    </div>
+</div>
 
             </nav>
         </div>
@@ -543,6 +554,7 @@
             en: {
                 add_tool_section: 'Add Tool Section',
                 my_workspace: 'My Workspace',
+                tools_section: 'Tool Room', 
                 language: 'Language',
                 appearance: 'Appearance',
                 select_theme: 'SELECT THEME',
@@ -566,11 +578,12 @@
             zh: {
                 add_tool_section: '新增工具區間',
                 my_workspace: '我的工作區間',
+                tools_section: '工具間',    
                 language: '語言設定',
                 appearance: '外觀風格',
                 select_theme: '選擇主題',
-                theme_business: '高級商務',
-                theme_dev: '開發者模式',
+                theme_business: '商務人士',
+                theme_dev: '開發者',
                 theme_terminal: '終端機',
                 theme_cyber: '賽博龐克',
                 empty_state: '初始化專案',
@@ -842,11 +855,13 @@
 
         window.resetBreadcrumb = () => { state.currentProjectId = null; breadcrumbSep.classList.add('hidden'); breadcrumbCurrent.classList.add('hidden'); renderWorkspaceList(); emptyState.classList.remove('hidden'); projectContent.classList.add('hidden'); };
         
-        window.toggleWorkspace = () => { 
-            if (!state.sidebarOpen) toggleBtn.click(); 
-            workspaceList.classList.toggle('hidden'); 
-            workspaceArrow.classList.toggle('rotate-90'); 
-        };
+        window.toggleTools = () => {
+    if (!state.sidebarOpen) toggleBtn.click(); // 如果側邊欄是收合的，先展開
+    const list = document.getElementById('tools-list');
+    const arrow = document.getElementById('tools-arrow');
+    list.classList.toggle('hidden');
+    arrow.classList.toggle('rotate-90');
+};
 
         // 定義工具列容器
 const toolRow = document.getElementById('tool-row');
@@ -861,14 +876,15 @@ toggleBtn.addEventListener('click', () => {
         
         // 隱藏文字
         textElements.forEach(el => el.classList.add('opacity-0', 'pointer-events-none', 'hidden'));
-        
         // 變更收合圖示
         toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>';
-        
         // 隱藏工作列表
         workspaceList.classList.add('hidden'); 
         workspaceArrow.classList.remove('rotate-90');
-
+        const toolsList = document.getElementById('tools-list');
+        const toolsArrow = document.getElementById('tools-arrow');
+        if(toolsList) toolsList.classList.add('hidden');
+        if(toolsArrow) toolsArrow.classList.remove('rotate-90');
         // [新增] 工具列改為垂直排列 (flex-col)，以便塞入狹窄的側邊欄
         if(toolRow) {
             toolRow.classList.remove('flex-row');
@@ -939,6 +955,7 @@ toggleBtn.addEventListener('click', () => {
     </script>
 </body>
 </html>
+
 
 
 
