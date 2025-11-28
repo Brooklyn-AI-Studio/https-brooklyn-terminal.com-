@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NextGen Workspace</title>
-    <!-- Tailwind CSS -->
+    <title>Workspace</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2300ff9d%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5%22/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     
     <script>
@@ -176,7 +175,6 @@
 </head>
 <body class="h-screen w-screen flex overflow-hidden selection:bg-accent selection:text-bg">
 
-    <!-- 全域 Context Menu -->
     <div id="global-context-menu" class="fixed hidden bg-surface border border-border rounded shadow-xl z-50 p-1 w-32 backdrop-blur-md">
         <button id="global-edit-btn" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded transition-colors flex items-center gap-2">
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
@@ -184,7 +182,6 @@
         </button>
     </div>
 
-    <!-- 新增工具區間 Modal -->
     <div id="add-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
         <div class="bg-surface border border-border p-6 rounded-lg w-96 shadow-2xl transform transition-all modal-enter border-accent" id="modal-content">
             <h3 class="text-lg font-bold text-accent mb-4 tracking-wider" data-i18n="modal_title">NEW WORKSPACE NODE</h3>
@@ -207,13 +204,11 @@
         </div>
     </div>
 
-    <!-- 編輯工具區間 Modal -->
     <div id="edit-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
         <div class="bg-surface border border-border p-6 rounded-lg w-[450px] shadow-2xl transform transition-all modal-enter border-accent" id="edit-modal-content">
             <h3 class="text-lg font-bold text-accent mb-4 tracking-wider" data-i18n="edit_modal_title">EDIT WORKSPACE</h3>
             
             <div class="space-y-4">
-                <!-- 基本資料 -->
                 <div>
                     <label class="block text-xs text-muted mb-1 uppercase font-bold" data-i18n="modal_name">Section Name</label>
                     <input type="text" id="edit-section-name" class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors">
@@ -223,7 +218,6 @@
                     <textarea id="edit-section-desc" rows="2" class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors"></textarea>
                 </div>
 
-                <!-- 成員管理 -->
                 <div>
                     <label class="block text-xs text-muted mb-2 uppercase font-bold" data-i18n="edit_members">Invite Members (Email)</label>
                     <div class="flex gap-2 mb-2">
@@ -231,14 +225,11 @@
                         <button onclick="addMember()" class="px-3 py-1.5 bg-white/5 border border-border rounded text-xs hover:text-accent hover:border-accent transition-colors">+</button>
                     </div>
                     <div id="members-list" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1">
-                        <!-- 成員 Chips 動態生成 -->
-                    </div>
+                        </div>
                 </div>
             </div>
 
-            <!-- 底部動作區 -->
             <div class="border-t border-border mt-6 pt-4 flex justify-between items-center">
-                <!-- 刪除按鈕 -->
                 <button onclick="deleteWorkspace()" class="px-3 py-2 text-xs font-bold text-red-500 border border-red-500/50 bg-red-500/10 rounded hover:bg-red-500 hover:text-white transition-all flex items-center gap-2 group">
                     <svg class="w-3 h-3 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     <span data-i18n="delete_workspace">DELETE</span>
@@ -252,20 +243,16 @@
         </div>
     </div>
 
-    <!-- 左側邊欄 -->
     <aside id="sidebar" class="sidebar-transition h-full flex flex-col justify-between border-r border-border bg-sidebar z-20 w-64 relative group">
         
-        <!-- 頂部：Logo 與 收闔按鈕 -->
         <div class="flex flex-col">
             <div class="h-16 flex items-center justify-between px-4 border-b border-border">
                 <div id="logo-container" class="flex items-center gap-3 overflow-hidden whitespace-nowrap">
-                    <!-- Logo SVG -->
                     <svg class="w-8 h-8 text-accent min-w-[32px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path>
                     </svg>
                     <span class="font-bold tracking-wider text-lg transition-opacity duration-300 sidebar-text text-text">WORKSPACE</span>
                 </div>
-                <!-- 收闔按鈕 -->
                 <button id="toggle-sidebar" class="p-1 rounded hover:bg-white/10 text-muted hover:text-accent transition-colors">
                     <svg id="toggle-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
@@ -273,10 +260,8 @@
                 </button>
             </div>
 
-            <!-- 選單區域 -->
             <nav class="flex-1 py-6 px-3 space-y-4 overflow-y-auto" id="sidebar-nav">
                 
-                <!-- 新增工具區間按鈕 -->
                 <button onclick="openModal()" class="w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm border border-dashed border-border text-muted hover:text-accent hover:border-accent transition-all group">
                     <svg class="w-5 h-5 min-w-[20px] text-muted group-hover:text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -284,18 +269,14 @@
                     <span class="sidebar-text whitespace-nowrap" data-i18n="add_tool_section">Add Tool Section</span>
                 </button>
 
-                <!-- 我的工作區間 (可收闔) -->
                 <div>
                     <button onclick="toggleWorkspace()" class="w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all group">
-                        <!-- 三角形箭頭 -->
                         <svg id="workspace-arrow" class="w-4 h-4 min-w-[16px] text-muted transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                         </svg>
                         <span class="sidebar-text whitespace-nowrap font-semibold tracking-wide" data-i18n="my_workspace">My Workspace</span>
                     </button>
-                    <!-- 子選單內容 (容器) -->
                     <div id="workspace-list" class="hidden pl-4 mt-1 border-l border-border ml-4 space-y-1">
-                        <!-- 專案列表將由 JS 動態生成 -->
                         <div class="px-3 py-2 text-xs text-muted italic" id="loading-text">Loading...</div>
                     </div>
                 </div>
@@ -303,12 +284,9 @@
             </nav>
         </div>
 
-        <!-- 底部工具列：語言與主題 + Google 登入 -->
         <div class="p-3 border-t border-border bg-surface/50 relative">
             
-            <!-- 語言與外觀工具列 (緊湊排列) -->
             <div class="flex gap-2 mb-3">
-                <!-- 語言切換 -->
                 <div class="relative flex-1">
                     <button id="lang-btn" class="w-full flex items-center justify-center gap-2 px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors" title="Language">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -319,7 +297,6 @@
                     </div>
                 </div>
 
-                <!-- 外觀風格切換 -->
                 <div class="relative flex-1">
                     <button id="theme-btn" class="w-full flex items-center justify-center gap-2 px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors" title="Appearance">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -333,10 +310,8 @@
                 </div>
             </div>
 
-            <!-- Google 帳戶 / 登入區塊 -->
             <div id="auth-container" class="pt-3 border-t border-border">
                 
-                <!-- 狀態 A: 未登入 (顯示 Google 圖示按鈕) -->
                 <button id="btn-login" class="w-full flex items-center justify-center gap-2 bg-white text-black px-3 py-2 rounded-md hover:bg-gray-200 transition-colors font-bold text-sm shadow-lg shadow-white/10">
                     <svg width="16" height="16" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
                         <path d="M17.64 9.2c0-.637-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"></path>
@@ -347,19 +322,15 @@
                     <span class="whitespace-nowrap">Sign in</span>
                 </button>
 
-                <!-- 狀態 B: 已登入 (顯示使用者卡片) -->
                 <div id="user-profile" class="hidden flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors group relative border border-transparent hover:border-border">
-                    <!-- 頭像 -->
                     <img id="user-avatar" src="" alt="User" class="w-8 h-8 rounded-full border border-border group-hover:border-accent transition-colors object-cover bg-surface">
                     
-                    <!-- 文字資訊 -->
                     <div class="flex flex-col overflow-hidden sidebar-text flex-1">
                         <span id="user-name" class="text-xs font-bold text-text truncate">User Name</span>
                         <span id="user-email" class="text-[10px] text-muted truncate">email@example.com</span>
                     </div>
 
-                    <!-- 登出選單 -->
-                    <div class="absolute bottom-full left-0 w-full mb-2 hidden pb-1 z-50">
+                    <div id="logout-menu" class="absolute bottom-full left-0 w-full mb-2 hidden pb-1 z-50">
                         <button id="btn-logout" class="w-full bg-surface border border-border text-red-500 px-3 py-2 rounded shadow-xl text-xs font-bold hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                             Log Out
@@ -371,11 +342,9 @@
         </div>
     </aside>
 
-    <!-- 主要內容區 -->
     <main class="flex-1 relative flex flex-col h-full bg-bg">
         <div class="absolute inset-0 dots-bg pointer-events-none z-0"></div>
 
-        <!-- 頂部 Breadcrumb Bar -->
         <div class="h-12 border-b border-border flex items-center px-6 bg-surface/50 backdrop-blur z-10 shrink-0 border-accent">
             <div class="text-sm font-mono text-muted flex items-center">
                 <span class="text-accent mr-2">&gt;</span>
@@ -385,17 +354,13 @@
             </div>
         </div>
         
-        <!-- 中央網格工作區 -->
         <div class="flex-1 relative p-8 overflow-hidden flex items-center justify-center">
             
             <div class="relative w-full h-full border border-grid flex flex-col overflow-hidden">
-                <!-- 網格背景 -->
                 <div class="absolute inset-0 grid-bg opacity-50 pointer-events-none"></div>
 
-                <!-- 狀態 1: 初始化/空狀態 -->
                 <div id="empty-state-container" class="relative z-10 p-6 h-full flex items-center justify-center transition-opacity duration-300">
                     <div class="text-center space-y-4">
-                        <!-- + 號按鈕 -->
                         <button onclick="handlePlusClick()" class="w-24 h-24 mx-auto border-2 border-accent rounded-full flex items-center justify-center relative group cursor-pointer hover:bg-accent/10 transition-all focus:outline-none">
                             <svg class="w-10 h-10 text-accent group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -407,16 +372,13 @@
                     </div>
                 </div>
 
-                <!-- 狀態 2: 專案內容區域 -->
                 <div id="project-content-container" class="hidden relative z-10 w-full h-full p-6 overflow-hidden">
-                     <!-- 內容動態生成 -->
-                </div>
+                     </div>
 
             </div>
         </div>
     </main>
 
-    <!-- Firebase SDK (Module) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -564,7 +526,6 @@
         }
     </script>
 
-    <!-- UI Logic Script -->
     <script>
         // State
         const state = {
@@ -654,6 +615,11 @@
         const workspaceArrow = document.getElementById('workspace-arrow');
         const globalContextMenu = document.getElementById('global-context-menu');
         const globalEditBtn = document.getElementById('global-edit-btn');
+        
+        // 修正: 在此定義 userProfile 與 logoutMenu 以供下方的 Event Listener 使用
+        const userProfile = document.getElementById('user-profile');
+        const logoutMenu = document.getElementById('logout-menu');
+
         let activeContextProjectId = null;
 
         // --- Data Sync ---
@@ -697,25 +663,25 @@
                 nameInput.classList.add('border-red-500'); setTimeout(() => nameInput.classList.remove('border-red-500'), 1000);
             }
         };
-// 點擊使用者頭像切換登出選單
-userProfile.addEventListener('click', (e) => {
-    e.stopPropagation(); // 防止觸發 document 的關閉事件
-    // 切換 hidden class
-    if (logoutMenu.classList.contains('hidden')) {
-        // 先關閉其他所有選單
-        langMenu.classList.add('hidden');
-        themeMenu.classList.add('hidden');
-        globalContextMenu.classList.add('hidden');
-        
-        logoutMenu.classList.remove('hidden');
-        logoutMenu.classList.add('popover-enter-active'); // 加入進場動畫
-    } else {
-        logoutMenu.classList.add('hidden');
-        logoutMenu.classList.remove('popover-enter-active');
-    }
-});
-        
 
+        // 點擊使用者頭像切換登出選單
+        userProfile.addEventListener('click', (e) => {
+            e.stopPropagation(); // 防止觸發 document 的關閉事件
+            // 切換 hidden class
+            if (logoutMenu.classList.contains('hidden')) {
+                // 先關閉其他所有選單
+                langMenu.classList.add('hidden');
+                themeMenu.classList.add('hidden');
+                globalContextMenu.classList.add('hidden');
+                
+                logoutMenu.classList.remove('hidden');
+                logoutMenu.classList.add('popover-enter-active'); // 加入進場動畫
+            } else {
+                logoutMenu.classList.add('hidden');
+                logoutMenu.classList.remove('popover-enter-active');
+            }
+        });
+        
         function renderWorkspaceList() {
             workspaceList.innerHTML = '';
             if (state.projects.length === 0) {
@@ -911,18 +877,18 @@ userProfile.addEventListener('click', (e) => {
         });
 
         document.addEventListener('click', (e) => {
-    langMenu.classList.add('hidden'); 
-    themeMenu.classList.add('hidden'); 
-    globalContextMenu.classList.add('hidden');
-    
-    // 新增這一行：如果點擊的目標不是 userProfile 內部，就關閉登出選單
-    if (!userProfile.contains(e.target)) {
-        if(logoutMenu) logoutMenu.classList.add('hidden');
-    }
+            langMenu.classList.add('hidden'); 
+            themeMenu.classList.add('hidden'); 
+            globalContextMenu.classList.add('hidden');
+            
+            // 新增這一行：如果點擊的目標不是 userProfile 內部，就關閉登出選單
+            if (userProfile && !userProfile.contains(e.target)) {
+                if(logoutMenu) logoutMenu.classList.add('hidden');
+            }
 
-    if (e.target === modal) closeModal();
-    if (e.target === editModal) closeEditModal();
-});
+            if (e.target === modal) closeModal();
+            if (e.target === editModal) closeEditModal();
+        });
 
         window.setLanguage = (lang) => {
             state.lang = lang; const t = translations[lang];
@@ -939,5 +905,4 @@ userProfile.addEventListener('click', (e) => {
         window.onload = () => { setTheme('cyberpunk'); setLanguage('zh'); };
     </script>
 </body>
-
 </html>
