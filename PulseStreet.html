@@ -2084,14 +2084,19 @@
         window.currentActiveTargetUid = null; // 全域變數：記錄當前對象 UID
 
         // 3. 選擇並開啟某個對話 (更新版：加入右上角選單)
-        window.selectChat = function(chatId, targetUid) {
+        // 3. 選擇並開啟某個對話 (最終版：支援刪除選單 + 自動抓取對方名字)
+        window.selectChat = async function(chatId, targetUid, targetName = null) {
             window.currentActiveChatId = chatId;
             window.currentActiveTargetUid = targetUid;
 
-            // ★ 這裡修改了 HTML 結構，加入「選單按鈕」與「下拉選單」
+            // 1. 決定暫時顯示的名字 (如果有傳入名字就用名字，沒有就先用 UID 頂著，避免畫面空白)
+            let displayName = targetName || targetUid || '載入中...';
+
+            // 2. 渲染標題 HTML 
+            // ★ 注意：這裡加了 id="chat-title-name"，讓我們等一下查到名字後可以替換它
             const headerHtml = `
                 <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                    <span>與 <span style="color:var(--accent-main)">${targetUid}</span> 的對話</span>
+                    <span>與 <span id="chat-title-name" style="color:var(--accent-main)">${displayName}</span> 的對話</span>
                     
                     <div style="position:relative;">
                         <button onclick="window.toggleChatMenu()" style="
@@ -2126,6 +2131,38 @@
                     </div>
                 </div>
             `;
+
+            document.getElementById('chat-header').innerHTML = headerHtml;
+            
+            // 啟用輸入框
+            document.getElementById('mail-content').disabled = false;
+            document.getElementById('mail-send-btn').disabled = false;
+
+            // 載入訊息
+            loadChatRoom(chatId, window.currentUser.uid);
+
+            // ★ 3. 關鍵邏輯：如果沒有傳入名字 (或是名字目前顯示的是 UID)，就去資料庫查
+            if (!targetName) {
+                try {
+                    const { doc, getDoc } = window.fs;
+                    // 去 users 集合查這個 UID 的資料
+                    const userDoc = await getDoc(doc(window.db, "users", targetUid));
+                    
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        const realName = userData.displayName || '無名氏';
+                        
+                        // 找到剛剛埋好的 ID，把 UID 換成真實名字
+                        const titleEl = document.getElementById('chat-title-name');
+                        if (titleEl) {
+                            titleEl.innerText = realName;
+                        }
+                    }
+                } catch (e) {
+                    console.error("讀取對方名字失敗", e);
+                }
+            }
+        }
 
             // 更新標題 HTML
             document.getElementById('chat-header').innerHTML = headerHtml;
