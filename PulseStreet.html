@@ -712,7 +712,7 @@
  <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc, getDoc, updateDoc, increment, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, where, deleteDoc, getDoc, updateDoc, increment, getDocs, limit, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         // ★ 新增：引入 Storage 相關功能
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
@@ -736,7 +736,7 @@
         window.db = db;
         // ★ 新增：將 storage 功能掛載到 window
         window.storage = { ref, uploadBytes, getDownloadURL, storageInstance: storage };
-        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where, deleteDoc, getDoc, updateDoc, increment, getDocs, limit };
+        window.fs = { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateProfile, where, deleteDoc, getDoc, updateDoc, increment, getDocs, limit, arrayRemove };
         window.appAuth = auth;
         window.currentUser = null;
 
@@ -2103,12 +2103,52 @@
         window.currentActiveChatId = null; // 全域變數：記錄當前聊天室 ID
         window.currentActiveTargetUid = null; // 全域變數：記錄當前對象 UID
 
+        // 3. 選擇並開啟某個對話 (更新版：加入右上角選單)
         window.selectChat = function(chatId, targetUid) {
             window.currentActiveChatId = chatId;
             window.currentActiveTargetUid = targetUid;
 
-            // 更新標題
-            document.getElementById('chat-header').innerHTML = `與 <span style="color:var(--accent-main)">${targetUid}</span> 的對話`;
+            // ★ 這裡修改了 HTML 結構，加入「選單按鈕」與「下拉選單」
+            const headerHtml = `
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                    <span>與 <span style="color:var(--accent-main)">${targetUid}</span> 的對話</span>
+                    
+                    <div style="position:relative;">
+                        <button onclick="window.toggleChatMenu()" style="
+                            background:none; border:none; color:var(--text-secondary); 
+                            font-size:1.5em; cursor:pointer; padding:0 10px; line-height:1;
+                        ">⋮</button>
+                        
+                        <div id="chat-menu-dropdown" style="
+                            display:none; 
+                            position:absolute; 
+                            right:0; top:35px; 
+                            background:var(--bg-panel); 
+                            border:1px solid var(--border-color); 
+                            border-radius:8px; 
+                            width:140px; 
+                            box-shadow:0 5px 15px rgba(0,0,0,0.5); 
+                            z-index:100;
+                            overflow:hidden;
+                        ">
+                            <div onclick="window.deleteCurrentChat()" style="
+                                padding:12px; 
+                                cursor:pointer; 
+                                color:#ff4d4d; 
+                                font-size:0.9em; 
+                                display:flex; align-items:center; gap:8px;
+                                transition:0.2s;
+                            " onmouseover="this.style.background='rgba(255, 77, 77, 0.1)'" 
+                              onmouseout="this.style.background='transparent'">
+                                🗑️ 刪除對話
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 更新標題 HTML
+            document.getElementById('chat-header').innerHTML = headerHtml;
             
             // 啟用輸入框
             document.getElementById('mail-content').disabled = false;
@@ -2117,6 +2157,55 @@
             // 載入訊息內容
             loadChatRoom(chatId, window.currentUser.uid);
         }
+     // ★ 新增：切換選單顯示/隱藏
+        window.toggleChatMenu = function() {
+            const menu = document.getElementById('chat-menu-dropdown');
+            if(menu) {
+                const isHidden = menu.style.display === 'none';
+                menu.style.display = isHidden ? 'block' : 'none';
+            }
+        }
+
+        // ★ 新增：刪除當前對話
+        window.deleteCurrentChat = async function() {
+            if(!window.currentActiveChatId) return;
+            
+            // 詢問使用者確認
+            const confirmDelete = confirm("確定要刪除此對話嗎？\n(注意：這只會從您的列表中移除，對方仍會保留記錄)");
+            if (!confirmDelete) return;
+
+            try {
+                // 1. 取得必要工具
+                const { doc, updateDoc, arrayRemove } = window.fs;
+                const user = window.currentUser;
+                const chatRef = doc(window.db, "chats", window.currentActiveChatId);
+
+                // 2. 執行「退出」邏輯：把自己從 participants 陣列中移除
+                // 這樣一來，loadInboxList 的查詢條件 (array-contains) 就不再成立，對話就會消失
+                await updateDoc(chatRef, {
+                    participants: arrayRemove(user.uid)
+                });
+
+                // 3. UI 重置
+                alert("對話已刪除");
+                
+                // 重新載入列表
+                window.renderMailbox(); 
+
+            } catch (e) {
+                console.error("刪除失敗", e);
+                alert("刪除失敗: " + e.message);
+            }
+        }
+
+        // ★ 小優化：點擊畫面其他地方時關閉選單
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('chat-menu-dropdown');
+            // 如果點擊的目標不是選單按鈕本身，也不是選單內部，就關閉選單
+            if(menu && menu.style.display === 'block' && !e.target.closest('button[onclick="window.toggleChatMenu()"]')) {
+                menu.style.display = 'none';
+            }
+        });
 
         // 4. 手動輸入 UID 開啟新對話
         window.startNewChat = function() {
