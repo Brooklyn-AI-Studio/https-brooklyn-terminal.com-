@@ -900,10 +900,29 @@
         }
 
         // --- Initialization & State Change Listener ---
-        onAuthStateChanged(auth, user => {
+        // ★ 修改：加入 async 關鍵字，以便執行資料庫寫入
+        onAuthStateChanged(auth, async (user) => {
             window.currentUser = user;
             updateAuthUI(user);
             if(window.initApp) window.initApp(); 
+
+            // ★ 新增：自動將使用者資料寫入 Firestore，確保可以被搜尋到
+            if (user) {
+                try {
+                    const { doc, setDoc } = window.fs;
+                    // 使用 setDoc + merge: true
+                    // 這樣如果資料已存在，只會更新基本資訊，不會覆蓋掉他的自我介紹(bio)
+                    await setDoc(doc(window.db, "users", user.uid), {
+                        uid: user.uid,
+                        displayName: user.displayName,
+                        email: user.email,
+                        photoURL: user.photoURL,
+                        lastSeen: new Date() // 順便記錄最後上線時間
+                    }, { merge: true });
+                } catch (e) {
+                    console.error("自動同步使用者資料失敗", e);
+                }
+            }
         });
 
         // --- Core Application Logic (Outside Auth) ---
