@@ -30,6 +30,7 @@
                 }
             }
         }
+        
     </script>
 
     <style>
@@ -632,6 +633,8 @@
                     members: [currentUser.email], 
                     nodes: nodes,
                     createdAt: new Date().toISOString()
+                    canvasWidth: 1000,
+                    canvasHeight: 1000
                 });
             } catch (e) {
                 console.error("Error adding doc: ", e);
@@ -699,7 +702,9 @@ window.subscribeWorkspace = (workspaceId, onChange) => {
             currentProjectId: null,
             editingProjectId: null,
             tempMembers: [],
-            projects: [] 
+            projects: [],
+            canvasWidth: 1000,
+            canvasHeight: 1000
         };
 
         const translations = {
@@ -928,37 +933,43 @@ window.selectWorkspaceItem = (projectId) => {
     }
 
     // 開始訂閱這個 workspace 文件（重點：這裡啟用多使用者同步）
-    if (window.subscribeWorkspace) {
-        unsubscribeCurrentProject = window.subscribeWorkspace(projectId, (projectData) => {
-            // 這裡會在任何人更新 nodes 時被呼叫（包含自己）
-            isRemoteUpdate = true;
+  if (window.subscribeWorkspace) {
+  unsubscribeCurrentProject = window.subscribeWorkspace(projectId, (projectData) => {
+    if (!projectData) return;
 
-            // 更新 header
-            renderProjectGrid(projectData);
+    isRemoteUpdate = true;
 
-            // 先清掉舊的 nodes
-            items.forEach(i => i.el.remove());
-            items = [];
+    // ✅ 套用遠端 workspace 的畫布尺寸（Step 4 真正生效）
+    applyCanvasSizeFromWorkspace(projectData);
 
-            const nodes = projectData.nodes || [];
-            nodes.forEach(n => {
-                // 注意：把 savedItem 傳進去，createItem 裡就不會再呼叫 saveProjectState()
-                createItem(
-                    n.x,
-                    n.y,
-                    n.w,
-                    n.h,
-                    n.color || activeColor,
-                    n.type || 'empty-window',
-                    n            // savedItem
-                );
-            });
-
-            isRemoteUpdate = false;
-        });
+    // 照舊重繪節點
+    renderProjectGrid(projectData);
+    itemsLayer.innerHTML = '';
+    if (projectData.items) {
+      Object.entries(projectData.items).forEach(([itemId, itemData]) => {
+        createItemElement(itemId, itemData);
+      });
     }
+
+    isRemoteUpdate = false;
+  });
+}
     startPresenceSystem(projectId);
 };
+function applyCanvasSizeFromWorkspace(projectData) {
+    const w = projectData.canvasWidth || 1000;
+    const h = projectData.canvasHeight || 1000;
+
+    state.canvasWidth = w;
+    state.canvasHeight = h;
+
+    const sizer = document.getElementById('canvas-sizer');
+    if (sizer) {
+        sizer.style.width = w + 'px';
+        sizer.style.height = h + 'px';
+    }
+}
+
 
         function showGlobalContextMenu(e, projectId) {
             activeContextProjectId = projectId;
@@ -1255,7 +1266,25 @@ window.saveProjectState = async () => {
         console.error('Sync error:', e);
     }
 };
+// ★ 新增：將畫布尺寸同步回 Firestore
+async function syncCanvasSizeToDB(width, height) {
+    // 沒有選 workspace，或這次是遠端更新，就不要再寫回 DB 以免形成迴圈
+    if (!state.currentProjectId || isRemoteUpdate) return;
+    if (!window.dbUpdateProject) return;
 
+    state.canvasWidth = width;
+    state.canvasHeight = height;
+
+    try {
+        await window.dbUpdateProject(state.currentProjectId, {
+            canvasWidth: width,
+            canvasHeight: height
+        });
+        console.log('Canvas size synced to DB');
+    } catch (e) {
+        console.error('Error syncing canvas size:', e);
+    }
+}
 
 
 
@@ -1424,17 +1453,18 @@ window.saveProjectState = async () => {
                     let rawX = startLeft + dx;
                     let rawY = startTop + dy; 
 
-                    const containerW = canvasSizer.scrollWidth;
-                    const containerH = canvasSizer.scrollHeight;
+                    const containerW = canvasSizer.offsetWidth
+                    const containerH = canvasSizer.offsetHeight;
                     
                     // 左側限制
                     if(rawX < 0) rawX = 0; 
                     // 上方限制
                     if(rawY < 0) rawY = 0;
-                    // 右側限制：如果 (X座標 + 物件寬度) 超過 容器寬度，就卡在邊緣
-                    if(rawX + item.w > containerW) rawX = containerW - item.w; 
-                    // 下方限制：如果 (Y座標 + 物件高度) 超過 容器高度，就卡在底部
-                    if(rawY + item.h > containerH) rawY = containerH - item.h;
+                    const maxX = containerW - item.w;
+                    const maxY = containerH - item.h;
+
+                    if (rawX > maxX) rawX = maxX;
+                    if (rawY > maxY) rawY = maxY;
 
                     // --- 修改結束 ---
 
@@ -1615,32 +1645,55 @@ scrollContainer.addEventListener('mousemove', (e) => {
     scrollContainer.scrollLeft = scrollLeft - walkX;
     scrollContainer.scrollTop = scrollTop - walkY;
 });
-        // --- 新增：動態調整畫布大小 ---
+
+ // --- 新版：可以同步到 Firestore 的畫布尺寸調整 ---
 window.resizeCanvasPrompt = function() {
-    const sizer = document.getElementById('canvas-sizer');
-    const currentW = parseInt(sizer.style.width);
-    const currentH = parseInt(sizer.style.height);
-
-    // 簡單使用 prompt 讓使用者輸入 (您也可以改成漂亮的 modal)
-    const newW = prompt("請輸入畫布寬度 (Width px):", currentW);
-    if (newW === null) return; // 取消
     
-    const newH = prompt("請輸入畫布高度 (Height px):", currentH);
-    if (newH === null) return; // 取消
+    const sizer = document.getElementById('canvas-sizer');
+    const currentW = parseInt(sizer.style.width) || state.canvasWidth || 1000;
+    const currentH = parseInt(sizer.style.height) || state.canvasHeight || 1000;
 
-    if (newW && newH && !isNaN(newW) && !isNaN(newH)) {
-        sizer.style.width = newW + 'px';
-        sizer.style.height = newH + 'px';
-        
-        // 重新置中「初始化按鈕」的位置
-        const emptyState = document.getElementById('empty-state-container');
-        if (emptyState) {
-            // 雖然 CSS 已經是用視窗計算，但若畫布小於視窗，可能需要微調，這裡保持原樣即可
-        }
+    const newW = prompt("請輸入畫布寬度 (Width px):", currentW);
+    if (newW === null) return;
+    const newH = prompt("請輸入畫布高度 (Height px):", currentH);
+    if (newH === null) return;
+
+    const wNum = Number(newW);
+    const hNum = Number(newH);
+
+    if (!isNaN(wNum) && !isNaN(hNum) && wNum > 0 && hNum > 0) {
+        sizer.style.width  = wNum + 'px';
+        sizer.style.height = hNum + 'px';
+
+        // ★ 呼叫第 4 步的 helper，同步給所有線上的人
+        syncCanvasSizeToDB(wNum, hNum);
     } else {
         alert("請輸入有效的數字！");
     }
+};
+
+// --- 第 6 步：監聽使用者拖右下角 resize 的情況，一樣同步到 DB ---
+if (window.ResizeObserver && canvasSizer) {
+    const ro = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+            const w = Math.round(entry.contentRect.width);
+            const h = Math.round(entry.contentRect.height);
+
+            // 避免每 1px 都打 API，且避免 remote update 產生迴圈
+            if ((w !== state.canvasWidth || h !== state.canvasHeight)) {
+                syncCanvasSizeToDB(w, h);
+            }
+        }
+    });
+
+    ro.observe(canvasSizer);
 }
+
+// 保持原本的 onload 初始化
+window.onload = () => { 
+    setTheme('cyberpunk'); 
+    setLanguage('zh'); 
+};      
 // 1. 啟動 Presence 系統 (進入專案時呼叫)
         async function startPresenceSystem(workspaceId) {
             if (!currentUser) return;
