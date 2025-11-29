@@ -1043,13 +1043,6 @@ window.selectWorkspaceItem = (projectId) => {
     
         function renderProjectGrid(project) {
             projectContent.innerHTML = '';
-            const title = document.createElement('div');
-            title.className = "absolute top-4 left-4 text-xs font-mono text-muted opacity-50";
-            title.innerText = `OWNER: ${project.ownerEmail} // MEMBERS: ${project.members ? project.members.length : 0} // ${project.desc || 'No description'}`;
-            projectContent.appendChild(title);
-            
-            // 這裡可以選擇是否要還原 project.nodes，但目前 createItem 邏輯是獨立的
-            // 如果需要還原，需呼叫 createItem 並傳入參數
         }
 
         window.resetBreadcrumb = () => {
@@ -1640,6 +1633,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
