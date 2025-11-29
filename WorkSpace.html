@@ -585,21 +585,30 @@
         });
 
         function initWorkspaceListener(user) {
-            const q = query(
-                collection(db, 'artifacts', appId, 'public', 'data', 'workspaces'),
-                where('members', 'array-contains', user.email)
-            );
+    const q = query(
+        collection(db, 'artifacts', appId, 'public', 'data', 'workspaces'),
+        where('members', 'array-contains', user.email)
+    );
 
-            unsubscribeProjects = onSnapshot(q, (snapshot) => {
-                const projects = [];
-                snapshot.forEach((doc) => {
-                    projects.push({ id: doc.id, ...doc.data() });
-                });
-                window.updateProjectsList(projects);
-            }, (error) => {
-                console.error("Data fetch error:", error);
-            });
+    unsubscribeProjects = onSnapshot(q, (snapshot) => {
+        const projects = [];
+        snapshot.forEach((doc) => {
+            projects.push({ id: doc.id, ...doc.data() });
+        });
+        if (window.updateProjectsList) {
+            window.updateProjectsList(projects);
         }
+    }, (error) => {
+        console.error("Data fetch error:", error);
+
+        // ★ 把 Loading 改成錯誤提示
+        const loadingText = document.getElementById('loading-text');
+        if (loadingText) {
+            loadingText.textContent = '讀取失敗: ' + (error.code || error.message);
+            loadingText.classList.remove('italic');
+        }
+    });
+}
         
         window.dbCreateProject = async (name, desc, nodes) => {
             if (!currentUser) return alert("Please login first!");
@@ -661,7 +670,9 @@ window.subscribeWorkspace = (workspaceId, onChange) => {
         if (!snap.exists()) return;
         const data = snap.data();
         // 把 id 一起回傳，前端比較好用
+        window.isRemoteUpdate = true;
         onChange({ id: snap.id, ...data });
+        window.isRemoteUpdate = false;
     }, (err) => {
         console.error('workspace snapshot error:', err);
     });
@@ -777,6 +788,7 @@ window.subscribeWorkspace = (workspaceId, onChange) => {
 
         let activeContextProjectId = null;
         let unsubscribeCurrentProject = null; // 新增：用來取消舊專案的即時監聽
+        window.isRemoteUpdate = false;  
         let isRemoteUpdate = false; // 新增：防止同步迴圈 (接收資料時不觸發儲存)
 
         // --- Data Sync ---
@@ -1110,10 +1122,27 @@ window.toggleWorkspace = () => {
         });
 
         function toggleMenu(menu) {
-            const isHidden = menu.classList.contains('hidden');
-            langMenu.classList.add('hidden'); themeMenu.classList.add('hidden'); globalContextMenu.classList.add('hidden');
-            if (isHidden) { menu.classList.remove('hidden'); menu.classList.add('popover-enter-active'); }
+    const menus = [langMenu, themeMenu, styleMenu, globalContextMenu];
+
+    // 先把所有 menu 關掉
+    menus.forEach(m => {
+        if (!m) return;
+        if (m !== menu) {
+            m.classList.add('hidden');
+            m.classList.remove('popover-enter-active');
         }
+    });
+
+    // 再決定要不要切換目前這一個
+    const isHidden = menu.classList.contains('hidden');
+    if (isHidden) {
+        menu.classList.remove('hidden');
+        menu.classList.add('popover-enter-active');
+    } else {
+        menu.classList.add('hidden');
+        menu.classList.remove('popover-enter-active');
+    }
+}
 
         langBtn.addEventListener('click', (e) => { e.stopPropagation(); if(!state.sidebarOpen) toggleBtn.click(); toggleMenu(langMenu); });
         
@@ -1164,18 +1193,23 @@ window.toggleWorkspace = () => {
         inputGridColor.addEventListener('input', updateGridStyle);
         inputGridOpacity.addEventListener('input', updateGridStyle);
         document.addEventListener('click', (e) => {
-            if (styleMenu.contains(e.target)) return;
-            langMenu.classList.add('hidden'); 
-            themeMenu.classList.add('hidden'); 
-            globalContextMenu.classList.add('hidden');
-            
-            if (userProfile && !userProfile.contains(e.target)) {
-                if(logoutMenu) logoutMenu.classList.add('hidden');
-            }
+    // 點在 Style menu 裡就不要關掉
+    if (styleMenu.contains(e.target)) return;
 
-            if (e.target === modal) closeModal();
-            if (e.target === editModal) closeEditModal();
-        });
+    // 點畫面其他地方 → 全部 menu 關閉
+    [langMenu, themeMenu, styleMenu, globalContextMenu].forEach(m => {
+        if (!m) return;
+        m.classList.add('hidden');
+        m.classList.remove('popover-enter-active');
+    });
+
+    if (userProfile && !userProfile.contains(e.target)) {
+        if (logoutMenu) logoutMenu.classList.add('hidden');
+    }
+
+    if (e.target === modal) closeModal();
+    if (e.target === editModal) closeEditModal();
+});
 
         window.setLanguage = (lang) => {
             state.lang = lang; const t = translations[lang];
@@ -1192,8 +1226,7 @@ window.toggleWorkspace = () => {
 // 直接呼叫 module 那邊提供的 dbUpdateProject
 window.saveProjectState = async () => {
     // 沒有選 workspace，或目前是遠端同步中，就不用寫回 DB
-    if (!state.currentProjectId || isRemoteUpdate) return;
-
+    if (!state.currentProjectId || window.isRemoteUpdate) return;
     const nodesData = items.map(i => ({
         id: i.id,
         x: i.x,
@@ -1607,6 +1640,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
