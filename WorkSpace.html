@@ -1409,18 +1409,15 @@ window.saveProjectState = async () => {
                     let rawX = startLeft + dx;
                     let rawY = startTop + dy; 
 
-                    const containerW = gridCanvas.clientWidth;
-                    const containerH = gridCanvas.clientHeight;
+                    const containerW = canvasSizer.scrollWidth;
+                    const containerH = canvasSizer.scrollHeight;
                     
                     // 左側限制
                     if(rawX < 0) rawX = 0; 
-                    
                     // 上方限制
                     if(rawY < 0) rawY = 0;
-                    
                     // 右側限制：如果 (X座標 + 物件寬度) 超過 容器寬度，就卡在邊緣
                     if(rawX + item.w > containerW) rawX = containerW - item.w; 
-                    
                     // 下方限制：如果 (Y座標 + 物件高度) 超過 容器高度，就卡在底部
                     if(rawY + item.h > containerH) rawY = containerH - item.h;
 
@@ -1633,6 +1630,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
