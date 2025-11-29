@@ -466,7 +466,18 @@
         <span id="breadcrumb-separator" class="mx-2 hidden">/</span>
         <span id="breadcrumb-current" class="text-text font-bold hidden ml-2 text-accent"></span>
     </div>
+            
+ <div class="text-sm font-mono text-muted flex items-center">
+        </div>
 
+    <div id="online-users-container" class="flex-1 flex justify-end items-center px-4 gap-2 hidden">
+        <span class="text-[10px] text-muted uppercase tracking-widest">Active:</span>
+        <div id="online-avatars" class="flex -space-x-2 overflow-hidden">
+            </div>
+    </div>
+    <button onclick="resizeCanvasPrompt()" ...>
+
+            
     <button onclick="resizeCanvasPrompt()" class="text-xs font-bold text-muted hover:text-accent border border-border hover:border-accent px-3 py-1 rounded transition-all flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
         <span class="hidden sm:inline">CANVAS SIZE</span>
@@ -516,7 +527,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, orderBy, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // 1. Firebase Config
         const firebaseConfig = {
@@ -790,6 +801,9 @@ window.subscribeWorkspace = (workspaceId, onChange) => {
         let unsubscribeCurrentProject = null; // 新增：用來取消舊專案的即時監聽
         window.isRemoteUpdate = false;  
         let isRemoteUpdate = false; // 新增：防止同步迴圈 (接收資料時不觸發儲存)
+        // --- 新增：Presence 相關變數 ---
+        let unsubscribePresence = null;
+        let presenceInterval = null;
 
         // --- Data Sync ---
         window.updateProjectsList = (projects) => {
@@ -943,6 +957,7 @@ window.selectWorkspaceItem = (projectId) => {
             isRemoteUpdate = false;
         });
     }
+    startPresenceSystem(projectId);
 };
 
         function showGlobalContextMenu(e, projectId) {
@@ -1046,13 +1061,13 @@ window.selectWorkspaceItem = (projectId) => {
         }
 
         window.resetBreadcrumb = () => {
-    state.currentProjectId = null;
-
-    // 取消目前 workspace 的訂閱
-    if (unsubscribeCurrentProject) {
-        unsubscribeCurrentProject();
-        unsubscribeCurrentProject = null;
-    }
+            stopPresenceSystem();
+            state.currentProjectId = null;
+            // 取消目前 workspace 的訂閱
+            if (unsubscribeCurrentProject) {
+            unsubscribeCurrentProject();
+            unsubscribeCurrentProject = null;
+           } 
 
     // 清空畫面上的 nodes
     items.forEach(i => i.el.remove());
@@ -1626,10 +1641,95 @@ window.resizeCanvasPrompt = function() {
         alert("請輸入有效的數字！");
     }
 }
+// 1. 啟動 Presence 系統 (進入專案時呼叫)
+        async function startPresenceSystem(workspaceId) {
+            if (!currentUser) return;
+
+            // 定義：回報自己「在線」的函數
+            const reportAlive = async () => {
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', workspaceId, 'presence', currentUser.uid);
+                try {
+                    await setDoc(userRef, {
+                        email: currentUser.email,
+                        photoURL: currentUser.photoURL,
+                        displayName: currentUser.displayName,
+                        lastSeen: serverTimestamp() // 伺服器時間
+                    }, { merge: true });
+                } catch (e) { console.error("Presence error", e); }
+            };
+
+            // 立即回報一次
+            reportAlive();
+
+            // 每 60 秒回報一次 (心跳機制)
+            presenceInterval = setInterval(reportAlive, 60000);
+
+            // 監聽該專案的 presence 子集合
+            const presenceCol = collection(db, 'artifacts', appId, 'public', 'data', 'workspaces', workspaceId, 'presence');
+            unsubscribePresence = onSnapshot(presenceCol, (snapshot) => {
+                const onlineUsers = [];
+                const now = Date.now();
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // 過濾：如果 lastSeen 超過 2 分鐘，視為離線 (處理不正常關閉)
+                    // 注意：serverTimestamp 在本地剛寫入時可能是 null (pending)，要視為有效
+                    if (data.lastSeen) {
+                        const lastSeenTime = data.lastSeen.toMillis ? data.lastSeen.toMillis() : now;
+                        if (now - lastSeenTime < 120000) { // 2分鐘內活躍
+                            onlineUsers.push(data);
+                        }
+                    } else {
+                        onlineUsers.push(data); // 本地剛寫入，算在線
+                    }
+                });
+                renderOnlineAvatars(onlineUsers);
+            });
+        }
+
+        // 2. 停止 Presence 系統 (離開專案時呼叫)
+        async function stopPresenceSystem() {
+            if (presenceInterval) clearInterval(presenceInterval);
+            if (unsubscribePresence) unsubscribePresence();
+            
+            // 嘗試刪除自己的在線紀錄 (正常離開)
+            if (state.currentProjectId && currentUser) {
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', state.currentProjectId, 'presence', currentUser.uid);
+                await deleteDoc(userRef).catch(()=>{});
+            }
+            
+            document.getElementById('online-users-container').classList.add('hidden');
+        }
+
+        // 3. 渲染頭貼
+        function renderOnlineAvatars(users) {
+            const container = document.getElementById('online-avatars');
+            container.innerHTML = '';
+            
+            users.forEach(u => {
+                const img = document.createElement('img');
+                img.src = u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.email}`;
+                img.className = "inline-block h-6 w-6 rounded-full ring-2 ring-bg bg-surface object-cover";
+                img.title = u.displayName || u.email;
+                container.appendChild(img);
+            });
+            
+            // 顯示容器
+            document.getElementById('online-users-container').classList.remove('hidden');
+        }
+        
+        // 確保關閉視窗時也能移除狀態
+        window.addEventListener('beforeunload', () => {
+            stopPresenceSystem();
+        });
+
+
+        
         window.onload = () => { setTheme('cyberpunk'); setLanguage('zh'); };
     </script>
 </body>
 </html>
+
 
 
 
