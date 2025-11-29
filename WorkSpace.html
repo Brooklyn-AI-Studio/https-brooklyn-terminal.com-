@@ -33,6 +33,7 @@
     </script>
 
     <style>
+        #empty-state-container {display: none !important;}
       /* 加入 style 標籤內 */
       /* 隱藏捲軸 */
 #canvas-scroll-container {
@@ -494,29 +495,12 @@
 
         <div id="empty-state-container" class="absolute top-0 left-0 w-full h-[calc(100vh-100px)] z-10 flex items-center justify-center pointer-events-none">
     <div class="text-center space-y-4 pointer-events-auto">
-
-        <button onclick="handlePlusClick()" class="mx-auto border-2 border-accent rounded-full flex items-center justify-center relative group cursor-pointer hover:bg-accent/10 transition-all focus:outline-none" 
-                style="width: 8cqmin; height: 8cqmin; min-width: 60px; min-height: 60px;">
-            
-            <svg class="text-accent group-hover:scale-110 transition-transform" style="width: 40%; height: 40%;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            <div class="absolute inset-0 rounded-full border border-accent animate-ping opacity-20"></div>
-        </button>
-        
-        <h2 class="font-bold text-text text-accent" data-i18n="empty_state" 
-            style="font-size: 2.5cqmin; line-height: 1.2;">
-            Initialize Project
-        </h2>
-        
         <p id="empty-desc-text" class="text-muted max-w-md mx-auto" data-i18n="empty_desc" 
            style="font-size: 1.5cqmin;">
-            Select a tool from the left sidebar or click above to create a new component node.
+            <!-- 初始可以留空，登入狀態會由 JS 填字 -->
         </p>
-
     </div>
 </div>
-
         <div id="project-content-container" class="hidden relative z-10 w-full h-full p-6 overflow-hidden">
              </div>
 
@@ -578,8 +562,6 @@
                 userAvatar.src = user.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid;
                 userName.textContent = user.displayName || 'User';
                 userEmail.textContent = user.email;
-                
-                emptyDescText.textContent = "Click + to create a workspace. You can invite friends to join via email.";
                 
                 initWorkspaceListener(user);
             } else {
@@ -1061,22 +1043,27 @@ window.selectWorkspaceItem = (projectId) => {
         }
 
         window.resetBreadcrumb = () => {
-            stopPresenceSystem();
-            state.currentProjectId = null;
-            // 取消目前 workspace 的訂閱
-            if (unsubscribeCurrentProject) {
-            unsubscribeCurrentProject();
-            unsubscribeCurrentProject = null;
-           } 
+    state.currentProjectId = null;
+
+    // 取消目前 workspace 的訂閱
+    if (unsubscribeCurrentProject) {
+        unsubscribeCurrentProject();
+        unsubscribeCurrentProject = null;
+    }
 
     // 清空畫面上的 nodes
     items.forEach(i => i.el.remove());
     items = [];
 
+    // 收合麵包屑
     breadcrumbSep.classList.add('hidden');
     breadcrumbCurrent.classList.add('hidden');
+
+    // 更新左側列表
     renderWorkspaceList();
-    emptyState.classList.remove('hidden');
+
+    // 不再顯示「初始化專案」狀態，只是把右側內容區隱藏/清空即可
+    projectContent.innerHTML = '';
     projectContent.classList.add('hidden');
 };
 window.toggleWorkspace = () => {
@@ -1347,29 +1334,26 @@ window.saveProjectState = async () => {
             const itemObj = { id, x, y, w, h, el, type, label: labelContent }; // 確保這裡有 label
            // const itemObj = { id, x, y, w, h, el, type, label: '' };
             items.push(itemObj);
-            // 如果有 saved label，顯示在畫面上
-            if(labelContent) {
-                setTimeout(() => { document.getElementById(`lbl-${id}`).innerText = labelContent; }, 0);
-            }
-            // --- 新增這段：當有物件建立時，隱藏初始化按鈕 ---
-            const emptyState = document.getElementById('empty-state-container');
-            if (emptyState && !emptyState.classList.contains('hidden')) {
-                emptyState.classList.add('hidden');
-                emptyState.style.display = 'none'; // 雙重確保隱藏
-              }
+// 如果有 saved label，顯示在畫面上
+if (labelContent) {
+    setTimeout(() => {
+        document.getElementById(`lbl-${id}`).innerText = labelContent;
+    }, 0);
+}
 
-            // Render Content
-            if (type === 'empty-window') renderEmptyWindowContent(itemObj);
-            // 重要：如果是「使用者手動新增」的(沒有 savedItem)，才觸發儲存
-            // 如果是「同步過來」的，就不觸發儲存，避免無窮迴圈
-            if (!savedItem && !isRemoteUpdate) {
-                saveProjectState();
-            }
-            setupInteractions(itemObj); 
-            document.addEventListener('click', () => menu.classList.remove('show')); 
-            
-            return { el, obj: itemObj };
-        }
+// Render Content
+if (type === 'empty-window') renderEmptyWindowContent(itemObj);
+
+// 重要：如果是「使用者手動新增」的(沒有 savedItem)，才觸發儲存
+// 如果是「同步過來」的，就不觸發儲存，避免無窮迴圈
+if (!savedItem && !isRemoteUpdate) {
+    saveProjectState();
+}
+
+setupInteractions(itemObj);
+document.addEventListener('click', () => menu.classList.remove('show'));
+
+return { el, obj: itemObj };
 
         // Render Functions
         function renderEmptyWindowContent(item) {
@@ -1548,22 +1532,14 @@ window.saveProjectState = async () => {
         }
 
         window.deleteItem = function(id) {
-            const idx = items.findIndex(i => i.id === id);
-            if (idx > -1) { 
-                items[idx].el.remove(); 
-                items.splice(idx, 1); 
-                saveProjectState();
-            // --- 新增：如果畫面清空了，顯示初始化按鈕 ---
-            if (items.length === 0) {
-                const emptyState = document.getElementById('empty-state-container');
-                if (emptyState) {
-                    emptyState.classList.remove('hidden');
-                    emptyState.style.display = 'flex';
-               }
-            }
-            // ------------------------------------------
-            }
-        }
+    const idx = items.findIndex(i => i.id === id);
+    if (idx > -1) {
+        items[idx].el.remove();
+        items.splice(idx, 1);
+        saveProjectState();
+        // 不再處理 empty-state-container
+    }
+};
 // --- 新增：滑鼠中鍵拖曳畫布 (Panning) ---
 // --- Middle Mouse Pan Logic (從 APP.txt 復刻) ---
 const scrollContainer = document.getElementById('canvas-scroll-container'); // 對應 APP.txt 的 .workspace
@@ -1730,6 +1706,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
