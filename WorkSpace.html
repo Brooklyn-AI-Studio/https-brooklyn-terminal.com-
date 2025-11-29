@@ -386,6 +386,41 @@
                         <button onclick="setTheme('cyberpunk')" id="opt-cyberpunk" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded flex items-center gap-2">Cyberpunk</button>
                     </div>
                 </div>
+
+<div class="relative flex-1">
+                    <button id="style-btn" class="w-full flex items-center justify-center gap-2 px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors" title="Canvas Style">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                    </button>
+                    
+                    <div id="style-menu" class="hidden absolute bottom-full left-0 w-48 mb-2 bg-sidebar border border-border rounded-lg shadow-xl overflow-hidden z-50 p-3 space-y-3">
+                        <div class="text-xs font-bold text-accent tracking-wider mb-1">CANVAS STYLE</div>
+                        
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs text-muted">Background</label>
+                            <input type="color" id="input-bg-color" class="w-6 h-6 bg-transparent border-0 cursor-pointer" value="#0a100d">
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs text-muted">Border</label>
+                            <input type="color" id="input-border-color" class="w-6 h-6 bg-transparent border-0 cursor-pointer" value="#00ff9d">
+                        </div>
+
+                        <hr class="border-white/10">
+
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs text-muted">Grid Color</label>
+                            <input type="color" id="input-grid-color" class="w-6 h-6 bg-transparent border-0 cursor-pointer" value="#00ff9d">
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs text-muted">
+                                <span>Grid Opacity</span>
+                                <span id="grid-opacity-val">10%</span>
+                            </div>
+                            <input type="range" id="input-grid-opacity" min="0" max="100" value="10" class="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-accent">
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="auth-container" class="pt-3 border-t border-border">
@@ -688,6 +723,14 @@
         const langMenu = document.getElementById('lang-menu');
         const themeBtn = document.getElementById('theme-btn');
         const themeMenu = document.getElementById('theme-menu');
+        const styleBtn = document.getElementById('style-btn');
+        const styleMenu = document.getElementById('style-menu');
+        const inputBgColor = document.getElementById('input-bg-color');
+        const inputBorderColor = document.getElementById('input-border-color');
+        const inputGridColor = document.getElementById('input-grid-color');
+        const inputGridOpacity = document.getElementById('input-grid-opacity');
+        const gridOpacityVal = document.getElementById('grid-opacity-val');
+        const canvasSizer = document.getElementById('canvas-sizer');
         const modal = document.getElementById('add-modal');
         const modalContent = document.getElementById('modal-content');
         const nameInput = document.getElementById('new-section-name');
@@ -975,7 +1018,69 @@
             toggleMenu(themeMenu); 
             updateThemeMenuHighlight(); 
         });
+// --- 新增：樣式選單開關邏輯 ---
+        styleBtn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            if(!state.sidebarOpen) toggleBtn.click(); 
+            
+            // 關閉其他選單，打開樣式選單
+            langMenu.classList.add('hidden'); 
+            themeMenu.classList.add('hidden');
+            globalContextMenu.classList.add('hidden');
+            
+            toggleMenu(styleMenu); 
+        });
 
+        // 點擊其他地方時關閉樣式選單 (修改原本的 document click listener)
+        document.addEventListener('click', (e) => {
+            // ... 原本的 code ...
+            langMenu.classList.add('hidden'); 
+            themeMenu.classList.add('hidden'); 
+            styleMenu.classList.add('hidden'); // <--- 加入這一行
+            // ...
+            
+            // 防止點擊選單內部時關閉
+            if (styleMenu.contains(e.target)) {
+                 styleMenu.classList.remove('hidden');
+                 e.stopPropagation(); // 阻止事件冒泡以免被上面的 document click 關掉
+            }
+        });
+
+        // --- 新增：樣式調整邏輯 ---
+
+        // 1. 背景顏色
+        inputBgColor.addEventListener('input', (e) => {
+            canvasSizer.style.backgroundColor = e.target.value;
+        });
+
+        // 2. 外框顏色
+        inputBorderColor.addEventListener('input', (e) => {
+            canvasSizer.style.borderColor = e.target.value;
+        });
+
+        // 3. 網格更新函數 (合併顏色與透明度)
+        function updateGridStyle() {
+            const colorHex = inputGridColor.value;
+            const opacity = inputGridOpacity.value / 100;
+            gridOpacityVal.textContent = inputGridOpacity.value + '%';
+
+            // 將 Hex 轉為 RGB
+            const r = parseInt(colorHex.substr(1,2), 16);
+            const g = parseInt(colorHex.substr(3,2), 16);
+            const b = parseInt(colorHex.substr(5,2), 16);
+            
+            const rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+
+            // 更新 canvas-sizer 的背景圖 (網格)
+            canvasSizer.style.backgroundImage = `
+                linear-gradient(to right, ${rgba} 1px, transparent 1px),
+                linear-gradient(to bottom, ${rgba} 1px, transparent 1px)
+            `;
+        }
+
+        // 監聽網格顏色與透明度
+        inputGridColor.addEventListener('input', updateGridStyle);
+        inputGridOpacity.addEventListener('input', updateGridStyle);
         document.addEventListener('click', (e) => {
             langMenu.classList.add('hidden'); 
             themeMenu.classList.add('hidden'); 
@@ -1371,6 +1476,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
