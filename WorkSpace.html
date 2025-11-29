@@ -194,11 +194,11 @@
             text-shadow: var(--neon-text-shadow);
         }
 
-        :not([data-theme="business"]):not([data-theme="developer"]):not([data-theme="terminal"]) .border-accent,
-        [data-theme="cyberpunk"] .border-accent {
-            box-shadow: var(--neon-box-shadow);
-            border-color: var(--accent-color); /* 確保邊框顏色最亮 */
-        }
+              :not([data-theme="business"]):not([data-theme="developer"]):not([data-theme="terminal"]) .border-accent,
+              [data-theme="cyberpunk"] .border-accent {
+              border: 1px solid var(--accent-color);
+              box-shadow: var(--neon-box-shadow);
+            }
         
         /* 專案內容的節點動畫 */
         .node-appear { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.5); }
@@ -559,6 +559,7 @@
 
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
+            window.currentUser = user;
             if (user) {
                 loginBtn.classList.add('hidden');
                 userProfile.classList.remove('hidden');
@@ -577,9 +578,9 @@
                 
                 emptyDescText.textContent = "Please sign in to access or create workspaces.";
                 
-                if (unsubscribeProjects) unsubscribeProjects();
-                window.updateProjectsList([]);
-                window.resetBreadcrumb();
+              if (unsubscribeProjects) unsubscribeProjects();
+              if (window.updateProjectsList) window.updateProjectsList([]);
+              if (window.resetBreadcrumb) window.resetBreadcrumb();;
             }
         });
 
@@ -617,15 +618,7 @@
                 alert("Error creating workspace: " + e.message);
             }
         };
-         window.toggleWorkspace = () => {
-             if (!state.sidebarOpen) toggleBtn.click(); 
-
-             const list = document.getElementById('workspace-list');
-             const arrow = document.getElementById('workspace-arrow');
-
-              list.classList.toggle('hidden');
-              arrow.classList.toggle('rotate-90');
-         };
+        
 
         window.dbUpdateProject = async (projectId, data) => {
             if (!currentUser) return;
@@ -636,7 +629,8 @@
                 console.error("Error updating doc: ", e);
             }
         };
-
+        // 將畫面上的物件同步回資料庫
+      
         window.dbDeleteProject = async (projectId) => {
             if (!currentUser) return;
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId);
@@ -650,8 +644,30 @@
         window.isUserLoggedIn = () => {
             return !!currentUser;
         }
-    </script>
+        // 給前端用：訂閱單一 workspace 文件
+// 回傳值是 unsubscribe function
+window.subscribeWorkspace = (workspaceId, onChange) => {
+    const docRef = doc(
+        db,
+        'artifacts',
+        appId,
+        'public',
+        'data',
+        'workspaces',
+        workspaceId
+    );
 
+    return onSnapshot(docRef, (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data();
+        // 把 id 一起回傳，前端比較好用
+        onChange({ id: snap.id, ...data });
+    }, (err) => {
+        console.error('workspace snapshot error:', err);
+    });
+};
+       
+    </script>
     <script>
         // State
         const state = {
@@ -760,6 +776,8 @@
         let activeColor = '#00ff9d'; // 預設強調色
 
         let activeContextProjectId = null;
+        let unsubscribeCurrentProject = null; // 新增：用來取消舊專案的即時監聽
+        let isRemoteUpdate = false; // 新增：防止同步迴圈 (接收資料時不觸發儲存)
 
         // --- Data Sync ---
         window.updateProjectsList = (projects) => {
@@ -851,6 +869,69 @@
                 workspaceArrow.classList.add('rotate-90');
             }
         }
+        // 切換目前選中的 workspace，並訂閱該 workspace 的即時變化（UI 版本）
+window.selectWorkspaceItem = (projectId) => {
+    // 如果本來就選這個，就不用再做
+    if (state.currentProjectId === projectId) return;
+
+    // 先取消上一個 workspace 的訂閱
+    if (unsubscribeCurrentProject) {
+        unsubscribeCurrentProject();
+        unsubscribeCurrentProject = null;
+    }
+
+    state.currentProjectId = projectId;
+
+    // 更新 breadcrumb
+    const proj = state.projects.find(p => p.id === projectId);
+    breadcrumbSep.classList.remove('hidden');
+    breadcrumbCurrent.classList.remove('hidden');
+    breadcrumbCurrent.textContent = proj ? proj.name : '';
+
+    // 顯示工作區內容、隱藏空狀態
+    emptyState.classList.add('hidden');
+    projectContent.classList.remove('hidden');
+
+    // 清掉目前畫面上的 nodes
+    items.forEach(i => i.el.remove());
+    items = [];
+
+    // 重新畫 header（OWNER / MEMBERS / DESC 那行）
+    if (proj) {
+        renderProjectGrid(proj);
+    }
+
+    // 開始訂閱這個 workspace 文件（重點：這裡啟用多使用者同步）
+    if (window.subscribeWorkspace) {
+        unsubscribeCurrentProject = window.subscribeWorkspace(projectId, (projectData) => {
+            // 這裡會在任何人更新 nodes 時被呼叫（包含自己）
+            isRemoteUpdate = true;
+
+            // 更新 header
+            renderProjectGrid(projectData);
+
+            // 先清掉舊的 nodes
+            items.forEach(i => i.el.remove());
+            items = [];
+
+            const nodes = projectData.nodes || [];
+            nodes.forEach(n => {
+                // 注意：把 savedItem 傳進去，createItem 裡就不會再呼叫 saveProjectState()
+                createItem(
+                    n.x,
+                    n.y,
+                    n.w,
+                    n.h,
+                    n.color || activeColor,
+                    n.type || 'empty-window',
+                    n            // savedItem
+                );
+            });
+
+            isRemoteUpdate = false;
+        });
+    }
+};
 
         function showGlobalContextMenu(e, projectId) {
             activeContextProjectId = projectId;
@@ -901,19 +982,25 @@
             }
         };
         window.removeMember = (index) => { state.tempMembers.splice(index, 1); renderEditMembers(); };
-        window.handleMemberInputKey = (e) => { if(e.key === 'Enter') addMember(); }
+        window.handleMemberInputKey = (e) => {if (e.key === 'Enter') window.addMember();};
 
         window.saveEditWorkspace = () => {
-            if(!state.editingProjectId) return;
-            if(window.dbUpdateProject) {
-                window.dbUpdateProject(state.editingProjectId, {
-                    name: editNameInput.value.trim(),
-                    desc: editDescInput.value.trim(),
-                    members: state.tempMembers
-                });
-            }
-            closeEditModal();
-        };
+    if(!state.editingProjectId) return;
+    if(window.dbUpdateProject) {
+        const members = [...state.tempMembers];
+        // 確保 owner 一定在 members 裡（currentUser 可從 module 丟到 window，例如 window.currentUser）
+        if (window.currentUser && !members.includes(window.currentUser.email)) {
+            members.push(window.currentUser.email);
+        }
+
+        window.dbUpdateProject(state.editingProjectId, {
+            name: editNameInput.value.trim(),
+            desc: editDescInput.value.trim(),
+            members
+        });
+    }
+    closeEditModal();
+};
 
         window.deleteWorkspace = () => {
             if(!state.editingProjectId) return;
@@ -941,16 +1028,7 @@
             return nodes;
         }
 
-        window.selectWorkspaceItem = (id) => {
-            state.currentProjectId = id;
-            const project = state.projects.find(p => p.id === id);
-            renderWorkspaceList(); 
-            if(project) {
-                breadcrumbSep.classList.remove('hidden'); breadcrumbCurrent.classList.remove('hidden'); breadcrumbCurrent.textContent = project.name;
-                emptyState.classList.add('hidden'); projectContent.classList.remove('hidden'); renderProjectGrid(project);
-            }
-        };
-
+    
         function renderProjectGrid(project) {
             projectContent.innerHTML = '';
             const title = document.createElement('div');
@@ -962,8 +1040,35 @@
             // 如果需要還原，需呼叫 createItem 並傳入參數
         }
 
-        window.resetBreadcrumb = () => { state.currentProjectId = null; breadcrumbSep.classList.add('hidden'); breadcrumbCurrent.classList.add('hidden'); renderWorkspaceList(); emptyState.classList.remove('hidden'); projectContent.classList.add('hidden'); };
-        
+        window.resetBreadcrumb = () => {
+    state.currentProjectId = null;
+
+    // 取消目前 workspace 的訂閱
+    if (unsubscribeCurrentProject) {
+        unsubscribeCurrentProject();
+        unsubscribeCurrentProject = null;
+    }
+
+    // 清空畫面上的 nodes
+    items.forEach(i => i.el.remove());
+    items = [];
+
+    breadcrumbSep.classList.add('hidden');
+    breadcrumbCurrent.classList.add('hidden');
+    renderWorkspaceList();
+    emptyState.classList.remove('hidden');
+    projectContent.classList.add('hidden');
+};
+window.toggleWorkspace = () => {
+    if (!state.sidebarOpen) toggleBtn.click(); 
+
+    const list = document.getElementById('workspace-list');
+    const arrow = document.getElementById('workspace-arrow');
+
+    list.classList.toggle('hidden');
+    arrow.classList.toggle('rotate-90');
+};
+   
         window.toggleTools = () => {
             if (!state.sidebarOpen) toggleBtn.click();
             const list = document.getElementById('tools-list');
@@ -1018,34 +1123,11 @@
             toggleMenu(themeMenu); 
             updateThemeMenuHighlight(); 
         });
-// --- 新增：樣式選單開關邏輯 ---
-        styleBtn.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            if(!state.sidebarOpen) toggleBtn.click(); 
-            
-            // 關閉其他選單，打開樣式選單
-            langMenu.classList.add('hidden'); 
-            themeMenu.classList.add('hidden');
-            globalContextMenu.classList.add('hidden');
-            
-            toggleMenu(styleMenu); 
-        });
-
-        // 點擊其他地方時關閉樣式選單 (修改原本的 document click listener)
-        document.addEventListener('click', (e) => {
-            // ... 原本的 code ...
-            langMenu.classList.add('hidden'); 
-            themeMenu.classList.add('hidden'); 
-            styleMenu.classList.add('hidden'); // <--- 加入這一行
-            // ...
-            
-            // 防止點擊選單內部時關閉
-            if (styleMenu.contains(e.target)) {
-                 styleMenu.classList.remove('hidden');
-                 e.stopPropagation(); // 阻止事件冒泡以免被上面的 document click 關掉
-            }
-        });
-
+        styleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!state.sidebarOpen) toggleBtn.click(); // 若側邊欄縮起來，順便打開
+    toggleMenu(styleMenu);
+});
         // --- 新增：樣式調整邏輯 ---
 
         // 1. 背景顏色
@@ -1082,6 +1164,7 @@
         inputGridColor.addEventListener('input', updateGridStyle);
         inputGridOpacity.addEventListener('input', updateGridStyle);
         document.addEventListener('click', (e) => {
+            if (styleMenu.contains(e.target)) return;
             langMenu.classList.add('hidden'); 
             themeMenu.classList.add('hidden'); 
             globalContextMenu.classList.add('hidden');
@@ -1105,6 +1188,37 @@
             if (themeName === 'cyberpunk') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', themeName);
             updateThemeMenuHighlight();
         };
+        // 將畫面上的物件同步回資料庫（UI 版本）
+// 直接呼叫 module 那邊提供的 dbUpdateProject
+window.saveProjectState = async () => {
+    // 沒有選 workspace，或目前是遠端同步中，就不用寫回 DB
+    if (!state.currentProjectId || isRemoteUpdate) return;
+
+    const nodesData = items.map(i => ({
+        id: i.id,
+        x: i.x,
+        y: i.y,
+        w: i.w,
+        h: i.h,
+        type: i.type,
+        color: i.el.style.borderColor,
+        label: i.label || ''
+    }));
+
+    if (!window.dbUpdateProject) return;
+
+    try {
+        await window.dbUpdateProject(state.currentProjectId, { nodes: nodesData });
+        console.log('State synced to DB');
+    } catch (e) {
+        console.error('Sync error:', e);
+    }
+};
+
+
+
+
+        
 
         // --- Drag and Drop Logic (新增部分) ---
         
@@ -1152,8 +1266,10 @@
             }
         });
 
-        function createItem(x, y, w, h, color, type) {
-            const id = 'item_' + Date.now() + Math.random().toString(36).substr(2, 5);
+        function createItem(x, y, w, h, color, type, savedItem = null) {
+            // const id = 'item_' + Date.now() + Math.random().toString(36).substr(2, 5);
+            const id = savedItem ? savedItem.id : ('item_' + Date.now() + Math.random().toString(36).substr(2, 5));
+            const labelContent = savedItem ? (savedItem.label || '') : '';
             const el = document.createElement('div'); 
             el.className = 'grid-item'; 
             
@@ -1187,9 +1303,13 @@
             };
 
             gridCanvas.appendChild(el);
-            
-            const itemObj = { id, x, y, w, h, el, type, label: '' };
+            const itemObj = { id, x, y, w, h, el, type, label: labelContent }; // 確保這裡有 label
+           // const itemObj = { id, x, y, w, h, el, type, label: '' };
             items.push(itemObj);
+            // 如果有 saved label，顯示在畫面上
+            if(labelContent) {
+                setTimeout(() => { document.getElementById(`lbl-${id}`).innerText = labelContent; }, 0);
+            }
             // --- 新增這段：當有物件建立時，隱藏初始化按鈕 ---
             const emptyState = document.getElementById('empty-state-container');
             if (emptyState && !emptyState.classList.contains('hidden')) {
@@ -1199,7 +1319,11 @@
 
             // Render Content
             if (type === 'empty-window') renderEmptyWindowContent(itemObj);
-
+            // 重要：如果是「使用者手動新增」的(沒有 savedItem)，才觸發儲存
+            // 如果是「同步過來」的，就不觸發儲存，避免無窮迴圈
+            if (!savedItem && !isRemoteUpdate) {
+                saveProjectState();
+            }
             setupInteractions(itemObj); 
             document.addEventListener('click', () => menu.classList.remove('show')); 
             
@@ -1226,6 +1350,9 @@
             `;
         }
 
+
+
+        
         // Interaction Setup (Drag & Resize)
         function setupInteractions(item) {
             const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
@@ -1306,6 +1433,7 @@
                         el.style.top = finalY + 'px';
                     } 
                     el.classList.remove('collision'); 
+                    saveProjectState();
                 }
 
                 if (e.type === 'mousedown') {
@@ -1354,6 +1482,7 @@
                     document.removeEventListener('touchmove', onResize); 
                     document.removeEventListener('touchend', onResizeUp); 
                     el.classList.remove('collision'); 
+                    saveProjectState();
                 }
 
                 if(e.type === 'mousedown') {
@@ -1374,6 +1503,7 @@
             const text = prompt("請輸入名稱 (Enter Name):", item.label || "");
             if (text !== null) {
                 item.label = text;
+                saveProjectState();
                 document.getElementById(`lbl-${id}`).innerText = text;
             }
         }
@@ -1383,6 +1513,7 @@
             if (idx > -1) { 
                 items[idx].el.remove(); 
                 items.splice(idx, 1); 
+                saveProjectState();
             // --- 新增：如果畫面清空了，顯示初始化按鈕 ---
             if (items.length === 0) {
                 const emptyState = document.getElementById('empty-state-container');
@@ -1476,6 +1607,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
