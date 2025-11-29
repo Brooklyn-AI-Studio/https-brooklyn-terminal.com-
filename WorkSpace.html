@@ -1427,17 +1427,14 @@ window.saveProjectState = async () => {
 
                     const containerW = canvasSizer.offsetWidth
                     const containerH = canvasSizer.offsetHeight;
-                    const HEADER_SAFE = 48;  // 視窗上邊界（標題列 + 一點緩衝）
-                    const SIDE_SAFE   = 32;  // 左右邊預留一點緩衝
+                    
                     // 左側限制
                     if(rawX < 0) rawX = 0; 
                     // 上方限制
                     if(rawY < 0) rawY = 0;
                     const maxX = containerW - item.w;
                     const maxY = containerH - item.h;
-                    // 右下限制：只要「標題列還看得到」就好
-                    const maxX = containerW - SIDE_SAFE;
-                    const maxY = containerH - HEADER_SAFE;
+
                     if (rawX > maxX) rawX = maxX;
                     if (rawY > maxY) rawY = maxY;
 
@@ -1734,8 +1731,6 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
-
-
 
 
 
