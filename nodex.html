@@ -7,6 +7,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&family=Courier+New&display=swap" rel="stylesheet">
     
     <style>
+                    /* [新增] 模態框 CSS */
+            .nx-modal-overlay {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+                z-index: 9999; display: none; align-items: center; justify-content: center;
+                animation: fadeIn 0.2s;
+            }
+            .nx-modal-content {
+                background: var(--nx-sidebar); border: 1px solid var(--nx-border);
+                width: 90%; max-width: 500px; height: 60vh;
+                border-radius: 12px; display: flex; flex-direction: column;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            }
+            .nx-modal-header {
+                padding: 15px; border-bottom: 1px solid var(--nx-border);
+                display: flex; justify-content: space-between; align-items: center;
+                background: var(--nx-card-bg); border-radius: 12px 12px 0 0;
+            }
         /* --- CSS 變數系統 (核心) --- */
         :root {
             /* 預設為 Tech 風格 */
@@ -459,6 +477,11 @@
         <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span id="txt-newChat">新對話</span>
     </button>
+
+        <div class="nx-menu-item" onclick="openTempChat()" style="margin-bottom: 20px; border: 1px dashed var(--nx-border); justify-content: center;">
+            <svg class="nx-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span style="font-size:0.9em;">臨時對話 (Temporary)</span>
+        </div>
         
     <div class="nx-menu-group">
         <div class="nx-menu-title">EXPLORE</div>
@@ -846,7 +869,122 @@
                 handleSendMessage();
             }
         });
+// --- [新增] 臨時對話功能邏輯 ---
+        
+        window.openTempChat = function() {
+            document.getElementById('temp-chat-modal').style.display = 'flex';
+            document.getElementById('temp-chat-input').focus();
+        }
 
+        window.closeTempChat = function() {
+            document.getElementById('temp-chat-modal').style.display = 'none';
+        }
+
+        // 點擊遮罩關閉
+        document.getElementById('temp-chat-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'temp-chat-modal') closeTempChat();
+        });
+
+        const tempInput = document.getElementById('temp-chat-input');
+        const tempHistory = document.getElementById('temp-chat-history');
+        const tempSendBtn = document.getElementById('temp-send-btn');
+
+        async function handleTempSend() {
+            const text = tempInput.value.trim();
+            if(!text) return;
+
+            // 顯示使用者訊息
+            tempInput.value = '';
+            const userDiv = document.createElement('div');
+            userDiv.style.alignSelf = 'flex-end';
+            userDiv.style.background = 'var(--nx-accent)';
+            userDiv.style.color = '#000';
+            userDiv.style.padding = '8px 12px';
+            userDiv.style.borderRadius = '12px 12px 0 12px';
+            userDiv.style.marginBottom = '10px';
+            userDiv.style.maxWidth = '80%';
+            userDiv.innerText = text;
+            tempHistory.appendChild(userDiv);
+
+            // 準備 AI 回覆容器
+            const aiDiv = document.createElement('div');
+            aiDiv.className = 'markdown-body';
+            aiDiv.style.alignSelf = 'flex-start';
+            aiDiv.style.background = 'var(--nx-card-bg)';
+            aiDiv.style.padding = '8px 12px';
+            aiDiv.style.borderRadius = '12px 12px 12px 0';
+            aiDiv.style.marginBottom = '10px';
+            aiDiv.style.maxWidth = '90%';
+            aiDiv.style.fontSize = '0.9em';
+            aiDiv.innerHTML = '<span class="loading-dots">Thinking...</span>';
+            tempHistory.appendChild(aiDiv);
+            tempHistory.scrollTop = tempHistory.scrollHeight;
+
+            try {
+                // 呼叫原本的 Worker API (不扣除額度或另外計數，視你需求而定)
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
+                    
+                    if (matches) {
+                        matches.forEach(match => {
+                            let textPart = match.replace(/"text":\s*"/, "").replace(/"$/, "");
+                            try {
+                                textPart = JSON.parse(`"${textPart}"`); 
+                                fullText += textPart;
+                                aiDiv.innerHTML = marked.parse(fullText); // 即時渲染
+                                tempHistory.scrollTop = tempHistory.scrollHeight;
+                            } catch(e) {}
+                        });
+                    }
+                }
+            } catch (error) {
+                aiDiv.innerText = "Error: " + error.message;
+            }
+        }
+
+        tempSendBtn.addEventListener('click', handleTempSend);
+        tempInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleTempSend();
+        });
     </script>
+    <div id="temp-chat-modal" class="nx-modal-overlay">
+    <div class="nx-modal-content">
+        <div class="nx-modal-header">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <svg class="nx-icon" style="color:var(--nx-accent);" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                <span style="font-weight:bold;">Quick Chat</span>
+            </div>
+            <button class="nx-tool-btn" onclick="closeTempChat()">✕</button>
+        </div>
+        
+        <div id="temp-chat-history" class="nx-chat-area" style="padding: 15px; font-size: 0.9em;">
+            <div style="text-align:center; color:var(--nx-text-muted); margin-top:20px;">
+                這是一個臨時空間，重新整理後內容將消失。
+            </div>
+        </div>
+
+        <div class="nx-input-wrapper" style="border-radius: 0 0 12px 12px; border:none; border-top:1px solid var(--nx-border);">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <input type="text" id="temp-chat-input" class="nx-textarea" style="height:40px;" placeholder="快速詢問...">
+                <button class="nx-send-btn" id="temp-send-btn" style="width:36px; height:36px;">
+                    <svg class="nx-icon" style="stroke:black;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
