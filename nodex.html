@@ -417,6 +417,19 @@
             .nx-suggestion-grid { grid-template-columns: 1fr; }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        .markdown-body { line-height: 1.6; font-size: 0.95em; color: var(--nx-text); }
+        .markdown-body h1, .markdown-body h2 { color: var(--nx-accent); border-bottom: 1px solid var(--nx-border); margin-top: 1em; padding-bottom: 0.3em; }
+        .markdown-body code { background: rgba(255,255,255,0.1); padding: 0.2em 0.4em; border-radius: 4px; font-family: 'Courier New', monospace; color: #ff79c6; }
+        .markdown-body pre { background: #111; padding: 1em; border-radius: 8px; overflow-x: auto; margin: 1em 0; border: 1px solid var(--nx-border); }
+        .markdown-body pre code { background: transparent; padding: 0; color: #f8f8f2; }
+        .markdown-body table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+        .markdown-body th, .markdown-body td { border: 1px solid var(--nx-border); padding: 8px; }
+        .markdown-body th { color: var(--nx-accent); background: rgba(255,255,255,0.05); }
+        .markdown-body blockquote { border-left: 3px solid var(--nx-accent); padding-left: 1em; color: var(--nx-text-muted); margin: 0; }
+    </style>
 </head>
 <body data-theme="tech"> <!-- 預設主題 -->
 
@@ -540,6 +553,26 @@
         </div>
 
         <div class="nx-chat-area">
+            <div class="nx-main">
+        <div class="nx-chat-area" id="nx-chat-history">
+            <div id="view-home">...</div>
+            <div id="view-dashboard">...</div>
+        </div>
+
+        <div class="nx-input-container">
+            <div class="nx-input-wrapper">
+                <textarea class="nx-textarea" id="nx-input" rows="1" placeholder="詢問任何問題。輸入 @ 以提及。"></textarea>
+                
+                <div class="nx-input-footer">
+                    <div class="nx-input-right">
+                        <button class="nx-send-btn" id="nx-send-btn" title="Send Message">
+                            <svg class="nx-icon" ...>...</svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </div>
+    </div>
     
     <div id="view-home" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 0; animation: fadeIn 0.5s forwards;">
         <svg viewBox="0 0 24 24" style="width: 120px; height: 120px; stroke: var(--nx-accent); fill: none; stroke-width: 0.5; margin-bottom: 20px;">
@@ -610,10 +643,11 @@
     </div>
 
     <!-- Firebase SDK (用於同步登入狀態) -->
-    <script type="module">
+   <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // 1. Firebase 設定
         const firebaseConfig = {
             apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
             authDomain: "brooklyn-terminal.firebaseapp.com",
@@ -626,10 +660,16 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
+        // UI 元素
+        const nameEl = document.getElementById('nx-user-name');
+        const avatarEl = document.getElementById('nx-user-avatar');
+        const userProfileSection = document.getElementById('user-profile-section');
+
+        // 2. 登入狀態監聽
         onAuthStateChanged(auth, (user) => {
-            const nameEl = document.getElementById('nx-user-name');
-            const avatarEl = document.getElementById('nx-user-avatar');
+            window.currentUser = user; // 存到全域變數供 LLM 使用
             if (user) {
                 nameEl.innerText = user.displayName;
                 if(user.photoURL) {
@@ -637,148 +677,197 @@
                     avatarEl.style.display = 'block';
                 }
             } else {
-                nameEl.innerText = "GUEST (Login)";
+                nameEl.innerText = "GUEST (點擊登入)";
                 avatarEl.style.display = 'none';
             }
         });
-    </script>
 
-    <script>
-        // --- 互動邏輯 ---
-        let currentLang = 'zh-TW';
+        // 3. 點擊頭像登入/登出
+        userProfileSection.addEventListener('click', () => {
+            if (window.currentUser) {
+                if(confirm("確定要登出嗎？")) signOut(auth);
+            } else {
+                signInWithPopup(auth, provider).catch((error) => alert("Login Error: " + error.message));
+            }
+        });
         
-        // 語言字典
-        const i18n = {
-            'zh-TW': {
-                newChat: "新對話",
-                search: "搜尋對話...",
-                finance: "金融",
-                tech: "科技",
-                trend: "趨勢",
-                studio: "主題工作室",
-                history: "歷史紀錄",
-                createAgent: "創建 AI Agent",
-                welcome: "早安，<br><span>需要分析什麼市場？</span>",
-                placeholder: "聊聊近況?",
-                sug1: "分析 NVDA 財報重點",
-                sug2: "比特幣下週走勢預測",
-                sug3: "制定台股當沖策略",
-                sug4: "總體經濟數據解讀"
-            },
-            'en': {
-                newChat: "New Chat",
-                search: "Search chats...",
-                finance: "Finance",
-                tech: "Technology",
-                trend: "Trend",
-                studio: "Theme Studio",
-                history: "History",
-                createAgent: "Create AI Agent",
-                welcome: "Good Morning.<br><span>Market Analysis?</span>",
-                placeholder: "Ask anything.",
-                sug1: "Analyze NVDA Earnings",
-                sug2: "BTC Price Prediction",
-                sug3: "Day Trading Strategy",
-                sug4: "Macro Data Insights"
-            }
-        };
+        // --- LLM 核心邏輯開始 ---
+        
+        const WORKER_URL = "https://nodex-proxy.coreinformation30.workers.dev"; 
+        const DAILY_LIMIT = 20;
 
-        // DOM 元素
-        const body = document.body;
-        const inputArea = document.getElementById('nx-input');
-
-        // 通用選單開關
-        window.toggleMenu = (id) => {
-            // 關閉其他已開啟的選單
-            document.querySelectorAll('.nx-dropdown-menu').forEach(m => {
-                if(m.id !== id) m.classList.remove('show');
-            });
-            document.getElementById(id).classList.toggle('show');
-        }
-
-        // 點擊外部關閉選單
-        window.addEventListener('click', (e) => {
-            if (!e.target.closest('.nx-footer-btn') && !e.target.closest('.back-to-home-btn')) {
-                document.querySelectorAll('.nx-dropdown-menu').forEach(m => m.classList.remove('show'));
-            }
-        });
-
-        // 主題設定
-        window.setTheme = (theme) => {
-            body.setAttribute('data-theme', theme);
-            // 更新選單激活狀態
-            document.querySelectorAll('#theme-menu .nx-dropdown-item').forEach(el => {
-                el.classList.toggle('active', el.innerText.toLowerCase().includes(theme));
-            });
-        }
-
-        // 語言設定
-        window.setLanguage = (lang) => {
-            currentLang = lang;
-            updateLanguage();
-            // 更新選單激活狀態
-            document.querySelectorAll('#lang-menu .nx-dropdown-item').forEach(el => {
-                const isZh = lang === 'zh-TW' && el.innerText.includes('中文');
-                const isEn = lang === 'en' && el.innerText.includes('English');
-                el.classList.toggle('active', isZh || isEn);
-            });
-        }
-
-        function updateLanguage() {
-            const t = i18n[currentLang];
-            document.getElementById('txt-newChat').innerText = t.newChat;
-            document.getElementById('txt-search').innerText = t.search;
-            document.getElementById('txt-finance').innerText = t.finance;
-            document.getElementById('txt-tech').innerText = t.tech;
-            document.getElementById('txt-studio').innerText = t.studio;
-            document.getElementById('txt-history').innerText = t.history;
-            document.getElementById('txt-createAgent').innerText = t.createAgent;
-            document.getElementById('nx-input').placeholder = t.placeholder;
-            document.getElementById('txt-welcome').innerHTML = t.welcome;
-            
-            document.getElementById('txt-sug1').innerText = t.sug1 + " ↗";
-            document.getElementById('txt-sug2').innerText = t.sug2 + " ↗";
-            document.getElementById('txt-sug3').innerText = t.sug3 + " ↗";
-            document.getElementById('txt-sug4').innerText = t.sug4 + " ↗";
-        }
-
-        // 輸入框自動高度
-        inputArea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-            if(this.value === '') this.style.height = 'auto';
-        });
-
-        // --- 視圖切換邏輯 ---
-        window.switchView = (viewName) => {
+        const chatHistory = document.getElementById('nx-chat-history');
+        const chatInput = document.getElementById('nx-input');
+        const sendBtn = document.getElementById('nx-send-btn');
         const homeView = document.getElementById('view-home');
-        const dashView = document.getElementById('view-dashboard');
-        const homeMenuItem = document.getElementById('menu-home');
-    
-         // 重置所有選單項目的 active 狀態 (這裡簡化處理，先移除首頁的 active)
-        document.querySelectorAll('.nx-menu-item').forEach(el => el.classList.remove('active'));
+        const dashboardView = document.getElementById('view-dashboard');
 
-        if (viewName === 'home') {
-        // 顯示首頁
-           homeView.style.display = 'flex';
-           dashView.style.display = 'none';
-        
-        // 激活首頁選單
-        if(homeMenuItem) homeMenuItem.classList.add('active');
-        
-    } else {
-        // 顯示儀表板 (當點擊 Explore 下的項目時)
-        homeView.style.display = 'none';
-        dashView.style.display = 'flex';
-        
-        // 注意：這裡應該要根據點擊的項目加上 active，這裡僅處理視圖切換
-    }
-}
+        // 每日用量檢查
+        function getDailyUsage() {
+            const today = new Date().toDateString();
+            const record = JSON.parse(localStorage.getItem('nodex_daily_usage') || '{}');
+            if (record.date !== today) return { count: 0, date: today };
+            return record;
+        }
 
-// 初始化：確保頁面載入時是首頁
-window.addEventListener('DOMContentLoaded', () => {
-    switchView('home');
-});
+        function incrementUsage() {
+            const usage = getDailyUsage();
+            usage.count += 1;
+            localStorage.setItem('nodex_daily_usage', JSON.stringify(usage));
+        }
+
+        // 發送訊息主函式
+        async function handleSendMessage() {
+            // 權限檢查
+            if (!window.currentUser) {
+                appendSystemMessage("🔒 請先點擊左下角頭像登入 Google 帳號。");
+                return;
+            }
+
+            // 用量檢查
+            const usage = getDailyUsage();
+            if (usage.count >= DAILY_LIMIT) {
+                appendSystemMessage("⚠️ 今日訊息額度已達上限 (20/20)。請明天再來！");
+                return;
+            }
+
+            const userText = chatInput.value.trim();
+            if (!userText) return;
+
+            // UI 處理：隱藏首頁與儀表板，切換到聊天模式
+            if (homeView) homeView.style.display = 'none';
+            if (dashboardView) dashboardView.style.display = 'none';
+            
+            // 重置輸入框
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            // 顯示使用者訊息
+            appendUserMessage(userText);
+            incrementUsage(); // 扣除額度
+
+            const loadingId = appendLoadingIndicator();
+
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userText }] }] 
+                    })
+                });
+
+                if (!response.ok) throw new Error("Worker Error: " + response.statusText);
+
+                removeMessage(loadingId);
+                const aiMsgContent = appendAiMessageStart();
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
+                    
+                    if (matches) {
+                        matches.forEach(match => {
+                            let textPart = match.replace(/"text":\s*"/, "").replace(/"$/, "");
+                            try {
+                                textPart = JSON.parse(`"${textPart}"`); 
+                                fullText += textPart;
+                                
+                                // Markdown 渲染
+                                aiMsgContent.innerHTML = marked.parse(fullText);
+                                
+                                chatHistory.scrollTop = chatHistory.scrollHeight;
+                            } catch (e) { console.error("Parse error", e); }
+                        });
+                    }
+                }
+
+            } catch (error) {
+                removeMessage(loadingId);
+                appendSystemMessage(`❌ 系統錯誤: ${error.message}`);
+            }
+        }
+
+        // --- UI 輔助函式 (適配 NodeX 風格) ---
+        
+        function appendUserMessage(text) {
+            const div = document.createElement('div');
+            div.style.alignSelf = 'flex-end'; // 靠右
+            div.style.maxWidth = '80%';
+            div.style.marginBottom = '20px';
+            div.style.display = 'flex';
+            div.style.flexDirection = 'column';
+            div.style.alignItems = 'flex-end';
+            
+            div.innerHTML = `
+                <div style="font-size:0.8em; color:var(--nx-text-muted); margin-bottom:5px;">YOU</div>
+                <div style="background:var(--nx-card-bg); padding:12px 16px; border-radius:12px; border:1px solid var(--nx-border); color:var(--nx-text);">
+                    ${text.replace(/\n/g, '<br>')}
+                </div>
+            `;
+            chatHistory.appendChild(div);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function appendAiMessageStart() {
+            const div = document.createElement('div');
+            div.style.alignSelf = 'flex-start'; // 靠左
+            div.style.maxWidth = '90%';
+            div.style.width = '100%';
+            div.style.marginBottom = '30px';
+            
+            div.innerHTML = `
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <svg style="width:20px; height:20px; color:var(--nx-accent);" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z" fill="currentColor"/></svg>
+                    <span style="font-size:0.9em; font-weight:bold; color:var(--nx-accent);">NodeX AI</span>
+                </div>
+                <div class="ai-content markdown-body" style="padding-left:28px;"></div>
+            `;
+            chatHistory.appendChild(div);
+            return div.querySelector('.ai-content');
+        }
+
+        function appendSystemMessage(text) {
+            const div = document.createElement('div');
+            div.style.width = '100%';
+            div.style.textAlign = 'center';
+            div.style.margin = '20px 0';
+            div.innerHTML = `<span style="background:rgba(255,0,0,0.1); color:#ff6b6b; padding:5px 10px; border-radius:4px; font-size:0.8em; border:1px solid rgba(255,0,0,0.2);">${text}</span>`;
+            chatHistory.appendChild(div);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function appendLoadingIndicator() {
+            const id = 'loading-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.style.paddingLeft = '28px';
+            div.style.marginBottom = '20px';
+            div.innerHTML = `<span style="color:var(--nx-text-muted); font-size:0.8em; animation: pulse 1s infinite;">Thinking...</span>`;
+            chatHistory.appendChild(div);
+            return id;
+        }
+
+        function removeMessage(id) {
+            const el = document.getElementById(id);
+            if(el) el.remove();
+        }
+
+        // 綁定事件
+        sendBtn.addEventListener('click', handleSendMessage);
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+            }
+        });
 
     </script>
 </body>
