@@ -455,14 +455,14 @@
         </div>
     </div>
 
-        <button class="nx-btn-new" onclick="alert('Starting New Chat Session...')" style="margin-bottom: 20px; width: 100%;">
+        button class="nx-btn-new" onclick="window.location.reload()" ...>
         <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span id="txt-newChat">新對話</span>
     </button>
         
     <div class="nx-menu-group">
         <div class="nx-menu-title">EXPLORE</div>
-        <div class="nx-menu-item" onclick="switchView('dashboard')">
+       <div class="nx-menu-item" id="menu-dashboard" onclick="switchView('dashboard')">
             <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
             <span id="txt-finance">金融</span>
         </div>
@@ -552,27 +552,7 @@
                 </div>
         </div>
 
-        <div class="nx-chat-area">
-            <div class="nx-main">
         <div class="nx-chat-area" id="nx-chat-history">
-            <div id="view-home">...</div>
-            <div id="view-dashboard">...</div>
-        </div>
-
-        <div class="nx-input-container">
-            <div class="nx-input-wrapper">
-                <textarea class="nx-textarea" id="nx-input" rows="1" placeholder="詢問任何問題。輸入 @ 以提及。"></textarea>
-                
-                <div class="nx-input-footer">
-                    <div class="nx-input-right">
-                        <button class="nx-send-btn" id="nx-send-btn" title="Send Message">
-                            <svg class="nx-icon" ...>...</svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            </div>
-    </div>
     
     <div id="view-home" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 0; animation: fadeIn 0.5s forwards;">
         <svg viewBox="0 0 24 24" style="width: 120px; height: 120px; stroke: var(--nx-accent); fill: none; stroke-width: 0.5; margin-bottom: 20px;">
@@ -859,7 +839,34 @@
             const el = document.getElementById(id);
             if(el) el.remove();
         }
+// --- UI 切換邏輯 (補上這段) ---
+        window.switchView = (viewName) => {
+            // 1. 隱藏所有視圖
+            if(homeView) homeView.style.display = 'none';
+            if(dashboardView) dashboardView.style.display = 'none';
+            if(chatHistory) {
+                // 如果切換到 home 或 dashboard，我們通常隱藏聊天記錄，或者視需求而定
+                // 這裡假設 home/dashboard 是覆蓋在聊天記錄之上的
+                if(viewName === 'home' || viewName === 'dashboard') {
+                    // 清空或隱藏聊天內容視需求而定，這裡示範顯示對應區塊
+                }
+            }
 
+            // 2. 顯示目標視圖
+            if (viewName === 'home' && homeView) {
+                homeView.style.display = 'flex';
+            } else if (viewName === 'dashboard' && dashboardView) {
+                dashboardView.style.display = 'flex';
+            }
+            
+            // 3. 更新側邊欄按鈕狀態 (Optional)
+            document.querySelectorAll('.nx-menu-item').forEach(el => el.classList.remove('active'));
+            const activeBtn = document.getElementById('menu-' + viewName);
+            if(activeBtn) activeBtn.classList.add('active');
+        };
+        
+        // 將 switchView 掛載到 window 物件，讓 HTML onclick 找得到
+        window.switchView = window.switchView;
         // 綁定事件
         sendBtn.addEventListener('click', handleSendMessage);
         chatInput.addEventListener('keydown', (e) => {
