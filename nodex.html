@@ -117,6 +117,25 @@
             color: var(--nx-accent); 
             transform: translateY(-1px);
         }
+        /* 臨時對話按鈕 (虛線風格) */
+        .nx-btn-temp {
+            background: transparent;
+            border: 1px dashed var(--nx-border);
+            color: var(--nx-text-muted);
+            padding: 8px;
+            border-radius: var(--nx-radius);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+            font-size: 0.9em;
+            width: 100%;
+        }
+        .nx-btn-temp:hover { 
+            border-color: var(--nx-accent);
+            color: var(--nx-accent); 
+            background: var(--nx-hover-bg);
+        }
 
         /* 選單群組 */
         .nx-menu-group { margin-bottom: 20px; }
@@ -459,6 +478,16 @@
         <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span id="txt-newChat">新對話</span>
     </button>
+    <button class="nx-btn-new" onclick="window.location.reload()" style="margin-bottom: 10px; width: 100%;">
+        <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span id="txt-newChat">新對話</span>
+    </button>
+
+    <button class="nx-btn-temp" onclick="startTempChat()" title="建立一個不著痕跡的對話">
+        <svg class="nx-icon" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path></svg>
+        <span>臨時對話</span>
+    </button>
+        
         
     <div class="nx-menu-group">
         <div class="nx-menu-title">EXPLORE</div>
@@ -875,6 +904,39 @@
                 handleSendMessage();
             }
         });
+       // --- 臨時對話邏輯 ---
+        window.startTempChat = () => {
+            // 1. 權限檢查
+            if (!window.currentUser) {
+                alert("請先登入以使用臨時對話功能。");
+                return;
+            }
+
+            // 2. 切換 UI：隱藏首頁與儀表板
+            if(homeView) homeView.style.display = 'none';
+            if(dashboardView) dashboardView.style.display = 'none';
+
+            // 3. 清除目前的對話紀錄 (但保留 view-home 和 view-dashboard DOM 結構)
+            // 做法：把 chatHistory 裡面的 "非 view 結構" 全部刪除
+            const children = Array.from(chatHistory.children);
+            children.forEach(child => {
+                if (child.id !== 'view-home' && child.id !== 'view-dashboard') {
+                    child.remove();
+                }
+            });
+
+            // 4. 重置輸入框
+            if(chatInput) {
+                chatInput.value = '';
+                chatInput.focus();
+            }
+
+            // 5. 顯示系統提示
+            appendSystemMessage("✨ 已開啟臨時對話模式 (紀錄不會保存)");
+        };
+        
+        // 掛載到 window
+        window.startTempChat = window.startTempChat;
 
     </script>
 </body>
