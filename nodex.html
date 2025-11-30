@@ -593,17 +593,83 @@
         
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     
     <style>
-        .markdown-body { line-height: 1.6; font-size: 0.95em; color: var(--nx-text); }
-        .markdown-body h1, .markdown-body h2 { color: var(--nx-accent); border-bottom: 1px solid var(--nx-border); margin-top: 1em; padding-bottom: 0.3em; }
-        .markdown-body code { background: rgba(255,255,255,0.1); padding: 0.2em 0.4em; border-radius: 4px; font-family: 'Courier New', monospace; color: #ff79c6; }
-        .markdown-body pre { background: #111; padding: 1em; border-radius: 8px; overflow-x: auto; margin: 1em 0; border: 1px solid var(--nx-border); }
-        .markdown-body pre code { background: transparent; padding: 0; color: #f8f8f2; }
-        .markdown-body table { width: 100%; border-collapse: collapse; margin: 1em 0; }
-        .markdown-body th, .markdown-body td { border: 1px solid var(--nx-border); padding: 8px; }
-        .markdown-body th { color: var(--nx-accent); background: rgba(255,255,255,0.05); }
-        .markdown-body blockquote { border-left: 3px solid var(--nx-accent); padding-left: 1em; color: var(--nx-text-muted); margin: 0; }
+        /* --- 專業版 Markdown & LaTeX 樣式優化 --- */
+    .markdown-body { 
+        line-height: 1.7; 
+        font-size: 0.95rem; 
+        color: var(--nx-text); 
+        word-wrap: break-word;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    /* 標題優化 */
+    .markdown-body h1, .markdown-body h2, .markdown-body h3 { 
+        margin-top: 1.5em; 
+        margin-bottom: 0.8em; 
+        font-weight: 700; 
+        line-height: 1.3;
+        color: var(--nx-text);
+    }
+    .markdown-body h1 { font-size: 1.6em; border-bottom: 1px solid var(--nx-border); padding-bottom: 0.3em; color: var(--nx-accent); }
+    .markdown-body h2 { font-size: 1.4em; color: var(--nx-accent); }
+    .markdown-body h3 { font-size: 1.2em; }
+
+    /* 列表優化 */
+    .markdown-body ul, .markdown-body ol { padding-left: 1.5em; margin-bottom: 1em; }
+    .markdown-body li { margin-bottom: 0.4em; }
+    .markdown-body li::marker { color: var(--nx-accent); } /* 讓列表點點變色 */
+
+    /* 程式碼區塊 */
+    .markdown-body pre { 
+        background: #1e1e1e; 
+        padding: 12px; 
+        border-radius: 8px; 
+        overflow-x: auto; 
+        margin: 1em 0; 
+        border: 1px solid var(--nx-border);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .markdown-body code { 
+        font-family: 'Courier New', monospace; 
+        font-size: 0.9em;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 5px;
+        border-radius: 4px;
+        color: #ff79c6;
+    }
+    .markdown-body pre code { 
+        background: transparent; 
+        padding: 0; 
+        color: #f8f8f2; 
+    }
+
+    /* 引用塊 */
+    .markdown-body blockquote { 
+        border-left: 4px solid var(--nx-accent); 
+        padding: 4px 0 4px 16px; 
+        margin: 1em 0; 
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 0 4px 4px 0;
+        color: var(--nx-text-muted);
+    }
+
+    /* 表格 */
+    .markdown-body table { width: 100%; border-collapse: collapse; margin: 1.5em 0; }
+    .markdown-body th, .markdown-body td { 
+        border: 1px solid var(--nx-border); 
+        padding: 10px; 
+        text-align: left; 
+    }
+    .markdown-body th { background: rgba(255,255,255,0.05); color: var(--nx-accent); }
+
+    /* KaTeX 數學公式微調 */
+    .katex { font-size: 1.1em !important; } /* 讓數學符號稍微大一點 */
+    .katex-display { margin: 1em 0 !important; overflow-x: auto; overflow-y: hidden; }
 
         /* --- 新對話：置中模式樣式 --- */
         
@@ -774,11 +840,11 @@
             <circle cx="12" cy="12" r="1.5" fill="var(--nx-accent)" stroke="none"/>
         </svg>
         <h1 style="font-family: 'Orbitron', sans-serif; font-size: 3rem; letter-spacing: 4px; color: var(--nx-text);">NodeX</h1>
-        <p style="color: var(--nx-text-muted); margin-top: 10px; font-size: 0.9em; letter-spacing: 1px;">Finance,Tech and best LLM.</p>
+        <p style="color: var(--nx-text-muted); margin-top: 10px; font-size: 0.9em; letter-spacing: 1px;">Thinking in nodes, decisions with zero lag.</p>
     </div>
 
         <div id="view-new-chat" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; position: absolute; top: -50px; z-index: 0;">
-            <h2 style="font-size: 2rem; font-weight: 500; color: var(--nx-text); letter-spacing: 1px; margin-bottom: 20px;">
+           <h2 id="new-chat-title" style="font-size: 2rem; font-weight: 500; color: var(--nx-text); letter-spacing: 1px; margin-bottom: 20px;">
                 我們該從哪裡開始？
             </h2>
         </div>
@@ -847,20 +913,43 @@
             // localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
         };
        // --- [新增] 啟動新對話模式 ---
-        window.startNewChat = function() {
-            // 1. 清空聊天畫面
+       window.startNewChat = function() {
+            // 1. 定義歡迎語清單
+            const titles = [
+                "我們該從哪裡開始？",
+                "讓電腦開始「讀懂人話」的那一刻。",
+                "從語言模型到思考夥伴的演化。",
+                "當文字變成可以對話的智慧。",
+                "從問答工具到協作伙伴的一小步。",
+                "當演算法開始參與你的決策流程。",
+                "讓你的點子，比你自己先說出口。",
+                "把複雜問題，變成一段清楚可執行的指令。",
+                "把零散資訊，變成可以行動的答案。",
+                "人類開會三小時，模型三秒鐘說完。",
+                "人類加班到吐血，它只問你還有下一題嗎?",
+                "你在懷疑人生，它在幫你產出下一份報告XD"
+            ];
+
+            // 2. 隨機挑選一個標題
+            const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+            
+            // 3. 更新畫面上的標題文字
+            const titleEl = document.getElementById('new-chat-title');
+            if (titleEl) titleEl.innerText = randomTitle;
+
+            // 4. 清空聊天畫面
             const chatHistory = document.getElementById('nx-chat-history');
             if(chatHistory) chatHistory.innerHTML = ''; 
             
-            // 2. 切換 UI 狀態
-            document.getElementById('view-home').style.display = 'none';      // 隱藏 Logo 首頁
-            document.getElementById('view-dashboard').style.display = 'none'; // 隱藏儀表板
-            document.getElementById('view-new-chat').style.display = 'flex';  // 顯示「我們該從哪裡開始？」
+            // 5. 切換 UI 狀態
+            document.getElementById('view-home').style.display = 'none';
+            document.getElementById('view-dashboard').style.display = 'none';
+            document.getElementById('view-new-chat').style.display = 'flex';
             
-            // 3. 啟動 CSS 置中模式
+            // 6. 啟動 CSS 置中模式
             document.querySelector('.nx-main').classList.add('centered-mode');
             
-            // 4. 重置輸入框
+            // 7. 重置輸入框
             const input = document.getElementById('nx-input');
             input.value = '';
             input.focus();
@@ -1042,11 +1131,24 @@
                                 textPart = JSON.parse(`"${textPart}"`); 
                                 fullText += textPart;
                                 
-                                // Markdown 渲染
+                                // 1. 先做 Markdown 轉換
                                 aiMsgContent.innerHTML = marked.parse(fullText);
+
+                                // 2. [新增] 再做 LaTeX 渲染
+                                renderMathInElement(aiMsgContent, {
+                                    delimiters: [
+                                        {left: "$$", right: "$$", display: true}, // 區塊公式
+                                        {left: "$", right: "$", display: false},   // 行內公式
+                                        {left: "\\(", right: "\\)", display: false},
+                                        {left: "\\[", right: "\\]", display: true}
+                                    ],
+                                    throwOnError: false
+                                });
                                 
                                 chatHistory.scrollTop = chatHistory.scrollHeight;
-                            } catch (e) { console.error("Parse error", e); }
+                            } catch (e) { 
+                                // console.error("Parse error", e); 
+                            }
                         });
                     }
                 }
