@@ -544,7 +544,40 @@
     </div>
 </div>
     </main>
+</div> </div> <div id="llm-chat-container" class="fixed bottom-6 right-6 z-50">
+        
+        <button id="llm-chat-toggle" class="w-12 h-12 rounded-full bg-accent text-bg shadow-xl hover:shadow-2xl transition-all flex items-center justify-center cursor-pointer border-2 border-accent" title="開啟 AI 對話">
+            <svg id="llm-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9h.01"></path>
+            </svg>
+        </button>
 
+        <div id="llm-chat-window" class="hidden absolute bottom-0 right-0 w-80 h-[450px] bg-surface border border-border rounded-lg shadow-2xl overflow-hidden flex flex-col transform transition-all duration-300 popover-enter">
+            <div id="llm-chat-header" class="p-3 bg-bg border-b border-border flex justify-between items-center cursor-move">
+                <span class="font-bold text-sm text-accent tracking-wider">新 AI 對話</span>
+                <button onclick="document.getElementById('llm-chat-window').classList.add('hidden')" class="text-muted hover:text-text">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="flex-1 p-3 overflow-y-auto text-sm text-text">
+                <div class="text-center my-4">
+                    <div class="w-10 h-10 mx-auto mb-2 text-accent">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10.5 15.5C9.67 15.5 9 14.83 9 14C9 13.17 9.67 12.5 10.5 12.5C11.33 12.5 12 13.17 12 14C12 14.83 11.33 15.5 10.5 15.5ZM13.5 9.5C14.33 9.5 15 10.17 15 11C15 11.83 14.33 12.5 13.5 12.5C12.67 12.5 12 11.83 12 11C12 10.17 12.67 9.5 13.5 9.5ZM12 18.5C10.67 18.5 9.33 18.17 8.39 17.55L7.22 18.72C8.75 19.89 10.38 20.5 12 20.5C13.62 20.5 15.25 19.89 16.78 18.72L15.61 17.55C14.67 18.17 13.33 18.5 12 18.5Z" fill="currentColor"></path></svg>
+                    </div>
+                    <p class="text-text font-semibold mb-1">怪奇 比例，歡迎！👋</p>
+                    <p class="text-muted text-xs">我是你的 NodeX 代理程式，讓我來協助你開始吧！</p>
+                </div>
+            </div>
+            
+            <div class="p-3 border-t border-border flex flex-col gap-2">
+                <div class="text-xs text-muted flex items-center">
+                    <span class="mr-2">@ 新增背景資訊</span>
+                </div>
+                <input type="text" placeholder="詢問、搜尋或製作任何內容..." class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none">
+            </div>
+        </div>
+    </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -1819,9 +1852,96 @@ window.resizeCanvasPrompt = function() {
         window.addEventListener('beforeunload', () => {
             stopPresenceSystem();
         });
+        // --- LLM Chat Widget Logic ---
+const chatToggleBtn = document.getElementById('llm-chat-toggle');
+const chatWindow = document.getElementById('llm-chat-window');
+const chatHeader = document.getElementById('llm-chat-header');
+const chatContainer = document.getElementById('llm-chat-container');
+
+chatToggleBtn.addEventListener('click', () => {
+    // 切換顯示狀態
+    const isHidden = chatWindow.classList.toggle('hidden');
+    
+    if (!isHidden) {
+        // 展開時加入過渡效果
+        chatWindow.classList.remove('popover-enter');
+        chatWindow.classList.add('popover-enter-active');
+    } else {
+        chatWindow.classList.remove('popover-enter-active');
+        // 可以在這裡加一個 setTimeout 來確保動畫播放完畢，但為了簡潔先略過
+    }
+    
+    // 隱藏按鈕本身 (Notion 樣式)
+    chatToggleBtn.classList.toggle('hidden');
+});
+
+// 隱藏對話框時顯示按鈕
+chatWindow.addEventListener('transitionend', () => {
+    if (chatWindow.classList.contains('hidden')) {
+        chatToggleBtn.classList.remove('hidden');
+    }
+});
 
 
-        
+// --- Dragging Logic for Floating Chat Window ---
+let isDragging = false;
+let dragStartX, dragStartY, containerStartX, containerStartY;
+
+chatHeader.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isDragging = true;
+    
+    // 記錄滑鼠點擊位置
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    
+    // 記錄容器目前的 bottom/right 值
+    containerStartX = parseInt(window.getComputedStyle(chatContainer).right);
+    containerStartY = parseInt(window.getComputedStyle(chatContainer).bottom);
+    
+    chatHeader.style.cursor = 'grabbing';
+    
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup', onDragEnd);
+});
+
+function onDragMove(e) {
+    if (!isDragging) return;
+    
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    
+    // 因為是用 right/bottom 定位，所以 move 是反向的
+    let newRight = containerStartX - dx;
+    let newBottom = containerStartY - dy;
+
+    // 限制移動範圍，確保視窗不跑出 viewport
+    const viewportW = window.innerWidth;
+    const viewportH = window.innerHeight;
+    const chatW = chatWindow.offsetWidth || 320;
+    const chatH = chatWindow.offsetHeight || 450;
+    
+    // 邊距限制 (例如至少距離邊緣 10px)
+    const padding = 10;
+    
+    // right 限制：最小值 10px (右邊界)，最大值 (viewportW - chatW - 10px) (左邊界)
+    if (newRight < padding) newRight = padding;
+    if (newRight > viewportW - chatW - padding) newRight = viewportW - chatW - padding;
+
+    // bottom 限制：最小值 10px (底部邊界)，最大值 (viewportH - chatH - 10px) (頂部邊界)
+    if (newBottom < padding) newBottom = padding;
+    if (newBottom > viewportH - chatH - padding) newBottom = viewportH - chatH - padding;
+
+    chatContainer.style.right = newRight + 'px';
+    chatContainer.style.bottom = newBottom + 'px';
+}
+
+function onDragEnd() {
+    isDragging = false;
+    chatHeader.style.cursor = 'move';
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup', onDragEnd);
+}
         window.onload = () => { setTheme('developer'); setLanguage('zh'); };
     </script>
 </body>
