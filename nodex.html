@@ -973,7 +973,9 @@
 
     <!-- Firebase SDK (用於同步登入狀態) -->
    <script type="module">
-       
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         // --- [新增] 側邊欄收合切換 ---
         window.toggleSidebar = function() {
             const sidebar = document.querySelector('.nx-sidebar');
@@ -1072,9 +1074,9 @@
             measurementId: "G-G0GMW0XHG1"
         };
 
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        // import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -1120,7 +1122,7 @@
         
         const WORKER_URL = "https://nodex-proxy.coreinformation30.workers.dev"; 
         const DAILY_LIMIT = 40;
-        let currentChatId = null;
+        
 
         let currentModel = "gemini-2.5-flash";
        window.setModel = function(modelName) {
