@@ -1942,10 +1942,88 @@ function onDragEnd() {
     document.removeEventListener('mousemove', onDragMove);
     document.removeEventListener('mouseup', onDragEnd);
 }
+// --- LLM Chat Widget Logic ---
+const chatToggleBtn = document.getElementById('llm-chat-toggle');
+const chatWindow = document.getElementById('llm-chat-window');
+const chatHeader = document.getElementById('llm-chat-header');
+const chatContainer = document.getElementById('llm-chat-container');
+
+// 1. 處理點擊切換事件
+chatToggleBtn.addEventListener('click', () => {
+    // 展開對話視窗
+    chatWindow.classList.remove('hidden');
+    chatWindow.classList.add('popover-enter-active');
+    
+    // 隱藏迷你圖示按鈕
+    chatToggleBtn.classList.add('hidden');
+});
+
+window.closeLlmChat = () => {
+    // 關閉對話視窗
+    chatWindow.classList.add('hidden');
+    chatWindow.classList.remove('popover-enter-active');
+    
+    // 顯示迷你圖示按鈕
+    chatToggleBtn.classList.remove('hidden');
+}
+
+// 3. (保留) 拖曳邏輯 (與上一個回覆相同，讓視窗可移動)
+let isDragging = false;
+let dragStartX, dragStartY, containerStartX, containerStartY;
+
+if (chatHeader) {
+    chatHeader.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        containerStartX = parseInt(window.getComputedStyle(chatContainer).right);
+        containerStartY = parseInt(window.getComputedStyle(chatContainer).bottom);
+        
+        chatHeader.style.cursor = 'grabbing';
+        
+        document.addEventListener('mousemove', onDragMove);
+        document.addEventListener('mouseup', onDragEnd);
+    });
+}
+
+function onDragMove(e) {
+    if (!isDragging) return;
+    
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    
+    let newRight = containerStartX - dx;
+    let newBottom = containerStartY - dy;
+
+    // 範圍限制邏輯 (確保不跑出 viewport)
+    const viewportW = window.innerWidth;
+    const viewportH = window.innerHeight;
+    const chatW = chatWindow.offsetWidth || 320;
+    const chatH = chatWindow.offsetHeight || 450;
+    const padding = 10;
+    
+    if (newRight < padding) newRight = padding;
+    if (newRight > viewportW - chatW - padding) newRight = viewportW - chatW - padding;
+
+    if (newBottom < padding) newBottom = padding;
+    if (newBottom > viewportH - chatH - padding) newBottom = viewportH - chatH - padding;
+
+    chatContainer.style.right = newRight + 'px';
+    chatContainer.style.bottom = newBottom + 'px';
+}
+
+function onDragEnd() {
+    isDragging = false;
+    if (chatHeader) chatHeader.style.cursor = 'move';
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup', onDragEnd);
+}
         window.onload = () => { setTheme('developer'); setLanguage('zh'); };
     </script>
 </body>
 </html>
+
 
 
 
