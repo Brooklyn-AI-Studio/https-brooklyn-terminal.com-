@@ -1139,7 +1139,7 @@
             });
             
             // 3. 關閉選單
-            toggleMenu('model-menu');
+            window.toggleMenu('model-menu');
         };
         const chatHistory = document.getElementById('nx-chat-history');
         const chatInput = document.getElementById('nx-input');
@@ -1230,7 +1230,9 @@
         const response = await fetch(WORKER_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model: currentModel,contents: [{ parts: [{ text: userText }] }] })
+            body: JSON.stringify({ 
+                model: currentModel,
+                contents: [{ parts: [{ text: userText }] }] })
         });
 
         if (!response.ok) throw new Error("Worker Error: " + response.statusText);
