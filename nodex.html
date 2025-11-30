@@ -561,6 +561,36 @@
         .nx-sidebar.collapsed .nx-menu-group {
             margin-bottom: 10px;
         }
+/* --- [修正] 側邊欄收合模式的底部工具列優化 --- */
+        
+        /* 1. 讓地球和太陽按鈕變成「垂直排列」 */
+        .nx-sidebar.collapsed .nx-tool-row {
+            flex-direction: column !important;
+            gap: 20px !important; /* 增加按鈕之間的距離 */
+            margin-bottom: 20px;
+        }
+
+        /* 2. 解除「隱藏溢出」，讓選單可以彈出到側邊欄外面 */
+        .nx-sidebar.collapsed {
+            overflow: visible !important; 
+        }
+
+        /* 3. 修正選單彈出位置：改為顯示在按鈕的「右側」 */
+        .nx-sidebar.collapsed .nx-dropdown-menu {
+            bottom: 0 !important;      /* 對齊按鈕底部 */
+            left: 50px !important;     /* 往右移，顯示在側邊欄外面 */
+            top: auto !important;      
+            
+            /* 加上一個小箭頭或陰影讓它跟側邊欄分開 */
+            box-shadow: 5px 5px 20px rgba(0,0,0,0.5) !important;
+            border-left: 3px solid var(--nx-accent) !important;
+        }
+
+        /* 微調按鈕在收合時的置中 */
+        .nx-sidebar.collapsed .nx-footer-btn {
+            margin: 0 auto !important;
+        }
+        
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
