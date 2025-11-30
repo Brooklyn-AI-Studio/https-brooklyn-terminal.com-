@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NodeX</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 5l14 14'/%3E%3Cpath d='M19 5l-14 14'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%2300ffcc' stroke='none'/%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&family=Courier+New&display=swap" rel="stylesheet">
     
     <style>
@@ -926,75 +925,62 @@
         const homeView = document.getElementById('view-home');
         const dashboardView = document.getElementById('view-dashboard');
 
-        // --- [修改] 每日用量檢查 (綁定 Google User ID) ---
-        
-        // 取得該帳號今日已用次數
-        function getDailyUsage(uid) {
+        // 每日用量檢查
+        function getDailyUsage() {
             const today = new Date().toDateString();
-            // 關鍵：儲存的 Key 加上了 uid，確保每個帳號分開計算
-            const key = `nodex_usage_${uid}`; 
-            
-            const record = JSON.parse(localStorage.getItem(key) || '{}');
-            
-            // 如果日期不是今天，重置為 0
-            if (record.date !== today) {
-                return { count: 0, date: today };
-            }
+            const record = JSON.parse(localStorage.getItem('nodex_daily_usage') || '{}');
+            if (record.date !== today) return { count: 0, date: today };
             return record;
         }
 
-        // 增加該帳號的使用次數
-        function incrementUsage(uid) {
-            const usage = getDailyUsage(uid);
+        function incrementUsage() {
+            const usage = getDailyUsage();
             usage.count += 1;
-            const key = `nodex_usage_${uid}`;
-            localStorage.setItem(key, JSON.stringify(usage));
+            localStorage.setItem('nodex_daily_usage', JSON.stringify(usage));
         }
-        // 發送訊息主函式
+
         // 發送訊息主函式
         async function handleSendMessage() {
-            // 1. [強制登入檢查]
+            // 權限檢查
             if (!window.currentUser) {
-                appendSystemMessage("🔒 存取被拒：請先點擊左下角頭像登入 Google 帳號。");
-                // 強制中斷，不讓未登入者繼續
-                return; 
+                appendSystemMessage("🔒 請先點擊左下角頭像登入 Google 帳號。");
+                return;
             }
+            // --- [新增/修改] UI 狀態切換 ---
+            // 1. 移除置中模式 (讓輸入框滑回底部)
+            document.querySelector('.nx-main').classList.remove('centered-mode');
             
-            // 2. [取得 Google User ID]
-            const uid = window.currentUser.uid;
-
-            // 3. [檢查該帳號額度]
-            const usage = getDailyUsage(uid);
+            // 2. 隱藏「新對話」標題 & 首頁
+            document.getElementById('view-new-chat').style.display = 'none';
+            document.getElementById('view-home').style.display = 'none';
+            document.getElementById('view-dashboard').style.display = 'none';
             
+            // 3. 顯示聊天記錄區
+            const chatHistory = document.getElementById('nx-chat-history');
+            chatHistory.style.display = 'flex';
+            chatHistory.style.flexDirection = 'column';
+            // 用量檢查
+            const usage = getDailyUsage();
             if (usage.count >= DAILY_LIMIT) {
-                appendSystemMessage(`⚠️ 您的 Google 帳號今日額度已達上限 (${usage.count}/${DAILY_LIMIT})。請明天再來！`);
+                appendSystemMessage("⚠️ 今日訊息額度已達上限 (20/20)。請明天再來！");
                 return;
             }
 
             const userText = chatInput.value.trim();
             if (!userText) return;
 
-            // --- UI 狀態切換 (保持你原本的設定) ---
-            document.querySelector('.nx-main').classList.remove('centered-mode');
-            document.getElementById('view-new-chat').style.display = 'none';
-            document.getElementById('view-home').style.display = 'none';
-            document.getElementById('view-dashboard').style.display = 'none';
+            // UI 處理：隱藏首頁與儀表板，切換到聊天模式
+            if (homeView) homeView.style.display = 'none';
+            if (dashboardView) dashboardView.style.display = 'none';
             
-            const chatHistory = document.getElementById('nx-chat-history');
-            if(chatHistory) {
-                chatHistory.style.display = 'flex';
-                chatHistory.style.flexDirection = 'column';
-            }
-
             // 重置輸入框
             chatInput.value = '';
             chatInput.style.height = 'auto';
 
-            // 顯示訊息並扣除額度
+            // 顯示使用者訊息
             appendUserMessage(userText);
-            
-            // [關鍵] 扣除該使用者的額度
-            incrementUsage(uid);
+            incrementUsage(); // 扣除額度
+
             const loadingId = appendLoadingIndicator();
 
             try {
@@ -1046,26 +1032,18 @@
 
         // --- UI 輔助函式 (適配 NodeX 風格) ---
         
-       function appendUserMessage(text) {
+        function appendUserMessage(text) {
             const div = document.createElement('div');
-            // 寬度鎖定與置中設定
-            div.style.width = '100%';
-            div.style.maxWidth = '800px'; 
+            div.style.alignSelf = 'flex-end'; // 靠右
+            div.style.maxWidth = '80%';
             div.style.marginBottom = '20px';
-            
             div.style.display = 'flex';
             div.style.flexDirection = 'column';
-            div.style.alignItems = 'flex-end'; 
-
-            // 1. 取得使用者名稱 (如果沒登入顯示 GUEST)
-            const userName = window.currentUser ? window.currentUser.displayName : 'GUEST';
-
+            div.style.alignItems = 'flex-end';
+            
             div.innerHTML = `
-                <div style="font-size:0.8em; color:var(--nx-text-muted); margin-bottom:5px; text-transform: uppercase;">
-                    ${userName}
-                </div>
-                
-                <div style="background:var(--nx-card-bg); padding:12px 16px; border-radius:12px; border:1px solid var(--nx-border); color:var(--nx-text); text-align: left;">
+                <div style="font-size:0.8em; color:var(--nx-text-muted); margin-bottom:5px;">YOU</div>
+                <div style="background:var(--nx-card-bg); padding:12px 16px; border-radius:12px; border:1px solid var(--nx-border); color:var(--nx-text);">
                     ${text.replace(/\n/g, '<br>')}
                 </div>
             `;
@@ -1075,24 +1053,17 @@
 
         function appendAiMessageStart() {
             const div = document.createElement('div');
-            // [維持設定] 讓容器寬度與輸入框一致，並置中
+            div.style.alignSelf = 'flex-start'; // 靠左
+            div.style.maxWidth = '90%';
             div.style.width = '100%';
-            div.style.maxWidth = '800px'; 
             div.style.marginBottom = '30px';
             
             div.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                    <div style="width:28px; height:28px; background:rgba(0, 255, 204, 0.1); border-radius:6px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(0, 255, 204, 0.2);">
-                        <svg style="width:18px; height:18px; stroke:var(--nx-accent); fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </div>
-                    
-                    <span style="font-size:0.95em; font-weight:bold; color:var(--nx-accent); letter-spacing:0.5px;">NodeX AI</span>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <svg style="width:20px; height:20px; color:var(--nx-accent);" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z" fill="currentColor"/></svg>
+                    <span style="font-size:0.9em; font-weight:bold; color:var(--nx-accent);">NodeX AI</span>
                 </div>
-                
-                <div class="ai-content markdown-body" style="padding-left:0;"></div> 
+                <div class="ai-content markdown-body" style="padding-left:28px;"></div>
             `;
             chatHistory.appendChild(div);
             return div.querySelector('.ai-content');
@@ -1108,20 +1079,13 @@
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
 
-       function appendLoadingIndicator() {
+        function appendLoadingIndicator() {
             const id = 'loading-' + Date.now();
             const div = document.createElement('div');
             div.id = id;
-            
-            // [修改] 同樣鎖定寬度
-            div.style.width = '100%';
-            div.style.maxWidth = '800px';
+            div.style.paddingLeft = '28px';
             div.style.marginBottom = '20px';
-            
-            div.innerHTML = `<span style="color:var(--nx-text-muted); font-size:0.8em; animation: pulse 1s infinite; display:flex; align-items:center; gap:8px;">
-                <svg class="nx-icon" style="width:14px;height:14px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                Thinking...
-            </span>`;
+            div.innerHTML = `<span style="color:var(--nx-text-muted); font-size:0.8em; animation: pulse 1s infinite;">Thinking...</span>`;
             chatHistory.appendChild(div);
             return id;
         }
@@ -1136,9 +1100,8 @@
         // [優化] 主對話框 Enter 發送 (支援 Shift+Enter 換行，並防止輸入法誤傳)
         chatInput.addEventListener('keydown', (e) => {
             // 檢查：按下 Enter + 沒有按 Shift + 不是正在選字 (isComposing)
-           chatInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
-                e.preventDefault(); 
+            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                e.preventDefault(); // 阻止預設換行
                 handleSendMessage();
             }
         });
