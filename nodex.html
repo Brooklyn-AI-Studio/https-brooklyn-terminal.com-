@@ -117,25 +117,6 @@
             color: var(--nx-accent); 
             transform: translateY(-1px);
         }
-        /* 臨時對話按鈕 (虛線風格) */
-        .nx-btn-temp {
-            background: transparent;
-            border: 1px dashed var(--nx-border);
-            color: var(--nx-text-muted);
-            padding: 8px;
-            border-radius: var(--nx-radius);
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            margin-bottom: 20px;
-            transition: all 0.2s;
-            font-size: 0.9em;
-            width: 100%;
-        }
-        .nx-btn-temp:hover { 
-            border-color: var(--nx-accent);
-            color: var(--nx-accent); 
-            background: var(--nx-hover-bg);
-        }
 
         /* 選單群組 */
         .nx-menu-group { margin-bottom: 20px; }
@@ -474,16 +455,10 @@
         </div>
     </div>
 
-        <button class="nx-btn-new" onclick="window.location.reload()" ...>
+        button class="nx-btn-new" onclick="window.location.reload()" ...>
         <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span id="txt-newChat">新對話</span>
     </button>
-
-    <button class="nx-btn-temp" onclick="startTempChat()" title="建立一個不著痕跡的對話">
-        <svg class="nx-icon" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path></svg>
-        <span>臨時對話</span>
-    </button>
-        
         
     <div class="nx-menu-group">
         <div class="nx-menu-title">EXPLORE</div>
@@ -738,10 +713,10 @@
 
             const userText = chatInput.value.trim();
             if (!userText) return;
+
+            // UI 處理：隱藏首頁與儀表板，切換到聊天模式
             if (homeView) homeView.style.display = 'none';
             if (dashboardView) dashboardView.style.display = 'none';
-            const tempSplash = document.getElementById('view-temp-splash');
-            if (tempSplash) tempSplash.style.display = 'none'; // 隱藏臨時對話歡迎頁
             
             // 重置輸入框
             chatInput.value = '';
@@ -900,128 +875,7 @@
                 handleSendMessage();
             }
         });
-       // --- 臨時對話邏輯 (視覺增強版) ---
-        window.startTempChat = () => {
-            // 1. 權限檢查
-            if (!window.currentUser) {
-                alert("請先登入以使用臨時對話功能。");
-                return;
-            }
 
-            // 2. 隱藏首頁與儀表板
-            if(homeView) homeView.style.display = 'none';
-            if(dashboardView) dashboardView.style.display = 'none';
-
-            // 3. 清理現有對話 (只保留 View 結構，移除所有氣泡)
-            const children = Array.from(chatHistory.children);
-            children.forEach(child => {
-                // 保留系統視圖，移除對話氣泡
-                if (child.id !== 'view-home' && child.id !== 'view-dashboard' && child.id !== 'view-temp-splash') {
-                    child.remove();
-                }
-            });
-
-            // 4. 插入「臨時對話」歡迎畫面 (如果還沒建立過)
-            let tempSplash = document.getElementById('view-temp-splash');
-            if (!tempSplash) {
-                tempSplash = document.createElement('div');
-                tempSplash.id = 'view-temp-splash';
-                // 設定為全高置中
-                tempSplash.style.cssText = "display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%; animation:fadeIn 0.5s;";
-                
-                // 內部的卡片樣式
-                tempSplash.innerHTML = `
-                    <div style="text-align:center; padding:40px; border:1px dashed var(--nx-accent); border-radius:20px; background:var(--nx-card-bg); max-width:400px; position:relative; overflow:hidden;">
-                        <div style="position:absolute; top:0; left:0; width:100%; height:2px; background:var(--nx-accent); opacity:0.5; animation:scan 2s infinite linear;"></div>
-                        
-                        <h2 style="color:var(--nx-accent); margin-bottom:15px; font-family:'Orbitron', sans-serif; letter-spacing:2px;">TEMP MODE</h2>
-                        <p style="color:var(--nx-text-muted); font-size:0.9em; margin-bottom:20px;">
-                            已開啟臨時加密通道<br>
-                            此模式下的對話紀錄<span style="color:#ff6b6b;">不會被保存</span>
-                        </p>
-                        
-                        <div style="display:inline-flex; align-items:center; gap:8px; padding:6px 12px; background:rgba(0,255,204,0.1); border-radius:20px; border:1px solid rgba(0,255,204,0.2);">
-                            <span style="display:block; width:8px; height:8px; background:var(--nx-accent); border-radius:50%; box-shadow:0 0 10px var(--nx-accent); animation:pulse 2s infinite;"></span>
-                            <span style="font-size:0.75em; color:var(--nx-text); font-family:monospace;">GEMINI-2.5 FLASH CONNECTED</span>
-                        </div>
-                    </div>
-                    
-                    <style>
-                        @keyframes scan { 0% {top:0} 100% {top:100%} }
-                    </style>
-                `;
-                chatHistory.appendChild(tempSplash);
-            }
-            
-            // 確保顯示
-            tempSplash.style.display = 'flex';
-
-            // 5. 重置輸入框
-            if(chatInput) {
-                chatInput.value = '';
-                chatInput.focus();
-                chatInput.placeholder = "臨時對話中... (內容不存檔)";
-            }
-        };
-                   // --- 修復：下拉選單控制邏輯 ---
-            window.toggleMenu = (menuId) => {
-                // 1. 取得目標選單
-                const menu = document.getElementById(menuId);
-                if (!menu) return;
-            
-                // 2. 判斷目前狀態（是否已經顯示）
-                const isShown = menu.classList.contains('show');
-            
-                // 3. 關閉所有已開啟的選單 (避免同時開啟多個)
-                document.querySelectorAll('.nx-dropdown-menu').forEach(el => {
-                    el.classList.remove('show');
-                });
-            
-                // 4. 如果原本沒顯示，就把它顯示出來
-                if (!isShown) {
-                    menu.classList.add('show');
-                }
-            };
-            
-            // 點擊畫面其他地方時關閉選單 (優化體驗)
-            window.addEventListener('click', (e) => {
-                if (!e.target.closest('.nx-footer-btn') && !e.target.closest('.back-to-home-btn')) {
-                    document.querySelectorAll('.nx-dropdown-menu').forEach(el => {
-                        el.classList.remove('show');
-                    });
-                }
-            });
-        // 掛載到 window
-        window.startTempChat = window.startTempChat;
-            // --- 修復：主題切換邏輯 ---
-            window.setTheme = (themeName) => {
-                // 設定 body 的 data-theme 屬性
-                document.body.setAttribute('data-theme', themeName);
-                
-                // 更新選單的 active 狀態 UI
-                document.querySelectorAll('#theme-menu .nx-dropdown-item').forEach(item => {
-                    item.classList.remove('active');
-                    if(item.textContent.toLowerCase().includes(themeName)) {
-                        item.classList.add('active');
-                    }
-                });
-                
-                // 關閉選單
-                document.getElementById('theme-menu').classList.remove('show');
-            };
-            
-            // --- 修復：語言切換邏輯 (暫時僅做 UI 反應) ---
-            window.setLanguage = (lang) => {
-                alert("語言切換功能尚未實作實際翻譯邏輯，目前僅切換標示。");
-                
-                document.querySelectorAll('#lang-menu .nx-dropdown-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                // 簡單的視覺回饋
-                if(event && event.target) event.target.classList.add('active');
-                
-                document.getElementById('lang-menu').classList.remove('show');
-            };
     </script>
 </body>
 </html>
