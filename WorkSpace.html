@@ -359,7 +359,12 @@
                         </div>
                     </div>
                 </div>
-
+                    <div class="tool-item flex items-center gap-3 px-3 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all cursor-grab group border border-transparent hover:border-accent" 
+                         draggable="true" 
+                         id="tool-llm-chatbot">
+                        <div class="w-5 h-5 flex items-center justify-center bg-accent/10 rounded text-xs border border-accent group-hover:border-accent" style="color:var(--accent-color);">🧠</div>
+                        <span class="sidebar-text whitespace-nowrap">LLM NodeX</span>
+                    </div>
             </nav>
         </div>
 
@@ -1296,6 +1301,13 @@ window.saveProjectState = async () => {
                 e.dataTransfer.setData('type', 'empty-window');
             });
         }
+        // VVVV 新增 LLM NodeX 的拖曳邏輯 VVVV
+            const toolLlmChatbot = document.getElementById('tool-llm-chatbot');
+            if (toolLlmChatbot) {
+                toolLlmChatbot.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('type', 'llm-chatbot');
+                });
+            }
 
         // Drop Listener
         gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
@@ -1305,23 +1317,54 @@ window.saveProjectState = async () => {
             // 只有在 grid-canvas 顯示時才允許放下 (雖然 main 隱藏時也拖不進來)
             if (gridCanvas.offsetParent === null) return;
 
-            const type = e.dataTransfer.getData('type');
-            const rect = gridCanvas.getBoundingClientRect();
-            // 計算相對位置，並考慮捲軸
-            const scrollTop = gridCanvas.scrollTop || 0; // 如果 gridCanvas 本身有捲動
-            const scrollLeft = gridCanvas.scrollLeft || 0;
-            
-            // 由於 gridCanvas 是 relative 且 full size，這裡使用 client 座標轉換
-            // 並且吸附網格
-            const x = snap(e.clientX - rect.left);
-            const y = snap(e.clientY - rect.top);
+           const type = e.dataTransfer.getData('type');
+    const rect = gridCanvas.getBoundingClientRect();
 
-            if (type === 'empty-window') {
-                if(!checkCollision({x, y, w: 300, h: 200})) {
-                    createItem(x, y, 300, 200, '#ffffff', 'empty-window');
-                }
-            }
-        });
+    // 計算相對位置，並考慮捲軸
+    const scrollTop = document.getElementById('canvas-scroll-container').scrollTop || 0; // 使用 scrollContainer 的捲動
+    const scrollLeft = document.getElementById('canvas-scroll-container').scrollLeft || 0; 
+
+    // 預設位置為放置點，並吸附網格
+    let x = snap(e.clientX - rect.left + scrollLeft); // 修正為 client + scroll - rect.left
+    let y = snap(e.clientY - rect.top + scrollTop);   // 修正為 client + scroll - rect.top
+
+    // 新增 LLM 對話框的尺寸
+    const CHAT_W = 350;
+    const CHAT_H = 450;
+
+    if (type === 'empty-window') {
+        if(!checkCollision({x, y, w: 300, h: 200})) {
+            createItem(x, y, 300, 200, '#ffffff', 'empty-window'); // 沿用原本的尺寸
+        }
+    } else if (type === 'llm-chatbot') { // <--- 新增此區塊
+        // 將節點初始位置設在右下角（例如：距離右邊 300px，距離底部 50px）
+        const sizer = document.getElementById('canvas-sizer');
+        const containerW = parseInt(sizer.style.width); // 畫布總寬度 [cite: 385]
+        const containerH = parseInt(sizer.style.height); // 畫布總高度 [cite: 385]
+
+        // 計算右下角位置 (考慮畫布捲動)
+        // x = 畫布寬度 - 節點寬度 - 邊距
+        // y = 畫布高度 - 節點高度 - 邊距
+
+        x = snap(containerW - CHAT_W - 50); 
+        y = snap(containerH - CHAT_H - 50);
+
+        // 確保位置不超出目前畫布範圍 (如果不希望它在畫布外)
+        if (x < 0) x = 50; 
+        if (y < 0) y = 50;
+
+        if(!checkCollision({x, y, w: CHAT_W, h: CHAT_H})) {
+            // 使用 LLM 節點，並設定為強調色 (Neon Green)
+            createItem(x, y, CHAT_W, CHAT_H, '#00ff9d', 'llm-chatbot'); 
+
+            // 為了讓使用者看到它，可以將視窗捲動到該位置
+            document.getElementById('canvas-scroll-container').scrollLeft = x - 50;
+            document.getElementById('canvas-scroll-container').scrollTop = y - 50;
+        } else {
+            alert("該位置已有節點，請調整畫布大小或清空空間！");
+        }
+    }
+});
 
         function createItem(x, y, w, h, color, type, savedItem = null) {
             // const id = 'item_' + Date.now() + Math.random().toString(36).substr(2, 5);
@@ -1376,6 +1419,7 @@ window.saveProjectState = async () => {
 
             // Render Content
             if (type === 'empty-window') renderEmptyWindowContent(itemObj);
+            else if (type === 'llm-chatbot') renderLLMChatbotContent(itemObj);
             // 重要：如果是「使用者手動新增」的(沒有 savedItem)，才觸發儲存
             // 如果是「同步過來」的，就不觸發儲存，避免無窮迴圈
             if (!savedItem && !isRemoteUpdate) {
@@ -1406,7 +1450,26 @@ window.saveProjectState = async () => {
                 </div>
             `;
         }
+function renderLLMChatbotContent(item) {
+    const container = item.el.querySelector('.content-container');
+    if (container.querySelector('.llm-chatbot-layout')) return;
 
+    container.innerHTML = `
+        <div class="llm-chatbot-layout flex flex-col w-full h-full bg-surface/80 backdrop-blur-md overflow-hidden rounded">
+            <div class="widget-header p-2 bg-accent/20 border-b border-accent flex justify-between items-center cursor-move select-none">
+                <span class="font-bold text-xs tracking-wider text-accent">LLM NodeX</span>
+                <span class="text-[10px] text-muted opacity-50 uppercase tracking-widest">Chatbot</span>
+            </div>
+            <div class="flex-1 flex flex-col p-2 overflow-auto text-muted text-sm relative">
+                <div class="flex-1 overflow-y-auto mb-2 text-xs">
+                    <div class="text-accent/80 p-1 rounded">Agent: Hello! How can I help?</div>
+                </div>
+                <input type="text" placeholder="Ask NodeX..." 
+                       class="w-full bg-bg border border-border rounded px-2 py-1 text-xs text-text focus:border-accent focus:outline-none">
+            </div>
+        </div>
+    `;
+}
 
 
         
@@ -1763,6 +1826,7 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
 
 
 
