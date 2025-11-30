@@ -529,6 +529,33 @@
         .markdown-body th, .markdown-body td { border: 1px solid var(--nx-border); padding: 8px; }
         .markdown-body th { color: var(--nx-accent); background: rgba(255,255,255,0.05); }
         .markdown-body blockquote { border-left: 3px solid var(--nx-accent); padding-left: 1em; color: var(--nx-text-muted); margin: 0; }
+
+        /* --- 新對話：置中模式樣式 --- */
+        
+        /* 當啟用置中模式時，輸入框移到畫面正中央 */
+        .nx-main.centered-mode .nx-input-container {
+            bottom: auto;           /* 取消底部的黏著 */
+            top: 50%;               /* 移動到垂直 50% */
+            transform: translate(-50%, 0); /* 保持水平置中，垂直位置由 margin 微調 */
+            max-width: 700px;       /* 可以稍微窄一點，比較精緻 */
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* 平滑過渡動畫 */
+        }
+
+        /* 為了避開標題文字，稍微往下推一點 */
+        .nx-main.centered-mode .nx-input-container {
+            margin-top: 60px; 
+        }
+
+        /* 當處於置中模式時，隱藏聊天紀錄區 (確保背景乾淨) */
+        .nx-main.centered-mode .nx-chat-area {
+            display: none !important;
+        }
+        
+        /* 輸入框本身的樣式微調 (讓它在中間時看起來更像搜尋框) */
+        .nx-main.centered-mode .nx-input-wrapper {
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3); /* 加強陰影 */
+            border-color: var(--nx-border);
+        }
     </style>
 </head>
 <body data-theme="tech"> <!-- 預設主題 -->
@@ -555,7 +582,7 @@
         </div>
     </div>
 
-        <button class="nx-btn-new" onclick="alert('Starting New Chat Session...')" style="margin-bottom: 20px; width: 100%;">
+        <button class="nx-btn-new" onclick="startNewChat()" style="margin-bottom: 20px; width: 100%;">
         <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span id="txt-newChat">新對話</span>
     </button>
@@ -671,6 +698,12 @@
         <p style="color: var(--nx-text-muted); margin-top: 10px; font-size: 0.9em; letter-spacing: 1px;">Finance,Tech and best LLM.</p>
     </div>
 
+        <div id="view-new-chat" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; position: absolute; top: -50px; z-index: 0;">
+            <h2 style="font-size: 2rem; font-weight: 500; color: var(--nx-text); letter-spacing: 1px; margin-bottom: 20px;">
+                我們該從哪裡開始？
+            </h2>
+        </div>
+
     <div id="view-dashboard" style="display: none; width: 100%; flex-direction: column; align-items: center;">
         <div class="nx-welcome">
             <h1 id="txt-welcome">早安，<br><span>開始您製作一份分析報告？</span></h1>
@@ -727,6 +760,27 @@
 
     <!-- Firebase SDK (用於同步登入狀態) -->
    <script type="module">
+
+       // --- [新增] 啟動新對話模式 ---
+        window.startNewChat = function() {
+            // 1. 清空聊天畫面
+            const chatHistory = document.getElementById('nx-chat-history');
+            if(chatHistory) chatHistory.innerHTML = ''; 
+            
+            // 2. 切換 UI 狀態
+            document.getElementById('view-home').style.display = 'none';      // 隱藏 Logo 首頁
+            document.getElementById('view-dashboard').style.display = 'none'; // 隱藏儀表板
+            document.getElementById('view-new-chat').style.display = 'flex';  // 顯示「我們該從哪裡開始？」
+            
+            // 3. 啟動 CSS 置中模式
+            document.querySelector('.nx-main').classList.add('centered-mode');
+            
+            // 4. 重置輸入框
+            const input = document.getElementById('nx-input');
+            input.value = '';
+            input.focus();
+            input.style.height = 'auto';
+        };
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         // --- [補強] 將 UI 控制函式掛載到 window 以便 HTML 呼叫 ---
@@ -834,7 +888,19 @@
                 appendSystemMessage("🔒 請先點擊左下角頭像登入 Google 帳號。");
                 return;
             }
-
+            // --- [新增/修改] UI 狀態切換 ---
+            // 1. 移除置中模式 (讓輸入框滑回底部)
+            document.querySelector('.nx-main').classList.remove('centered-mode');
+            
+            // 2. 隱藏「新對話」標題 & 首頁
+            document.getElementById('view-new-chat').style.display = 'none';
+            document.getElementById('view-home').style.display = 'none';
+            document.getElementById('view-dashboard').style.display = 'none';
+            
+            // 3. 顯示聊天記錄區
+            const chatHistory = document.getElementById('nx-chat-history');
+            chatHistory.style.display = 'flex';
+            chatHistory.style.flexDirection = 'column';
             // 用量檢查
             const usage = getDailyUsage();
             if (usage.count >= DAILY_LIMIT) {
