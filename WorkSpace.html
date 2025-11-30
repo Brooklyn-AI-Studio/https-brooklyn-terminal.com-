@@ -534,75 +534,41 @@
     </div>
 </div>
 
-             <div id="project-content-container"
-             class="hidden absolute inset-0 z-10 p-6 overflow-hidden pointer-events-none">
-        </div>
-    </div>
+       <div id="project-content-container"
+     class="hidden absolute inset-0 z-10 p-6 overflow-hidden pointer-events-none">
 </div>
     </main>
- <div id="llm-chat-container" class="fixed bottom-6 right-6 z-50">
+</div> </div> <div id="llm-chat-container" class="fixed bottom-6 right-6 z-50">
         
-        <button id="llm-chat-toggle" class="w-12 h-12 rounded-full bg-accent text-bg shadow-xl hover:shadow-2xl transition-all flex items-center justify-center cursor-move border-2 border-accent" title="開啟 AI 對話">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-</button>
+        <button id="llm-chat-toggle" class="w-12 h-12 rounded-full bg-accent text-bg shadow-xl hover:shadow-2xl transition-all flex items-center justify-center cursor-pointer border-2 border-accent" title="開啟 AI 對話">
+            <svg id="llm-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9h.01"></path>
+            </svg>
+        </button>
 
-        <div id="llm-chat-window" class="hidden absolute bottom-0 right-0 w-[380px] h-[500px] bg-surface border border-accent/30 rounded-lg shadow-2xl flex flex-col transform transition-all duration-300 popover-enter backdrop-blur-md" style="min-width: 300px; min-height: 400px; max-width: 90vw; max-height: 90vh;">
-            
-            <div id="llm-resize-handle" class="absolute top-0 left-0 w-4 h-4 cursor-nw-resize z-50 group">
-                <div class="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-accent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            </div>
-
-            <div id="llm-chat-header" class="p-3 bg-white/5 border-b border-white/10 flex justify-between items-center cursor-move select-none shrink-0">
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
-                    <span class="font-bold text-sm text-text tracking-wider">NodeX AI</span>
-                </div>
-                <button onclick="window.closeLlmChat()" class="text-muted hover:text-red-400 transition-colors p-1 rounded-md hover:bg-white/10">
+        <div id="llm-chat-window" class="hidden absolute bottom-0 right-0 w-80 h-[450px] bg-surface border border-border rounded-lg shadow-2xl overflow-hidden flex flex-col transform transition-all duration-300 popover-enter">
+            <div id="llm-chat-header" class="p-3 bg-bg border-b border-border flex justify-between items-center cursor-move">
+                <span class="font-bold text-sm text-accent tracking-wider">NodeX </span>
+                                <button onclick="window.closeLlmChat()" class="text-muted hover:text-text">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
             
-            <div class="flex-1 p-4 overflow-y-auto text-sm text-text scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent space-y-4">
-                <div class="flex gap-3">
-                    <div class="w-8 h-8 rounded-full bg-accent/10 border border-accent flex items-center justify-center text-accent shrink-0">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <div class="flex-1 p-3 overflow-y-auto text-sm text-text">
+                <div class="text-center my-4">
+                    <div class="w-10 h-10 mx-auto mb-2 text-accent">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10.5 15.5C9.67 15.5 9 14.83 9 14C9 13.17 9.67 12.5 10.5 12.5C11.33 12.5 12 13.17 12 14C12 14.83 11.33 15.5 10.5 15.5ZM13.5 9.5C14.33 9.5 15 10.17 15 11C15 11.83 14.33 12.5 13.5 12.5C12.67 12.5 12 11.83 12 11C12 10.17 12.67 9.5 13.5 9.5ZM12 18.5C10.67 18.5 9.33 18.17 8.39 17.55L7.22 18.72C8.75 19.89 10.38 20.5 12 20.5C13.62 20.5 15.25 19.89 16.78 18.72L15.61 17.55C14.67 18.17 13.33 18.5 12 18.5Z" fill="currentColor"></path></svg>
                     </div>
-                    <div class="bg-white/5 p-3 rounded-2xl rounded-tl-none border border-white/10 text-text/90 shadow-sm">
-                        <p>嗨！我是 NodeX。<br>您可以上傳文件、切換模型或搜尋網路。請問今天需要什麼協助？</p>
-                    </div>
+                    <p class="text-text font-semibold mb-1">Hello there!</p>
+                    <p class="text-muted text-xs">使用AI加速生產力，提高專案品質。</p>
                 </div>
             </div>
             
-            <div class="p-3 bg-bg/50 border-t border-white/10 shrink-0">
-                
-                <div class="relative bg-surface border border-white/20 rounded-xl focus-within:border-accent focus-within:ring-1 focus-within:ring-accent transition-all shadow-inner">
-                    <textarea placeholder="輸入訊息..." class="w-full bg-transparent text-text text-sm px-3 py-3 pr-10 outline-none resize-none max-h-32 min-h-[44px]" rows="1"></textarea>
-                    
-                    <div class="flex items-center justify-between px-2 pb-2 mt-1">
-                        
-                        <div class="flex items-center gap-1">
-                            <button class="p-1.5 text-muted hover:text-accent hover:bg-accent/10 rounded-lg transition-colors group relative" title="上傳檔案">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                            </button>
-                            
-                            <button class="p-1.5 text-muted hover:text-accent hover:bg-accent/10 rounded-lg transition-colors flex items-center gap-1 group" title="切換模型">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                                <span class="text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap overflow-hidden w-0 group-hover:w-auto">GPT-4</span>
-                            </button>
-
-                            <button class="p-1.5 text-muted hover:text-accent hover:bg-accent/10 rounded-lg transition-colors group" title="網路搜索">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9h.01"></path></svg>
-                            </button>
-                        </div>
-
-                        <button class="p-2 bg-accent text-bg rounded-lg shadow-lg hover:bg-opacity-90 hover:shadow-accent/20 transition-all active:scale-95 flex items-center justify-center">
-                            <svg class="w-4 h-4 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                        </button>
-                    </div>
+            <div class="p-3 border-t border-border flex flex-col gap-2">
+                <div class="text-xs text-muted flex items-center">
+                    <span class="mr-2">@ 新增背景資訊</span>
                 </div>
-                <div class="text-[10px] text-center text-muted mt-2 opacity-50">AI generate may be inaccurate.</div>
+                <input type="text" placeholder="詢問、搜尋或製作任何內容..." class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none">
             </div>
         </div>
     </div>
@@ -1918,76 +1884,48 @@ function onDragEnd() {
     document.removeEventListener('mousemove', onDragMove);
     document.removeEventListener('mouseup', onDragEnd);
 }
-// --- LLM Chat Widget Logic (更新版：支援按鈕拖曳) ---
+// --- LLM Chat Widget Logic ---
 const chatToggleBtn = document.getElementById('llm-chat-toggle');
 const chatWindow = document.getElementById('llm-chat-window');
 const chatHeader = document.getElementById('llm-chat-header');
-const chatContainer = document.getElementById('llm-chat-container'); [cite_start]// [cite: 449]
+const chatContainer = document.getElementById('llm-chat-container');
 
-// 1. 處理點擊切換事件 (開關視窗)
-// 注意：這裡改用 'click' 事件監聽，並加入檢查以避免在拖曳結束時意外觸發點擊
-let isDragClick = false;
+// 1. 處理點擊切換事件
+chatToggleBtn.addEventListener('click', () => {
+    // 展開對話視窗
+    chatWindow.classList.remove('hidden');
+    chatWindow.classList.add('popover-enter-active');
+    
+    // 隱藏迷你圖示按鈕
+    chatToggleBtn.classList.add('hidden');
+});
 
-if (chatToggleBtn) {
-    chatToggleBtn.addEventListener('click', (e) => {
-        // 如果這是一次拖曳行為造成的點擊，則忽略它
-        if (isDragClick) {
-            isDragClick = false;
-            return;
-        }
-
-        // 展開對話視窗
-        chatWindow.classList.remove('hidden');
-        chatWindow.classList.add('popover-enter-active');
-        // 隱藏迷你圖示按鈕
-        chatToggleBtn.classList.add('hidden');
-    });
-}
-
-// 2. 定義關閉函數
 window.closeLlmChat = () => {
+    // 關閉對話視窗
     chatWindow.classList.add('hidden');
     chatWindow.classList.remove('popover-enter-active');
+    // 顯示迷你圖示按鈕
     chatToggleBtn.classList.remove('hidden');
-[cite_start]} // [cite: 450-451]
+}
 
-// 3. 拖曳邏輯 (更新：支援 Header 和 Button)
+// 3. (保留) 拖曳邏輯 (與上一個回覆相同，讓視窗可移動)
 let isDragging = false;
 let dragStartX, dragStartY, containerStartX, containerStartY;
-let dragHandleElement = null; // 紀錄目前是誰在被拖曳 (Header 還是 Button)
 
-// 共用的拖曳開始函數
-function handleDragStart(e) {
-    // 不阻止預設行為，否則 input 可能無法聚焦，但要小心圖片拖曳
-    if (e.target.tagName === 'IMG') e.preventDefault();
-
-    isDragging = true;
-    isDragClick = false; // 重置拖曳點擊旗標
-    dragHandleElement = e.currentTarget;
-
-    // 記錄起始位置
-    dragStartX = e.clientX;
-    dragStartY = e.clientY;
-    // 獲取容器當前的 right 和 bottom 值
-    const computedStyle = window.getComputedStyle(chatContainer);
-    containerStartX = parseInt(computedStyle.right);
-    containerStartY = parseInt(computedStyle.bottom);
-    
-    // 改變游標樣式
-    dragHandleElement.style.cursor = 'grabbing';
-    
-    // 監聽移動和放開事件
-    document.addEventListener('mousemove', onDragMove);
-    document.addEventListener('mouseup', onDragEnd);
-}
-
-// 為 Header 添加拖曳監聽
 if (chatHeader) {
-    chatHeader.addEventListener('mousedown', handleDragStart); [cite_start]// [cite: 452]
-}
-// 為 圓形按鈕 添加拖曳監聽 (新增部分)
-if (chatToggleBtn) {
-    chatToggleBtn.addEventListener('mousedown', handleDragStart);
+    chatHeader.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        containerStartX = parseInt(window.getComputedStyle(chatContainer).right);
+        containerStartY = parseInt(window.getComputedStyle(chatContainer).bottom);
+        
+        chatHeader.style.cursor = 'grabbing';
+        
+        document.addEventListener('mousemove', onDragMove);
+        document.addEventListener('mouseup', onDragEnd);
+    });
 }
 
 function onDragMove(e) {
@@ -1996,108 +1934,36 @@ function onDragMove(e) {
     const dx = e.clientX - dragStartX;
     const dy = e.clientY - dragStartY;
     
-    // 如果移動距離超過一點點，就視為拖曳行為，而不僅僅是點擊
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-        isDragClick = true;
-    }
-
-    // 計算新的 right 和 bottom 值 (反向計算)
     let newRight = containerStartX - dx;
     let newBottom = containerStartY - dy;
 
-    // --- 範圍限制 (確保不跑出畫面) ---
+    // 範圍限制邏輯 (確保不跑出 viewport)
     const viewportW = window.innerWidth;
     const viewportH = window.innerHeight;
-    // 取得當前容器的實際大小 (可能是按鈕大小，也可能是視窗大小)
-    const currentW = chatContainer.offsetWidth;
-    const currentH = chatContainer.offsetHeight;
+    const chatW = chatWindow.offsetWidth || 320;
+    const chatH = chatWindow.offsetHeight || 450;
     const padding = 10;
     
-    // Right 限制
     if (newRight < padding) newRight = padding;
-    if (newRight > viewportW - currentW - padding) newRight = viewportW - currentW - padding;
+    if (newRight > viewportW - chatW - padding) newRight = viewportW - chatW - padding;
 
-    // Bottom 限制
     if (newBottom < padding) newBottom = padding;
-    if (newBottom > viewportH - currentH - padding) newBottom = viewportH - currentH - padding; [cite_start]// [cite: 454-459]
+    if (newBottom > viewportH - chatH - padding) newBottom = viewportH - chatH - padding;
 
-    // 套用新位置
     chatContainer.style.right = newRight + 'px';
-    chatContainer.style.bottom = newBottom + 'px'; [cite_start]// [cite: 460]
+    chatContainer.style.bottom = newBottom + 'px';
 }
 
 function onDragEnd() {
     isDragging = false;
-    // 還原游標樣式
-    if (dragHandleElement) {
-        dragHandleElement.style.cursor = 'move'; [cite_start]// [cite: 461]
-        dragHandleElement = null;
-    }
-    // 移除監聽
+    if (chatHeader) chatHeader.style.cursor = 'move';
     document.removeEventListener('mousemove', onDragMove);
     document.removeEventListener('mouseup', onDragEnd);
-}
-        // --- LLM Chat Window Resize Logic (左上角拉伸) ---
-const resizeHandle = document.getElementById('llm-resize-handle');
-// chatWindow 變數假設上面已經宣告過 (const chatWindow = document.getElementById('llm-chat-window');)
-
-if (resizeHandle && chatWindow) {
-    let isResizing = false;
-    let startW, startH, startX, startY;
-
-    resizeHandle.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // 防止觸發拖曳移動
-        isResizing = true;
-        
-        // 記錄初始狀態
-        startX = e.clientX;
-        startY = e.clientY;
-        startW = parseInt(document.defaultView.getComputedStyle(chatWindow).width, 10);
-        startH = parseInt(document.defaultView.getComputedStyle(chatWindow).height, 10);
-        
-        document.documentElement.style.cursor = 'nw-resize'; // 強制全局游標
-        
-        document.addEventListener('mousemove', onResizing);
-        document.addEventListener('mouseup', stopResizing);
-    });
-
-    function onResizing(e) {
-        if (!isResizing) return;
-        
-        // 計算位移量 (注意：因為是拉左上角，往左(負)是變寬，往上(負)是變高)
-        const dx = startX - e.clientX; 
-        const dy = startY - e.clientY;
-        
-        let newWidth = startW + dx;
-        let newHeight = startH + dy;
-        
-        // 限制最小尺寸 (避免縮到不見)
-        if (newWidth < 300) newWidth = 300;
-        if (newHeight < 400) newHeight = 400;
-        
-        // 限制最大尺寸 (避免超過螢幕)
-        if (newWidth > window.innerWidth - 20) newWidth = window.innerWidth - 20;
-        if (newHeight > window.innerHeight - 20) newHeight = window.innerHeight - 20;
-
-        chatWindow.style.width = `${newWidth}px`;
-        chatWindow.style.height = `${newHeight}px`;
-    }
-
-    function stopResizing() {
-        isResizing = false;
-        document.documentElement.style.cursor = ''; // 還原游標
-        document.removeEventListener('mousemove', onResizing);
-        document.removeEventListener('mouseup', stopResizing);
-    }
 }
         window.onload = () => { setTheme('developer'); setLanguage('zh'); };
     </script>
 </body>
 </html>
-
-
-
 
 
 
