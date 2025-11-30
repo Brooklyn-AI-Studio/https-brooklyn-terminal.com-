@@ -422,6 +422,21 @@
                         </div>
                     </div>
                 </div>
+<!-- Canvas Size 按鈕：只顯示 SVG 圖示，點擊呼叫 resizeCanvasPrompt() -->
+<div class="relative flex-1">
+    <button id="canvas-size-btn"
+            onclick="resizeCanvasPrompt()"
+            class="w-full flex items-center justify-center px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors"
+            title="Canvas Size">
+        <!-- 你原本的縮放圖示 SVG，保留即可 -->
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4">
+            </path>
+        </svg>
+    </button>
+</div>
+    
             </div>
 
             <div id="auth-container" class="pt-3 border-t border-border">
@@ -478,11 +493,7 @@
     </div>
     <button onclick="resizeCanvasPrompt()" ...>
 
-            
-    <button onclick="resizeCanvasPrompt()" class="text-xs font-bold text-muted hover:text-accent border border-border hover:border-accent px-3 py-1 rounded transition-all flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-        <span class="hidden sm:inline">CANVAS SIZE</span>
-    </button>
+        
 </div>
         
        <div id="canvas-scroll-container" class="flex-1 relative overflow-auto w-full h-full bg-bg cursor-default">
@@ -1765,6 +1776,7 @@ window.addEventListener('resize', ensureCanvasOverflow);
     </script>
 </body>
 </html>
+
 
 
 
