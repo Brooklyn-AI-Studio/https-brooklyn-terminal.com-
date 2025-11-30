@@ -471,70 +471,52 @@
         </div>
     </aside>
 
-    <main class="flex-1 relative flex flex-col h-full bg-bg">
-        <div class="absolute inset-0 dots-bg pointer-events-none z-0"></div>
+   <main class="relative flex-1 h-full bg-bg">
+    <!-- 背景點點 -->
+    <div class="absolute inset-0 dots-bg pointer-events-none z-0"></div>
 
-        <div class="h-12 border-b border-border flex items-center justify-between px-6 bg-surface/50 backdrop-blur z-10 shrink-0 border-accent">
-    
-    <div class="text-sm font-mono text-muted flex items-center">
-        <span class="text-accent mr-2">&gt;</span>
-        <span class="hover:text-text cursor-pointer transition-colors" onclick="resetBreadcrumb()">Workspace</span>
-        <span id="breadcrumb-separator" class="mx-2 hidden">/</span>
-        <span id="breadcrumb-current" class="text-text font-bold hidden ml-2 text-accent"></span>
-    </div>
-            
- <div class="text-sm font-mono text-muted flex items-center">
+    <!-- 🔹 上方工具列：固定在 main 頂部，不捲動 -->
+    <div class="absolute inset-x-0 top-0 h-12 border-b border-border flex items-center justify-between px-6 bg-surface/50 backdrop-blur z-20 border-accent">
+        <div class="text-sm font-mono text-muted flex items-center">
+            <span class="text-accent mr-2">&gt;</span>
+            <span class="hover:text-text cursor-pointer transition-colors" onclick="resetBreadcrumb()">Workspace</span>
+            <span id="breadcrumb-separator" class="mx-2 hidden">/</span>
+            <span id="breadcrumb-current" class="text-text font-bold hidden ml-2 text-accent"></span>
         </div>
 
-    <div id="online-users-container" class="flex-1 flex justify-end items-center px-4 gap-2 hidden">
-        <span class="text-[10px] text-muted uppercase tracking-widest">Active:</span>
-        <div id="online-avatars" class="flex -space-x-2 overflow-hidden">
+        <div class="text-sm font-mono text-muted flex items-center"></div>
+
+        <div id="online-users-container" class="flex-1 flex justify-end items-center px-4 gap-2 hidden">
+            <span class="text-[10px] text-muted uppercase tracking-widest">Active:</span>
+            <div id="online-avatars" class="flex -space-x-2 overflow-hidden"></div>
+        </div>
+    </div>
+
+    <!-- 🔹 下方操作區：獨立的可捲動區塊（水平＋垂直） -->
+    <div id="canvas-scroll-container"
+         class="absolute inset-x-0 bottom-0 top-12 overflow-auto bg-bg cursor-default z-10">
+        <div id="canvas-sizer"
+             class="relative border border-grid flex flex-col overflow-hidden resize"
+             style="width: 600px; height: 600px;">
+
+            <div id="grid-canvas" class="relative w-full h-full">
+                <svg id="connections-layer" class="w-full h-full"></svg>
             </div>
+
+            <div id="empty-state-container"
+                 class="absolute top-0 left-0 w-full h-[calc(100vh-100px)] z-10 flex items-center justify-center pointer-events-none">
+                <div class="text-center space-y-4 pointer-events-auto">
+                    <!-- 你的 + 按鈕與文字 -->
+                    ...
+                </div>
+            </div>
+
+            <div id="project-content-container"
+                 class="hidden relative z-10 w-full h-full p-6 overflow-hidden">
+            </div>
+        </div>
     </div>
-    <button onclick="resizeCanvasPrompt()" ...>
-
-        
-</div>
-        
-       <div id="canvas-scroll-container" class="flex-1 relative overflow-auto w-full h-full bg-bg cursor-default">
-    
-   <div id="canvas-sizer" class="relative border border-grid flex flex-col overflow-hidden resize" style="width: 1000px; height: 1000px;">
-        
-       <div id="grid-canvas" class="relative w-full h-full">
-    <svg id="connections-layer" class="w-full h-full"></svg>
-    </div>
-
-        <div id="empty-state-container" class="absolute top-0 left-0 w-full h-[calc(100vh-100px)] z-10 flex items-center justify-center pointer-events-none">
-    <div class="text-center space-y-4 pointer-events-auto">
-
-        <button onclick="handlePlusClick()" class="mx-auto border-2 border-accent rounded-full flex items-center justify-center relative group cursor-pointer hover:bg-accent/10 transition-all focus:outline-none" 
-                style="width: 8cqmin; height: 8cqmin; min-width: 60px; min-height: 60px;">
-            
-            <svg class="text-accent group-hover:scale-110 transition-transform" style="width: 40%; height: 40%;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            <div class="absolute inset-0 rounded-full border border-accent animate-ping opacity-20"></div>
-        </button>
-        
-        <h2 class="font-bold text-text text-accent" data-i18n="empty_state" 
-            style="font-size: 2.5cqmin; line-height: 1.2;">
-            
-        </h2>
-        
-        <p id="empty-desc-text" class="text-muted max-w-md mx-auto" data-i18n="empty_desc" 
-           style="font-size: 1.5cqmin;">
-           
-        </p>
-
-    </div>
-</div>
-
-        <div id="project-content-container" class="hidden relative z-10 w-full h-full p-6 overflow-hidden">
-             </div>
-
-    </div>
-</div>
-    </main>
+</main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -1776,6 +1758,7 @@ window.addEventListener('resize', ensureCanvasOverflow);
     </script>
 </body>
 </html>
+
 
 
 
