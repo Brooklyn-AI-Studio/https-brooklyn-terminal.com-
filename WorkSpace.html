@@ -37,7 +37,7 @@
       /* 加入 style 標籤內 */
       /* 隱藏捲軸 */
 #canvas-scroll-container {
-    background-color: #000000 !important; /* 強制全黑背景 */
+    background-color: #000000; 
     /* 讓操作區在畫面中留一點邊距，看起來像一張桌子上的圖紙 */
     padding: 50px; 
     
@@ -1285,6 +1285,7 @@ window.toggleWorkspace = () => {
         // 1. 背景顏色
         inputBgColor.addEventListener('input', (e) => {
             canvasSizer.style.backgroundColor = e.target.value;
+            document.getElementById('canvas-scroll-container').style.backgroundColor = e.target.value;
         });
 
         // 2. 外框顏色
@@ -2099,6 +2100,7 @@ function onDragEnd() {
     </script>
 </body>
 </html>
+
 
 
 
