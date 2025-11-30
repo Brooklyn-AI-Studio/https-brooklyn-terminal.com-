@@ -1152,7 +1152,7 @@
         // 每日用量檢查
         function getDailyUsage() {
             const today = new Date().toDateString();
-            const record = JSON.parse(localStorage.getItem('nodex_daily_usage') || '{}');
+            const record = JSON.parse(localStorage.getItem('nodex_usage_${uid}') || '{}');
             if (record.date !== today) return { count: 0, date: today };
             return record;
         }
