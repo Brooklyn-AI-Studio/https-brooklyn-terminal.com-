@@ -549,11 +549,19 @@
             </svg>
         </div>
 
-        <div id="llm-chat-header" class="pl-10 pr-4 py-3 bg-white/5 border-b border-white/5 flex justify-between items-center cursor-move select-none backdrop-blur-md">
+       <div id="llm-chat-header" class="pl-10 pr-4 py-3 bg-white/5 border-b border-white/5 flex justify-between items-center cursor-move select-none backdrop-blur-md">
             <div class="flex items-center gap-2">
                 <div class="w-2 h-2 rounded-full bg-accent shadow-[0_0_8px_rgba(0,255,157,0.8)] animate-pulse"></div>
-                <span class="font-mono font-bold text-sm text-text tracking-widest">NodeX <span class="text-accent text-[10px] align-top">Alpha</span></span>
+                <span class="font-mono font-bold text-sm text-text tracking-widest">
+                    NodeX 
+                    <span class="text-accent text-[10px] align-top">Alpha</span>
+                </span>
+                
+                <span id="daily-usage-counter" class="ml-2 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] text-muted font-mono">
+                    --/20
+                </span>
             </div>
+            
             <button onclick="window.closeLlmChat()" class="group p-1 rounded hover:bg-white/10 transition-colors">
                 <svg class="w-4 h-4 text-muted group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
@@ -2108,31 +2116,105 @@ function onDragEnd() {
 }
 
 // ==========================================
-// ★ NodeX Proxy 整合 (安全模式) ★
+// ★ NodeX Proxy 整合 (含用量限制與帳號顯示) ★
 // ==========================================
 
-// ⚠️ 請填入你的 Cloudflare Worker 網址
 const WORKER_URL = "https://nodex-proxy.coreinformation30.workers.dev"; 
 
-// 取得 UI 元素
-const chatHistory = document.getElementById('chat-history');
-const chatInputJs = document.getElementById('chat-input'); // 避免變數名稱衝突
-const sendBtn = document.getElementById('chat-send-btn');
+// 設定每日限制
+const DAILY_LIMIT = 20;
 
+// 取得 UI 元素
+const chatHistoryJs = document.getElementById('chat-history');
+const chatInputJs = document.getElementById('chat-input'); 
+const sendBtnJs = document.getElementById('chat-send-btn');
+const usageCounter = document.getElementById('daily-usage-counter');
+
+// --- 1. 用量管理系統 ---
+function getDailyUsage() {
+    const today = new Date().toDateString(); // 例如 "Mon Dec 01 2025"
+    const record = JSON.parse(localStorage.getItem('nodex_daily_usage') || '{}');
+    
+    // 如果日期不同，代表是新的一天，重置計數
+    if (record.date !== today) {
+        return { count: 0, date: today };
+    }
+    return record;
+}
+
+function incrementUsage() {
+    const usage = getDailyUsage();
+    usage.count += 1;
+    localStorage.setItem('nodex_daily_usage', JSON.stringify(usage));
+    updateUsageUI();
+}
+
+function updateUsageUI() {
+    const usage = getDailyUsage();
+    const remaining = Math.max(0, DAILY_LIMIT - usage.count);
+    
+    if (usageCounter) {
+        // 顯示格式：今日用量 (5/20)
+        usageCounter.textContent = `${usage.count}/${DAILY_LIMIT}`;
+        
+        // 樣式變化：快用完時變紅色
+        if (usage.count >= DAILY_LIMIT) {
+            usageCounter.className = "ml-2 px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/50 text-[10px] text-red-400 font-mono";
+            // 鎖定輸入框
+            if(chatInputJs) {
+                chatInputJs.disabled = true;
+                chatInputJs.placeholder = "已達今日訊息上限 (20/20)";
+            }
+        } else {
+            usageCounter.className = "ml-2 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] text-muted font-mono";
+            if(chatInputJs) {
+                chatInputJs.disabled = false;
+                chatInputJs.placeholder = "把你不懂的都丟上來問一遍!";
+            }
+        }
+    }
+}
+
+// 初始化時更新一次 UI
+window.addEventListener('load', updateUsageUI);
+// 每次打開聊天室也檢查一次
+document.getElementById('llm-chat-toggle').addEventListener('click', updateUsageUI);
+
+
+// --- 2. 核心發送邏輯 ---
 async function handleSendMessage() {
+    // 檢查用量
+    const usage = getDailyUsage();
+    if (usage.count >= DAILY_LIMIT) {
+        alert("今日訊息額度已用完 (20/20)。請明天再來！");
+        return;
+    }
+
     const userText = chatInputJs.value.trim();
     if (!userText) return;
 
+    // 重置輸入框
     chatInputJs.value = '';
     chatInputJs.style.height = '48px'; 
-    appendUserMessage(userText);
+
+    // ★ 修改點：傳入目前的 Google 使用者名稱
+    const userName = (window.currentUser && window.currentUser.displayName) ? window.currentUser.displayName : "YOU";
+    const userPhoto = (window.currentUser && window.currentUser.photoURL) ? window.currentUser.photoURL : null;
+
+    appendUserMessage(userText, userName, userPhoto);
+    
+    // 扣除額度
+    incrementUsage();
+
     const loadingId = appendLoadingIndicator();
 
     try {
         const response = await fetch(WORKER_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: userText }] }] })
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: userText }] }] 
+            })
         });
 
         if (!response.ok) throw new Error("Worker Error: " + response.statusText);
@@ -2149,17 +2231,8 @@ async function handleSendMessage() {
             if (done) break;
 
             const chunk = decoder.decode(value, { stream: true });
-            
-            // ★ DEBUG: 印出收到的原始資料，按 F12 看 Console
-            console.log("收到 Chunk:", chunk); 
-
-            // 如果收到的是 "Hello World!"，代表 Worker 程式碼沒更新
-            if (chunk.includes("Hello World")) {
-                aiMsgContent.innerText = "系統提示: 請檢查 Cloudflare Worker 程式碼是否已部署。";
-                return;
-            }
-
             const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
+            
             if (matches) {
                 matches.forEach(match => {
                     let textPart = match.replace(/"text":\s*"/, "").replace(/"$/, "");
@@ -2175,26 +2248,31 @@ async function handleSendMessage() {
 
     } catch (error) {
         removeMessage(loadingId);
-        appendAiMessageStart().innerHTML = `<span class="text-red-500">Error: ${error.message}</span>`;
+        appendAiMessageStart().innerHTML = `<span class="text-red-500">System Error: ${error.message}</span>`;
         console.error(error);
     }
 }
 
-// --- UI 輔助函式 ---
+// --- 3. UI 輔助函式 (修改版) ---
 
-function appendUserMessage(text) {
+// ★ 修改點：接收 name 和 photo 參數
+function appendUserMessage(text, name = "YOU", photo = null) {
     const div = document.createElement('div');
     div.className = "flex flex-col items-end gap-1 animate-pulse-once";
+    
+    // 如果有大頭貼，可以考慮顯示，這裡先顯示名字
     div.innerHTML = `
         <div class="flex items-center gap-2 mb-1">
-            <span class="text-[10px] font-bold text-muted tracking-wider">YOU</span>
+            <span class="text-[10px] font-bold text-muted tracking-wider uppercase">${name}</span>
         </div>
         <div class="p-3 bg-accent/10 border border-accent/20 rounded-2xl rounded-tr-none text-sm text-text leading-relaxed shadow-sm max-w-[85%]">
             ${text}
         </div>
     `;
-    chatHistory.appendChild(div);
-    scrollToBottom();
+    if(chatHistoryJs) {
+        chatHistoryJs.appendChild(div);
+        scrollToBottom();
+    }
 }
 
 function appendAiMessageStart() {
@@ -2207,13 +2285,13 @@ function appendAiMessageStart() {
             </div>
             <span class="text-[10px] font-bold text-accent tracking-wider">NodeX AI</span>
         </div>
-        <div class="ai-content p-3 bg-white/5 border border-white/5 rounded-2xl rounded-tl-none text-sm text-text leading-relaxed shadow-sm w-full font-mono">
-            </div>
+        <div class="ai-content p-3 bg-white/5 border border-white/5 rounded-2xl rounded-tl-none text-sm text-text leading-relaxed shadow-sm w-full font-mono"></div>
     `;
-    chatHistory.appendChild(div);
+    if(chatHistoryJs) chatHistoryJs.appendChild(div);
     return div.querySelector('.ai-content');
 }
 
+// 其餘函式保持不變
 function appendLoadingIndicator() {
     const id = 'loading-' + Date.now();
     const div = document.createElement('div');
@@ -2227,8 +2305,10 @@ function appendLoadingIndicator() {
             <span class="text-[10px] text-muted">THINKING...</span>
         </div>
     `;
-    chatHistory.appendChild(div);
-    scrollToBottom();
+    if(chatHistoryJs) {
+        chatHistoryJs.appendChild(div);
+        scrollToBottom();
+    }
     return id;
 }
 
@@ -2238,12 +2318,12 @@ function removeMessage(id) {
 }
 
 function scrollToBottom() {
-    chatHistory.scrollTop = chatHistory.scrollHeight;
+    if(chatHistoryJs) chatHistoryJs.scrollTop = chatHistoryJs.scrollHeight;
 }
 
 // 綁定按鈕事件
-if(sendBtn && chatInputJs) {
-    sendBtn.addEventListener('click', handleSendMessage);
+if(sendBtnJs && chatInputJs) {
+    sendBtnJs.addEventListener('click', handleSendMessage);
     chatInputJs.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -2255,6 +2335,7 @@ if(sendBtn && chatInputJs) {
     </script>
 </body>
 </html>
+
 
 
 
