@@ -7,6 +7,7 @@
     <title>Workspace</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2300ff9d%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5%22/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     
     <script>
@@ -34,6 +35,85 @@
     </script>
 
     <style>
+        /* --- Markdown 內容樣式 (NodeX 風格) --- */
+.markdown-body {
+    line-height: 1.6;
+    font-size: 14px;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+    font-weight: bold;
+    color: var(--accent-color); /* 使用你的強調色 */
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+.markdown-body h1 { font-size: 1.5em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.3em; }
+.markdown-body h2 { font-size: 1.3em; }
+.markdown-body h3 { font-size: 1.1em; }
+
+.markdown-body p { margin-bottom: 0.8em; }
+.markdown-body strong { color: #fff; font-weight: 700; }
+.markdown-body em { color: #aaa; font-style: italic; }
+
+/* 列表 */
+.markdown-body ul, .markdown-body ol { padding-left: 1.5em; margin-bottom: 0.8em; }
+.markdown-body ul { list-style-type: disc; }
+.markdown-body ol { list-style-type: decimal; }
+.markdown-body li { margin-bottom: 0.2em; }
+
+/* 程式碼區塊 */
+.markdown-body code {
+    background: rgba(255,255,255,0.1);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    color: #ff79c6; /* 程式碼粉色高亮 */
+}
+.markdown-body pre {
+    background: #1e1e1e;
+    padding: 1em;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 1em;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.markdown-body pre code {
+    background: transparent;
+    padding: 0;
+    color: #f8f8f2;
+    font-size: 0.85em;
+}
+
+/* 表格樣式 */
+.markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1em;
+    font-size: 0.9em;
+}
+.markdown-body th, .markdown-body td {
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 8px 12px;
+    text-align: left;
+}
+.markdown-body th {
+    background-color: rgba(255,255,255,0.1);
+    font-weight: bold;
+    color: var(--accent-color);
+}
+.markdown-body tr:nth-child(even) {
+    background-color: rgba(255,255,255,0.03);
+}
+
+/* 引用 */
+.markdown-body blockquote {
+    border-left: 3px solid var(--accent-color);
+    padding-left: 1em;
+    color: var(--muted);
+    margin-left: 0;
+    margin-bottom: 1em;
+    font-style: italic;
+}
       /* 加入 style 標籤內 */
       /* 隱藏捲軸 */
 #canvas-scroll-container {
@@ -2251,7 +2331,17 @@ async function handleSendMessage() {
                     try {
                         textPart = JSON.parse(`"${textPart}"`); 
                         fullText += textPart;
-                        aiMsgContent.innerText = fullText;
+
+                        // ★★★ 修改點：使用 marked.parse 渲染 Markdown ★★★
+                        // 1. 給容器加個 class 讓 CSS 生效 (如果還沒加過)
+                        if (!aiMsgContent.classList.contains('markdown-body')) {
+                            aiMsgContent.classList.add('markdown-body');
+                        }
+                        
+                        // 2. 將 Markdown 轉換為 HTML 並放入容器
+                        // 注意：這裡是 innerHTML，不是 innerText
+                        aiMsgContent.innerHTML = marked.parse(fullText);
+
                         scrollToBottom();
                     } catch (e) { console.error("Parse error", e); }
                 });
@@ -2362,6 +2452,7 @@ if(sendBtnJs && chatInputJs) {
     </script>
 </body>
 </html>
+
 
 
 
