@@ -995,6 +995,7 @@
             
             // [關鍵] 扣除該使用者的額度
             incrementUsage(uid);
+            const loadingId = appendLoadingIndicator();
 
             try {
                 const response = await fetch(WORKER_URL, {
@@ -1135,8 +1136,9 @@
         // [優化] 主對話框 Enter 發送 (支援 Shift+Enter 換行，並防止輸入法誤傳)
         chatInput.addEventListener('keydown', (e) => {
             // 檢查：按下 Enter + 沒有按 Shift + 不是正在選字 (isComposing)
-            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                e.preventDefault(); // 阻止預設換行
+           chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+                e.preventDefault(); 
                 handleSendMessage();
             }
         });
