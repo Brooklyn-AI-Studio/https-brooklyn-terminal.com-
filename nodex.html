@@ -956,8 +956,7 @@
             input.focus();
             input.style.height = 'auto';
         };
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    
         // --- [補強] 將 UI 控制函式掛載到 window 以便 HTML 呼叫 ---
         window.switchView = function(viewName) {
             document.getElementById('view-home').style.display = viewName === 'home' ? 'flex' : 'none';
@@ -998,14 +997,16 @@
             measurementId: "G-G0GMW0XHG1"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+        let currentChatId = null;
+        
         // UI 元素
         const nameEl = document.getElementById('nx-user-name');
         const avatarEl = document.getElementById('nx-user-avatar');
@@ -1066,15 +1067,15 @@
         }
 
         // 發送訊息主函式
-       async function handleSendMessage() {
+      async function handleSendMessage() {
             // 1. [強制登入檢查]
             if (!window.currentUser) {
                 appendSystemMessage("🔒 請先點擊左下角頭像登入 Google 帳號。");
                 return;
             }
+            const uid = window.currentUser.uid; // 取得 UID
 
-            // 2. [每日用量檢查] (建議搭配 UID 使用)
-            // 如果您之前的步驟有修改 incrementUsage(uid)，請這裡也改成 getDailyUsage(window.currentUser.uid)
+            // 2. [每日用量檢查]
             const usage = getDailyUsage(); 
             if (usage.count >= DAILY_LIMIT) {
                 appendSystemMessage(`⚠️ 今日訊息額度已達上限 (${usage.count}/${DAILY_LIMIT})。請明天再來！`);
@@ -1085,49 +1086,62 @@
             if (!userText) return;
 
             // 3. [UI 狀態切換]
-            // 移除置中模式
             document.querySelector('.nx-main').classList.remove('centered-mode');
-            
-            // 隱藏其他視圖
             document.getElementById('view-new-chat').style.display = 'none';
             document.getElementById('view-home').style.display = 'none';
             document.getElementById('view-dashboard').style.display = 'none';
             
-            // 顯示聊天記錄區
             const chatHistory = document.getElementById('nx-chat-history');
             if(chatHistory) {
                 chatHistory.style.display = 'flex';
                 chatHistory.style.flexDirection = 'column';
             }
 
-            // 重置輸入框
             chatInput.value = '';
             chatInput.style.height = 'auto';
 
-            // 顯示使用者訊息
             appendUserMessage(userText);
-            incrementUsage(); // 扣除額度
+            incrementUsage(); 
 
-            // 4. [顯示 Loading 動畫] (定義變數以免後續報錯)
-            const loadingId = appendLoadingIndicator();
-
+            // ----------------------------------------------------
+            // 🚀 [新增] Firestore 存檔邏輯
+            // ----------------------------------------------------
             try {
-                // 5. [呼叫 API]
+                // 1. 如果是新對話，先建立文件
+                if (!currentChatId) {
+                    const chatRef = await addDoc(collection(db, "chats"), {
+                        userId: uid,
+                        title: userText.substring(0, 20) + "...", 
+                        createdAt: new Date(),
+                        lastMessage: new Date()
+                    });
+                    currentChatId = chatRef.id;
+                    loadSidebarHistory(uid); // 刷新側邊欄
+                }
+
+                // 2. 儲存使用者訊息
+                await addDoc(collection(db, "chats", currentChatId, "messages"), {
+                    role: "user",
+                    content: userText,
+                    timestamp: new Date()
+                });
+
+                // ----------------------------------------------------
+                // 呼叫 LLM
+                // ----------------------------------------------------
+                const loadingId = appendLoadingIndicator();
+                
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: userText }] }] 
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: userText }] }] })
                 });
 
                 if (!response.ok) throw new Error("Worker Error: " + response.statusText);
 
-                // 移除 Loading，準備顯示 AI 回覆
                 removeMessage(loadingId);
                 const aiMsgContent = appendAiMessageStart();
                 
-                // 6. [處理串流回應]
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullText = "";
@@ -1135,7 +1149,6 @@
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-
                     const chunk = decoder.decode(value, { stream: true });
                     const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
                     
@@ -1146,34 +1159,38 @@
                                 textPart = JSON.parse(`"${textPart}"`); 
                                 fullText += textPart;
                                 
-                                // --- [核心渲染邏輯] ---
-                                
-                                // A. 先做 Markdown 轉換 (marked.js)
+                                // Markdown + LaTeX 渲染
                                 aiMsgContent.innerHTML = marked.parse(fullText);
-
-                                // B. 再做 LaTeX 數學公式渲染 (KaTeX)
-                                // 確保您已經在 <head> 引入了 katex 的 js 與 css
                                 if (window.renderMathInElement) {
                                     renderMathInElement(aiMsgContent, {
                                         delimiters: [
-                                            {left: "$$", right: "$$", display: true}, // 區塊公式
-                                            {left: "$", right: "$", display: false},   // 行內公式
+                                            {left: "$$", right: "$$", display: true},
+                                            {left: "$", right: "$", display: false},
                                             {left: "\\(", right: "\\)", display: false},
                                             {left: "\\[", right: "\\]", display: true}
                                         ],
                                         throwOnError: false
                                     });
                                 }
-                                
-                                // 捲動到底部
                                 chatHistory.scrollTop = chatHistory.scrollHeight;
-
-                            } catch (e) { 
-                                // console.error("Parse error", e); 
-                            }
+                            } catch (e) {}
                         });
                     }
                 }
+
+                // 🚀 [新增] 儲存 AI 回覆
+                await addDoc(collection(db, "chats", currentChatId, "messages"), {
+                    role: "model",
+                    content: fullText,
+                    timestamp: new Date()
+                });
+
+            } catch (error) {
+                removeMessage(loadingId); // 確保出錯時移除 loading
+                appendSystemMessage(`❌ 系統錯誤: ${error.message}`);
+                console.error(error);
+            }
+        }
 
                 // (如果您有加入 Firestore 存檔功能，請在這裡將 fullText 存入資料庫)
 
@@ -1410,7 +1427,7 @@
 
         // 綁定 Enter 鍵
         tempInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+            if (e.key === 'Enter' && !e.isComposing) {
                 handleTempSend();
             }
         });
