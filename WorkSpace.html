@@ -494,10 +494,7 @@
         <span class="text-[10px] text-muted uppercase tracking-widest">Active:</span>
         <div id="online-avatars" class="flex -space-x-2 overflow-hidden">
             </div>
-    </div>
-    <button onclick="resizeCanvasPrompt()" ...>
-
-            
+    </div>           
     <button onclick="resizeCanvasPrompt()" class="text-xs font-bold text-muted hover:text-accent border border-border hover:border-accent px-3 py-1 rounded transition-all flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
         <span class="hidden sm:inline">CANVAS SIZE</span>
@@ -539,9 +536,6 @@
 
        <div id="project-content-container"
      class="hidden absolute inset-0 z-10 p-6 overflow-hidden pointer-events-none">
-</div>
-
-    </div>
 </div>
     </main>
 </div> </div> <div id="llm-chat-container" class="fixed bottom-6 right-6 z-50">
@@ -1536,7 +1530,7 @@ function renderLLMChatbotContent(item) {
                     let rawX = startLeft + dx;
                     let rawY = startTop + dy; 
 
-                    const containerW = canvasSizer.offsetWidth
+                    const containerW = canvasSizer.offsetWidth;
                     const containerH = canvasSizer.offsetHeight;
                     
                     // 左側限制
@@ -1852,58 +1846,6 @@ window.resizeCanvasPrompt = function() {
         window.addEventListener('beforeunload', () => {
             stopPresenceSystem();
         });
-        // --- LLM Chat Widget Logic ---
-const chatToggleBtn = document.getElementById('llm-chat-toggle');
-const chatWindow = document.getElementById('llm-chat-window');
-const chatHeader = document.getElementById('llm-chat-header');
-const chatContainer = document.getElementById('llm-chat-container');
-
-chatToggleBtn.addEventListener('click', () => {
-    // 切換顯示狀態
-    const isHidden = chatWindow.classList.toggle('hidden');
-    
-    if (!isHidden) {
-        // 展開時加入過渡效果
-        chatWindow.classList.remove('popover-enter');
-        chatWindow.classList.add('popover-enter-active');
-    } else {
-        chatWindow.classList.remove('popover-enter-active');
-        // 可以在這裡加一個 setTimeout 來確保動畫播放完畢，但為了簡潔先略過
-    }
-    
-    // 隱藏按鈕本身 (Notion 樣式)
-    chatToggleBtn.classList.toggle('hidden');
-});
-
-// 隱藏對話框時顯示按鈕
-chatWindow.addEventListener('transitionend', () => {
-    if (chatWindow.classList.contains('hidden')) {
-        chatToggleBtn.classList.remove('hidden');
-    }
-});
-
-
-// --- Dragging Logic for Floating Chat Window ---
-let isDragging = false;
-let dragStartX, dragStartY, containerStartX, containerStartY;
-
-chatHeader.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    isDragging = true;
-    
-    // 記錄滑鼠點擊位置
-    dragStartX = e.clientX;
-    dragStartY = e.clientY;
-    
-    // 記錄容器目前的 bottom/right 值
-    containerStartX = parseInt(window.getComputedStyle(chatContainer).right);
-    containerStartY = parseInt(window.getComputedStyle(chatContainer).bottom);
-    
-    chatHeader.style.cursor = 'grabbing';
-    
-    document.addEventListener('mousemove', onDragMove);
-    document.addEventListener('mouseup', onDragEnd);
-});
 
 function onDragMove(e) {
     if (!isDragging) return;
@@ -1962,7 +1904,6 @@ window.closeLlmChat = () => {
     // 關閉對話視窗
     chatWindow.classList.add('hidden');
     chatWindow.classList.remove('popover-enter-active');
-    
     // 顯示迷你圖示按鈕
     chatToggleBtn.classList.remove('hidden');
 }
@@ -2023,6 +1964,7 @@ function onDragEnd() {
     </script>
 </body>
 </html>
+
 
 
 
