@@ -926,10 +926,29 @@
                             <svg class="nx-icon" style="width:16px;height:16px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                             <span style="font-size:0.8em; font-weight:600;">搜尋</span>
                         </button>
-                        <button class="nx-tool-btn nx-pill-btn" title="切換模型 (Switch Model)">
+                        
+                       <div style="position:relative;">
+                        <button class="nx-tool-btn nx-pill-btn" onclick="toggleMenu('model-menu')" id="model-selector-btn" title="切換模型 (Switch Model)">
                             <svg class="nx-icon" style="width:16px;height:16px;" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
-                            <span style="font-size:0.8em; font-weight:600;">深度思考 (R1)</span>
+                            <span id="current-model-text" style="font-size:0.8em; font-weight:600;">gemini-2.5-flash</span>
+                            <span style="font-size:0.7em; opacity:0.7;">▼</span>
                         </button>
+
+                        <div class="nx-dropdown-menu" id="model-menu" style="bottom: 120%; left: 0; width: 220px;">
+                            <div class="nx-dropdown-item active" onclick="setModel('gemini-2.5-flash')">
+                                <span>gemini-2.5-flash</span>
+                            </div>
+                            <div class="nx-dropdown-item" onclick="setModel('gemini-2.5-flash-lite')">
+                                <span>gemini-2.5-flash-lite</span>
+                            </div>
+                            <div class="nx-dropdown-item" onclick="setModel('gemini-2.0-flash-lite')">
+                                <span>gemini-2.0-flash-lite</span>
+                            </div>
+                            <div class="nx-dropdown-item" onclick="setModel('gemini-2.0-flash')">
+                                <span>gemini-2.0-flash</span>
+                            </div>
+                        </div>
+                    </div>
                     </div>
 
                     <!-- 右側功能：附件 + 語音 + 發送 -->
@@ -1032,8 +1051,13 @@
         };
         
         // 點擊頁面其他地方關閉 Dropdown
+        // 點擊頁面其他地方關閉 Dropdown (優化版)
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.nx-footer-btn') && !e.target.closest('.back-to-home-container')) {
+            // 如果點擊的對象不是 Footer按鈕、不是回首頁按鈕、也不是模型切換按鈕
+            if (!e.target.closest('.nx-footer-btn') && 
+                !e.target.closest('.back-to-home-container') && 
+                !e.target.closest('#model-selector-btn')) { // [新增] 排除模型按鈕
+                
                 document.querySelectorAll('.nx-dropdown-menu').forEach(m => m.style.display = 'none');
             }
         });
@@ -1095,8 +1119,28 @@
         // --- LLM 核心邏輯開始 ---
         
         const WORKER_URL = "https://nodex-proxy.coreinformation30.workers.dev"; 
-        const DAILY_LIMIT = 20;
+        const DAILY_LIMIT = 40;
+        let currentChatId = null;
 
+        let currentModel = "gemini-2.5-flash";
+       window.setModel = function(modelName) {
+            currentModel = modelName;
+            
+            // 1. 更新按鈕文字
+            const textEl = document.getElementById('current-model-text');
+            if(textEl) textEl.innerText = modelName;
+            
+            // 2. 更新選單的選中狀態 (Visual Feedback)
+            document.querySelectorAll('#model-menu .nx-dropdown-item').forEach(item => {
+                item.classList.remove('active');
+                if(item.innerText.includes(modelName)) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // 3. 關閉選單
+            toggleMenu('model-menu');
+        };
         const chatHistory = document.getElementById('nx-chat-history');
         const chatInput = document.getElementById('nx-input');
         const sendBtn = document.getElementById('nx-send-btn');
@@ -1186,7 +1230,7 @@
         const response = await fetch(WORKER_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: userText }] }] })
+            body: JSON.stringify({ model: currentModel,contents: [{ parts: [{ text: userText }] }] })
         });
 
         if (!response.ok) throw new Error("Worker Error: " + response.statusText);
@@ -1435,6 +1479,7 @@
                     headers: { "Content-Type": "application/json" },
                     // 注意: 這裡不檢查登入狀態，方便快速使用
                     body: JSON.stringify({ 
+                        model: currentModel,
                         contents: [{ parts: [{ text: text }] }] 
                     })
                 });
