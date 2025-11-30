@@ -402,8 +402,13 @@
                         <div class="text-xs font-bold text-accent tracking-wider mb-1">CANVAS STYLE</div>
                         
                         <div class="flex items-center justify-between">
-                            <label class="text-xs text-muted">Background</label>
-                            <input type="color" id="input-bg-color" class="w-6 h-6 bg-transparent border-0 cursor-pointer" value="#0a100d">
+                            <label class="text-xs text-muted">Workspace BG</label>
+                            <input type="color" id="input-bg-color" class="w-6 h-6 bg-transparent border-0 cursor-pointer" value="#000000">
+                        </div>
+
+                        <div class="flex items-center justify-between mt-2">
+                            <label class="text-xs text-muted">Canvas BG</label>
+                            <input type="color" id="input-canvas-color" class="w-6 h-6 bg-transparent border-0 cursor-pointer" value="#0a100d">
                         </div>
 
                         <div class="flex items-center justify-between">
@@ -1281,12 +1286,22 @@ window.toggleWorkspace = () => {
     toggleMenu(styleMenu);
 });
         // --- 新增：樣式調整邏輯 ---
+        // 宣告新變數
+        const inputCanvasColor = document.getElementById('input-canvas-color'); // ★ 新增抓取 Canvas 顏色 input
 
-        // 1. 背景顏色
+        // 1. 外部操作區背景 (Workspace BG)
+        // 改為控制 canvas-scroll-container
         inputBgColor.addEventListener('input', (e) => {
-            canvasSizer.style.backgroundColor = e.target.value;
             document.getElementById('canvas-scroll-container').style.backgroundColor = e.target.value;
         });
+
+        // 2. 中間畫布背景 (Canvas BG) 
+        // 改為控制 canvas-sizer
+        if (inputCanvasColor) {
+            inputCanvasColor.addEventListener('input', (e) => {
+                canvasSizer.style.backgroundColor = e.target.value;
+            });
+        }
 
         // 2. 外框顏色
         inputBorderColor.addEventListener('input', (e) => {
@@ -2100,6 +2115,7 @@ function onDragEnd() {
     </script>
 </body>
 </html>
+
 
 
 
