@@ -872,9 +872,11 @@
 
         // 綁定事件
         sendBtn.addEventListener('click', handleSendMessage);
+        // [優化] 主對話框 Enter 發送 (支援 Shift+Enter 換行，並防止輸入法誤傳)
         chatInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
+            // 檢查：按下 Enter + 沒有按 Shift + 不是正在選字 (isComposing)
+            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                e.preventDefault(); // 阻止預設換行
                 handleSendMessage();
             }
         });
@@ -965,8 +967,12 @@
         }
 
         tempSendBtn.addEventListener('click', handleTempSend);
+        // [優化] 臨時對話框 Enter 發送
         tempInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') handleTempSend();
+            if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                // 這裡不需要 preventDefault，因為 input 本身單行，但加上保險
+                handleTempSend();
+            }
         });
     </script>
     <div id="temp-chat-modal" class="nx-modal-overlay">
