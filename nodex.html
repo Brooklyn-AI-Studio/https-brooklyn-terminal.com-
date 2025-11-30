@@ -1033,19 +1033,25 @@
 
         // --- UI 輔助函式 (適配 NodeX 風格) ---
         
-        function appendUserMessage(text) {
+      function appendUserMessage(text) {
             const div = document.createElement('div');
-            // [修改] 關鍵樣式：讓容器寬度與輸入框一致，並置中
+            // 寬度鎖定與置中設定
             div.style.width = '100%';
-            div.style.maxWidth = '800px'; // 鎖定最大寬度
+            div.style.maxWidth = '800px'; 
             div.style.marginBottom = '20px';
             
-            // 讓內部的氣泡靠右排列
             div.style.display = 'flex';
             div.style.flexDirection = 'column';
             div.style.alignItems = 'flex-end'; 
 
-            div.innerHTML = `const userName = window.currentUser ? window.currentUser.displayName : 'GUEST';<div style="font-size:0.8em; color:var(--nx-text-muted); margin-bottom:5px;">YOU</div>
+            // 1. 取得使用者名稱 (如果沒登入顯示 GUEST)
+            const userName = window.currentUser ? window.currentUser.displayName : 'GUEST';
+
+            div.innerHTML = `
+                <div style="font-size:0.8em; color:var(--nx-text-muted); margin-bottom:5px; text-transform: uppercase;">
+                    ${userName}
+                </div>
+                
                 <div style="background:var(--nx-card-bg); padding:12px 16px; border-radius:12px; border:1px solid var(--nx-border); color:var(--nx-text); text-align: left;">
                     ${text.replace(/\n/g, '<br>')}
                 </div>
