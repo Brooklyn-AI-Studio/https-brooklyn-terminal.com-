@@ -559,7 +559,7 @@
             </button>
         </div>
 
-        <div class="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent">
+        <div id="chat-history" class="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent">
             <div class="flex flex-col gap-2 items-start">
                 <div class="flex items-center gap-2 mb-1">
                     <div class="w-6 h-6 rounded flex items-center justify-center bg-accent/10 border border-accent/20 text-accent">
@@ -579,6 +579,7 @@
             <div class="relative bg-[#18181b] border border-[#27272a] focus-within:border-accent/40 rounded-2xl transition-colors shadow-lg flex flex-col gap-2 p-3">
                 
                 <textarea 
+                    id="chat-input"
                     placeholder="把你不懂的都丟上來問一遍!" 
                     class="w-full bg-transparent border-none text-sm text-gray-200 placeholder-gray-500 px-1 py-1 focus:ring-0 resize-none h-10 min-h-[40px] max-h-32 scrollbar-none leading-relaxed"
                 ></textarea>
@@ -614,7 +615,7 @@
                             </svg>
                         </button>
 
-                        <button class="flex items-center justify-center w-8 h-8 bg-[#00ff9d] rounded-lg hover:bg-[#00cc7d] hover:shadow-[0_0_10px_rgba(0,255,157,0.3)] transition-all transform hover:scale-105 active:scale-95 text-black">
+                        <button id="chat-send-btn" class="flex items-center justify-center w-8 h-8 bg-[#00ff9d] rounded-lg hover:bg-[#00cc7d] hover:shadow-[0_0_10px_rgba(0,255,157,0.3)] transition-all transform hover:scale-105 active:scale-95 text-black">
                             <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"></path>
                             </svg>
@@ -2105,10 +2106,162 @@ function onDragEnd() {
     document.removeEventListener('mousemove', onDragMove);
     document.removeEventListener('mouseup', onDragEnd);
 }
+
+// ==========================================
+// ★ NodeX Proxy 整合 (安全模式) ★
+// ==========================================
+
+// ⚠️ 請填入你的 Cloudflare Worker 網址
+const WORKER_URL = "https://nodex-proxy.coreinformation30.workers.dev"; 
+
+// 取得 UI 元素
+const chatHistory = document.getElementById('chat-history');
+const chatInputJs = document.getElementById('chat-input'); // 避免變數名稱衝突
+const sendBtn = document.getElementById('chat-send-btn');
+
+async function handleSendMessage() {
+    const userText = chatInputJs.value.trim();
+    if (!userText) return;
+
+    // 1. 重置輸入框
+    chatInputJs.value = '';
+    chatInputJs.style.height = '48px'; 
+
+    // 2. 顯示使用者訊息
+    appendUserMessage(userText);
+    const loadingId = appendLoadingIndicator();
+
+    try {
+        // 3. 呼叫你的 Cloudflare Worker (Key 藏在裡面)
+        const response = await fetch(WORKER_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                // 符合 Google Gemini API 的格式
+                contents: [{ parts: [{ text: userText }] }] 
+            })
+        });
+
+        if (!response.ok) throw new Error("Worker Error: " + response.statusText);
+
+        // 4. 準備顯示 AI 回應
+        removeMessage(loadingId);
+        const aiMsgContent = appendAiMessageStart();
+        
+        // 5. 處理串流回應 (Streaming)
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            
+            // 解析 Google 的 JSON 串流格式
+            // 簡單提取 "text": "..." 的內容
+            const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
+            
+            if (matches) {
+                matches.forEach(match => {
+                    // 清理 JSON 格式
+                    let textPart = match.replace(/"text":\s*"/, "").replace(/"$/, "");
+                    try {
+                        // 解碼轉義字元 (如 \n)
+                        textPart = JSON.parse(`"${textPart}"`); 
+                        fullText += textPart;
+                        // 更新畫面
+                        aiMsgContent.innerText = fullText;
+                        scrollToBottom();
+                    } catch (e) { console.error("Parse error", e); }
+                });
+            }
+        }
+
+    } catch (error) {
+        removeMessage(loadingId);
+        appendAiMessageStart().innerHTML = `<span class="text-red-500">System Error: ${error.message}</span>`;
+        console.error(error);
+    }
+}
+
+// --- UI 輔助函式 ---
+
+function appendUserMessage(text) {
+    const div = document.createElement('div');
+    div.className = "flex flex-col items-end gap-1 animate-pulse-once";
+    div.innerHTML = `
+        <div class="flex items-center gap-2 mb-1">
+            <span class="text-[10px] font-bold text-muted tracking-wider">YOU</span>
+        </div>
+        <div class="p-3 bg-accent/10 border border-accent/20 rounded-2xl rounded-tr-none text-sm text-text leading-relaxed shadow-sm max-w-[85%]">
+            ${text}
+        </div>
+    `;
+    chatHistory.appendChild(div);
+    scrollToBottom();
+}
+
+function appendAiMessageStart() {
+    const div = document.createElement('div');
+    div.className = "flex flex-col gap-2 items-start fade-in";
+    div.innerHTML = `
+        <div class="flex items-center gap-2 mb-1">
+            <div class="w-6 h-6 rounded flex items-center justify-center bg-accent/10 border border-accent/20 text-accent">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path></svg>
+            </div>
+            <span class="text-[10px] font-bold text-accent tracking-wider">NodeX AI</span>
+        </div>
+        <div class="ai-content p-3 bg-white/5 border border-white/5 rounded-2xl rounded-tl-none text-sm text-text leading-relaxed shadow-sm w-full font-mono">
+            </div>
+    `;
+    chatHistory.appendChild(div);
+    return div.querySelector('.ai-content');
+}
+
+function appendLoadingIndicator() {
+    const id = 'loading-' + Date.now();
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = "flex flex-col gap-2 items-start opacity-50";
+    div.innerHTML = `
+        <div class="flex items-center gap-2 mb-1">
+            <div class="w-6 h-6 rounded flex items-center justify-center bg-white/5 border border-white/10">
+               <div class="w-1 h-1 bg-accent rounded-full animate-ping"></div>
+            </div>
+            <span class="text-[10px] text-muted">THINKING...</span>
+        </div>
+    `;
+    chatHistory.appendChild(div);
+    scrollToBottom();
+    return id;
+}
+
+function removeMessage(id) {
+    const el = document.getElementById(id);
+    if(el) el.remove();
+}
+
+function scrollToBottom() {
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+// 綁定按鈕事件
+if(sendBtn && chatInputJs) {
+    sendBtn.addEventListener('click', handleSendMessage);
+    chatInputJs.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    });
+}
         window.onload = () => { setTheme('developer'); setLanguage('zh'); };
     </script>
 </body>
 </html>
+
 
 
 
