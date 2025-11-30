@@ -2483,16 +2483,68 @@ if(sendBtnJs && chatInputJs) {
                 }
             });
         }
-        window.onload = () => { setTheme('developer'); setLanguage('zh'); };//預設
-        <div id="global-nav-container" class="fixed top-6 right-6 z-[1000] flex flex-col items-end font-sans">
+        // 將原本分散的程式碼整合到這裡
+        window.onload = () => { 
+            // 1. 初始化主題與語言
+            setTheme('developer'); 
+            setLanguage('zh');
+            
+            // 2. 初始化每日用量 UI (如果有定義的話)
+            if (typeof updateUsageUI === 'function') updateUsageUI();
+
+            // 3. 右上角全域導航選單邏輯 (放在這裡保證抓得到按鈕)
+            const globalNavToggle = document.getElementById('global-nav-toggle');
+            const globalNavMenu = document.getElementById('global-nav-menu');
+            const globalLogoutBtn = document.getElementById('global-logout-btn');
+            const globalNavContainer = document.getElementById('global-nav-container');
+
+            if (globalNavToggle && globalNavMenu) {
+                // 切換選單
+                globalNavToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    globalNavMenu.classList.toggle('hidden');
+                });
+
+                // 點擊外部關閉
+                document.addEventListener('click', (e) => {
+                    if (!globalNavMenu.classList.contains('hidden') && 
+                        !globalNavToggle.contains(e.target) && 
+                        !globalNavMenu.contains(e.target)) {
+                        globalNavMenu.classList.add('hidden');
+                    }
+                });
+
+                // 登出按鈕
+                if (globalLogoutBtn) {
+                    globalLogoutBtn.addEventListener('click', async () => {
+                        try {
+                            if (typeof signOut === 'function' && typeof auth !== 'undefined') {
+                                await signOut(auth);
+                                window.location.href = 'index.html';
+                            } else {
+                                console.error("Firebase auth not ready");
+                            }
+                        } catch (error) {
+                            console.error("Logout failed:", error);
+                            alert("登出失敗");
+                        }
+                    });
+                }
+            } else {
+                console.warn("Global Nav elements not found. Check HTML.");
+            }
+        };
+       
+    </script>
+        <div id="global-nav-container" class="fixed top-6 right-6 z-[1000] flex flex-col items-end pointer-events-none font-sans">
     
-    <button id="global-nav-toggle" class="w-10 h-10 rounded-full bg-surface/80 backdrop-blur-md border border-accent/50 text-accent shadow-[0_0_15px_rgba(0,255,157,0.3)] flex items-center justify-center hover:bg-accent hover:text-bg transition-all duration-300 group">
+    <button id="global-nav-toggle" class="pointer-events-auto w-10 h-10 rounded-full bg-surface/80 backdrop-blur-md border border-accent/50 text-accent shadow-[0_0_15px_rgba(0,255,157,0.3)] flex items-center justify-center hover:bg-accent hover:text-bg transition-all duration-300 group cursor-pointer">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
         </svg>
     </button>
     
-    <div id="global-nav-menu" class="hidden mt-3 w-48 bg-[#0a0a0a]/95 backdrop-blur-xl border border-accent/20 rounded-xl shadow-2xl overflow-hidden flex flex-col origin-top-right transition-all transform animate-in fade-in slide-in-from-top-2">
+    <div id="global-nav-menu" class="hidden pointer-events-auto mt-3 w-48 bg-[#0a0a0a]/95 backdrop-blur-xl border border-accent/20 rounded-xl shadow-2xl overflow-hidden flex flex-col origin-top-right transition-all transform animate-in fade-in slide-in-from-top-2">
         
         <a href="index.html" class="px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/5 hover:text-accent border-b border-white/5 flex items-center gap-3 transition-colors">
             <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
@@ -2514,17 +2566,15 @@ if(sendBtnJs && chatInputJs) {
             NodeX
         </a>
 
-        <button id="global-logout-btn" class="px-4 py-3 text-xs font-bold text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-3 text-left transition-colors w-full">
+        <button id="global-logout-btn" class="px-4 py-3 text-xs font-bold text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-3 text-left transition-colors w-full cursor-pointer">
             <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             登出
         </button>
     </div>
 </div>
-       
-    </script>
-        
 </body>
 </html>
+
 
 
 
