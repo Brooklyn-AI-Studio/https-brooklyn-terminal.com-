@@ -914,6 +914,7 @@
         };
        // --- [新增] 啟動新對話模式 ---
        window.startNewChat = function() {
+           currentChatId = null;
             // 1. 定義歡迎語清單
             const titles = [
                 "我們該從哪裡開始？",
@@ -999,7 +1000,11 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // UI 元素
         const nameEl = document.getElementById('nx-user-name');
@@ -1007,17 +1012,22 @@
         const userProfileSection = document.getElementById('user-profile-section');
 
         // 2. 登入狀態監聽
-        onAuthStateChanged(auth, (user) => {
-            window.currentUser = user; // 存到全域變數供 LLM 使用
+       onAuthStateChanged(auth, (user) => {
+            window.currentUser = user;
             if (user) {
                 nameEl.innerText = user.displayName;
                 if(user.photoURL) {
                     avatarEl.src = user.photoURL;
                     avatarEl.style.display = 'block';
                 }
+                // [新增] 登入成功後，載入該使用者的歷史紀錄
+                loadSidebarHistory(user.uid);
             } else {
-                nameEl.innerText = "GUEST (點擊登入)";
+                nameEl.innerText = "GUEST";
                 avatarEl.style.display = 'none';
+                // 登出時清空歷史清單
+                document.querySelector('.nx-menu-group[style="flex:1;"]').innerHTML = '<div class="nx-menu-title">歷史紀錄</div>';
+                currentChatId = null;
             }
         });
 
@@ -1056,39 +1066,40 @@
         }
 
         // 發送訊息主函式
-        async function handleSendMessage() {
-            // 權限檢查
+       async function handleSendMessage() {
+            // 1. [強制登入檢查]
             if (!window.currentUser) {
                 appendSystemMessage("🔒 請先點擊左下角頭像登入 Google 帳號。");
                 return;
             }
-            // --- [新增/修改] UI 狀態切換 ---
-            // 1. 移除置中模式 (讓輸入框滑回底部)
-            document.querySelector('.nx-main').classList.remove('centered-mode');
-            
-            // 2. 隱藏「新對話」標題 & 首頁
-            document.getElementById('view-new-chat').style.display = 'none';
-            document.getElementById('view-home').style.display = 'none';
-            document.getElementById('view-dashboard').style.display = 'none';
-            
-            // 3. 顯示聊天記錄區
-            const chatHistory = document.getElementById('nx-chat-history');
-            chatHistory.style.display = 'flex';
-            chatHistory.style.flexDirection = 'column';
-            // 用量檢查
-            const usage = getDailyUsage();
+
+            // 2. [每日用量檢查] (建議搭配 UID 使用)
+            // 如果您之前的步驟有修改 incrementUsage(uid)，請這裡也改成 getDailyUsage(window.currentUser.uid)
+            const usage = getDailyUsage(); 
             if (usage.count >= DAILY_LIMIT) {
-                appendSystemMessage("⚠️ 今日訊息額度已達上限 (20/20)。請明天再來！");
+                appendSystemMessage(`⚠️ 今日訊息額度已達上限 (${usage.count}/${DAILY_LIMIT})。請明天再來！`);
                 return;
             }
 
             const userText = chatInput.value.trim();
             if (!userText) return;
 
-            // UI 處理：隱藏首頁與儀表板，切換到聊天模式
-            if (homeView) homeView.style.display = 'none';
-            if (dashboardView) dashboardView.style.display = 'none';
+            // 3. [UI 狀態切換]
+            // 移除置中模式
+            document.querySelector('.nx-main').classList.remove('centered-mode');
             
+            // 隱藏其他視圖
+            document.getElementById('view-new-chat').style.display = 'none';
+            document.getElementById('view-home').style.display = 'none';
+            document.getElementById('view-dashboard').style.display = 'none';
+            
+            // 顯示聊天記錄區
+            const chatHistory = document.getElementById('nx-chat-history');
+            if(chatHistory) {
+                chatHistory.style.display = 'flex';
+                chatHistory.style.flexDirection = 'column';
+            }
+
             // 重置輸入框
             chatInput.value = '';
             chatInput.style.height = 'auto';
@@ -1097,9 +1108,11 @@
             appendUserMessage(userText);
             incrementUsage(); // 扣除額度
 
+            // 4. [顯示 Loading 動畫] (定義變數以免後續報錯)
             const loadingId = appendLoadingIndicator();
 
             try {
+                // 5. [呼叫 API]
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -1110,9 +1123,11 @@
 
                 if (!response.ok) throw new Error("Worker Error: " + response.statusText);
 
+                // 移除 Loading，準備顯示 AI 回覆
                 removeMessage(loadingId);
                 const aiMsgContent = appendAiMessageStart();
                 
+                // 6. [處理串流回應]
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullText = "";
@@ -1131,21 +1146,28 @@
                                 textPart = JSON.parse(`"${textPart}"`); 
                                 fullText += textPart;
                                 
-                                // 1. 先做 Markdown 轉換
+                                // --- [核心渲染邏輯] ---
+                                
+                                // A. 先做 Markdown 轉換 (marked.js)
                                 aiMsgContent.innerHTML = marked.parse(fullText);
 
-                                // 2. [新增] 再做 LaTeX 渲染
-                                renderMathInElement(aiMsgContent, {
-                                    delimiters: [
-                                        {left: "$$", right: "$$", display: true}, // 區塊公式
-                                        {left: "$", right: "$", display: false},   // 行內公式
-                                        {left: "\\(", right: "\\)", display: false},
-                                        {left: "\\[", right: "\\]", display: true}
-                                    ],
-                                    throwOnError: false
-                                });
+                                // B. 再做 LaTeX 數學公式渲染 (KaTeX)
+                                // 確保您已經在 <head> 引入了 katex 的 js 與 css
+                                if (window.renderMathInElement) {
+                                    renderMathInElement(aiMsgContent, {
+                                        delimiters: [
+                                            {left: "$$", right: "$$", display: true}, // 區塊公式
+                                            {left: "$", right: "$", display: false},   // 行內公式
+                                            {left: "\\(", right: "\\)", display: false},
+                                            {left: "\\[", right: "\\]", display: true}
+                                        ],
+                                        throwOnError: false
+                                    });
+                                }
                                 
+                                // 捲動到底部
                                 chatHistory.scrollTop = chatHistory.scrollHeight;
+
                             } catch (e) { 
                                 // console.error("Parse error", e); 
                             }
@@ -1153,9 +1175,12 @@
                     }
                 }
 
+                // (如果您有加入 Firestore 存檔功能，請在這裡將 fullText 存入資料庫)
+
             } catch (error) {
                 removeMessage(loadingId);
                 appendSystemMessage(`❌ 系統錯誤: ${error.message}`);
+                console.error(error);
             }
         }
 
@@ -1389,6 +1414,63 @@
                 handleTempSend();
             }
         });
+       // --- [新增] 載入側邊欄歷史清單 ---
+        async function loadSidebarHistory(uid) {
+            const historyContainer = document.querySelector('.nx-menu-group[style="flex:1;"]'); // 找到歷史紀錄區塊
+            // 保留標題，清空舊清單
+            historyContainer.innerHTML = '<div class="nx-menu-title">歷史紀錄 (History)</div>';
+
+            // 查詢該使用者的所有對話，按時間倒序
+            const q = query(collection(db, "chats"), where("userId", "==", uid), orderBy("createdAt", "desc"));
+            const querySnapshot = await getDocs(q);
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                
+                // 建立清單項目
+                const item = document.createElement('div');
+                item.className = 'nx-menu-item';
+                item.style.fontSize = '0.85em';
+                item.style.whiteSpace = 'nowrap';
+                item.style.overflow = 'hidden';
+                item.style.textOverflow = 'ellipsis';
+                item.innerText = data.title || '新對話';
+                
+                // 點擊事件：載入該對話
+                item.onclick = () => loadChatSession(doc.id);
+                
+                historyContainer.appendChild(item);
+            });
+        }
+
+        // --- [新增] 載入特定對話內容 ---
+        async function loadChatSession(chatId) {
+            currentChatId = chatId; // 設定當前 ID
+            
+            // 清空畫面
+            document.getElementById('nx-chat-history').innerHTML = '';
+            document.getElementById('view-home').style.display = 'none';
+            document.getElementById('view-dashboard').style.display = 'none';
+            document.getElementById('view-new-chat').style.display = 'none';
+            document.getElementById('nx-chat-history').style.display = 'flex';
+            document.querySelector('.nx-main').classList.remove('centered-mode');
+
+            // 抓取該對話的所有訊息
+            const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "asc"));
+            const querySnapshot = await getDocs(q);
+
+            querySnapshot.forEach((doc) => {
+                const msg = doc.data();
+                if (msg.role === 'user') {
+                    appendUserMessage(msg.content);
+                } else {
+                    // 這裡為了簡化，直接顯示 AI 訊息，不跑打字機動畫
+                    const aiDiv = appendAiMessageStart(); 
+                    aiDiv.innerHTML = marked.parse(msg.content);
+                    // 如果有 LaTeX 記得在這裡也要 renderMathInElement
+                }
+            });
+        }
     </script>
    <div id="temp-chat-modal" class="nx-modal-overlay">
     <div class="nx-modal-content">
