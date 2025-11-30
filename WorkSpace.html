@@ -1631,13 +1631,30 @@ scrollContainer.addEventListener('mousemove', (e) => {
     scrollContainer.scrollLeft = scrollLeft - walkX;
     scrollContainer.scrollTop = scrollTop - walkY;
 });
+        // --- 滾輪捲動：一般垂直，Shift + 滾輪 = 水平 --- 
+scrollContainer.addEventListener('wheel', (e) => {
+    // Shift + 滾輪 => 移動水平捲軸
+    if (e.shiftKey) {
+        e.preventDefault();  // 擋掉瀏覽器預設行為，避免同時上下滾
+
+        // 以 deltaY 為主（大部分滑鼠只會出 deltaY）
+        // 若是觸控板或橫向滾輪，有 deltaX 也一起考慮
+        const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+        scrollContainer.scrollLeft += delta;
+    } else {
+        // 不特別處理，交給瀏覽器做「垂直捲動」即可
+        // （如果你想完全自己控制，也可以改成：）
+        // e.preventDefault();
+        // scrollContainer.scrollTop += e.deltaY;
+    }
+}, { passive: false });
         // --- 新增：動態調整畫布大小 ---
 window.resizeCanvasPrompt = function() {
     const sizer = document.getElementById('canvas-sizer');
     const currentW = parseInt(sizer.style.width);
     const currentH = parseInt(sizer.style.height);
 
-    // 簡單使用 prompt 讓使用者輸入 (您也可以改成漂亮的 modal)
+    // 簡單使用 prompt 讓使用者輸入 
     const newW = prompt("請輸入畫布寬度 (Width px):", currentW);
     if (newW === null) return; // 取消
     
@@ -1745,3 +1762,4 @@ window.resizeCanvasPrompt = function() {
     </script>
 </body>
 </html>
+
