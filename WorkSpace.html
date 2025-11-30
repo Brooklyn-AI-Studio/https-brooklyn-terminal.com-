@@ -540,19 +540,27 @@
     </main>
 <div id="llm-chat-container" class="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
     
-    <div id="llm-chat-window" class="hidden pointer-events-auto mb-4 w-[380px] h-[550px] bg-surface/90 backdrop-blur-xl border border-accent/30 rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all duration-300 origin-bottom-right popover-enter relative">
+    <div id="llm-chat-window" 
+         class="hidden pointer-events-auto mb-4 bg-surface/90 backdrop-blur-xl border border-accent/30 rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-opacity duration-300 origin-bottom-right relative"
+         style="width: 380px; height: 550px; min-width: 320px; min-height: 400px;">
         
-        <div id="llm-chat-header" class="px-4 py-3 bg-white/5 border-b border-white/5 flex justify-between items-center cursor-move select-none backdrop-blur-md">
+        <div id="llm-resize-handle" class="absolute top-0 left-0 w-8 h-8 cursor-nw-resize z-50 group flex items-start justify-start p-1.5 hover:bg-white/5 rounded-br-xl transition-colors">
+            <svg class="w-4 h-4 text-accent/40 group-hover:text-accent transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 4H4v12" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <div id="llm-chat-header" class="pl-10 pr-4 py-3 bg-white/5 border-b border-white/5 flex justify-between items-center cursor-move select-none backdrop-blur-md">
             <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-accent shadow-[0_0_8px_rgba(0,255,157,0.8)]"></div>
-                <span class="font-mono font-bold text-sm text-text tracking-widest">NODEX <span class="text-accent text-[10px] align-top">v2.0</span></span>
+                <div class="w-2 h-2 rounded-full bg-accent shadow-[0_0_8px_rgba(0,255,157,0.8)] animate-pulse"></div>
+                <span class="font-mono font-bold text-sm text-text tracking-widest">NODEX <span class="text-accent text-[10px] align-top">v2.1</span></span>
             </div>
             <button onclick="window.closeLlmChat()" class="group p-1 rounded hover:bg-white/10 transition-colors">
                 <svg class="w-4 h-4 text-muted group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
         </div>
 
-        <div class="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-thin">
+        <div class="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent">
             <div class="flex flex-col gap-2 items-start">
                 <div class="flex items-center gap-2 mb-1">
                     <div class="w-6 h-6 rounded flex items-center justify-center bg-accent/10 border border-accent/20 text-accent">
@@ -562,51 +570,37 @@
                 </div>
                 <div class="p-3 bg-white/5 border border-white/5 rounded-2xl rounded-tl-none text-sm text-text leading-relaxed shadow-sm">
                     NodeX Online. <br>
-                    <span class="text-muted text-xs">I can assist with code analysis, data visualization, and web search.</span>
+                    <span class="text-muted text-xs">Resize me by dragging the top-left corner marker.</span>
                 </div>
             </div>
         </div>
 
         <div class="p-4 bg-bg/40 backdrop-blur-md border-t border-white/5">
             <div class="relative bg-surface border border-white/10 focus-within:border-accent/50 rounded-xl transition-colors shadow-inner">
-                
                 <textarea 
                     placeholder="Ask anything..." 
                     class="w-full bg-transparent border-none text-sm text-text placeholder-muted/50 px-3 py-3 focus:ring-0 resize-none h-12 max-h-32 scrollbar-none"
                     style="min-height: 48px;"
                 ></textarea>
-
                 <div class="flex justify-between items-center px-2 pb-2 pt-1">
                     <div class="flex gap-1">
                         <button class="p-1.5 text-muted hover:text-accent hover:bg-accent/10 rounded-lg transition-all group" title="Upload File">
-                            <svg class="w-4 h-4 transform group-hover:-rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                            </svg>
+                            <svg class="w-4 h-4 transform group-hover:-rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                         </button>
                         <button class="p-1.5 text-muted hover:text-accent hover:bg-accent/10 rounded-lg transition-all group" title="Web Search">
-                            <svg class="w-4 h-4 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9h.01"></path>
-                            </svg>
+                            <svg class="w-4 h-4 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9h.01"></path></svg>
                         </button>
                     </div>
-
                     <button class="p-1.5 bg-accent text-bg rounded-lg hover:bg-accent/90 hover:shadow-[0_0_10px_rgba(0,255,157,0.4)] transition-all transform hover:scale-105 active:scale-95">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path>
-                        </svg>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path></svg>
                     </button>
                 </div>
-            </div>
-            
-            <div class="text-[10px] text-muted text-center mt-2 opacity-40 font-mono">
-                Powered by NodeX Models
             </div>
         </div>
     </div>
 
     <button id="llm-chat-toggle" class="pointer-events-auto w-14 h-14 rounded-full bg-bg border border-accent/50 text-accent shadow-[0_0_20px_rgba(0,255,157,0.2)] hover:shadow-[0_0_30px_rgba(0,255,157,0.4)] hover:bg-accent hover:text-bg transition-all duration-300 flex items-center justify-center group relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-        
         <svg class="w-6 h-6 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M6 6L18 18" stroke-linecap="square" class="group-hover:rotate-90 transition-transform duration-500 origin-center" />
             <path d="M18 6L6 18" stroke-linecap="square" class="group-hover:-rotate-90 transition-transform duration-500 origin-center" />
@@ -1925,45 +1919,111 @@ function onDragEnd() {
     document.removeEventListener('mousemove', onDragMove);
     document.removeEventListener('mouseup', onDragEnd);
 }
-// --- LLM Chat Widget Logic ---
+// --- LLM Chat Widget Logic (Enhanced) ---
 const chatToggleBtn = document.getElementById('llm-chat-toggle');
 const chatWindow = document.getElementById('llm-chat-window');
 const chatHeader = document.getElementById('llm-chat-header');
 const chatContainer = document.getElementById('llm-chat-container');
+const resizeHandle = document.getElementById('llm-resize-handle');
+const chatInput = document.querySelector('#llm-chat-window textarea');
 
-// 1. 處理點擊切換事件
+// 1. Toggle Logic
 chatToggleBtn.addEventListener('click', () => {
-    // 展開對話視窗
     chatWindow.classList.remove('hidden');
-    chatWindow.classList.add('popover-enter-active');
-    
-    // 隱藏迷你圖示按鈕
+    // 使用 setTimeout 確保 transition 動畫生效
+    setTimeout(() => chatWindow.classList.add('opacity-100'), 10); 
     chatToggleBtn.classList.add('hidden');
 });
 
 window.closeLlmChat = () => {
-    // 關閉對話視窗
-    chatWindow.classList.add('hidden');
-    chatWindow.classList.remove('popover-enter-active');
-    // 顯示迷你圖示按鈕
-    chatToggleBtn.classList.remove('hidden');
+    chatWindow.classList.remove('opacity-100');
+    setTimeout(() => {
+        chatWindow.classList.add('hidden');
+        chatToggleBtn.classList.remove('hidden');
+    }, 300); // 等待動畫結束
 }
 
-// 3. (保留) 拖曳邏輯 (與上一個回覆相同，讓視窗可移動)
+// 2. Input Auto-Resize
+if (chatInput) {
+    chatInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+        if(this.value === '') this.style.height = '48px';
+    });
+}
+
+// 3. Resize Logic (Top-Left Handle)
+let isResizing = false;
+let resizeStartX, resizeStartY, startWidth, startHeight;
+
+if (resizeHandle) {
+    resizeHandle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // 防止觸發 Drag
+        isResizing = true;
+        
+        // 紀錄初始滑鼠位置
+        resizeStartX = e.clientX;
+        resizeStartY = e.clientY;
+        
+        // 紀錄初始視窗大小 (使用 getComputedStyle 確保抓到當前實際像素)
+        const style = window.getComputedStyle(chatWindow);
+        startWidth = parseInt(style.width);
+        startHeight = parseInt(style.height);
+        
+        document.addEventListener('mousemove', onResizeMove);
+        document.addEventListener('mouseup', onResizeEnd);
+    });
+}
+
+function onResizeMove(e) {
+    if (!isResizing) return;
+    
+    // 計算滑鼠移動距離
+    // 因為手把在左上角，往左移(X變小) = 寬度變大
+    // 往上移(Y變小) = 高度變大
+    const dx = resizeStartX - e.clientX; 
+    const dy = resizeStartY - e.clientY;
+    
+    let newWidth = startWidth + dx;
+    let newHeight = startHeight + dy;
+    
+    // 限制最小尺寸
+    if (newWidth < 320) newWidth = 320;
+    if (newHeight < 400) newHeight = 400;
+    
+    // 限制最大尺寸 (不超過視窗)
+    if (newWidth > window.innerWidth - 50) newWidth = window.innerWidth - 50;
+    if (newHeight > window.innerHeight - 50) newHeight = window.innerHeight - 50;
+    
+    chatWindow.style.width = newWidth + 'px';
+    chatWindow.style.height = newHeight + 'px';
+}
+
+function onResizeEnd() {
+    isResizing = false;
+    document.removeEventListener('mousemove', onResizeMove);
+    document.removeEventListener('mouseup', onResizeEnd);
+}
+
+// 4. Drag Logic (保留原本的移動邏輯)
+// 注意：移動改變的是 Container 的 right/bottom，這與 Resize 改變 width/height 不衝突
 let isDragging = false;
-let dragStartX, dragStartY, containerStartX, containerStartY;
+let dragStartX, dragStartY, containerStartRight, containerStartBottom;
 
 if (chatHeader) {
     chatHeader.addEventListener('mousedown', (e) => {
+        if(e.target.closest('button')) return; // 忽略關閉按鈕
         e.preventDefault();
         isDragging = true;
         dragStartX = e.clientX;
         dragStartY = e.clientY;
-        containerStartX = parseInt(window.getComputedStyle(chatContainer).right);
-        containerStartY = parseInt(window.getComputedStyle(chatContainer).bottom);
+        
+        const style = window.getComputedStyle(chatContainer);
+        containerStartRight = parseInt(style.right);
+        containerStartBottom = parseInt(style.bottom);
         
         chatHeader.style.cursor = 'grabbing';
-        
         document.addEventListener('mousemove', onDragMove);
         document.addEventListener('mouseup', onDragEnd);
     });
@@ -1972,25 +2032,17 @@ if (chatHeader) {
 function onDragMove(e) {
     if (!isDragging) return;
     
+    // 往右移(X變大) -> right 變小
     const dx = e.clientX - dragStartX;
     const dy = e.clientY - dragStartY;
     
-    let newRight = containerStartX - dx;
-    let newBottom = containerStartY - dy;
-
-    // 範圍限制邏輯 (確保不跑出 viewport)
-    const viewportW = window.innerWidth;
-    const viewportH = window.innerHeight;
-    const chatW = chatWindow.offsetWidth || 320;
-    const chatH = chatWindow.offsetHeight || 450;
-    const padding = 10;
+    let newRight = containerStartRight - dx;
+    let newBottom = containerStartBottom - dy;
     
-    if (newRight < padding) newRight = padding;
-    if (newRight > viewportW - chatW - padding) newRight = viewportW - chatW - padding;
-
-    if (newBottom < padding) newBottom = padding;
-    if (newBottom > viewportH - chatH - padding) newBottom = viewportH - chatH - padding;
-
+    // 簡單邊界檢查
+    if (newRight < 10) newRight = 10;
+    if (newBottom < 10) newBottom = 10;
+    
     chatContainer.style.right = newRight + 'px';
     chatContainer.style.bottom = newBottom + 'px';
 }
@@ -2001,18 +2053,11 @@ function onDragEnd() {
     document.removeEventListener('mousemove', onDragMove);
     document.removeEventListener('mouseup', onDragEnd);
 }
-        const chatInput = document.querySelector('#llm-chat-window textarea');
-if (chatInput) {
-    chatInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-        if(this.value === '') this.style.height = '48px'; // 重置高度
-    });
-}
         window.onload = () => { setTheme('developer'); setLanguage('zh'); };
     </script>
 </body>
 </html>
+
 
 
 
