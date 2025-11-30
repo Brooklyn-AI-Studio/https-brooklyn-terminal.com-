@@ -2123,32 +2123,23 @@ async function handleSendMessage() {
     const userText = chatInputJs.value.trim();
     if (!userText) return;
 
-    // 1. 重置輸入框
     chatInputJs.value = '';
     chatInputJs.style.height = '48px'; 
-
-    // 2. 顯示使用者訊息
     appendUserMessage(userText);
     const loadingId = appendLoadingIndicator();
 
     try {
-        // 3. 呼叫你的 Cloudflare Worker (Key 藏在裡面)
         const response = await fetch(WORKER_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                // 符合 Google Gemini API 的格式
-                contents: [{ parts: [{ text: userText }] }] 
-            })
+            body: JSON.stringify({ contents: [{ parts: [{ text: userText }] }] })
         });
 
         if (!response.ok) throw new Error("Worker Error: " + response.statusText);
 
-        // 4. 準備顯示 AI 回應
         removeMessage(loadingId);
         const aiMsgContent = appendAiMessageStart();
         
-        // 5. 處理串流回應 (Streaming)
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullText = "";
@@ -2159,19 +2150,22 @@ async function handleSendMessage() {
 
             const chunk = decoder.decode(value, { stream: true });
             
-            // 解析 Google 的 JSON 串流格式
-            // 簡單提取 "text": "..." 的內容
+            // ★ DEBUG: 印出收到的原始資料，按 F12 看 Console
+            console.log("收到 Chunk:", chunk); 
+
+            // 如果收到的是 "Hello World!"，代表 Worker 程式碼沒更新
+            if (chunk.includes("Hello World")) {
+                aiMsgContent.innerText = "系統提示: 請檢查 Cloudflare Worker 程式碼是否已部署。";
+                return;
+            }
+
             const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
-            
             if (matches) {
                 matches.forEach(match => {
-                    // 清理 JSON 格式
                     let textPart = match.replace(/"text":\s*"/, "").replace(/"$/, "");
                     try {
-                        // 解碼轉義字元 (如 \n)
                         textPart = JSON.parse(`"${textPart}"`); 
                         fullText += textPart;
-                        // 更新畫面
                         aiMsgContent.innerText = fullText;
                         scrollToBottom();
                     } catch (e) { console.error("Parse error", e); }
@@ -2181,7 +2175,7 @@ async function handleSendMessage() {
 
     } catch (error) {
         removeMessage(loadingId);
-        appendAiMessageStart().innerHTML = `<span class="text-red-500">System Error: ${error.message}</span>`;
+        appendAiMessageStart().innerHTML = `<span class="text-red-500">Error: ${error.message}</span>`;
         console.error(error);
     }
 }
@@ -2261,6 +2255,7 @@ if(sendBtn && chatInputJs) {
     </script>
 </body>
 </html>
+
 
 
 
