@@ -2483,9 +2483,7 @@ if(sendBtnJs && chatInputJs) {
                 }
             });
         }
-        window.onload = () => { setTheme('developer'); setLanguage('zh'); };
-       
-    </script>
+        window.onload = () => { setTheme('developer'); setLanguage('zh'); };//預設
         <div id="global-nav-container" class="fixed top-6 right-6 z-[1000] flex flex-col items-end font-sans">
     
     <button id="global-nav-toggle" class="w-10 h-10 rounded-full bg-surface/80 backdrop-blur-md border border-accent/50 text-accent shadow-[0_0_15px_rgba(0,255,157,0.3)] flex items-center justify-center hover:bg-accent hover:text-bg transition-all duration-300 group">
@@ -2522,8 +2520,12 @@ if(sendBtnJs && chatInputJs) {
         </button>
     </div>
 </div>
+       
+    </script>
+        
 </body>
 </html>
+
 
 
 
