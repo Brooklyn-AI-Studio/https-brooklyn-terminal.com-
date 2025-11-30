@@ -422,6 +422,20 @@
                         </div>
                     </div>
                 </div>
+                <!-- Canvas Size 按鈕：只顯示 SVG 圖示，點擊呼叫 resizeCanvasPrompt() -->
+                <div class="relative flex-1">
+                    <button id="canvas-size-btn"
+                            onclick="resizeCanvasPrompt()"
+                            class="w-full flex items-center justify-center px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors"
+                            title="Canvas Size">
+                
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div id="auth-container" class="pt-3 border-t border-border">
@@ -1633,7 +1647,7 @@ window.resizeCanvasPrompt = function() {
     if (newW && newH && !isNaN(newW) && !isNaN(newH)) {
         sizer.style.width = newW + 'px';
         sizer.style.height = newH + 'px';
-        ensureCanvasOverflow();
+        
         // 重新置中「初始化按鈕」的位置
         const emptyState = document.getElementById('empty-state-container');
         if (emptyState) {
@@ -1643,40 +1657,6 @@ window.resizeCanvasPrompt = function() {
         alert("請輸入有效的數字！");
     }
 }
-        // 🔸 保證畫布總是比可視區域再大一截（一定會有水平捲動）
-function ensureCanvasOverflow() {
-    const container = document.getElementById('canvas-scroll-container');
-    const sizer = document.getElementById('canvas-sizer');
-    if (!container || !sizer) return;
-
-    // 目前可視寬、高
-    const visibleW = container.clientWidth;
-    const visibleH = container.clientHeight;
-
-    // 多留一點空間，確保可以左右拖（你可以改成 300、500 看手感）
-    const extraX = 300;
-    const extraY = 0; // 垂直你已經會 overflow，這裡可以不用加
-
-    const minW = visibleW + extraX;
-    const minH = visibleH + extraY;
-
-    // 讀目前的寬高（如果 style 上是空的，就用 getComputedStyle）
-    const style = window.getComputedStyle(sizer);
-    let curW = parseInt(style.width, 10) || 0;
-    let curH = parseInt(style.height, 10) || 0;
-
-    if (curW < minW) {
-        sizer.style.width = minW + 'px';
-    }
-    if (curH < minH) {
-        sizer.style.height = minH + 'px';
-    }
-}
-
-// 載入時＆視窗尺寸改變時，都檢查一次
-window.addEventListener('load', ensureCanvasOverflow);
-window.addEventListener('resize', ensureCanvasOverflow);
-        
 // 1. 啟動 Presence 系統 (進入專案時呼叫)
         async function startPresenceSystem(workspaceId) {
             if (!currentUser) return;
@@ -1765,20 +1745,3 @@ window.addEventListener('resize', ensureCanvasOverflow);
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
