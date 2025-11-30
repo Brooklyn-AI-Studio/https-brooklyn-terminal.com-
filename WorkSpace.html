@@ -599,9 +599,10 @@
         </div>
     </div>
 
-    <button id="llm-chat-toggle" class="pointer-events-auto w-14 h-14 rounded-full bg-bg border border-accent/50 text-accent shadow-[0_0_20px_rgba(0,255,157,0.2)] hover:shadow-[0_0_30px_rgba(0,255,157,0.4)] hover:bg-accent hover:text-bg transition-all duration-300 flex items-center justify-center group relative overflow-hidden">
+   <button id="llm-chat-toggle" class="pointer-events-auto w-16 h-16 rounded-full bg-bg border border-accent/50 text-accent shadow-[0_0_20px_rgba(0,255,157,0.2)] hover:shadow-[0_0_30px_rgba(0,255,157,0.4)] hover:bg-accent hover:text-bg transition-all duration-300 flex items-center justify-center group relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-        <svg class="w-6 h-6 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        
+        <svg class="w-8 h-8 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M6 6L18 18" stroke-linecap="square" class="group-hover:rotate-90 transition-transform duration-500 origin-center" />
             <path d="M18 6L6 18" stroke-linecap="square" class="group-hover:-rotate-90 transition-transform duration-500 origin-center" />
         </svg>
@@ -1936,11 +1937,21 @@ chatToggleBtn.addEventListener('click', () => {
 });
 
 window.closeLlmChat = () => {
+    // 1. 先執行動畫讓視窗淡出
     chatWindow.classList.remove('opacity-100');
+    
     setTimeout(() => {
+        // 2. 隱藏視窗，顯示按鈕
         chatWindow.classList.add('hidden');
         chatToggleBtn.classList.remove('hidden');
-    }, 300); // 等待動畫結束
+        
+        // 清除 inline styles，讓它自動歸位到 CSS 設定的右下角 (bottom-6 right-6)
+        chatContainer.style.right = '';
+        chatContainer.style.bottom = '';
+        
+        // 選擇性：也可以重置視窗大小回預設值，如果希望下次打開是預設大小的話，可取消註解下一行
+        // chatWindow.style.width = '380px'; chatWindow.style.height = '550px';
+    }, 300);
 }
 
 // 2. Input Auto-Resize
@@ -2057,6 +2068,7 @@ function onDragEnd() {
     </script>
 </body>
 </html>
+
 
 
 
