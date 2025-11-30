@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NodeX</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffcc' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 5l14 14'/%3E%3Cpath d='M19 5l-14 14'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%2300ffcc' stroke='none'/%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&family=Courier+New&display=swap" rel="stylesheet">
     
     <style>
@@ -1034,16 +1035,18 @@
         
         function appendUserMessage(text) {
             const div = document.createElement('div');
-            div.style.alignSelf = 'flex-end'; // 靠右
-            div.style.maxWidth = '80%';
+            // [修改] 關鍵樣式：讓容器寬度與輸入框一致，並置中
+            div.style.width = '100%';
+            div.style.maxWidth = '800px'; // 鎖定最大寬度
             div.style.marginBottom = '20px';
+            
+            // 讓內部的氣泡靠右排列
             div.style.display = 'flex';
             div.style.flexDirection = 'column';
-            div.style.alignItems = 'flex-end';
-            
-            div.innerHTML = `
-                <div style="font-size:0.8em; color:var(--nx-text-muted); margin-bottom:5px;">YOU</div>
-                <div style="background:var(--nx-card-bg); padding:12px 16px; border-radius:12px; border:1px solid var(--nx-border); color:var(--nx-text);">
+            div.style.alignItems = 'flex-end'; 
+
+            div.innerHTML = `const userName = window.currentUser ? window.currentUser.displayName : 'GUEST';<div style="font-size:0.8em; color:var(--nx-text-muted); margin-bottom:5px;">YOU</div>
+                <div style="background:var(--nx-card-bg); padding:12px 16px; border-radius:12px; border:1px solid var(--nx-border); color:var(--nx-text); text-align: left;">
                     ${text.replace(/\n/g, '<br>')}
                 </div>
             `;
@@ -1053,17 +1056,24 @@
 
         function appendAiMessageStart() {
             const div = document.createElement('div');
-            div.style.alignSelf = 'flex-start'; // 靠左
-            div.style.maxWidth = '90%';
+            // [維持設定] 讓容器寬度與輸入框一致，並置中
             div.style.width = '100%';
+            div.style.maxWidth = '800px'; 
             div.style.marginBottom = '30px';
             
             div.innerHTML = `
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                    <svg style="width:20px; height:20px; color:var(--nx-accent);" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z" fill="currentColor"/></svg>
-                    <span style="font-size:0.9em; font-weight:bold; color:var(--nx-accent);">NodeX AI</span>
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                    <div style="width:28px; height:28px; background:rgba(0, 255, 204, 0.1); border-radius:6px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(0, 255, 204, 0.2);">
+                        <svg style="width:18px; height:18px; stroke:var(--nx-accent); fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </div>
+                    
+                    <span style="font-size:0.95em; font-weight:bold; color:var(--nx-accent); letter-spacing:0.5px;">NodeX AI</span>
                 </div>
-                <div class="ai-content markdown-body" style="padding-left:28px;"></div>
+                
+                <div class="ai-content markdown-body" style="padding-left:0;"></div> 
             `;
             chatHistory.appendChild(div);
             return div.querySelector('.ai-content');
@@ -1079,13 +1089,20 @@
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
 
-        function appendLoadingIndicator() {
+       function appendLoadingIndicator() {
             const id = 'loading-' + Date.now();
             const div = document.createElement('div');
             div.id = id;
-            div.style.paddingLeft = '28px';
+            
+            // [修改] 同樣鎖定寬度
+            div.style.width = '100%';
+            div.style.maxWidth = '800px';
             div.style.marginBottom = '20px';
-            div.innerHTML = `<span style="color:var(--nx-text-muted); font-size:0.8em; animation: pulse 1s infinite;">Thinking...</span>`;
+            
+            div.innerHTML = `<span style="color:var(--nx-text-muted); font-size:0.8em; animation: pulse 1s infinite; display:flex; align-items:center; gap:8px;">
+                <svg class="nx-icon" style="width:14px;height:14px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Thinking...
+            </span>`;
             chatHistory.appendChild(div);
             return id;
         }
