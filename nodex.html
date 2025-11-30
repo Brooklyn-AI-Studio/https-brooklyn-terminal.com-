@@ -478,10 +478,6 @@
         <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span id="txt-newChat">新對話</span>
     </button>
-    <button class="nx-btn-new" onclick="window.location.reload()" style="margin-bottom: 10px; width: 100%;">
-        <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        <span id="txt-newChat">新對話</span>
-    </button>
 
     <button class="nx-btn-temp" onclick="startTempChat()" title="建立一個不著痕跡的對話">
         <svg class="nx-icon" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path></svg>
@@ -742,10 +738,10 @@
 
             const userText = chatInput.value.trim();
             if (!userText) return;
-
-            // UI 處理：隱藏首頁與儀表板，切換到聊天模式
             if (homeView) homeView.style.display = 'none';
             if (dashboardView) dashboardView.style.display = 'none';
+            const tempSplash = document.getElementById('view-temp-splash');
+            if (tempSplash) tempSplash.style.display = 'none'; // 隱藏臨時對話歡迎頁
             
             // 重置輸入框
             chatInput.value = '';
@@ -904,7 +900,7 @@
                 handleSendMessage();
             }
         });
-       // --- 臨時對話邏輯 ---
+       // --- 臨時對話邏輯 (視覺增強版) ---
         window.startTempChat = () => {
             // 1. 權限檢查
             if (!window.currentUser) {
@@ -912,29 +908,61 @@
                 return;
             }
 
-            // 2. 切換 UI：隱藏首頁與儀表板
+            // 2. 隱藏首頁與儀表板
             if(homeView) homeView.style.display = 'none';
             if(dashboardView) dashboardView.style.display = 'none';
 
-            // 3. 清除目前的對話紀錄 (但保留 view-home 和 view-dashboard DOM 結構)
-            // 做法：把 chatHistory 裡面的 "非 view 結構" 全部刪除
+            // 3. 清理現有對話 (只保留 View 結構，移除所有氣泡)
             const children = Array.from(chatHistory.children);
             children.forEach(child => {
-                if (child.id !== 'view-home' && child.id !== 'view-dashboard') {
+                // 保留系統視圖，移除對話氣泡
+                if (child.id !== 'view-home' && child.id !== 'view-dashboard' && child.id !== 'view-temp-splash') {
                     child.remove();
                 }
             });
 
-            // 4. 重置輸入框
+            // 4. 插入「臨時對話」歡迎畫面 (如果還沒建立過)
+            let tempSplash = document.getElementById('view-temp-splash');
+            if (!tempSplash) {
+                tempSplash = document.createElement('div');
+                tempSplash.id = 'view-temp-splash';
+                // 設定為全高置中
+                tempSplash.style.cssText = "display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%; animation:fadeIn 0.5s;";
+                
+                // 內部的卡片樣式
+                tempSplash.innerHTML = `
+                    <div style="text-align:center; padding:40px; border:1px dashed var(--nx-accent); border-radius:20px; background:var(--nx-card-bg); max-width:400px; position:relative; overflow:hidden;">
+                        <div style="position:absolute; top:0; left:0; width:100%; height:2px; background:var(--nx-accent); opacity:0.5; animation:scan 2s infinite linear;"></div>
+                        
+                        <h2 style="color:var(--nx-accent); margin-bottom:15px; font-family:'Orbitron', sans-serif; letter-spacing:2px;">TEMP MODE</h2>
+                        <p style="color:var(--nx-text-muted); font-size:0.9em; margin-bottom:20px;">
+                            已開啟臨時加密通道<br>
+                            此模式下的對話紀錄<span style="color:#ff6b6b;">不會被保存</span>
+                        </p>
+                        
+                        <div style="display:inline-flex; align-items:center; gap:8px; padding:6px 12px; background:rgba(0,255,204,0.1); border-radius:20px; border:1px solid rgba(0,255,204,0.2);">
+                            <span style="display:block; width:8px; height:8px; background:var(--nx-accent); border-radius:50%; box-shadow:0 0 10px var(--nx-accent); animation:pulse 2s infinite;"></span>
+                            <span style="font-size:0.75em; color:var(--nx-text); font-family:monospace;">GEMINI-2.5 FLASH CONNECTED</span>
+                        </div>
+                    </div>
+                    
+                    <style>
+                        @keyframes scan { 0% {top:0} 100% {top:100%} }
+                    </style>
+                `;
+                chatHistory.appendChild(tempSplash);
+            }
+            
+            // 確保顯示
+            tempSplash.style.display = 'flex';
+
+            // 5. 重置輸入框
             if(chatInput) {
                 chatInput.value = '';
                 chatInput.focus();
+                chatInput.placeholder = "臨時對話中... (內容不存檔)";
             }
-
-            // 5. 顯示系統提示
-            appendSystemMessage("✨ 已開啟臨時對話模式 (紀錄不會保存)");
         };
-        
         // 掛載到 window
         window.startTempChat = window.startTempChat;
 
