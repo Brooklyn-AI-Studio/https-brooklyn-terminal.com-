@@ -1117,9 +1117,9 @@
         sendBtn.addEventListener('click', handleSendMessage);
         // [優化] 主對話框 Enter 發送 (支援 Shift+Enter 換行，並防止輸入法誤傳)
         chatInput.addEventListener('keydown', (e) => {
-            // 檢查：按下 Enter + 沒有按 Shift + 不是正在選字 (isComposing)
-            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                e.preventDefault(); // 阻止預設換行
+            // [修正] 直接使用 e.isComposing 即可
+            if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+                e.preventDefault(); // 阻止預設換行 (避免多出一個空行)
                 handleSendMessage();
             }
         });
