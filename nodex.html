@@ -1109,7 +1109,7 @@
    <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs,getDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs,getDoc, doc, updateDoc, deleteDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         // --- [新增] 側邊欄收合切換 ---
         window.toggleSidebar = function() {
             const sidebar = document.querySelector('.nx-sidebar');
@@ -1329,7 +1329,8 @@ window.setLanguage = function(lang) {
         MODEL_LIMITS.forEach(model => {
             // [修正] 從傳入的 stats 物件中讀取該模型 ID 的次數
             // 如果找不到該 ID 的紀錄，預設為 0
-            const used = stats[model.id] || 0; 
+            const dbKey = model.id.replace(/\./g, '_');
+            const used = stats[dbKey] || 0;
             
             const isUnlimited = model.limit === Infinity;
             const percent = isUnlimited ? 0 : Math.min((used / model.limit) * 100, 100);
@@ -1441,36 +1442,22 @@ function getTodayDateStr() {
 // 2. [新] 增加用量 (寫入 Firestore)
 async function incrementModelUsage(modelName) {
     if (!window.currentUser) return;
-    
     const uid = window.currentUser.uid;
     const dateStr = getTodayDateStr();
-    // 對應到我們定義的 key (例如 gemini-2.5-flash -> flash_25)
-    // 這裡做一個簡單的 mapping，或直接存模型名稱也可以
-    // 為了方便，我們直接存 "模型名稱" 當作欄位
-    
     const usageRef = doc(db, "users", uid, "usage_records", dateStr);
     
+    // 1. 處理 Key
+    const dbKey = modelName.replace(/\./g, '_'); 
+
     try {
-        // 使用 setDoc + merge: true，如果文件不存在會自動建立
-        // 這裡需要引入 increment 與 setDoc
-        // 注意：請確認你的 import 有包含 setDoc, increment, getDoc
+        // 2. 直接寫入 (原子操作)
+        // merge: true 代表：如果文件不存在就建立；如果欄位不存在就新增；如果存在就 +1
+        await setDoc(usageRef, {
+            [dbKey]: increment(1), 
+            lastUpdated: new Date()
+        }, { merge: true });
         
-        // 為了簡單實作，我們先讀再寫 (Transaction 較嚴謹但這裡先求有)
-        const docSnap = await getDoc(usageRef);
-        let newData = {};
-        
-        if (docSnap.exists()) {
-            const currentCount = docSnap.data()[modelName] || 0;
-            newData[modelName] = currentCount + 1;
-            await updateDoc(usageRef, newData);
-        } else {
-            newData[modelName] = 1;
-            // 寫入建立時間，方便日後清除舊資料
-            newData.createdAt = new Date(); 
-            await setDoc(usageRef, newData); 
-        }
-        
-        console.log(`Usage updated for ${modelName}`);
+        console.log(`Usage updated for ${modelName} -> ${dbKey}`);
     } catch (e) {
         console.error("Update Usage Error:", e);
     }
@@ -1565,20 +1552,21 @@ async function getTodayUsageStats() {
 
         if (!response.ok) throw new Error("Worker Error: " + response.statusText);
 
-        // 移除 loading 泡泡
-        if (loadingId) {
-            removeMessage(loadingId);
-        }
-
         const aiMsgContent = appendAiMessageStart();
         
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullText = "";
+        let isFirstChunk = true;
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
+
+            if (isFirstChunk && loadingId) {
+        removeMessage(loadingId);
+        isFirstChunk = false;
+    }
 
             const chunk = decoder.decode(value, { stream: true });
             const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
@@ -1790,6 +1778,7 @@ async function getTodayUsageStats() {
         async function handleTempSend() {
             const text = tempInput.value.trim();
             if (!text) return;
+            incrementModelUsage(currentModel);
 
             // 清空輸入框
             tempInput.value = '';
