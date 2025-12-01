@@ -50,6 +50,44 @@
             #history-container::-webkit-scrollbar-thumb:hover {
                 background: var(--nx-accent); /* 滑鼠移過去變亮色 */
             }
+                    /* --- Thinking 跳動圓點動畫 --- */
+            .nx-typing-bubble {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px; /* 圓點之間的距離 */
+                padding: 12px 20px;
+                background: var(--nx-card-bg); /* 對話氣泡背景色 */
+                border: 1px solid var(--nx-border);
+                border-radius: 12px;
+                width: fit-content;
+                height: 40px;
+            }
+            
+            .nx-typing-dot {
+                width: 8px;
+                height: 8px;
+                background-color: var(--nx-text-muted); /* 圓點顏色 */
+                border-radius: 50%;
+                animation: nx-bounce 1.4s infinite ease-in-out both;
+            }
+            
+            /* 讓三個圓點依序跳動 (透過延遲時間) */
+            .nx-typing-dot:nth-child(1) { animation-delay: -0.32s; }
+            .nx-typing-dot:nth-child(2) { animation-delay: -0.16s; }
+            .nx-typing-dot:nth-child(3) { animation-delay: 0s; }
+            
+            /* 定義跳動的關鍵影格 */
+            @keyframes nx-bounce {
+                0%, 80%, 100% { 
+                    transform: scale(0.6); 
+                    opacity: 0.6;
+                }
+                40% { 
+                    transform: scale(1); 
+                    opacity: 1;
+                    background-color: var(--nx-accent); /* 跳起來時變亮色 */
+                }
+            }
                     /*  模態框 CSS */
             .nx-modal-overlay {
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -1627,23 +1665,43 @@ async function getTodayUsageStats() {
         }
 
        function appendLoadingIndicator() {
-            const id = 'loading-' + Date.now();
-            const div = document.createElement('div');
-            div.id = id;
-            
-            // [修改] 同樣鎖定寬度
-            div.style.width = '100%';
-            div.style.maxWidth = '800px';
-            div.style.marginBottom = '20px';
-            
-            div.innerHTML = `<span style="color:var(--nx-text-muted); font-size:0.8em; animation: pulse 1s infinite; display:flex; align-items:center; gap:8px;">
-                <svg class="nx-icon" style="width:14px;height:14px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                Thinking...
-            </span>`;
-            chatHistory.appendChild(div);
-            return id;
-        }
-
+    const id = 'loading-' + Date.now();
+    const div = document.createElement('div');
+    div.id = id;
+    
+    // 保持與 AI 回覆一致的排版寬度
+    div.style.width = '100%';
+    div.style.maxWidth = '800px';
+    div.style.marginBottom = '30px';
+    
+    // 內層結構：上方是 AI 頭像資訊，下方是跳動圓點氣泡
+    div.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <div style="width:28px; height:28px; background:rgba(0, 255, 204, 0.1); border-radius:6px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(0, 255, 204, 0.2);">
+                <svg style="width:18px; height:18px; stroke:var(--nx-accent); fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </div>
+            <span style="font-size:0.95em; font-weight:bold; color:var(--nx-accent); letter-spacing:0.5px;">NodeX AI</span>
+        </div>
+        
+        <div class="nx-typing-bubble">
+            <div class="nx-typing-dot"></div>
+            <div class="nx-typing-dot"></div>
+            <div class="nx-typing-dot"></div>
+        </div>
+    `;
+    
+    // 加入到對話紀錄
+    const chatHistory = document.getElementById('nx-chat-history');
+    if(chatHistory) {
+        chatHistory.appendChild(div);
+        chatHistory.scrollTop = chatHistory.scrollHeight; // 捲動到底部
+    }
+    
+    return id;
+}
         function removeMessage(id) {
             const el = document.getElementById(id);
             if(el) el.remove();
