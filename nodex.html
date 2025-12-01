@@ -1177,6 +1177,29 @@
             document.body.setAttribute('data-theme', theme);
             window.toggleMenu('theme-menu'); // 關閉選單
         };
+
+       // [新增] 語言切換函式
+window.setLanguage = function(lang) {
+    // 這裡示範簡單的切換 (實際專案可能需要替換整個頁面的文字)
+    if (lang === 'en') {
+        alert("Language switched to English (Demo)");
+        // 您可以在這裡加入將介面文字改成英文的邏輯
+        // 例如: document.getElementById('txt-newChat').innerText = 'New Chat';
+    } else {
+        alert("已切換至繁體中文");
+    }
+    
+    // 更新選單激活狀態
+    document.querySelectorAll('#lang-menu .nx-dropdown-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.innerText.includes(lang === 'en' ? 'English' : '繁體中文')) {
+            item.classList.add('active');
+        }
+    });
+
+    // 關閉選單
+    window.toggleMenu('lang-menu');
+};
         
         // 點擊頁面其他地方關閉 Dropdown
         // 點擊頁面其他地方關閉 Dropdown (優化版)
@@ -1808,13 +1831,20 @@ async function getTodayUsageStats() {
                 if (!response.ok) throw new Error("API Error");
 
                 // (D) 處理串流回應
+                const aiMsgContent = appendAiMessageStart(); // 先建立 AI 對話框(此時是空的)
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullText = "";
-
+                let isFirstChunk = true;
+                
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
+                    // 收到第一包資料時，才移除 Loading 氣泡
+                        if (isFirstChunk && loadingId) {
+                            removeMessage(loadingId);
+                            isFirstChunk = false;
+                        }
 
                     const chunk = decoder.decode(value, { stream: true });
                     // 解析 SSE 格式 (假設你的 Worker 回傳格式與主對話相同)
