@@ -8,7 +8,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&family=Courier+New&display=swap" rel="stylesheet">
     
     <style>
-                    /* [新增] 模態框 CSS */
+
+                    /* --- 歷史紀錄滾動條美化 --- */
+            #history-container::-webkit-scrollbar {
+                width: 4px; /* 極細滾動條 */
+            }
+            #history-container::-webkit-scrollbar-track {
+                background: transparent; 
+            }
+            #history-container::-webkit-scrollbar-thumb {
+                background: var(--nx-border); /* 預設為邊框色 */
+                border-radius: 4px;
+            }
+            #history-container::-webkit-scrollbar-thumb:hover {
+                background: var(--nx-accent); /* 滑鼠移過去變亮色 */
+            }
+                    /*  模態框 CSS */
             .nx-modal-overlay {
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
@@ -26,7 +41,7 @@
                 display: flex; justify-content: space-between; align-items: center;
                 background: var(--nx-card-bg); border-radius: 12px 12px 0 0;
             }
-        /* --- CSS 變數系統 (核心) --- */
+        /* --- CSS 變數系統 --- */
         :root {
             /* 預設為 Tech 風格 */
             --nx-bg: #050505;
@@ -811,10 +826,8 @@
         </div>
     </div>
 
-    <div class="nx-menu-group" style="flex:1;">
-        <div class="nx-menu-title" id="txt-history">歷史紀錄</div>
-        <div class="nx-menu-item" style="font-size:0.85em;"> AAPL vs MSFT Analysis</div>
-        <div class="nx-menu-item" style="font-size:0.85em;"> Crypto Market Cap</div>
+    <div class="nx-menu-group" id="history-container" style="flex:1; overflow-y: auto; min-height: 0; padding-right: 5px;">
+       <div class="nx-menu-title" id="txt-history">歷史紀錄</div>
     </div>
 
     <div class="nx-menu-group">
@@ -969,6 +982,13 @@
                                 <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"></path>
                                 </svg>
                                 <span>Gemini-2.5-pro</span>
+                            </div>
+
+                             <div class="nx-dropdown-item" onclick="setModel('gemini-2.5-flash-exp')">
+                                <svg class="nx-icon" style="width:16px; height:16px; margin-right:8px; color:var(--nx-accent);" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"></path>
+                                </svg>
+                                <span>Gemini-2.5-flash-exp</span>
                             </div>
                             
                             <div class="nx-dropdown-item" onclick="setModel('gemini-2.0-flash-exp')">
@@ -1570,7 +1590,7 @@
        // --- [新增] 載入側邊欄歷史清單 ---
         // --- [優化版] 載入側邊欄歷史清單 (含操作按鈕) ---
         async function loadSidebarHistory(uid) {
-            const historyContainer = document.querySelector('.nx-menu-group[style="flex:1;"]');
+            const historyContainer = document.getElementById('history-container');
             if(!historyContainer) return;
             
             historyContainer.innerHTML = '<div class="nx-menu-title">歷史紀錄 (History)</div>';
