@@ -935,10 +935,14 @@
                 <div class="nx-input-footer">
                     <!-- 左側功能：搜尋 + 模型 -->
                     <div class="nx-input-left">
-                        <button class="nx-tool-btn nx-pill-btn" title="網頁搜尋 (Web Search)">
-                            <svg class="nx-icon" style="width:16px;height:16px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                            <span style="font-size:0.8em; font-weight:600;">搜尋</span>
-                        </button>
+                       <button class="nx-tool-btn nx-pill-btn" id="btn-web-search" onclick="toggleSearch()" title="網頁搜尋 (Web Search)">
+                        <svg class="nx-icon" style="width:16px;height:16px;" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        <span style="font-size:0.8em; font-weight:600;">搜尋</span>
+                    </button>
                         
                        <div style="position:relative;">
                         <button class="nx-tool-btn nx-pill-btn" onclick="toggleMenu('model-menu')" id="model-selector-btn" title="切換模型 (Switch Model)">
@@ -1176,6 +1180,26 @@
         
 
         let currentModel = "gemini-2.5-flash";
+       // 1. 定義搜尋狀態
+        let isSearchEnabled = false;
+        
+        // 2. 切換搜尋功能的函式
+        window.toggleSearch = function() {
+            isSearchEnabled = !isSearchEnabled;
+            const btn = document.getElementById('btn-web-search');
+            
+            // 切換視覺樣式
+            if (isSearchEnabled) {
+                btn.classList.add('active');
+                // 視覺回饋
+                btn.style.borderColor = 'var(--nx-accent)';
+                btn.style.color = 'var(--nx-accent)';
+            } else {
+                btn.classList.remove('active');
+                btn.style.borderColor = 'transparent';
+                btn.style.color = 'var(--nx-text-muted)';
+            }
+        };
        window.setModel = function(modelName) {
             currentModel = modelName;
             
@@ -1285,6 +1309,7 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ 
                 model: currentModel,
+                useSearch: isSearchEnabled,
                 contents: [{ parts: [{ text: userText }] }] })
         });
 
@@ -1528,13 +1553,14 @@
             tempHistory.scrollTop = tempHistory.scrollHeight;
 
             try {
-                // (C) 呼叫 LLM API (使用與主對話相同的 Worker)
+                // 呼叫 LLM API (使用與主對話相同的 Worker)
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    // 注意: 這裡不檢查登入狀態，方便快速使用
+                    //  這裡不檢查登入狀態，方便快速使用
                     body: JSON.stringify({ 
                         model: currentModel,
+                        useSearch: isSearchEnabled,
                         contents: [{ parts: [{ text: text }] }] 
                     })
                 });
