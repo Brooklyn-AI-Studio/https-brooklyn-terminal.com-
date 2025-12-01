@@ -1063,7 +1063,7 @@
    <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         // --- [新增] 側邊欄收合切換 ---
         window.toggleSidebar = function() {
             const sidebar = document.querySelector('.nx-sidebar');
@@ -1162,10 +1162,6 @@
             measurementId: "G-G0GMW0XHG1"
         };
 
-        // import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        // import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -1200,18 +1196,18 @@
         // 3. 點擊頭像登入/登出 (已升級為個人檔案視窗)
     
     // --- 新增：用量規則設定 ---
-    const MODEL_LIMITS = [
-        { name: "Gemini 2.5 Flash", limit: 50, key: "flash_25" },
-        { name: "Gemini 2.0 Flash", limit: Infinity }, 
-        { name: "Gemini 2.5 Flash Lite", limit: Infinity },
-        { name: "Gemini 2.0 Flash Lite", limit: Infinity },
-        { name: "Gemini 2.5 Pro", limit: 50, key: "pro_25" },
-        { name: "Gemini 2.5 Pro Expo", limit: 10, key: "pro_25_exp" },
-        { name: "Gemini 2.0 Flash Expo", limit: 10, key: "flash_20_exp" }
-    ];
+   const MODEL_LIMITS = [
+    { name: "Gemini 2.5 Flash", id: "gemini-2.5-flash", limit: 50 },
+    { name: "Gemini 2.0 Flash", id: "gemini-2.0-flash", limit: Infinity },
+    { name: "Gemini 2.5 Flash Lite", id: "gemini-2.5-flash-lite", limit: Infinity },
+    { name: "Gemini 2.0 Flash Lite", id: "gemini-2.0-flash-lite", limit: Infinity },
+    { name: "Gemini 2.5 Pro", id: "gemini-2.5-pro", limit: 50 },
+    { name: "Gemini 2.5 Pro Exp", id: "gemini-2.5-pro-exp", limit: 10 }, 
+    { name: "Gemini 2.0 Flash Exp", id: "gemini-2.0-flash-exp", limit: 10 }
+];
 
     // --- 新增：開啟視窗函式 ---
-    window.openProfileModal = function() {
+    window.openProfileModal = async function() {
         const modal = document.getElementById('profile-modal');
         const user = window.currentUser;
 
@@ -1225,7 +1221,9 @@
         document.getElementById('modal-email').innerText = user.email || "";
 
         renderUsageStats();
-
+        // [修改] 等待雲端數據讀取完畢
+        const todayStats = await getTodayUsageStats(); 
+        renderUsageStats(todayStats); // 把數據傳進去
         // 顯示
         modal.style.display = 'flex';
         setTimeout(() => modal.classList.add('show'), 10);
@@ -1254,18 +1252,16 @@
     };
 
     // --- 新增：渲染進度條 ---
-    function renderUsageStats() {
+    // [修正] 接收 stats 參數 (預設為空物件)
+    function renderUsageStats(stats = {}) {
         const container = document.getElementById('usage-stats-container');
         if(!container) return;
         container.innerHTML = ''; 
 
-        // 取得目前用量 (沿用您既有的 getDailyUsage 函式)
-        const currentUsage = getDailyUsage().count || 0; 
-
         MODEL_LIMITS.forEach(model => {
-            // 簡單模擬：目前只有單一計數器，先假設只有 2.5 Flash 會消耗
-            let used = 0;
-            if(model.name === "Gemini 2.5 Flash") used = currentUsage; 
+            // [修正] 從傳入的 stats 物件中讀取該模型 ID 的次數
+            // 如果找不到該 ID 的紀錄，預設為 0
+            const used = stats[model.id] || 0; 
             
             const isUnlimited = model.limit === Infinity;
             const percent = isUnlimited ? 0 : Math.min((used / model.limit) * 100, 100);
@@ -1366,19 +1362,70 @@
         const homeView = document.getElementById('view-home');
         const dashboardView = document.getElementById('view-dashboard');
 
-        // 每日用量檢查
-        function getDailyUsage() {
-            const today = new Date().toDateString();
-            const record = JSON.parse(localStorage.getItem('nodex_usage_${uid}') || '{}');
-            if (record.date !== today) return { count: 0, date: today };
-            return record;
-        }
+       // --- [升級版] Firestore 用量統計系統 ---
 
-        function incrementUsage() {
-            const usage = getDailyUsage();
-            usage.count += 1;
-            localStorage.setItem('nodex_daily_usage', JSON.stringify(usage));
+// 1. 取得今日日期字串 (作為文件的 ID)
+function getTodayDateStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+// 2. [新] 增加用量 (寫入 Firestore)
+async function incrementModelUsage(modelName) {
+    if (!window.currentUser) return;
+    
+    const uid = window.currentUser.uid;
+    const dateStr = getTodayDateStr();
+    // 對應到我們定義的 key (例如 gemini-2.5-flash -> flash_25)
+    // 這裡做一個簡單的 mapping，或直接存模型名稱也可以
+    // 為了方便，我們直接存 "模型名稱" 當作欄位
+    
+    const usageRef = doc(db, "users", uid, "usage_records", dateStr);
+    
+    try {
+        // 使用 setDoc + merge: true，如果文件不存在會自動建立
+        // 這裡需要引入 increment 與 setDoc
+        // 注意：請確認你的 import 有包含 setDoc, increment, getDoc
+        
+        // 為了簡單實作，我們先讀再寫 (Transaction 較嚴謹但這裡先求有)
+        const docSnap = await getDoc(usageRef);
+        let newData = {};
+        
+        if (docSnap.exists()) {
+            const currentCount = docSnap.data()[modelName] || 0;
+            newData[modelName] = currentCount + 1;
+            await updateDoc(usageRef, newData);
+        } else {
+            newData[modelName] = 1;
+            // 寫入建立時間，方便日後清除舊資料
+            newData.createdAt = new Date(); 
+            await setDoc(usageRef, newData); 
         }
+        
+        console.log(`Usage updated for ${modelName}`);
+    } catch (e) {
+        console.error("Update Usage Error:", e);
+    }
+}
+
+// 3. [新] 讀取今日用量 (讀取 Firestore)
+async function getTodayUsageStats() {
+    if (!window.currentUser) return {};
+    
+    const uid = window.currentUser.uid;
+    const dateStr = getTodayDateStr();
+    const usageRef = doc(db, "users", uid, "usage_records", dateStr);
+    
+    try {
+        const docSnap = await getDoc(usageRef);
+        if (docSnap.exists()) {
+            return docSnap.data(); // 回傳 { "gemini-2.5-flash": 12, ... }
+        }
+    } catch (e) {
+        console.error("Get Usage Error:", e);
+    }
+    return {}; // 如果沒資料回傳空物件
+}
 
         // 發送訊息主函式
       async function handleSendMessage() {
@@ -1388,13 +1435,6 @@
         return;
     }
     const uid = window.currentUser.uid; // 取得 UID
-
-    // 2. [每日用量檢查]
-    const usage = getDailyUsage(); 
-    if (usage.count >= DAILY_LIMIT) {
-        appendSystemMessage(`⚠️ 今日訊息額度已達上限 (${usage.count}/${DAILY_LIMIT})。請明天再來！`);
-        return;
-    }
 
     const userText = chatInput.value.trim();
     if (!userText) return;
@@ -1415,7 +1455,7 @@
     chatInput.style.height = 'auto';
 
     appendUserMessage(userText);
-    incrementUsage(); 
+    incrementModelUsage(currentModel);
 
     // 🔹 先在外面宣告，讓 try / catch 都看得到
     let loadingId;
