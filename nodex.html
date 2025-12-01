@@ -50,19 +50,27 @@
             #history-container::-webkit-scrollbar-thumb:hover {
                 background: var(--nx-accent); /* 滑鼠移過去變亮色 */
             }
-                    /* --- Thinking 跳動圓點動畫 --- */
+                   
+           /* --- Thinking 跳動圓點動畫  --- */
             .nx-typing-bubble {
                 display: inline-flex;
                 align-items: center;
-                gap: 6px; /* 圓點之間的距離 */
-                padding: 12px 20px;
-                background: var(--nx-card-bg); /* 對話氣泡背景色 */
-                border: 1px solid var(--nx-border);
-                border-radius: 12px;
+                gap: 8px;          /* 稍微增加圓點之間的距離，讓它們散開一點 */
                 width: fit-content;
-                height: 40px;
-            }
+                height: auto;      /* 高度自動，不再固定 */
+                
+                background: transparent; /* 背景透明 */
+                border: none;            /* 移除邊框 */
+                padding: 0;              /* 移除內距 */
+                border-radius: 0;        /* 移除圓角 */
+                box-shadow: none;        /* 確保沒有陰影 */
             
+                /* --- 微調位置 --- */
+                margin-top: 5px;   /* 與上方 "NodeX AI" 文字保持一點距離 */
+                margin-left: 2px;  /* 稍微對齊上方的文字起始處 */
+                opacity: 0.8;      /* 稍微降低一點透明度，看起來更柔和 */
+            }
+                        
             .nx-typing-dot {
                 width: 8px;
                 height: 8px;
@@ -1179,30 +1187,29 @@
         };
 
        // [新增] 語言切換函式
+// [新增] 語言切換函式
 window.setLanguage = function(lang) {
-    // 這裡示範簡單的切換 (實際專案可能需要替換整個頁面的文字)
+    // 1. 執行切換邏輯
     if (lang === 'en') {
         alert("Language switched to English (Demo)");
-        // 您可以在這裡加入將介面文字改成英文的邏輯
-        // 例如: document.getElementById('txt-newChat').innerText = 'New Chat';
+        // 在這裡加入介面文字更換的程式碼...
     } else {
         alert("已切換至繁體中文");
     }
     
-    // 更新選單激活狀態
+    // 2. 更新選單的「勾選」狀態 (Visual Feedback)
     document.querySelectorAll('#lang-menu .nx-dropdown-item').forEach(item => {
         item.classList.remove('active');
+        // 判斷當前語言並加亮對應選項
         if (item.innerText.includes(lang === 'en' ? 'English' : '繁體中文')) {
             item.classList.add('active');
         }
     });
-
-    // 關閉選單
+    
     window.toggleMenu('lang-menu');
 };
         
-        // 點擊頁面其他地方關閉 Dropdown
-        // 點擊頁面其他地方關閉 Dropdown (優化版)
+        // 點擊頁面其他地方關閉 Dropdown 
         document.addEventListener('click', (e) => {
             // 如果點擊的對象不是 Footer按鈕、不是回首頁按鈕、也不是模型切換按鈕
             if (!e.target.closest('.nx-footer-btn') && 
