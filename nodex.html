@@ -183,9 +183,13 @@
 
         /* 側邊欄底部 */
         .nx-sidebar-footer { 
-            margin-top: auto; 
+            margin-top: auto;
             border-top: 1px solid var(--nx-border); 
-            padding-top: 15px; 
+            padding-top: 15px;
+            /* 關鍵屬性 */
+            position: relative;
+            z-index: 1000; /* 確保層級最高 */
+            background: var(--nx-sidebar); /* 防止背景透明看到後面的東西 */
         }
         .nx-tool-row { 
             display: flex; 
@@ -539,8 +543,10 @@
         /* 1. 基礎轉場設定 (讓縮放很平滑) */
         .nx-sidebar {
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden; /* 防止文字在縮小過程中突出去 */
-            width: 260px;     /* 預設寬度 */
+            overflow: visible !important; /* 讓彈出選單可以超出邊界 */
+            width: 260px;
+            display: flex;
+            flex-direction: column; /* 確保內容垂直排列 */
         }
 
         /* 2. 收合狀態 (.collapsed) */
