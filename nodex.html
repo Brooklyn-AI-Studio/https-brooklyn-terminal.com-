@@ -750,6 +750,12 @@
         color: var(--nx-text); 
         word-wrap: break-word;
         font-family: 'Inter', system-ui, sans-serif;
+    
+        /* 強制換行與斷字設定，防止跑版 */
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        white-space: pre-wrap; /* 保留空白與換行格式 */
     }
 
     /* 標題優化 */
@@ -810,7 +816,7 @@
         padding: 10px; 
         text-align: left; 
     }
-    .markdown-body th { background: rgba(255,255,255,0.05); color: var(--nx-accent); }
+    .markdown-body th { background: var(--nx-hover-bg); color: var(--nx-accent); }
 
     /* KaTeX 數學公式微調 */
     .katex { font-size: 1.1em !important; } /* 讓數學符號稍微大一點 */
@@ -1517,6 +1523,12 @@ async function getTodayUsageStats() {
         appendSystemMessage(`額度已滿：您今日的 ${currentModel} 用量已達上限。請切換至其他模型繼續使用。`);
         return; // 直接中斷，不發送請求，也不扣額度
     }
+    marked.setOptions({
+    breaks: true,  // <--- 將 \n 轉換為 <br>
+    gfm: true,     // 啟用 GitHub 風格 Markdown (支援表格、刪除線)
+    headerIds: false,
+    mangle: false
+});
 
     // 3. [UI 狀態切換]
     document.querySelector('.nx-main').classList.remove('centered-mode');
@@ -1593,12 +1605,14 @@ async function getTodayUsageStats() {
     }
 
             const chunk = decoder.decode(value, { stream: true });
+            fullTextBuffer += chunk;
             const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
             
             if (matches) {
                 matches.forEach(match => {
                     let textPart = match.replace(/"text":\s*"/, "").replace(/"$/, "");
                     try {
+                       
                         textPart = JSON.parse(`"${textPart}"`); 
                         fullText += textPart;
                         
