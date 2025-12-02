@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -35,6 +34,7 @@
     </script>
 
     <style>
+        
         /* --- Markdown 內容樣式 (NodeX 風格) --- */
 .markdown-body {
     line-height: 1.6;
@@ -279,6 +279,24 @@
               [data-theme="cyberpunk"] .border-accent {
               border: 1px solid var(--accent-color);
               box-shadow: var(--neon-box-shadow);
+            }
+        /* 確保記事本內的列表有樣式 */
+            .notepad-editor ul {
+                list-style-type: disc;
+                padding-left: 1.5em;
+                margin: 0.5em 0;
+            }
+            .notepad-editor li {
+                margin-bottom: 0.2em;
+            }
+            /* 讓粗體與斜體更明顯 */
+            .notepad-editor b, .notepad-editor strong {
+                font-weight: bold;
+                color: var(--accent-color); /* 使用強調色讓它更像 Cyberpunk 風格 */
+            }
+            .notepad-editor i, .notepad-editor em {
+                font-style: italic;
+                opacity: 0.8;
             }
         
         /* 專案內容的節點動畫 */
@@ -1661,43 +1679,72 @@ window.saveProjectState = async () => {
             `;
         }
         
-        function renderNotepadContent(item) {
+       function renderNotepadContent(item) {
     const container = item.el.querySelector('.content-container');
+    // 如果已經渲染過，就不要重複渲染
     if (container.querySelector('.notepad-layout')) return;
 
-    // 如果 item 有 content 資料就顯示，否則為空
-    const savedText = item.content || ''; 
+    // 讀取舊內容 (支援 HTML)
+    const savedContent = item.content || ''; 
 
+    // 建立 HTML 結構：包含工具列與編輯區
     container.innerHTML = `
         <div class="notepad-layout flex flex-col w-full h-full bg-surface/90 backdrop-blur-md overflow-hidden rounded border-l-4 border-accent-secondary">
+            
             <div class="widget-header p-2 bg-white/5 border-b border-white/10 flex justify-between items-center cursor-move select-none">
                 <span class="font-bold text-xs tracking-wider text-accent-secondary">NOTEPAD</span>
-                <div class="flex gap-2">
-                    <span class="text-[10px] text-muted opacity-50">TXT</span>
+                <div class="flex gap-1" onmousedown="event.stopPropagation();">
+                    <button class="btn-bold p-1 rounded hover:bg-white/10 text-muted hover:text-white transition-colors" title="Bold">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"></path></svg>
+                    </button>
+                    <button class="btn-italic p-1 rounded hover:bg-white/10 text-muted hover:text-white transition-colors" title="Italic">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l4-14"></path></svg>
+                    </button>
+                    <button class="btn-list p-1 rounded hover:bg-white/10 text-muted hover:text-white transition-colors" title="Bullet List">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h.01M4 12h.01M4 18h.01"></path></svg>
+                    </button>
                 </div>
             </div>
-            <textarea 
-                class="w-full h-full bg-transparent border-none p-3 text-sm text-text resize-none focus:ring-0 focus:outline-none font-mono leading-relaxed"
-                placeholder="Write something..."
-            >${savedText}</textarea>
+
+            <div 
+                class="notepad-editor flex-1 p-3 text-sm text-text overflow-auto focus:outline-none leading-relaxed font-sans"
+                contenteditable="true"
+                style="outline: none;" 
+            >${savedContent}</div>
         </div>
     `;
 
-    // 監聽輸入事件，即時更新 item 物件並觸發儲存
-    const textarea = container.querySelector('textarea');
-    textarea.addEventListener('input', (e) => {
-        item.content = e.target.value;
-        // 為了避免打一個字就存一次資料庫造成負擔，這裡建議加個 debounce (防抖)，但簡單起見先直接呼叫
-        // 或者依靠使用者的最後一次操作來存，這裡我們先更新本地狀態
-        item.content = e.target.value; 
+    const editor = container.querySelector('.notepad-editor');
+
+    // --- 綁定工具列功能 ---
+    // 使用 execCommand 來執行瀏覽器原生的編輯功能
+    const exec = (command) => {
+        document.execCommand(command, false, null);
+        editor.focus(); // 執行後將焦點放回編輯區
+    };
+
+    container.querySelector('.btn-bold').onclick = () => exec('bold');
+    container.querySelector('.btn-italic').onclick = () => exec('italic');
+    container.querySelector('.btn-list').onclick = () => exec('insertUnorderedList');
+
+    // --- 防止拖曳干擾 ---
+    // 當使用者在編輯區點擊或選取文字時，不要觸發視窗拖曳
+    editor.addEventListener('mousedown', (e) => {
+        e.stopPropagation(); 
     });
-    
-    // 當輸入框失去焦點時，強制儲存到資料庫
-    textarea.addEventListener('blur', () => {
+
+    // --- 資料儲存邏輯 ---
+    // 監聽輸入事件，更新 item 物件
+    editor.addEventListener('input', () => {
+        // 儲存 innerHTML 以保留 <b>, <i>, <ul> 等標籤
+        item.content = editor.innerHTML;
+    });
+
+    // 失去焦點時，寫入資料庫 (與原始碼 saveProjectState 連動 )
+    editor.addEventListener('blur', () => {
+        item.content = editor.innerHTML;
         saveProjectState();
     });
-    
-    // 阻止在 textarea 點擊時觸發拖曳 (這是既有邏輯，setupInteractions 已處理 INPUT/TEXTAREA [cite: 387])
 }
         
 function renderLLMChatbotContent(item) {
@@ -2631,6 +2678,7 @@ if(sendBtnJs && chatInputJs) {
 </div>
 </body>
 </html>
+
 
 
 
