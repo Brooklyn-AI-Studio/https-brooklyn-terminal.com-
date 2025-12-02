@@ -1438,7 +1438,25 @@ function getTodayDateStr() {
     const d = new Date();
     return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
 }
+// --- [新增] 檢查模型額度是否足夠 ---
+async function checkModelAvailability(modelName) {
+    // 1. 找到該模型的限制設定
+    const config = MODEL_LIMITS.find(m => m.id === modelName);
+    
+    // 如果找不到設定，或是設為無限，直接通過
+    if (!config || config.limit === Infinity) return true;
 
+    // 2. 讀取今日用量
+    const stats = await getTodayUsageStats();
+    const dbKey = modelName.replace(/\./g, '_');
+    const used = stats[dbKey] || 0;
+
+    // 3. 比較用量
+    if (used >= config.limit) {
+        return false; // 額度已滿
+    }
+    return true; // 還有額度
+}
 // 2. [新] 增加用量 (寫入 Firestore)
 async function incrementModelUsage(modelName) {
     if (!window.currentUser) return;
@@ -1486,13 +1504,19 @@ async function getTodayUsageStats() {
       async function handleSendMessage() {
     // 1. [強制登入檢查]
     if (!window.currentUser) {
-        appendSystemMessage("🔒 請先點擊左下角頭像登入 Google 帳號。");
+        appendSystemMessage("請先點擊左下角登入 Google 帳號。");
         return;
     }
     const uid = window.currentUser.uid; // 取得 UID
 
     const userText = chatInput.value.trim();
     if (!userText) return;
+    const isAvailable = await checkModelAvailability(currentModel);
+    
+    if (!isAvailable) {
+        appendSystemMessage(`額度已滿：您今日的 ${currentModel} 用量已達上限。請切換至其他模型繼續使用。`);
+        return; // 直接中斷，不發送請求，也不扣額度
+    }
 
     // 3. [UI 狀態切換]
     document.querySelector('.nx-main').classList.remove('centered-mode');
