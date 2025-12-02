@@ -298,6 +298,18 @@
                 font-style: italic;
                 opacity: 0.8;
             }
+        .notepad-editor font[size="5"] {
+            font-size: 1.5em;      
+            line-height: 1.4;
+            font-weight: bold;
+            color: var(--accent-color); /* 使用強調色，讓它看起來像標題 */
+        }
+        /* 確保預設大小恢復正常 */
+        .notepad-editor font[size="3"] {
+            font-size: 1em;
+            font-weight: normal;
+            color: var(--text-primary);
+        }
         
         /* 專案內容的節點動畫 */
         .node-appear { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.5); }
@@ -614,15 +626,6 @@
 
         <div id="empty-state-container" class="absolute top-0 left-0 w-full h-[calc(100vh-100px)] z-10 flex items-center justify-center pointer-events-none">
     <div class="text-center space-y-4 pointer-events-auto">
-
-        <button onclick="handlePlusClick()" class="mx-auto border-2 border-accent rounded-full flex items-center justify-center relative group cursor-pointer hover:bg-accent/10 transition-all focus:outline-none" 
-                style="width: 8cqmin; height: 8cqmin; min-width: 60px; min-height: 60px;">
-            
-            <svg class="text-accent group-hover:scale-110 transition-transform" style="width: 40%; height: 40%;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            <div class="absolute inset-0 rounded-full border border-accent animate-ping opacity-20"></div>
-        </button>
         
         <h2 class="font-bold text-text text-accent" data-i18n="empty_state" 
             style="font-size: 2.5cqmin; line-height: 1.2;">
@@ -1679,21 +1682,30 @@ window.saveProjectState = async () => {
             `;
         }
         
-       function renderNotepadContent(item) {
+     function renderNotepadContent(item) {
     const container = item.el.querySelector('.content-container');
-    // 如果已經渲染過，就不要重複渲染
     if (container.querySelector('.notepad-layout')) return;
 
-    // 讀取舊內容 (支援 HTML)
     const savedContent = item.content || ''; 
 
-    // 建立 HTML 結構：包含工具列與編輯區
     container.innerHTML = `
-        <div class="notepad-layout flex flex-col w-full h-full bg-surface/90 backdrop-blur-md overflow-hidden rounded border-l-4 border-accent-secondary">
+        <div class="notepad-layout flex flex-col w-full h-full bg-black/40 backdrop-blur-md overflow-hidden rounded border-l-4 border-accent-secondary">
             
             <div class="widget-header p-2 bg-white/5 border-b border-white/10 flex justify-between items-center cursor-move select-none">
                 <span class="font-bold text-xs tracking-wider text-accent-secondary">NOTEPAD</span>
+                
                 <div class="flex gap-1" onmousedown="event.stopPropagation();">
+                    <button class="btn-lg-text p-1 rounded hover:bg-white/10 text-muted hover:text-accent transition-colors" title="Large Text">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <span class="text-[10px] font-bold">T</span>
+                    </button>
+                    <button class="btn-norm-text p-1 rounded hover:bg-white/10 text-muted hover:text-white transition-colors" title="Normal Text">
+                         <span class="text-[10px] font-bold">T</span>
+                         <span class="text-[8px]">-</span>
+                    </button>
+                    
+                    <div class="w-[1px] h-3 bg-white/20 mx-1 self-center"></div>
+
                     <button class="btn-bold p-1 rounded hover:bg-white/10 text-muted hover:text-white transition-colors" title="Bold">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"></path></svg>
                     </button>
@@ -1716,36 +1728,26 @@ window.saveProjectState = async () => {
 
     const editor = container.querySelector('.notepad-editor');
 
-    // --- 綁定工具列功能 ---
-    // 使用 execCommand 來執行瀏覽器原生的編輯功能
-    const exec = (command) => {
-        document.execCommand(command, false, null);
-        editor.focus(); // 執行後將焦點放回編輯區
+    // 通用執行函式
+    // 注意：fontSize 1-7，3 是預設，5 是我們定義的大字體
+    const exec = (command, value = null) => {
+        document.execCommand(command, false, value);
+        editor.focus();
     };
 
+    // 綁定按鈕事件
+    container.querySelector('.btn-lg-text').onclick = () => exec('fontSize', '5'); // 變大
+    container.querySelector('.btn-norm-text').onclick = () => exec('fontSize', '3'); // 變回正常
+    
     container.querySelector('.btn-bold').onclick = () => exec('bold');
     container.querySelector('.btn-italic').onclick = () => exec('italic');
     container.querySelector('.btn-list').onclick = () => exec('insertUnorderedList');
 
-    // --- 防止拖曳干擾 ---
-    // 當使用者在編輯區點擊或選取文字時，不要觸發視窗拖曳
-    editor.addEventListener('mousedown', (e) => {
-        e.stopPropagation(); 
-    });
+    editor.addEventListener('mousedown', (e) => e.stopPropagation());
 
-    // --- 資料儲存邏輯 ---
-    // 監聽輸入事件，更新 item 物件
     editor.addEventListener('input', () => {
-        // 儲存 innerHTML 以保留 <b>, <i>, <ul> 等標籤
         item.content = editor.innerHTML;
     });
-
-    // 失去焦點時，寫入資料庫 (與原始碼 saveProjectState 連動 )
-    editor.addEventListener('blur', () => {
-        item.content = editor.innerHTML;
-        saveProjectState();
-    });
-}
         
 function renderLLMChatbotContent(item) {
     const container = item.el.querySelector('.content-container');
@@ -2678,6 +2680,7 @@ if(sendBtnJs && chatInputJs) {
 </div>
 </body>
 </html>
+
 
 
 
