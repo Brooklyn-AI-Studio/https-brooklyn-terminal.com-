@@ -1689,7 +1689,7 @@ window.saveProjectState = async () => {
     const savedContent = item.content || ''; 
 
     container.innerHTML = `
-        <div class="notepad-layout flex flex-col w-full h-full bg-black/40 backdrop-blur-md overflow-hidden rounded border-l-4 border-accent-secondary">
+        <div class="notepad-layout flex flex-col w-full h-full bg-transparent backdrop-blur-md overflow-hidden rounded border-l-4 border-accent-secondary">
             
             <div class="widget-header p-2 bg-white/5 border-b border-white/10 flex justify-between items-center cursor-move select-none">
                 <span class="font-bold text-xs tracking-wider text-accent-secondary">NOTEPAD</span>
@@ -1748,7 +1748,8 @@ window.saveProjectState = async () => {
     editor.addEventListener('input', () => {
         item.content = editor.innerHTML;
     });
-        
+  }  
+      
 function renderLLMChatbotContent(item) {
     const container = item.el.querySelector('.content-container');
     if (container.querySelector('.llm-chatbot-layout')) return;
@@ -2556,7 +2557,6 @@ if(sendBtnJs && chatInputJs) {
 }
 
         // --- Global Nav Logic ---
-        const globalNavToggle = document.getElementById('global-nav-toggle');
         const globalNavMenu = document.getElementById('global-nav-menu');
         const globalNavContainer = document.getElementById('global-nav-container');
         const globalLogoutBtn = document.getElementById('global-logout-btn');
@@ -2680,6 +2680,7 @@ if(sendBtnJs && chatInputJs) {
 </div>
 </body>
 </html>
+
 
 
 
