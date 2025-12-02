@@ -437,6 +437,12 @@
                             <div class="w-5 h-5 flex items-center justify-center bg-white/10 rounded text-xs border border-muted group-hover:border-accent">□</div>
                             <span class="sidebar-text whitespace-nowrap">Empty Window</span>
                         </div>
+                        <div class="tool-item flex items-center gap-3 px-3 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all cursor-grab group border border-transparent hover:border-accent" draggable="true" id="tool-notepad">
+                            <div class="w-5 h-5 flex items-center justify-center bg-white/10 rounded text-xs border border-muted group-hover:border-accent">
+                                <svg class="w-3 h-3 text-muted group-hover:text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </div>
+                            <span class="sidebar-text whitespace-nowrap">Notepad</span>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -1457,7 +1463,8 @@ window.saveProjectState = async () => {
         h: i.h,
         type: i.type,
         color: i.el.style.borderColor,
-        label: i.label || ''
+        label: i.label || '',
+        content: i.content || ''
     }));
 
     if (!window.dbUpdateProject) return;
@@ -1492,6 +1499,12 @@ window.saveProjectState = async () => {
         if (toolEmpty) {
             toolEmpty.addEventListener('dragstart', (e) => {
                 e.dataTransfer.setData('type', 'empty-window');
+            });
+        }
+        const toolNotepad = document.getElementById('tool-notepad'); //記事本
+        if (toolNotepad) {
+            toolNotepad.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('type', 'notepad');
             });
         }
         // VVVV 新增 LLM NodeX 的拖曳邏輯 VVVV
@@ -1529,11 +1542,11 @@ window.saveProjectState = async () => {
         if(!checkCollision({x, y, w: 300, h: 200})) {
             createItem(x, y, 300, 200, '#ffffff', 'empty-window'); // 沿用原本的尺寸
         }
-    } else if (type === 'llm-chatbot') { // <--- 新增此區塊
-        // 將節點初始位置設在右下角（例如：距離右邊 300px，距離底部 50px）
+    } else if (type === 'llm-chatbot') { 
+       
         const sizer = document.getElementById('canvas-sizer');
-        const containerW = parseInt(sizer.style.width); // 畫布總寬度 [cite: 385]
-        const containerH = parseInt(sizer.style.height); // 畫布總高度 [cite: 385]
+        const containerW = parseInt(sizer.style.width); 
+        const containerH = parseInt(sizer.style.height);
 
         // 計算右下角位置 (考慮畫布捲動)
         // x = 畫布寬度 - 節點寬度 - 邊距
@@ -1556,7 +1569,11 @@ window.saveProjectState = async () => {
         } else {
             alert("該位置已有節點，請調整畫布大小或清空空間！");
         }
-    }
+    }else if (type === 'notepad') {
+            if(!checkCollision({x, y, w: 250, h: 300})) {
+                createItem(x, y, 250, 300, '#f59e0b', 'notepad'); 
+            }
+        }     
 });
 
         function createItem(x, y, w, h, color, type, savedItem = null) {
@@ -1596,7 +1613,7 @@ window.saveProjectState = async () => {
             };
 
             gridCanvas.appendChild(el);
-            const itemObj = { id, x, y, w, h, el, type, label: labelContent }; // 確保這裡有 label
+            const itemObj = { id, x, y, w, h, el, type, label: labelContent, content: savedItem ? (savedItem.content || '') : '' };
            // const itemObj = { id, x, y, w, h, el, type, label: '' };
             items.push(itemObj);
             // 如果有 saved label，顯示在畫面上
@@ -1613,8 +1630,8 @@ window.saveProjectState = async () => {
             // Render Content
             if (type === 'empty-window') renderEmptyWindowContent(itemObj);
             else if (type === 'llm-chatbot') renderLLMChatbotContent(itemObj);
-            // 重要：如果是「使用者手動新增」的(沒有 savedItem)，才觸發儲存
-            // 如果是「同步過來」的，就不觸發儲存，避免無窮迴圈
+            else if (type === 'notepad') renderNotepadContent(itemObj);
+
             if (!savedItem && !isRemoteUpdate) {
                 saveProjectState();
             }
@@ -1643,6 +1660,46 @@ window.saveProjectState = async () => {
                 </div>
             `;
         }
+        
+        function renderNotepadContent(item) {
+    const container = item.el.querySelector('.content-container');
+    if (container.querySelector('.notepad-layout')) return;
+
+    // 如果 item 有 content 資料就顯示，否則為空
+    const savedText = item.content || ''; 
+
+    container.innerHTML = `
+        <div class="notepad-layout flex flex-col w-full h-full bg-surface/90 backdrop-blur-md overflow-hidden rounded border-l-4 border-accent-secondary">
+            <div class="widget-header p-2 bg-white/5 border-b border-white/10 flex justify-between items-center cursor-move select-none">
+                <span class="font-bold text-xs tracking-wider text-accent-secondary">NOTEPAD</span>
+                <div class="flex gap-2">
+                    <span class="text-[10px] text-muted opacity-50">TXT</span>
+                </div>
+            </div>
+            <textarea 
+                class="w-full h-full bg-transparent border-none p-3 text-sm text-text resize-none focus:ring-0 focus:outline-none font-mono leading-relaxed"
+                placeholder="Write something..."
+            >${savedText}</textarea>
+        </div>
+    `;
+
+    // 監聽輸入事件，即時更新 item 物件並觸發儲存
+    const textarea = container.querySelector('textarea');
+    textarea.addEventListener('input', (e) => {
+        item.content = e.target.value;
+        // 為了避免打一個字就存一次資料庫造成負擔，這裡建議加個 debounce (防抖)，但簡單起見先直接呼叫
+        // 或者依靠使用者的最後一次操作來存，這裡我們先更新本地狀態
+        item.content = e.target.value; 
+    });
+    
+    // 當輸入框失去焦點時，強制儲存到資料庫
+    textarea.addEventListener('blur', () => {
+        saveProjectState();
+    });
+    
+    // 阻止在 textarea 點擊時觸發拖曳 (這是既有邏輯，setupInteractions 已處理 INPUT/TEXTAREA [cite: 387])
+}
+        
 function renderLLMChatbotContent(item) {
     const container = item.el.querySelector('.content-container');
     if (container.querySelector('.llm-chatbot-layout')) return;
@@ -2574,6 +2631,7 @@ if(sendBtnJs && chatInputJs) {
 </div>
 </body>
 </html>
+
 
 
 
