@@ -1594,6 +1594,7 @@ async function getTodayUsageStats() {
         const decoder = new TextDecoder();
         let fullText = "";
         let isFirstChunk = true;
+        let fullTextBuffer = "";
 
         while (true) {
             const { done, value } = await reader.read();
@@ -1870,6 +1871,7 @@ async function getTodayUsageStats() {
                 const decoder = new TextDecoder();
                 let fullText = "";
                 let isFirstChunk = true;
+                let fullTextBuffer = "";
                 
                 while (true) {
                     const { done, value } = await reader.read();
