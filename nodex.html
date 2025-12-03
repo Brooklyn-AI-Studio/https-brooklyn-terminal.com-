@@ -1208,7 +1208,7 @@
        window.startNewChat = function() {
            currentChatId = null;
             // 1. 定義歡迎語清單
-            const titles = [
+           const titles = [
                 "兩個人生日一樣的機率，比直覺高很多。（問問:生日悖論）",
                 "讓電腦開始「讀懂人話」的那一刻。",
                 "數獨其實是 NP 完全問題。",
@@ -1223,7 +1223,6 @@
                 "你在懷疑人生，它在幫你產出下一份報告XD",
                 "賭場可以「穩賺不賠」，不是靠運氣，是靠期望值。"
             ];
-
             // 2. 隨機挑選一個標題
             const randomTitle = titles[Math.floor(Math.random() * titles.length)];
             
