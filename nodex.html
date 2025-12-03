@@ -746,6 +746,37 @@
             .nx-history-arrow.folded {
                 transform: rotate(-90deg);
             }
+        /* --- Logo 重新設計 (展開顯示大文字 / 收合顯示圖示) --- */
+        
+        /* 1. 展開狀態：隱藏圖示 SVG */
+        .nx-sidebar:not(.collapsed) .nx-logo-svg {
+            display: none !important;
+        }
+
+        /* 2. 展開狀態：放大 NodeX 文字 */
+        .nx-sidebar:not(.collapsed) .nav-text {
+            font-size: 1.8rem;      /* 字體放大 */
+            font-weight: 800;       /* 字體加粗 */
+            letter-spacing: 2px;    /* 增加字距 */
+            background: linear-gradient(90deg, var(--nx-accent), var(--nx-text)); /* (選用) 文字漸層質感 */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            /* 修正文字漸層在某些瀏覽器的顯示問題，若不需要漸層可移除上面三行並設 color: var(--nx-text); */
+        }
+
+        /* 3. 展開狀態：調整 Header 排版 (讓文字靠左或置中，這裡設為靠左對齊) */
+        .nx-sidebar:not(.collapsed) .nx-brand {
+            justify-content: flex-start; /* 靠左對齊 */
+            padding-left: 5px;           /* 稍微留點左邊距 */
+            width: 100%;
+        }
+
+        /* 4. 收合狀態：確保圖示 SVG 顯示 (因為文字會被隱藏) */
+        .nx-sidebar.collapsed .nx-logo-svg {
+            display: block !important;
+            width: 32px;
+            height: 32px;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -923,7 +954,7 @@
         }
     </style>
 </head>
-<body data-theme="tech"><div class="nx-sidebar"> <!-- 預設主題 -->
+<body data-theme="business"><div class="nx-sidebar"> <!-- 預設主題 -->
 
     <!-- 左側導航欄 -->
    <div class="nx-sidebar-header">
@@ -1006,9 +1037,9 @@
                         <svg class="nx-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                     </button>
                     <!-- 風格選單 -->
-                    <div class="nx-dropdown-menu" id="theme-menu" style="bottom: 110%; left: -50px;">
-                        <div class="nx-dropdown-item" onclick="setTheme('business')">Business 商務</div>
-                        <div class="nx-dropdown-item active" onclick="setTheme('tech')">Tech 科幻</div>
+                   <div class="nx-dropdown-menu" id="theme-menu" style="bottom: 110%; left: -50px;">
+                        <div class="nx-dropdown-item active" onclick="setTheme('business')">Business 商務</div>
+                        <div class="nx-dropdown-item" onclick="setTheme('tech')">Tech 科幻</div>
                         <div class="nx-dropdown-item" onclick="setTheme('terminal')">Terminal 終端</div>
                     </div>
                 </div>
