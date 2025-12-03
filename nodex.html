@@ -736,6 +736,16 @@
         .nx-action-btn.delete:hover {
             color: #ff6b6b; /* 刪除變紅色 */
         }
+                    /* --- 歷史紀錄折疊動畫 --- */
+            .nx-history-arrow {
+                transition: transform 0.3s ease;
+                display: inline-block;
+                font-size: 0.8em;
+            }
+            /* 當折疊時，箭頭旋轉 -90度 */
+            .nx-history-arrow.folded {
+                transform: rotate(-90deg);
+            }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -1825,70 +1835,102 @@ async function getTodayUsageStats() {
                 handleSendMessage();
             }
         });
-        // --- [優化版] 載入側邊欄歷史清單 (含操作按鈕) ---
-        async function loadSidebarHistory(uid) {
-            const historyContainer = document.getElementById('history-container');
-            if(!historyContainer) return;
-            
-            historyContainer.innerHTML = '<div class="nx-menu-title">歷史紀錄 (History)</div>';
-            
-            try {
-                const q = query(collection(db, "chats"), where("userId", "==", uid), orderBy("createdAt", "desc"));
-                const querySnapshot = await getDocs(q);
+                   // --- [新增] 切換歷史紀錄折疊狀態 ---
+            window.toggleHistoryList = function() {
+                const list = document.getElementById('nx-history-list-content');
+                const arrow = document.getElementById('nx-history-arrow-icon');
+                
+                if (list && arrow) {
+                    if (list.style.display === 'none') {
+                        list.style.display = 'block'; // 展開
+                        arrow.classList.remove('folded');
+                    } else {
+                        list.style.display = 'none';  // 收合
+                        arrow.classList.add('folded');
+                    }
+                }
+            };
+       // --- [修改版] 載入側邊欄歷史清單 (含折疊功能) ---
+async function loadSidebarHistory(uid) {
+    const historyContainer = document.getElementById('history-container');
+    if(!historyContainer) return;
+    
+    // 1. 建立標題列 (包含點擊事件) 與 清單容器
+    historyContainer.innerHTML = `
+        <div class="nx-menu-title" onclick="toggleHistoryList()" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; user-select: none;">
+            <span>歷史紀錄 (History)</span>
+            <span id="nx-history-arrow-icon" class="nx-history-arrow">▼</span>
+        </div>
+        <div id="nx-history-list-content" style="display:block;">
+            </div>
+    `;
+    
+    const listContent = document.getElementById('nx-history-list-content');
 
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const chatId = docSnap.id;
-                    
-                    // 1. 建立容器
-                    const item = document.createElement('div');
-                    item.className = 'nx-menu-item';
-                    item.style.fontSize = '0.85em';
-                    
-                    // 2. 建立標題文字
-                    const titleSpan = document.createElement('span');
-                    titleSpan.className = 'nx-chat-title-text';
-                    titleSpan.innerText = data.title || '新對話';
-                    
-                    // 3. 建立操作按鈕區 (編輯 + 刪除)
-                    const actionsDiv = document.createElement('div');
-                    actionsDiv.className = 'nx-chat-actions';
-                    
-                    // (A) 重新命名按鈕
-                    const editBtn = document.createElement('button');
-                    editBtn.className = 'nx-action-btn';
-                    editBtn.title = '重新命名';
-                    editBtn.innerHTML = '<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
-                    editBtn.onclick = (e) => {
-                        e.stopPropagation(); // 阻止冒泡 (避免觸發載入對話)
-                        renameChatSession(chatId, data.title);
-                    };
+    try {
+        const q = query(collection(db, "chats"), where("userId", "==", uid), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
 
-                    // (B) 刪除按鈕
-                    const delBtn = document.createElement('button');
-                    delBtn.className = 'nx-action-btn delete';
-                    delBtn.title = '刪除對話';
-                    delBtn.innerHTML = '<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
-                    delBtn.onclick = (e) => {
-                        e.stopPropagation(); // 阻止冒泡
-                        deleteChatSession(chatId);
-                    };
-
-                    actionsDiv.appendChild(editBtn);
-                    actionsDiv.appendChild(delBtn);
-                    
-                    item.appendChild(titleSpan);
-                    item.appendChild(actionsDiv);
-
-                    // 4. 點擊載入對話
-                    item.onclick = () => loadChatSession(chatId);
-                    
-                    historyContainer.appendChild(item);
-                });
-            } catch(e) {
-                console.error("Load History Error:", e);
-            }
+        if (querySnapshot.empty) {
+            listContent.innerHTML = '<div style="padding:10px; color:var(--nx-text-muted); font-size:0.8em; text-align:center;">尚無紀錄</div>';
+            return;
         }
+
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const chatId = docSnap.id;
+            
+            // 建立單個項目
+            const item = document.createElement('div');
+            item.className = 'nx-menu-item';
+            item.style.fontSize = '0.85em';
+            
+            // 標題
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'nx-chat-title-text';
+            titleSpan.innerText = data.title || '新對話';
+            
+            // 操作按鈕 (編輯/刪除)
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'nx-chat-actions';
+            
+            // (A) 重新命名
+            const editBtn = document.createElement('button');
+            editBtn.className = 'nx-action-btn';
+            editBtn.title = '重新命名';
+            editBtn.innerHTML = '<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+            editBtn.onclick = (e) => {
+                e.stopPropagation();
+                renameChatSession(chatId, data.title);
+            };
+
+            // (B) 刪除
+            const delBtn = document.createElement('button');
+            delBtn.className = 'nx-action-btn delete';
+            delBtn.title = '刪除對話';
+            delBtn.innerHTML = '<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+            delBtn.onclick = (e) => {
+                e.stopPropagation();
+                deleteChatSession(chatId);
+            };
+
+            actionsDiv.appendChild(editBtn);
+            actionsDiv.appendChild(delBtn);
+            
+            item.appendChild(titleSpan);
+            item.appendChild(actionsDiv);
+
+            // 點擊載入
+            item.onclick = () => loadChatSession(chatId);
+            
+            // 注意：這裡是 append 到 listContent，而不是 historyContainer
+            listContent.appendChild(item);
+        });
+    } catch(e) {
+        console.error("Load History Error:", e);
+        listContent.innerHTML = '<div style="color:red; font-size:0.8em; padding:10px;">載入失敗</div>';
+    }
+}
 
         // --- [新增] 重新命名對話 ---
         async function renameChatSession(chatId, oldTitle) {
