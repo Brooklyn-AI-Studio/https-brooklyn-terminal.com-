@@ -942,11 +942,6 @@
         <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span id="txt-newChat">新對話</span>
     </button>
-
-        <div class="nx-menu-item" onclick="openTempChat()" style="margin-bottom: 20px; border: 1px dashed var(--nx-border); justify-content: center;">
-            <svg class="nx-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            <span style="font-size:0.9em;">臨時對話</span>
-        </div>
         
    <div class="nx-menu-group">
         <div class="nx-menu-title">EXPLORE</div>
@@ -969,25 +964,9 @@
        </div>
     </div>
 
-    <div class="nx-menu-group">
-        <div class="nx-menu-item" style="color:var(--nx-text-muted);">
-            <svg class="nx-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <span id="txt-search">搜尋對話</span>
-        </div>
-    </div>
-
     <div class="nx-menu-group" id="history-container" style="flex:1; overflow-y: auto; min-height: 0; padding-right: 5px;">
        <div class="nx-menu-title" id="txt-history">歷史紀錄</div>
     </div>
-
-    <div class="nx-menu-group">
-        <div class="nx-menu-item" style="color:var(--nx-accent); border:1px dashed var(--nx-border);">
-            <svg class="nx-icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
-            <span id="txt-createAgent">創建 AI Agent</span>
-        </div>
-    </div>
-
-
 
         <!-- 底部工具列 -->
         <div class="nx-sidebar-footer">
@@ -1839,152 +1818,6 @@ async function getTodayUsageStats() {
                 handleSendMessage();
             }
         });
-// ==========================================
-        // [新增] 中央臨時對話功能邏輯 (修復版)
-        // ==========================================
-
-        const tempModal = document.getElementById('temp-chat-modal');
-        const tempInput = document.getElementById('temp-chat-input');
-        const tempHistory = document.getElementById('temp-chat-history');
-        const tempSendBtn = document.getElementById('temp-send-btn');
-
-        // 1. 開啟視窗 (掛載到 window 供 HTML 使用)
-        window.openTempChat = function() {
-            tempModal.style.display = 'flex';
-            // 小延遲讓動畫順暢
-            setTimeout(() => {
-                tempModal.classList.add('show');
-                tempInput.focus(); // 自動聚焦輸入框
-            }, 10);
-        }
-
-        // 2. 關閉視窗
-        window.closeTempChat = function() {
-            tempModal.classList.remove('show');
-            setTimeout(() => {
-                tempModal.style.display = 'none';
-            }, 300); // 等待動畫結束
-        }
-
-        // 點擊遮罩關閉
-        tempModal.addEventListener('click', (e) => {
-            if (e.target === tempModal) window.closeTempChat();
-        });
-
-        // 按 ESC 關閉
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && tempModal.style.display === 'flex') {
-                window.closeTempChat();
-            }
-        });
-
-        // 3. 發送訊息邏輯
-        async function handleTempSend() {
-            const text = tempInput.value.trim();
-            if (!text) return;
-            incrementModelUsage(currentModel);
-
-            // 清空輸入框
-            tempInput.value = '';
-
-            // (A) 顯示使用者訊息
-            const userDiv = document.createElement('div');
-            userDiv.style.alignSelf = 'flex-end';
-            userDiv.style.background = 'var(--nx-accent)';
-            userDiv.style.color = '#000'; // 深色文字比較清楚
-            userDiv.style.padding = '10px 16px';
-            userDiv.style.borderRadius = '12px 12px 0 12px';
-            userDiv.style.marginBottom = '15px';
-            userDiv.style.maxWidth = '85%';
-            userDiv.style.wordBreak = 'break-word';
-            userDiv.innerText = text;
-            tempHistory.appendChild(userDiv);
-            tempHistory.scrollTop = tempHistory.scrollHeight;
-
-            // (B) 建立 AI 回覆的佔位容器
-            const aiDiv = document.createElement('div');
-            aiDiv.className = 'markdown-body'; // 套用 Markdown 樣式
-            aiDiv.style.alignSelf = 'flex-start';
-            aiDiv.style.background = 'var(--nx-card-bg)';
-            aiDiv.style.border = '1px solid var(--nx-border)';
-            aiDiv.style.padding = '12px 16px';
-            aiDiv.style.borderRadius = '12px 12px 12px 0';
-            aiDiv.style.marginBottom = '20px';
-            aiDiv.style.maxWidth = '90%';
-            aiDiv.innerHTML = '<span style="color:var(--nx-text-muted);">Thinking...</span>';
-            tempHistory.appendChild(aiDiv);
-            tempHistory.scrollTop = tempHistory.scrollHeight;
-
-            try {
-                // 呼叫 LLM API (使用與主對話相同的 Worker)
-                const response = await fetch(WORKER_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    //  這裡不檢查登入狀態，方便快速使用
-                    body: JSON.stringify({ 
-                        model: currentModel,
-                        useSearch: isSearchEnabled,
-                        contents: [{ parts: [{ text: text }] }] 
-                    })
-                });
-
-                if (!response.ok) throw new Error("API Error");
-
-                // (D) 處理串流回應
-                const aiMsgContent = appendAiMessageStart(); // 先建立 AI 對話框(此時是空的)
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let fullText = "";
-                let isFirstChunk = true;
-                let fullTextBuffer = "";
-                
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    // 收到第一包資料時，才移除 Loading 氣泡
-                        if (isFirstChunk && loadingId) {
-                            removeMessage(loadingId);
-                            isFirstChunk = false;
-                        }
-
-                    const chunk = decoder.decode(value, { stream: true });
-                    // 解析 SSE 格式 (假設你的 Worker 回傳格式與主對話相同)
-                    const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
-
-                    if (matches) {
-                        matches.forEach(match => {
-                            let textPart = match.replace(/"text":\s*"/, "").replace(/"$/, "");
-                            try {
-                                // 解碼 JSON 字串
-                                textPart = JSON.parse(`"${textPart}"`);
-                                fullText += textPart;
-                                // 即時渲染 Markdown
-                                aiDiv.innerHTML = marked.parse(fullText);
-                                tempHistory.scrollTop = tempHistory.scrollHeight;
-                            } catch (e) {
-                                // 忽略解析錯誤
-                            }
-                        });
-                    }
-                }
-
-            } catch (error) {
-                aiDiv.innerHTML = `<span style="color:#ff6b6b;">Error: ${error.message}</span>`;
-            }
-        }
-
-        // 綁定發送事件
-        if(tempSendBtn) {
-            tempSendBtn.addEventListener('click', handleTempSend);
-        }
-
-        // 綁定 Enter 鍵
-        tempInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.isComposing) {
-                handleTempSend();
-            }
-        });
-       // --- [新增] 載入側邊欄歷史清單 ---
         // --- [優化版] 載入側邊欄歷史清單 (含操作按鈕) ---
         async function loadSidebarHistory(uid) {
             const historyContainer = document.getElementById('history-container');
@@ -2117,37 +1950,7 @@ async function getTodayUsageStats() {
             });
         }
     </script>
-   <div id="temp-chat-modal" class="nx-modal-overlay">
-    <div class="nx-modal-content">
-        <div class="nx-modal-header">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <svg class="nx-icon" style="color:var(--nx-accent);" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <span style="font-weight:bold; letter-spacing:1px; font-size:0.9em;">TEMPORARY CHAT</span>
-            </div>
-            <button class="nx-tool-btn" onclick="closeTempChat()" title="Close (Esc)">✕</button>
-        </div>
-        
-        <div id="temp-chat-history" class="nx-chat-area">
-            <div style="text-align:center; color:var(--nx-text-muted); margin-top:60px; opacity:0.7;">
-                <div style="font-size: 2em; margin-bottom: 10px;">✨</div>
-                <p>有什麼我可以幫你的嗎？</p>
-                <p style="font-size:0.8em; margin-top:5px;">此視窗關閉後，內容可能會被清除。</p>
-            </div>
-        </div>
-
-        <div class="nx-modal-input-area">
-            <div class="nx-modal-input-wrapper">
-                <input type="text" id="temp-chat-input" class="nx-textarea" 
-                       style="height:40px; font-size:1rem; border:none; background:transparent; width:100%; outline:none; color:var(--nx-text);" 
-                       placeholder="輸入訊息..." autocomplete="off">
-                
-                <button class="nx-send-btn" id="temp-send-btn" style="width:36px; height:36px; flex-shrink:0;">
-                    <svg class="nx-icon" style="stroke:black;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+ 
 <div id="profile-modal" class="nx-modal-overlay">
     <div class="nx-modal-content" style="height: auto; max-height: 85vh; width: 450px;">
         
