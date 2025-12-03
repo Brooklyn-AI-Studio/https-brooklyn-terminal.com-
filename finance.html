@@ -1210,50 +1210,51 @@
             // localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
         };
        // ---啟動新對話模式 ---
-       window.startNewChat = function() {
-           currentChatId = null;
-            // 1. 定義歡迎語清單
-            const titles = [
-                "信用卡只繳「最低應繳」，很可能是在跟複利當敵人。",
-                "通膨會讓指數「看起來」一直創新高",
-                "所謂「恐慌指數」VIX，不是股價，而是預期波動率。",
-                "行為財務：人對「賠錢」的痛苦，大約是賺到同樣金額的 2 倍。",
-                "高盛其實是德國移民開的「地下室小公司」起家。"
-                "把一張鈔票燒掉，理論上是讓所有其他人「各分到一點點好處」。",
-                "1956 年幫福特汽車 IPO，是高盛大復活里程碑。",
-                "高頻交易在乎的是「幾十微秒的差距」。",
-                "把複雜問題，變成一段清楚可執行的指令。",
-                "泡沫不只科技股：最早有名的是「鬱金香泡沫」。",
-                "現代金融市場極度依賴密碼學。",
-                "財報裡的「盈餘」不等於公司現金真的這麼多。",
-                "指數基金的概念很晚才普及，卻顛覆了整個產業。"
-            ];
+      window.startNewChat = function() {
+    // 1. 重置目前對話 ID
+    currentChatId = null;
 
-            // 2. 隨機挑選一個標題
-            const randomTitle = titles[Math.floor(Math.random() * titles.length)];
-            
-            // 3. 更新畫面上的標題文字
-            const titleEl = document.getElementById('new-chat-title');
-            if (titleEl) titleEl.innerText = randomTitle;
+    // 2. (可選) 隨機標題，如果之後有 new-chat-title 再用
+    const titles = [
+        "信用卡只繳「最低應繳」，很可能是在跟複利當敵人。",
+        "通膨會讓指數「看起來」一直創新高",
+        "所謂「恐慌指數」VIX，不是股價，而是預期波動率。",
+        "行為財務：人對「賠錢」的痛苦，大約是賺到同樣金額的 2 倍。",
+        "高盛其實是德國移民開的「地下室小公司」起家。",
+        "把一張鈔票燒掉，理論上是讓所有其他人「各分到一點點好處」。"
+    ];
+    const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+    const titleEl = document.getElementById('new-chat-title');
+    if (titleEl) titleEl.innerText = randomTitle;
 
-            // 4. 清空聊天畫面
-            const chatHistory = document.getElementById('nx-chat-history');
-            if(chatHistory) chatHistory.innerHTML = ''; 
-            
-            // 5. 切換 UI 狀態
-            document.getElementById('view-home').style.display = 'none';
-            document.getElementById('view-dashboard').style.display = 'none';
-            document.getElementById('view-new-chat').style.display = 'flex';
-            
-            // 6. 啟動 CSS 置中模式
-            document.querySelector('.nx-main').classList.add('centered-mode');
-            
-            // 7. 重置輸入框
-            const input = document.getElementById('nx-input');
-            input.value = '';
-            input.focus();
-            input.style.height = 'auto';
-        };
+    // 3. 清空聊天內容
+    const chatHistory = document.getElementById('nx-chat-history');
+    if (chatHistory) {
+        chatHistory.innerHTML = '';
+        chatHistory.style.display = 'flex';
+        chatHistory.style.flexDirection = 'column';
+    }
+
+    // 4. 隱藏首頁 view（有這個 ID 才操作）
+    const homeView = document.getElementById('view-home');
+    if (homeView) {
+        homeView.style.display = 'none';
+    }
+
+    // 5. 移除 centered 模式，讓畫面回到正常聊天模式
+    const main = document.querySelector('.nx-main');
+    if (main) {
+        main.classList.remove('centered-mode');
+    }
+
+    // 6. 重置輸入框
+    const input = document.getElementById('nx-input');
+    if (input) {
+        input.value = '';
+        input.focus();
+        input.style.height = 'auto';
+    }
+};
     
         // --- [補強] 將 UI 控制函式掛載到 window 以便 HTML 呼叫 ---
         window.switchView = function(viewName) {
@@ -2052,6 +2053,7 @@ async function loadSidebarHistory(uid) {
     
 </body>
 </html>
+
 
 
 
