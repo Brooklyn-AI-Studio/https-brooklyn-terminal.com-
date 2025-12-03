@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&family=Courier+New&display=swap" rel="stylesheet">
     
     <style>
-                        /* 進度條樣式 */ 
+                        /* 進度條樣式 */
                 .usage-item {
                     font-size: 0.9em;
                 }
@@ -1090,11 +1090,23 @@
             </h2>
         </div>
 
+    <div id="view-dashboard" style="display: none; width: 100%; flex-direction: column; align-items: center;">
+        <div class="nx-welcome">
+            <h1 id="txt-welcome">早安，<br><span>開始您製作一份分析報告？</span></h1>
+            <div class="nx-suggestion-grid">
+                <div class="nx-suggestion-card"><span id="txt-sug1">分析 NVDA 財報重點</span> <span class="nx-sug-arrow">↗</span></div>
+                <div class="nx-suggestion-card"><span id="txt-sug2">比特幣下週走勢預測</span> <span class="nx-sug-arrow">↗</span></div>
+                <div class="nx-suggestion-card"><span id="txt-sug3">制定台股當沖策略</span> <span class="nx-sug-arrow">↗</span></div>
+                <div class="nx-suggestion-card"><span id="txt-sug4">總體經濟數據解讀</span> <span class="nx-sug-arrow">↗</span></div>
+            </div>
+        </div>
+    </div>
+
         <!-- 全新設計的輸入框區塊 -->
         <div class="nx-input-container">
             <div class="nx-input-wrapper">
                 <!-- 第一層：輸入區 -->
-                <textarea class="nx-textarea" id="nx-input" rows="1" placeholder="詢問任何問題，我相信你有很多疑問。"></textarea>
+                <textarea class="nx-textarea" id="nx-input" rows="1" placeholder="詢問任何問題。我相信你有很多疑問。"></textarea>
                 
                 <!-- 第二層：工具列 -->
                 <div class="nx-input-footer">
@@ -1205,52 +1217,50 @@
             // localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
         };
        // --- [新增] 啟動新對話模式 ---
-      window.startNewChat = function() {
-    currentChatId = null;
+       window.startNewChat = function() {
+           currentChatId = null;
+            // 1. 定義歡迎語清單
+            const titles = [
+                "兩個人生日一樣的機率，比直覺高很多。（問問:生日悖論）",
+                "讓電腦開始「讀懂人話」的那一刻。",
+                "數獨其實是 NP 完全問題。",
+                "圖靈機可以用超級「笨」的方式模擬任何電腦。",
+                "網頁不是只有 HTML，還牽扯到不少協定數學",
+                "當演算法開始參與你的決策流程。",
+                "「3D 遊戲」畫面其實都是 2D 圖片堆出來的。",
+                "隨機數產生器很多其實是「偽裝的」。",
+                "「洗牌」如果用錯方法，其實不是真正隨機。",
+                "人類開會三小時，模型三秒鐘說完。",
+                "兩顆骰子相加為「7 點」其實最常見。",
+                "你在懷疑人生，它在幫你產出下一份報告XD",
+                "賭場可以「穩賺不賠」，不是靠運氣，是靠期望值。"
+            ];
 
-    const titles = [
-        "兩個人生日一樣的機率，比直覺高很多。（問問:生日悖論）",
-        "讓電腦開始「讀懂人話」的那一刻。",
-        "數獨其實是 NP 完全問題。",
-        "圖靈機可以用超級「笨」的方式模擬任何電腦。",
-        "網頁不是只有 HTML，還牽扯到不少協定數學",
-        "當演算法開始參與你的決策流程。",
-        "「3D 遊戲」畫面其實都是 2D 圖片堆出來的。",
-        "隨機數產生器很多其實是「偽裝的」。",
-        "「洗牌」如果用錯方法，其實不是真正隨機。",
-        "人類開會三小時，模型三秒鐘說完。",
-        "兩顆骰子相加為「7 點」其實最常見。",
-        "你在懷疑人生，它在幫你產出下一份報告XD",
-        "賭場可以「穩賺不賠」，不是靠運氣，是靠期望值。"
-    ];
+            // 2. 隨機挑選一個標題
+            const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+            
+            // 3. 更新畫面上的標題文字
+            const titleEl = document.getElementById('new-chat-title');
+            if (titleEl) titleEl.innerText = randomTitle;
 
-    const randomTitle = titles[Math.floor(Math.random() * titles.length)];
-    const titleEl = document.getElementById('new-chat-title');
-    if (titleEl) titleEl.innerText = randomTitle;
-
-    const chatHistory = document.getElementById('nx-chat-history');
-    if (chatHistory) chatHistory.innerHTML = ''; 
-
-    // ✅ 安全操作：有就改，沒有就算了
-    const homeView = document.getElementById('view-home');
-    if (homeView) homeView.style.display = 'none';
-
-    const dashboardView = document.getElementById('view-dashboard');
-    if (dashboardView) dashboardView.style.display = 'none';
-
-    const newChatView = document.getElementById('view-new-chat');
-    if (newChatView) newChatView.style.display = 'flex';
-
-    const main = document.querySelector('.nx-main');
-    if (main) main.classList.add('centered-mode');
-
-    const input = document.getElementById('nx-input');
-    if (input) {
-        input.value = '';
-        input.focus();
-        input.style.height = 'auto';
-    }
-};
+            // 4. 清空聊天畫面
+            const chatHistory = document.getElementById('nx-chat-history');
+            if(chatHistory) chatHistory.innerHTML = ''; 
+            
+            // 5. 切換 UI 狀態
+            document.getElementById('view-home').style.display = 'none';
+            document.getElementById('view-dashboard').style.display = 'none';
+            document.getElementById('view-new-chat').style.display = 'flex';
+            
+            // 6. 啟動 CSS 置中模式
+            document.querySelector('.nx-main').classList.add('centered-mode');
+            
+            // 7. 重置輸入框
+            const input = document.getElementById('nx-input');
+            input.value = '';
+            input.focus();
+            input.style.height = 'auto';
+        };
     
         // --- [補強] 將 UI 控制函式掛載到 window 以便 HTML 呼叫 ---
         window.switchView = function(viewName) {
