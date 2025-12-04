@@ -1309,7 +1309,7 @@
    <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs,getDoc, doc, updateDoc, deleteDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs,getDoc, doc, updateDoc, deleteDoc, setDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         // --- [新增] 側邊欄收合切換 ---
         window.toggleSidebar = function() {
             const sidebar = document.querySelector('.nx-sidebar');
@@ -2121,74 +2121,84 @@ async function loadSidebarHistory(uid) {
     //  [新增] 金融新聞串接邏輯 (Finance News Feed)
     // ==========================================
     
-    async function loadFinanceNews() {
-        const container = document.getElementById('news-feed-container');
-        const WORKER_NEWS_URL = "https://nodex-proxy.coreinformation30.workers.dev/news?q=finance&sortBy=publishedAt";
+  // 修改原本的函式，加入 keyword 參數 (預設為 'finance')
+async function loadFinanceNews(keyword = 'finance') {
+    const container = document.getElementById('news-feed-container');
+    
+    // 顯示「接收指令中」的動畫效果
+    container.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <div class="nx-typing-bubble" style="justify-content: center; margin-bottom: 10px;">
+                <div class="nx-typing-dot"></div><div class="nx-typing-dot"></div><div class="nx-typing-dot"></div>
+            </div>
+            <span style="color:var(--nx-accent); font-family:'Orbitron'; letter-spacing:1px;">
+                RECEIVING NEW DIRECTIVE: ${keyword.toUpperCase()}
+            </span>
+        </div>
+    `;
 
-        try {
-            // 1. 呼叫後端 API
-            const response = await fetch(WORKER_NEWS_URL);
-            const data = await response.json();
+    // [關鍵修改] 將 URL 中的 q=finance 改為動態變數
+    const WORKER_NEWS_URL = `https://nodex-proxy.coreinformation30.workers.dev/news?q=${encodeURIComponent(keyword)}&sortBy=publishedAt`;
 
-            // 2. 檢查資料狀態
-            if (data.status !== "ok" || !data.articles) {
-                throw new Error(data.message || "無法取得新聞資料");
-            }
+    try {
+        const response = await fetch(WORKER_NEWS_URL);
+        const data = await response.json();
 
-            // 3. 清空載入動畫
-            container.innerHTML = '';
-
-            // 4. 渲染新聞卡片
-            data.articles.forEach(article => {
-                // 過濾掉被移除的文章或沒有內容的文章
-                if (article.title === "[Removed]" || !article.title) return;
-
-                // 格式化日期
-                const dateObj = new Date(article.publishedAt);
-                const dateStr = dateObj.toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-                // 建立卡片元素
-                const card = document.createElement('div');
-                card.className = 'news-card';
-                
-                // 點擊開啟新聞連結 (另開視窗)
-                card.onclick = () => window.open(article.url, '_blank');
-
-                // 處理來源名稱 (截短過長的來源)
-                const sourceName = article.source.name || "News";
-
-                card.innerHTML = `
-                    <div class="news-meta">
-                        <span>${dateStr}</span>
-                        <span>${sourceName}</span>
-                    </div>
-                    <div style="margin-bottom:8px;">
-                        <span class="news-tag">FINANCE</span>
-                    </div>
-                    <div class="news-title">${article.title}</div>
-                    <div class="news-summary">${article.description || article.content || '點擊閱讀完整報導...'}</div>
-                `;
-
-                container.appendChild(card);
-            });
-
-        } catch (error) {
-            console.error("News Load Error:", error);
-            container.innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; color: #ff6b6b; padding: 20px; border: 1px dashed #ff6b6b;">
-                    <p>無法連線至全球金融數據流</p>
-                    <p style="font-size:0.8em; opacity:0.8;">${error.message}</p>
-                    <button onclick="loadFinanceNews()" class="nx-tool-btn" style="margin:10px auto; border:1px solid #ff6b6b;">重試連線</button>
-                </div>
-            `;
+        if (data.status !== "ok" || !data.articles) {
+            throw new Error(data.message || "無法取得新聞資料");
         }
-    }
 
+        container.innerHTML = ''; // 清空動畫
+
+        data.articles.forEach(article => {
+            if (article.title === "[Removed]" || !article.title) return;
+            const dateStr = new Date(article.publishedAt).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            const card = document.createElement('div');
+            card.className = 'news-card';
+            card.onclick = () => window.open(article.url, '_blank');
+
+            // 這裡的 Tag 也改成動態顯示關鍵字
+            card.innerHTML = `
+                <div class="news-meta">
+                    <span>${dateStr}</span>
+                    <span>${article.source.name}</span>
+                </div>
+                <div style="margin-bottom:8px;">
+                     <span class="news-tag">${keyword.toUpperCase()}</span>
+                </div>
+                <div class="news-title">${article.title}</div>
+                <div class="news-summary">${article.description || '點擊閱讀完整報導...'}</div>
+            `;
+            container.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("News Load Error:", error);
+        container.innerHTML = `<div style="text-align:center; color:#ff6b6b; padding:20px;">載入失敗: ${error.message}</div>`;
+    }
+}
     // 頁面載入後自動執行抓取新聞
     window.addEventListener('DOMContentLoaded', () => {
         // 稍微延遲一點讓動畫跑一下，增加儀式感
         setTimeout(loadFinanceNews, 800);
     });
+       window.addEventListener('DOMContentLoaded', () => {
+    // 監聽 system_settings/news_config 文件的變化
+    onSnapshot(doc(db, "system_settings", "news_config"), (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const newKeyword = data.target_keyword || 'finance';
+            
+            console.log("收到新的推播指令:", newKeyword);
+            // 呼叫上一步修改過的函式
+            loadFinanceNews(newKeyword);
+        } else {
+            // 如果還沒有設定檔，載入預設值
+            loadFinanceNews('finance');
+        }
+    });
+});
        
     </script>
    
@@ -2237,6 +2247,7 @@ async function loadSidebarHistory(uid) {
     
 </body>
 </html>
+
 
 
 
