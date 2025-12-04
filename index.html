@@ -2,26 +2,22 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 關鍵：確保移動設備正確縮放，避免使用者縮放破壞佈局 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BROOKLYN-TERMINAL</title>
-    <!-- 網站 ICON（favicon） -->
     <link rel="icon" type="image/png" href="/brooklyn-terminal logo.png">
-    <!-- iOS / Android 加到主畫面用的 icon（可選） -->
     <link rel="apple-touch-icon" href="/brooklyn-terminal logo.png">
-    <!-- 引入專業字體 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-color: #000000; /* 改為純黑 */
-            --card-bg: rgba(10, 10, 10, 0.8); /* 加深卡片背景 */
-            --accent-color: #00ffcc; /* 您原本的青色，保持品牌一致性 */
+            --bg-color: #000000;
+            --card-bg: rgba(10, 10, 10, 0.8);
+            --accent-color: #00ffcc;
             --text-main: #ffffff;
             --text-muted: #888888;
             --border-color: rgba(255, 255, 255, 0.15);
-            /* 預設光暈 (微弱) */
             --hover-glow: 0 0 25px rgba(0, 255, 204, 0.25);
-            /* 強烈光暈 (懸停時) */
             --active-glow: 0 0 50px rgba(0, 255, 204, 0.6), inset 0 0 20px rgba(0, 255, 204, 0.2);
         }
 
@@ -29,40 +25,40 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent; /* 移除手機點擊時的藍色背景 */
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
+            width: 100%;
+            /* Desktop 預設：像 App 一樣固定一頁 */
             height: 100vh;
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
             position: relative;
         }
 
-        /* 粒子特效畫布 */
+        /* 粒子特效畫布：改為 fixed 以便手機滾動時背景不動 */
         #particles-canvas {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 0; /* 位於最底層 */
-            pointer-events: none; /* 不干擾點擊 */
+            z-index: 0;
+            pointer-events: none;
         }
 
-        /* 背景暗角遮罩 (讓角落更黑，突顯中心) */
         .vignette {
-            position: absolute;
+            position: fixed; /* 改為 fixed */
             top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle, transparent 40%, #000 100%);
             z-index: 1;
             pointer-events: none;
         }
 
-        /* --- 修改：語言切換器 (地球圖示 + 下拉選單) --- */
+        /* 語言切換器 */
         .lang-container {
             position: absolute;
             top: 30px;
@@ -73,16 +69,17 @@
         }
 
         .lang-toggle-btn {
-            background: transparent;
+            background: rgba(0, 0, 0, 0.5); /* 增加底色防止與文字重疊 */
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: var(--text-muted);
             padding: 8px;
             cursor: pointer;
             transition: all 0.3s;
-            border-radius: 50%; /* 圓形按鈕 */
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(4px);
         }
 
         .lang-toggle-btn:hover, .lang-toggle-btn.active {
@@ -100,7 +97,6 @@
             stroke-width: 1.5;
         }
 
-        /* 下拉選單 */
         .lang-dropdown {
             position: absolute;
             top: 120%;
@@ -109,7 +105,7 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 5px;
-            display: none; /* 預設隱藏 */
+            display: none;
             flex-direction: column;
             gap: 2px;
             min-width: 120px;
@@ -127,7 +123,7 @@
         }
 
         .lang-option {
-            padding: 8px 12px;
+            padding: 10px 12px; /* 手機上按鈕大一點比較好按 */
             color: #ccc;
             cursor: pointer;
             font-size: 0.9rem;
@@ -158,30 +154,32 @@
             max-width: 1200px;
             width: 90%;
             margin: 0 auto;
-            height: 100%;
+            /* Desktop 置中邏輯 */
+            height: 100%; 
+            min-height: 100vh; /* 確保至少有視窗高度 */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
+            padding: 20px 0; /* 增加上下緩衝 */
         }
 
-        /* 品牌標題 */
         .brand-title {
             font-family: 'Orbitron', sans-serif;
             font-size: 4rem;
             font-weight: 900;
             letter-spacing: 4px;
             margin-bottom: 10px;
-            background: linear-gradient(180deg, #fff 20%, #666 100%); /* 加強金屬質感 */
+            background: linear-gradient(180deg, #fff 20%, #666 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             opacity: 0;
             animation: fadeDown 1s ease forwards 0.2s;
             text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+            line-height: 1.2;
         }
 
-        /* 標語 */
         .slogan {
             font-family: 'Rajdhani', sans-serif;
             font-size: 1.5rem;
@@ -192,75 +190,70 @@
             opacity: 0;
             animation: fadeUp 1s ease forwards 0.4s;
             text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+            max-width: 800px;
+            line-height: 1.5;
         }
 
-        /* 功能卡片區 */
         .features-wrapper {
             display: flex;
             gap: 20px;
             margin-bottom: 60px;
             flex-wrap: wrap;
             justify-content: center;
+            width: 100%;
         }
 
         .feature-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            padding: 30px 40px;
-            border-radius: 4px; /* 金融風格偏向方正或微圓角 */
+            padding: 30px 20px; /* 稍微減少左右 padding 適應窄螢幕 */
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 使用彈性動畫 */
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             width: 280px;
-            backdrop-filter: blur(5px); /* 毛玻璃效果 */
+            backdrop-filter: blur(5px);
             opacity: 0;
             animation: fadeUp 0.8s ease forwards 0.6s;
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            align-items: center; /* 讓內容置中 */
-            z-index: 1; /* 確保在光暈之上 */
+            align-items: center;
+            z-index: 1;
         }
 
-        /* ★ 新增：背後光效層 (Pseudo-element for Glow) ★ */
         .feature-card::after {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 300px; /* 光暈大小 */
-            height: 300px;
+            top: 50%; left: 50%;
+            width: 300px; height: 300px;
             background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%);
-            opacity: 0; /* 預設隱藏 */
-            transform: translate(-50%, -50%) scale(0.5); /* 初始縮小 */
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
             transition: opacity 0.4s ease, transform 0.4s ease;
-            z-index: -1; /* 放在內容背後 */
-            filter: blur(30px); /* 模糊化形成光暈 */
+            z-index: -1;
+            filter: blur(30px);
             pointer-events: none;
         }
 
-        /* 卡片出現的時間差 */
         .feature-card:nth-child(1) { animation-delay: 0.6s; }
         .feature-card:nth-child(2) { animation-delay: 0.7s; }
         .feature-card:nth-child(3) { animation-delay: 0.8s; }
 
-        /* ★ 修改：懸停時的特效 ★ */
-        .feature-card:hover {
+        .feature-card:hover, .feature-card:active {
             border-color: var(--accent-color);
-            transform: translateY(-10px) scale(1.02); /* 上浮並微微放大 */
-            box-shadow: var(--active-glow); /* 外發光 */
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: var(--active-glow);
             background: rgba(20, 20, 20, 0.95);
         }
 
-        /* 懸停時觸發背後光效 */
-        .feature-card:hover::after {
-            opacity: 0.3; /* 顯示光暈 (不要太亮以免影響文字) */
-            transform: translate(-50%, -50%) scale(1.2); /* 擴散 */
+        .feature-card:hover::after, .feature-card:active::after {
+            opacity: 0.3;
+            transform: translate(-50%, -50%) scale(1.2);
         }
 
-        /* SVG 圖示容器設定 */
         .card-icon {
-            height: 50px; /* 固定高度，保持排版整齊 */
+            height: 50px;
             margin-bottom: 15px;
             color: var(--text-main);
             display: flex;
@@ -270,9 +263,9 @@
         }
         
         .feature-card:hover .card-icon {
-            transform: scale(1.1); /* 懸停時圖示微放大 */
+            transform: scale(1.1);
             color: var(--accent-color);
-            filter: drop-shadow(0 0 10px var(--accent-color)); /* 圖示自體發光 */
+            filter: drop-shadow(0 0 10px var(--accent-color));
         }
         
         .card-icon svg {
@@ -305,10 +298,9 @@
         }
         
         .feature-card:hover .card-desc {
-            color: #ddd; /* 懸停時文字變亮 */
+            color: #ddd;
         }
 
-        /* 裝飾線條 (上方掃描線) */
         .feature-card::before {
             content: '';
             position: absolute;
@@ -323,7 +315,264 @@
             transform: scaleX(1);
         }
 
-        /* 底部登入區 */
+        /* =========================================
+           ★ 三大卡片專屬互動特效區 ★
+           ========================================= */
+
+        /* 1. 通用卡片放大與背景深色邏輯 */
+        .workspace-card, .nodex-card, .pulsestreet-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .workspace-card:hover, .nodex-card:hover, .pulsestreet-card:hover {
+            transform: scale(1.15) translateY(-15px) !important;
+            z-index: 50; /* 確保置頂 */
+            background: rgba(0, 20, 20, 0.98); /* 背景變深，突顯上方文字 */
+        }
+
+        /* 2. 通用：原卡片內容淡出邏輯 */
+        .workspace-card .card-content,
+        .nodex-card .card-content, 
+        .pulsestreet-card .card-content {
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .workspace-card:hover .card-content,
+        .nodex-card:hover .card-content, 
+        .pulsestreet-card:hover .card-content {
+            opacity: 0.1;
+            filter: blur(4px);
+            transform: scale(0.9);
+        }
+
+        /* --- 特效 A: WorkSpace (AI 向量數據庫模擬) --- */
+        .vector-db-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 5px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease 0.1s;
+            font-family: 'Courier New', Courier, monospace; /* 等寬字體更有數據感 */
+            overflow: hidden;
+        }
+
+        .workspace-card:hover .vector-db-overlay {
+            opacity: 1;
+        }
+
+        .data-row {
+            font-size: 0.8rem;
+            color: rgba(0, 255, 204, 0.6);
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .db-highlight {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        /* 數據行進場動畫 */
+        @keyframes slideInTiny {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .workspace-card:hover .data-row:nth-child(1) { animation: slideInTiny 0.2s forwards 0.1s; }
+        .workspace-card:hover .data-row:nth-child(2) { animation: slideInTiny 0.2s forwards 0.2s; }
+        .workspace-card:hover .data-row:nth-child(3) { animation: slideInTiny 0.2s forwards 0.3s; }
+        .workspace-card:hover .data-row:nth-child(4) { animation: slideInTiny 0.2s forwards 0.4s; }
+        .workspace-card:hover .data-row:nth-child(5) { animation: slideInTiny 0.2s forwards 0.5s; }
+
+
+        /* --- 特效 B: NodeX (AI 對話模擬) --- */
+        .ai-chat-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease 0.1s;
+            font-family: 'Rajdhani', monospace;
+        }
+
+        .nodex-card:hover .ai-chat-overlay {
+            opacity: 1;
+        }
+
+        .ai-chat-overlay .chat-message {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            opacity: 0;
+            transform: translateX(-20px);
+            line-height: 1.4;
+            font-weight: 600;
+        }
+
+        .nodex-card:hover .chat-message:nth-child(1) { animation: slideInType 0.3s forwards 0.2s; color: #888; font-size: 0.85rem; }
+        .nodex-card:hover .chat-message:nth-child(2) { animation: slideInType 0.3s forwards 0.5s; color: #fff; }
+        .nodex-card:hover .chat-message:nth-child(3) { animation: slideInType 0.3s forwards 0.9s; color: #fff; }
+        .nodex-card:hover .chat-message:nth-child(4) { animation: slideInType 0.3s forwards 1.3s; color: var(--accent-color); }
+
+        .highlight {
+            color: var(--accent-color);
+            text-shadow: 0 0 8px var(--accent-color);
+            font-weight: 700;
+        }
+
+        @keyframes slideInType {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+
+        /* --- 特效 C: PulseStreet (聊天室模擬) --- */
+        .chat-simulation-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease 0.1s;
+        }
+
+        .pulsestreet-card:hover .chat-simulation-overlay {
+            opacity: 1;
+        }
+
+        /* 對話氣泡樣式 */
+        .chat-bubble {
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            max-width: 90%;
+            opacity: 0;
+            transform: translateY(15px);
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            line-height: 1.4;
+        }
+
+        .chat-bubble.left {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.15);
+            color: #eee;
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-bubble.right {
+            align-self: flex-end;
+            background: rgba(0, 255, 204, 0.15);
+            color: var(--accent-color);
+            border: 1px solid rgba(0, 255, 204, 0.3);
+            border-bottom-right-radius: 2px;
+            text-align: right;
+            text-shadow: 0 0 5px rgba(0,255,204,0.3);
+        }
+
+        @keyframes popIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulsestreet-card:hover .chat-bubble:nth-child(1) { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.1s; }
+        .pulsestreet-card:hover .chat-bubble:nth-child(2) { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.4s; }
+        .pulsestreet-card:hover .chat-bubble:nth-child(3) { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.7s; }
+
+        /* =========================================
+           ★ 強力 RWD 手機優化區塊 (更新) ★
+           ========================================= */
+        @media (max-width: 900px) {
+            body {
+                /* 手機版允許滾動，取消 100vh 強制限制 */
+                height: auto;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+
+            .container {
+                justify-content: flex-start;
+                padding-top: 100px; /* 留位置給語言按鈕和標題 */
+                padding-bottom: 40px;
+                height: auto;
+            }
+
+            .lang-container {
+                top: 20px;
+                left: 20px;
+            }
+
+            .brand-title {
+                font-size: clamp(2rem, 8vw, 3.5rem);
+                margin-top: 10px;
+            }
+
+            .slogan {
+                font-size: 1.1rem;
+                margin-bottom: 40px;
+                padding: 0 20px;
+            }
+
+            .features-wrapper {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+                width: 100%;
+                margin-bottom: 40px;
+            }
+
+            .feature-card {
+                width: 100%;
+                max-width: 340px;
+            }
+            
+            /* 手機版輕微 hover 效果 */
+            .workspace-card:hover, .nodex-card:hover, .pulsestreet-card:hover {
+                transform: scale(1.05) translateY(-5px) !important;
+            }
+
+            .contact-section {
+                position: relative;
+                bottom: auto;
+                margin-top: 40px;
+                margin-bottom: 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            footer {
+                position: relative;
+                bottom: auto;
+                margin-top: 0;
+                padding-bottom: 30px;
+            }
+        }
+
+        /* 針對極小螢幕 (例如 iPhone SE) 的微調 */
+        @media (max-width: 380px) {
+            .brand-title { font-size: 2.2rem; }
+            .google-btn { min-width: 100%; font-size: 0.9rem; }
+            .feature-card { padding: 25px 15px; }
+        }
+
+        /* 其他 CSS 樣式 (Auth, Footer等) 保持不變... */
         .auth-section {
             margin-top: 30px;
             opacity: 0;
@@ -331,13 +580,14 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px; /* 按鈕之間的間距 */
+            gap: 15px;
+            width: 100%; /* 確保在手機上置中 */
         }
 
         .google-btn {
             display: flex;
             align-items: center;
-            justify-content: center; /* 讓內容置中 */
+            justify-content: center;
             gap: 12px;
             background: #fff;
             color: #000;
@@ -350,8 +600,9 @@
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-            width: auto; /* 寬度自動 */
-            min-width: 280px; /* 設定最小寬度以保持美觀 */
+            width: auto;
+            min-width: 280px;
+            max-width: 100%;
         }
 
         .google-btn:hover {
@@ -360,7 +611,6 @@
             transform: scale(1.05);
         }
         
-        /* 立即免費使用按鈕樣式 */
         .free-access-btn {
             background: transparent;
             border: 1px solid var(--accent-color);
@@ -368,7 +618,7 @@
             padding: 10px 30px;
             border-radius: 50px;
             font-family: 'Rajdhani', sans-serif;
-            font-size: 1.1rem; /* 稍微加大字體 */
+            font-size: 1.1rem;
             font-weight: 700;
             letter-spacing: 2px;
             cursor: pointer;
@@ -386,10 +636,10 @@
             color: #fff;
         }
 
-        /* 聯絡資訊區塊 */
+        /* 聯絡資訊與 Footer：Desktop 使用 Absolute */
         .contact-section {
             position: absolute;
-            bottom: 60px; /* 位於 Footer 上方 */
+            bottom: 60px;
             width: 100%;
             display: flex;
             justify-content: center;
@@ -421,7 +671,6 @@
             fill: currentColor;
         }
 
-        /* 頁尾版權 */
         footer {
             position: absolute;
             bottom: 20px;
@@ -436,19 +685,9 @@
             z-index: 10;
         }
 
-        /* 動畫定義 */
         @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* RWD */
-        @media (max-width: 768px) {
-            .brand-title { font-size: 2.5rem; }
-            .slogan { font-size: 1.1rem; }
-            .feature-card { width: 100%; max-width: 320px; }
-            .lang-container { top: 20px; left: 20px; }
-            .contact-section { flex-direction: column; align-items: center; gap: 15px; bottom: 80px; }
-        }
     </style>
 </head>
 <body>
@@ -459,7 +698,7 @@
     <!-- 2. 暗角遮罩 -->
     <div class="vignette"></div>
 
-    <!-- 3. 修改：語言切換按鈕 (地球 SVG + 下拉選單) -->
+    <!-- 3. 語言切換按鈕 -->
     <div class="lang-container">
         <button class="lang-toggle-btn" onclick="toggleLangDropdown()" title="Switch Language">
             <!-- 地球 SVG -->
@@ -479,48 +718,78 @@
         <!-- 主標題 -->
         <h1 class="brand-title">BROOKLYN-TERMINAL</h1>
         
-        <!-- 標語 (data-i18n 屬性用於識別翻譯內容) -->
+        <!-- 標語 -->
         <p class="slogan" data-i18n="slogan">簡單一步，為您打造專屬的 AI 工作站</p>
 
         <!-- 功能入口按鈕 -->
         <div class="features-wrapper">
-            <!-- 1. Workspace -->
-            <div class="feature-card" onclick="redirectToApp('workspace')">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="3" y1="9" x2="21" y2="9"></line>
-                        <line x1="9" y1="21" x2="9" y2="9"></line>
-                    </svg>
+            <!-- 1. Workspace (修改：加入特殊類別與向量資料庫特效) -->
+            <div class="feature-card workspace-card" onclick="redirectToApp('workspace')">
+                <div class="card-content">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                    </div>
+                    <div class="card-title">WorkSpace</div>
+                    <div class="card-desc" data-i18n="card_workspace_desc">全方位自定義AI工作站</div>
                 </div>
-                <div class="card-title">WorkSpace</div>
-                <div class="card-desc" data-i18n="card_workspace_desc">全方位自定義AI工作站</div>
+
+                <!-- 向量資料庫特效層 -->
+                <div class="vector-db-overlay">
+                    <div class="data-row">> 為研究而生的AI工具 <span class="db-highlight">#超強生產力</span>...</div>
+                    <div class="data-row">> Google 帳戶登入 [<span class="db-highlight">免費使用</span>]</div>
+                    <div class="data-row">> 邀請夥伴加入工作區協作</div>
+                    <div class="data-row">> 更多新功能開發中</div>
+                    <div class="data-row">> 準備就緒_</div>
+                </div>
             </div>
 
-            <!-- 2. PulseStreet -->
-            <div class="feature-card" onclick="redirectToApp('pulse')">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                    </svg>
+            <!-- 2. PulseStreet (維持聊天模擬特效) -->
+            <div class="feature-card pulsestreet-card" onclick="redirectToApp('pulse')">
+                <div class="card-content">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                        </svg>
+                    </div>
+                    <div class="card-title">PulseStreet</div>
+                    <div class="card-desc" data-i18n="card_pulse_desc">市場社群與即時動態</div>
                 </div>
-                <div class="card-title">PulseStreet</div>
-                <div class="card-desc" data-i18n="card_pulse_desc">市場社群與即時動態</div>
+
+                <!-- 聊天模擬層 -->
+                <div class="chat-simulation-overlay">
+                    <div class="chat-bubble left">市場氣氛如何？🤔</div>
+                    <div class="chat-bubble right">多頭強勢 🔥 看漲!</div>
+                    <div class="chat-bubble left"> 準備突破月線啦 🚀</div>
+                </div>
             </div>
 
-            <!-- 3. Nodex -->
-            <div class="feature-card" onclick="redirectToApp('nodex')">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24">
-                        <circle cx="18" cy="5" r="3"></circle>
-                        <circle cx="6" cy="12" r="3"></circle>
-                        <circle cx="18" cy="19" r="3"></circle>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                    </svg>
+            <!-- 3. Nodex (維持 AI 對話特效) -->
+            <div class="feature-card nodex-card" onclick="redirectToApp('nodex')">
+                <div class="card-content">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                    </div>
+                    <div class="card-title">NodeX</div>
+                    <div class="card-desc" data-i18n="card_nodex_desc">商業財經大語言模型</div>
                 </div>
-                <div class="card-title">NodeX</div>
-                <div class="card-desc" data-i18n="card_nodex_desc">商業財經大語言模型</div>
+
+                <!-- AI 對話展示層 -->
+                <div class="ai-chat-overlay">
+                    <div class="chat-message">> Gemini 啟動</div>
+                    <div class="chat-message">NodeX: <span class="highlight">你可以把所有問題都丟給我!</span></div>
+                    <div class="chat-message">Respond:<span class="highlight">高速響應/span> ↗</div>
+                    <div class="chat-message">Internet: 🌐 開啟網路搜索</div>
+                </div>
             </div>
         </div>
 
@@ -539,25 +808,25 @@
             <!-- 立即免費使用 -->
             <button class="free-access-btn" onclick="window.location.href='app.html'" data-i18n="btn_free">立即免費使用</button>
         </div>
+
+        <!-- 聯絡資訊區塊 (在手機版會自動變為相對定位) -->
+        <div class="contact-section">
+            <a href="mailto:coreinformation30@gmail.com" class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                <span>coreinformation30@gmail.com</span>
+            </a>
+            <a href="https://www.instagram.com/byn_terminal/" target="_blank" class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
+                <span>@byn_terminal</span>
+            </a>
+        </div>
+
+        <footer data-i18n="footer_text">
+            &copy; 2025 BROOKLYN-TERMINAL. ALL RIGHTS RESERVED. FINANCIAL INTELLIGENCE.
+        </footer>
     </div>
 
-    <!-- 聯絡資訊區塊 -->
-    <div class="contact-section">
-        <a href="mailto:coreinformation30@gmail.com" class="contact-item">
-            <svg class="contact-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-            <span>coreinformation30@gmail.com</span>
-        </a>
-        <a href="https://www.instagram.com/byn_terminal/" target="_blank" class="contact-item">
-            <svg class="contact-icon" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
-            <span>@byn_terminal</span>
-        </a>
-    </div>
-
-    <footer data-i18n="footer_text">
-        &copy; 2025 BROOKLYN-TERMINAL. ALL RIGHTS RESERVED. FINANCIAL INTELLIGENCE.
-    </footer>
-
-    <!-- Firebase SDK (用於登入功能) -->
+    <!-- Firebase SDK (保持原樣) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -689,22 +958,18 @@
         // 3. 監聽登入狀態
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // ★ 修改：如果是已登入狀態，將按鈕文字改為 "進入系統 (已登入)"
-                // 並設置點擊事件直接導向 app.html
-                
-                // 這裡簡化處理：直接改文字，若切換語言 setLanguage 會再次覆蓋
+                // 如果是已登入狀態，將按鈕文字改為 "進入系統 (已登入)"
                 loginBtn.innerHTML = i18n[currentLang].status_entered;
                 
                 // 綁定點擊事件，導向 app.html
                 loginBtn.onclick = () => redirectToApp('workspace');
                 
-                // 隱藏下方的免費試用按鈕，因為已經登入且可以點擊上面的按鈕進入
+                // 隱藏下方的免費試用按鈕
                 if(freeAccessBtn) freeAccessBtn.style.display = 'none'; 
             }
         });
-        // 4. 跳轉函式 (核心) - 已修改
+        // 4. 跳轉函式 (核心)
         window.redirectToApp = (section) => {
-            // ★ 修改點：針對 'nodex' 進行特殊判斷
             if (section === 'pulse') {
                 window.location.href = "PulseStreet.html";
                 console.log("Redirecting to PulseStreet.html");        
@@ -713,7 +978,6 @@
                 window.location.href = "nodex.html";
                 console.log("Redirecting to nodex.html");
             } else {
-                // 其他按鈕 (Workspace, PulseStreet) 維持原本邏輯
                 const mainAppFile = "WorkSpace.html"; 
                 window.location.href = `${mainAppFile}#${section}`;
                 console.log(`Redirecting to ${mainAppFile}#${section}`);
@@ -737,8 +1001,8 @@
 
         // 監聽滑鼠移動
         window.addEventListener('mousemove', (e) => {
-            mouse.x = e.x;
-            mouse.y = e.y;
+            mouse.x = e.clientX; // 使用 clientX 避免滾動影響
+            mouse.y = e.clientY;
         });
 
         // 離開視窗時重置
