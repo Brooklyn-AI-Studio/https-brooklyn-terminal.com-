@@ -1245,6 +1245,7 @@ async function translateWithGemini(articles) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             model: "gemini-2.5-flash",
+            stream: false,              // 🔴 告訴 Worker：我要非串流 JSON
             contents: [{ parts: [{ text: prompt }] }]
         })
     });
@@ -1258,30 +1259,25 @@ async function translateWithGemini(articles) {
     let result;
     try {
         result = await response.json();
-        console.log("Gemini raw result:", result); // 暫時印出來看真正格式
+        console.log("Gemini raw result:", result); // 除錯用，OK 後可刪
     } catch (err) {
         console.error("Gemini JSON 解析失敗:", err);
         return null;
     }
 
-    // 🔴 這裡做結構防呆
-    if (
-        !result.candidates ||
-        !result.candidates[0] ||
-        !result.candidates[0].content ||
-        !result.candidates[0].content.parts ||
-        !result.candidates[0].content.parts[0]
-    ) {
-        console.error("Gemini 回傳格式不如預期：", result);
+    // 🔐 先檢查有沒有 error
+    if (result.error) {
+        console.error("Gemini 回傳錯誤：", result);
         return null;
     }
 
+    // ✅ 這裡才去讀 candidates
     try {
         let text = result.candidates[0].content.parts[0].text || "";
         text = text.replace(/```json/g, "").replace(/```/g, "").trim();
         return JSON.parse(text);
     } catch (e) {
-        console.error("AI 解析失敗:", e);
+        console.error("AI 解析失敗:", e, result);
         return null;
     }
 }
