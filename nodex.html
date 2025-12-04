@@ -1225,32 +1225,43 @@
         };
        // --- [新增] 管理員更新全域關鍵字 ---
 window.updateGlobalKeyword = async function() {
-    // 1. 取得輸入值
     const inputEl = document.getElementById('admin-news-keyword');
     const keyword = inputEl.value.trim();
 
-    if (!keyword) {
-        alert("請輸入關鍵字！");
-        return;
-    }
+    if (!keyword) return alert("請輸入關鍵字！");
 
-    // 2. 寫入 Firestore (集合: system_settings, 文件: news_config)
-    // 即使文件不存在，setDoc 搭配 merge:true 也會自動建立
+    // 1. 顯示處理中
+    const btn = document.querySelector('button[onclick="updateGlobalKeyword()"]');
+    const originalText = btn.innerText;
+    btn.innerText = "正在抓取新聞並同步...";
+    btn.disabled = true;
+
     try {
-        await setDoc(doc(db, "system_settings", "news_config"), {
-            target_keyword: keyword,
+        // 2. 【關鍵改變】由管理員去呼叫 API (只做這一次)
+        const WORKER_NEWS_URL = `https://nodex-proxy.coreinformation30.workers.dev/news?q=${encodeURIComponent(keyword)}&sortBy=publishedAt`;
+        
+        const response = await fetch(WORKER_NEWS_URL);
+        const data = await response.json();
+
+        if (data.status !== "ok" || !data.articles) throw new Error("API 抓取失敗");
+
+        // 3. 將「關鍵字」與「新聞資料」一起寫入 Firestore
+        // 這次我們寫入一個新的文件：system_settings/public_news
+        await setDoc(doc(db, "system_settings", "public_news"), {
+            keyword: keyword,
+            articles: data.articles, // 直接把新聞存進資料庫！
             updatedBy: window.currentUser ? window.currentUser.uid : 'admin',
             updatedAt: new Date()
-        }, { merge: true });
+        });
 
-        alert(`✅ 推播成功！Finance 頁面現在將顯示 "${keyword}" 相關新聞。`);
-        
-        // (可選) 關閉視窗，請將 closeAdminModal() 替換為你實際的關閉函式名稱
-        // if(window.closeAdminModal) window.closeAdminModal(); 
-        
+        alert(`✅ 同步成功！新聞已推播給所有使用者。`);
+
     } catch (e) {
-        console.error("Update Error:", e);
+        console.error("Error:", e);
         alert("❌ 更新失敗: " + e.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
     }
 };
        // --- [新增] 啟動新對話模式 ---
