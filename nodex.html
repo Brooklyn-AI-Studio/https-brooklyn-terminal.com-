@@ -1223,6 +1223,36 @@
             // 可選：紀錄使用者的偏好，下次進來保持收合
             // localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
         };
+       // --- [新增] 管理員更新全域關鍵字 ---
+window.updateGlobalKeyword = async function() {
+    // 1. 取得輸入值
+    const inputEl = document.getElementById('admin-news-keyword');
+    const keyword = inputEl.value.trim();
+
+    if (!keyword) {
+        alert("請輸入關鍵字！");
+        return;
+    }
+
+    // 2. 寫入 Firestore (集合: system_settings, 文件: news_config)
+    // 即使文件不存在，setDoc 搭配 merge:true 也會自動建立
+    try {
+        await setDoc(doc(db, "system_settings", "news_config"), {
+            target_keyword: keyword,
+            updatedBy: window.currentUser ? window.currentUser.uid : 'admin',
+            updatedAt: new Date()
+        }, { merge: true });
+
+        alert(`✅ 推播成功！Finance 頁面現在將顯示 "${keyword}" 相關新聞。`);
+        
+        // (可選) 關閉視窗，請將 closeAdminModal() 替換為你實際的關閉函式名稱
+        // if(window.closeAdminModal) window.closeAdminModal(); 
+        
+    } catch (e) {
+        console.error("Update Error:", e);
+        alert("❌ 更新失敗: " + e.message);
+    }
+};
        // --- [新增] 啟動新對話模式 ---
        window.startNewChat = function() {
            currentChatId = null;
@@ -2171,6 +2201,27 @@ async function loadSidebarHistory(uid) {
                     <span>全站公告推播</span>
                     <span class="nx-sug-arrow">→</span>
                 </div>
+                    <div style="padding: 20px;">
+                        <h3 style="color:var(--nx-accent); border-bottom:1px solid var(--nx-border); padding-bottom:10px; margin-bottom:15px;">
+                            全球新聞推播控制
+                        </h3>
+                        
+                        <label style="display:block; color:var(--nx-text-muted); font-size:0.85em; margin-bottom:5px;">
+                            設定 Finance 頁面關鍵字 (Target Keyword)
+                        </label>
+                        
+                        <div class="nx-input-wrapper" style="margin-bottom: 20px;">
+                            <input type="text" id="admin-news-keyword" class="nx-textarea" 
+                                   placeholder="例如：Bitcoin, AI, NVDA..." 
+                                   style="height: 40px; padding: 10px;">
+                        </div>
+                    
+                        <button onclick="updateGlobalKeyword()" class="nx-btn-new" 
+                                style="width:100%; justify-content:center; border-color:var(--nx-accent); color:var(--nx-accent);">
+                            立即更新全域推播 (BROADCAST)
+                        </button>
+                    </div>
+
             </div>
         </div>
     </div>
