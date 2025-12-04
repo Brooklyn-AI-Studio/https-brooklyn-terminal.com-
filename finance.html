@@ -778,94 +778,106 @@
             height: 32px;
         }
 /* --- 新聞小卡 (News Cards) 樣式 --- */
-.news-grid-container {
+/* --- 全新滑動容器 (Scroll Container) --- */
+.news-scroll-container {
+    display: flex;
+    overflow-x: auto;           /* 允許水平滑動 */
+    gap: 24px;                  /* 卡片間距 */
+    padding: 20px 0 40px 0;     /* 上下留白 */
     width: 100%;
-    max-width: 1000px;
-    display: grid;
-    /* RWD: 手機單欄，平板雙欄，桌面三欄 */
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    padding: 20px;
+    scroll-behavior: smooth;    /* 平滑捲動 */
+    
+    /* 隱藏滾動條 (Chrome/Safari) */
+    -webkit-overflow-scrolling: touch; /* 手機滑動更順暢 */
+}
+.news-scroll-container::-webkit-scrollbar {
+    display: none; 
+}
+
+/* --- 大圖卡片樣式 (Big Image Card) --- */
+.news-big-card {
+    min-width: 360px;          /* 卡片固定寬度 */
+    height: 480px;             /* 卡片高度 (直式更有海報感) */
+    border-radius: 24px;
+    position: relative;        /* 讓內容絕對定位 */
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid var(--nx-border);
+    flex-shrink: 0;            /* 防止卡片被擠壓 */
+    background: #000;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* 懸停特效：浮起 + 發光 */
+.news-big-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    border-color: var(--nx-accent);
+}
+
+/* 背景圖片 */
+.news-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.8;
+    transition: transform 0.6s ease;
+}
+.news-big-card:hover .news-bg-img {
+    transform: scale(1.1);     /* 圖片緩慢放大 */
+    opacity: 0.6;              /* 變暗一點讓文字更清楚 */
+}
+
+/* 漸層遮罩 (讓文字可讀) */
+.news-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 75%;              /* 遮罩佔據下半部 */
+    background: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0.6) 50%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 24px;
     z-index: 2;
 }
 
-.news-card {
-    background: var(--nx-card-bg);
-    border: 1px solid var(--nx-border);
-    border-radius: var(--nx-radius);
-    padding: 20px;
+/* 卡片內文字樣式 */
+.news-card-meta {
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    min-height: 180px; /* 確保卡片高度一致 */
-}
-
-/* 懸停特效：邊框變色 + 上浮 + 發光 */
-.news-card:hover {
-    border-color: var(--nx-accent);
-    transform: translateY(-5px);
-    box-shadow: var(--nx-glow);
-}
-
-/* 裝飾線條 (Tech 風格) */
-.news-card::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; width: 4px; height: 100%;
-    background: var(--nx-accent);
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-.news-card:hover::before {
-    opacity: 1;
-}
-
-.news-meta {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
-    font-size: 0.75em;
-    color: var(--nx-text-muted);
-    font-family: 'Orbitron', sans-serif; /* 沿用標題字體 */
-    letter-spacing: 1px;
-}
-
-.news-tag {
-    color: var(--nx-accent);
-    border: 1px solid var(--nx-accent);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 0.9em;
-}
-
-.news-title {
-    font-size: 1.1em;
-    font-weight: 600;
-    color: var(--nx-text);
+    gap: 10px;
+    font-size: 0.8em;
+    color: rgba(255,255,255,0.7);
     margin-bottom: 10px;
-    line-height: 1.4;
-    /* 限制標題最多兩行 */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-family: 'Orbitron', sans-serif;
 }
-
-.news-summary {
-    font-size: 0.9em;
-    color: var(--nx-text-muted);
-    line-height: 1.6;
-    /* 限制內文最多三行 */
+.news-card-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    
+    /* 限制標題最多 3 行 */
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+.news-card-tag {
+    background: var(--nx-accent);
+    color: #000;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: inline-block;
 }
 
 /* 終端機風格下的特殊調整 */
@@ -1189,10 +1201,10 @@
             <h2 style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; letter-spacing: 2px; color: var(--nx-text); margin-bottom: 5px;">
                 世界金融 <span style="color: var(--nx-accent);">即時新聞</span>
             </h2>
-            <p style="color: var(--nx-text-muted); font-size: 0.85em;">Live data stream established.</p>
+            <p style="color: var(--nx-text-muted); font-size: 0.85em;">配合語言模型提供最專業的視野。</p>
         </div>
 
-        <div id="news-feed-container" class="news-grid-container">
+       <div id="news-feed-container" class="news-scroll-container">
             <div style="grid-column: 1 / -1; text-align: center; color: var(--nx-text-muted); padding: 40px;">
                 <div class="nx-typing-bubble" style="justify-content: center; margin-bottom: 10px;">
                     <div class="nx-typing-dot"></div>
@@ -2125,57 +2137,60 @@ async function loadSidebarHistory(uid) {
 async function loadFinanceNews(keyword = 'finance') {
     const container = document.getElementById('news-feed-container');
     
-    // 顯示「接收指令中」的動畫效果
+    // 1. 載入動畫 (維持不變，或微調樣式)
     container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-            <div class="nx-typing-bubble" style="justify-content: center; margin-bottom: 10px;">
+        <div style="width:100%; display:flex; justify-content:center; align-items:center; height:300px;">
+            <div class="nx-typing-bubble">
                 <div class="nx-typing-dot"></div><div class="nx-typing-dot"></div><div class="nx-typing-dot"></div>
             </div>
-            <span style="color:var(--nx-accent); font-family:'Orbitron'; letter-spacing:1px;">
-                RECEIVING NEW DIRECTIVE: ${keyword.toUpperCase()}
-            </span>
         </div>
     `;
 
-    // [關鍵修改] 將 URL 中的 q=finance 改為動態變數
     const WORKER_NEWS_URL = `https://nodex-proxy.coreinformation30.workers.dev/news?q=${encodeURIComponent(keyword)}&sortBy=publishedAt`;
 
     try {
         const response = await fetch(WORKER_NEWS_URL);
         const data = await response.json();
 
-        if (data.status !== "ok" || !data.articles) {
-            throw new Error(data.message || "無法取得新聞資料");
-        }
+        if (data.status !== "ok" || !data.articles) throw new Error(data.message || "無法取得資料");
 
-        container.innerHTML = ''; // 清空動畫
+        container.innerHTML = ''; // 清空
 
         data.articles.forEach(article => {
             if (article.title === "[Removed]" || !article.title) return;
-            const dateStr = new Date(article.publishedAt).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+            // 2. 處理圖片 (如果沒有 urlToImage，使用預設金融科技風格圖)
+            const fallbackImage = "https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=1600&auto=format&fit=crop"; 
+            const imgUrl = article.urlToImage || fallbackImage;
+
+            const dateStr = new Date(article.publishedAt).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' });
+
+            // 3. 建立新版卡片
             const card = document.createElement('div');
-            card.className = 'news-card';
+            card.className = 'news-big-card';
             card.onclick = () => window.open(article.url, '_blank');
 
-            // 這裡的 Tag 也改成動態顯示關鍵字
             card.innerHTML = `
-                <div class="news-meta">
-                    <span>${dateStr}</span>
-                    <span>${article.source.name}</span>
+                <img src="${imgUrl}" class="news-bg-img" loading="lazy" onerror="this.src='${fallbackImage}'">
+                
+                <div class="news-overlay">
+                    <div class="news-card-meta">
+                        <span class="news-card-tag">${keyword}</span>
+                        <span>•</span>
+                        <span>${article.source.name}</span>
+                        <span>•</span>
+                        <span>${dateStr}</span>
+                    </div>
+                    
+                    <div class="news-card-title">${article.title}</div>
                 </div>
-                <div style="margin-bottom:8px;">
-                     <span class="news-tag">${keyword.toUpperCase()}</span>
-                </div>
-                <div class="news-title">${article.title}</div>
-                <div class="news-summary">${article.description || '點擊閱讀完整報導...'}</div>
             `;
             container.appendChild(card);
         });
 
     } catch (error) {
         console.error("News Load Error:", error);
-        container.innerHTML = `<div style="text-align:center; color:#ff6b6b; padding:20px;">載入失敗: ${error.message}</div>`;
+        container.innerHTML = `<div style="color:var(--nx-text-muted); padding:20px;">無法載入新聞流...</div>`;
     }
 }
     // 頁面載入後自動執行抓取新聞
@@ -2247,6 +2262,7 @@ async function loadFinanceNews(keyword = 'finance') {
     
 </body>
 </html>
+
 
 
 
