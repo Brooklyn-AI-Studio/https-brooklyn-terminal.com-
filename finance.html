@@ -1178,21 +1178,12 @@
             </h2>
             <p style="color: var(--nx-text-muted); font-size: 0.85em;">配合語言模型提供最專業的視野。</p>
         </div>
-
-       <div id="news-feed-container" class="news-grid-container"></div>
-            <div style="grid-column: 1 / -1; text-align: center; color: var(--nx-text-muted); padding: 40px;">
-                <div class="nx-typing-bubble" style="justify-content: center; margin-bottom: 10px;">
-                    <div class="nx-typing-dot"></div>
-                    <div class="nx-typing-dot"></div>
-                    <div class="nx-typing-dot"></div>
-                </div>
-                <span>Establishing Secure Connection...</span>
-            </div>
         </div>
     </div>
 
         <!-- 全新設計的輸入框區塊 -->
         <div class="nx-input-container">
+            <div class="nx-input-container" style="display:none;">
             <div class="nx-input-wrapper">
                 <!-- 第一層：輸入區 -->
                 <textarea class="nx-textarea" id="nx-input" rows="1" placeholder="詢問任何問題。我相信你有很多疑問。"></textarea>
@@ -2247,6 +2238,7 @@ async function loadFinanceNews(keyword = 'finance') {
     
 </body>
 </html>
+
 
 
 
