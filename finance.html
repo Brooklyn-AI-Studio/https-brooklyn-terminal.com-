@@ -777,6 +777,108 @@
             width: 32px;
             height: 32px;
         }
+/* --- 新聞小卡 (News Cards) 樣式 --- */
+.news-grid-container {
+    width: 100%;
+    max-width: 1000px;
+    display: grid;
+    /* RWD: 手機單欄，平板雙欄，桌面三欄 */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    z-index: 2;
+}
+
+.news-card {
+    background: var(--nx-card-bg);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    min-height: 180px; /* 確保卡片高度一致 */
+}
+
+/* 懸停特效：邊框變色 + 上浮 + 發光 */
+.news-card:hover {
+    border-color: var(--nx-accent);
+    transform: translateY(-5px);
+    box-shadow: var(--nx-glow);
+}
+
+/* 裝飾線條 (Tech 風格) */
+.news-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 4px; height: 100%;
+    background: var(--nx-accent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.news-card:hover::before {
+    opacity: 1;
+}
+
+.news-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 0.75em;
+    color: var(--nx-text-muted);
+    font-family: 'Orbitron', sans-serif; /* 沿用標題字體 */
+    letter-spacing: 1px;
+}
+
+.news-tag {
+    color: var(--nx-accent);
+    border: 1px solid var(--nx-accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.news-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--nx-text);
+    margin-bottom: 10px;
+    line-height: 1.4;
+    /* 限制標題最多兩行 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.news-summary {
+    font-size: 0.9em;
+    color: var(--nx-text-muted);
+    line-height: 1.6;
+    /* 限制內文最多三行 */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* 終端機風格下的特殊調整 */
+[data-theme="terminal"] .news-card {
+    border-radius: 0;
+    border: 1px dashed var(--nx-border);
+}
+[data-theme="terminal"] .news-tag {
+    background: var(--nx-accent);
+    color: #000;
+}
+
+        
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -1081,34 +1183,23 @@
         <div class="nx-chat-area" id="nx-chat-history" style="display:none; flex-direction:column;"></div>
         
     
-    <div id="view-home" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 0; animation: fadeIn 0.5s forwards;">
-        <svg viewBox="0 0 24 24" style="width: 120px; height: 120px; stroke: var(--nx-accent); fill: none; stroke-width: 0.5; margin-bottom: 20px;">
-            <path d="M4 4l16 16" stroke-linecap="round"/>
-            <path d="M20 4l-16 16" stroke-linecap="round"/>
-            <circle cx="4" cy="4" r="2.5" fill="currentColor" stroke="none"/>
-            <circle cx="20" cy="20" r="2.5" fill="currentColor" stroke="none"/>
-            <circle cx="20" cy="4" r="2.5" fill="currentColor" stroke="none"/>
-            <circle cx="4" cy="20" r="2.5" fill="currentColor" stroke="none"/>
-            <circle cx="12" cy="12" r="1.5" fill="var(--nx-accent)" stroke="none"/>
-        </svg>
-        <h1 style="font-family: 'Orbitron', sans-serif; font-size: 3rem; letter-spacing: 4px; color: var(--nx-text);">NodeX</h1>
-        <p style="color: var(--nx-text-muted); margin-top: 10px; font-size: 0.9em; letter-spacing: 1px;">Thinking in nodes, decisions with zero lag.</p>
-    </div>
-
-        <div id="view-new-chat" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; position: absolute; top: -50px; z-index: 0;">
-           <h2 id="new-chat-title" style="font-size: 2rem; font-weight: 500; color: var(--nx-text); letter-spacing: 1px; margin-bottom: 20px;">
-                我們該從哪裡開始？
+  <div id="view-home" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 0; animation: fadeIn 0.5s forwards; overflow-y: auto;">
+        
+        <div style="text-align: center; margin-bottom: 30px; margin-top: 50px;">
+            <h2 style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; letter-spacing: 2px; color: var(--nx-text); margin-bottom: 5px;">
+                GLOBAL <span style="color: var(--nx-accent);">INTELLIGENCE</span>
             </h2>
+            <p style="color: var(--nx-text-muted); font-size: 0.85em;">Live data stream established.</p>
         </div>
 
-    <div id="view-dashboard" style="display: none; width: 100%; flex-direction: column; align-items: center;">
-        <div class="nx-welcome">
-            <h1 id="txt-welcome">早安，<br><span>開始您製作一份分析報告？</span></h1>
-            <div class="nx-suggestion-grid">
-                <div class="nx-suggestion-card"><span id="txt-sug1">分析 NVDA 財報重點</span> <span class="nx-sug-arrow">↗</span></div>
-                <div class="nx-suggestion-card"><span id="txt-sug2">比特幣下週走勢預測</span> <span class="nx-sug-arrow">↗</span></div>
-                <div class="nx-suggestion-card"><span id="txt-sug3">制定台股當沖策略</span> <span class="nx-sug-arrow">↗</span></div>
-                <div class="nx-suggestion-card"><span id="txt-sug4">總體經濟數據解讀</span> <span class="nx-sug-arrow">↗</span></div>
+        <div id="news-feed-container" class="news-grid-container">
+            <div style="grid-column: 1 / -1; text-align: center; color: var(--nx-text-muted); padding: 40px;">
+                <div class="nx-typing-bubble" style="justify-content: center; margin-bottom: 10px;">
+                    <div class="nx-typing-dot"></div>
+                    <div class="nx-typing-dot"></div>
+                    <div class="nx-typing-dot"></div>
+                </div>
+                <span>Establishing Secure Connection...</span>
             </div>
         </div>
     </div>
@@ -1227,6 +1318,8 @@
             // 可選：紀錄使用者的偏好，下次進來保持收合
             // localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
         };
+
+
        // --- [新增] 啟動新對話模式 ---
        window.startNewChat = function() {
            currentChatId = null;
@@ -2024,6 +2117,79 @@ async function loadSidebarHistory(uid) {
                 }
             });
         }
+// ==========================================
+    //  [新增] 金融新聞串接邏輯 (Finance News Feed)
+    // ==========================================
+    
+    async function loadFinanceNews() {
+        const container = document.getElementById('news-feed-container');
+        const WORKER_NEWS_URL = "https://nodex-proxy.coreinformation30.workers.dev/news?q=finance&sortBy=publishedAt";
+
+        try {
+            // 1. 呼叫後端 API
+            const response = await fetch(WORKER_NEWS_URL);
+            const data = await response.json();
+
+            // 2. 檢查資料狀態
+            if (data.status !== "ok" || !data.articles) {
+                throw new Error(data.message || "無法取得新聞資料");
+            }
+
+            // 3. 清空載入動畫
+            container.innerHTML = '';
+
+            // 4. 渲染新聞卡片
+            data.articles.forEach(article => {
+                // 過濾掉被移除的文章或沒有內容的文章
+                if (article.title === "[Removed]" || !article.title) return;
+
+                // 格式化日期
+                const dateObj = new Date(article.publishedAt);
+                const dateStr = dateObj.toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                // 建立卡片元素
+                const card = document.createElement('div');
+                card.className = 'news-card';
+                
+                // 點擊開啟新聞連結 (另開視窗)
+                card.onclick = () => window.open(article.url, '_blank');
+
+                // 處理來源名稱 (截短過長的來源)
+                const sourceName = article.source.name || "News";
+
+                card.innerHTML = `
+                    <div class="news-meta">
+                        <span>${dateStr}</span>
+                        <span>${sourceName}</span>
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <span class="news-tag">FINANCE</span>
+                    </div>
+                    <div class="news-title">${article.title}</div>
+                    <div class="news-summary">${article.description || article.content || '點擊閱讀完整報導...'}</div>
+                `;
+
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("News Load Error:", error);
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; color: #ff6b6b; padding: 20px; border: 1px dashed #ff6b6b;">
+                    <p>無法連線至全球金融數據流</p>
+                    <p style="font-size:0.8em; opacity:0.8;">${error.message}</p>
+                    <button onclick="loadFinanceNews()" class="nx-tool-btn" style="margin:10px auto; border:1px solid #ff6b6b;">重試連線</button>
+                </div>
+            `;
+        }
+    }
+
+    // 頁面載入後自動執行抓取新聞
+    window.addEventListener('DOMContentLoaded', () => {
+        // 稍微延遲一點讓動畫跑一下，增加儀式感
+        setTimeout(loadFinanceNews, 800);
+    });
+       
     </script>
    
 <div id="profile-modal" class="nx-modal-overlay">
@@ -2071,6 +2237,7 @@ async function loadSidebarHistory(uid) {
     
 </body>
 </html>
+
 
 
 
