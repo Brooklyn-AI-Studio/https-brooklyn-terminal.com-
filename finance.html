@@ -778,41 +778,33 @@
             height: 32px;
         }
 /* --- 新聞小卡 (News Cards) 樣式 --- */
-/* --- 全新滑動容器 (Scroll Container) --- */
-.news-scroll-container {
-    display: flex;
-    overflow-x: auto;           /* 允許水平滑動 */
-    gap: 24px;                  /* 卡片間距 */
-    padding: 20px 0 40px 0;     /* 上下留白 */
+/* --- 新聞網格容器 (Vertical Grid) --- */
+.news-grid-container {
+    display: grid;
+    /* 自動填滿：每張卡片最小 260px，最大自動延伸 */
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
     width: 100%;
-    scroll-behavior: smooth;    /* 平滑捲動 */
-    
-    /* 隱藏滾動條 (Chrome/Safari) */
-    -webkit-overflow-scrolling: touch; /* 手機滑動更順暢 */
-}
-.news-scroll-container::-webkit-scrollbar {
-    display: none; 
 }
 
-/* --- 大圖卡片樣式 (Big Image Card) --- */
-.news-big-card {
-    min-width: 360px;          /* 卡片固定寬度 */
-    height: 480px;             /* 卡片高度 (直式更有海報感) */
-    border-radius: 24px;
-    position: relative;        /* 讓內容絕對定位 */
+/* --- 精緻版圖片卡片 (Compact Image Card) --- */
+.news-compact-card {
+    position: relative;
+    height: 320px;              /* 固定高度 (比之前 480px 小很多) */
+    border-radius: 16px;        /* 圓角 */
     overflow: hidden;
     cursor: pointer;
     border: 1px solid var(--nx-border);
-    flex-shrink: 0;            /* 防止卡片被擠壓 */
-    background: #000;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    background: #1a1a1a;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
-/* 懸停特效：浮起 + 發光 */
-.news-big-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+/* 懸停效果 */
+.news-compact-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     border-color: var(--nx-accent);
 }
 
@@ -821,76 +813,68 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.8;
-    transition: transform 0.6s ease;
-}
-.news-big-card:hover .news-bg-img {
-    transform: scale(1.1);     /* 圖片緩慢放大 */
-    opacity: 0.6;              /* 變暗一點讓文字更清楚 */
+    transition: transform 0.5s ease;
+    opacity: 0.7; /* 預設稍微暗一點，讓文字清楚 */
 }
 
-/* 漸層遮罩 (讓文字可讀) */
+.news-compact-card:hover .news-bg-img {
+    transform: scale(1.08); /* 微微放大 */
+    opacity: 0.5;           /* 變更暗，凸顯文字 */
+}
+
+/* 漸層遮罩 (由下往上黑) */
 .news-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 75%;              /* 遮罩佔據下半部 */
-    background: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0.6) 50%, transparent 100%);
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.9) 100%);
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 24px;
+    justify-content: flex-end; /* 內容靠下 */
+    padding: 20px;
     z-index: 2;
 }
 
-/* 卡片內文字樣式 */
-.news-card-meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.8em;
-    color: rgba(255,255,255,0.7);
-    margin-bottom: 10px;
-    font-family: 'Orbitron', sans-serif;
+/* 標籤 (Tag) */
+.news-mini-tag {
+    align-self: flex-start;
+    background: var(--nx-accent);
+    color: #000;
+    font-size: 0.7em;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
 }
-.news-card-title {
-    font-size: 1.4rem;
-    font-weight: 700;
+
+/* 標題 */
+.news-compact-title {
     color: #fff;
+    font-size: 1.1rem;      /* 字體縮小 */
+    font-weight: 700;
     line-height: 1.4;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
     text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     
-    /* 限制標題最多 3 行 */
+    /* 限制最多 3 行，超過省略 */
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
-.news-card-tag {
-    background: var(--nx-accent);
-    color: #000;
-    padding: 4px 10px;
-    border-radius: 4px;
+
+/* 日期/來源 */
+.news-compact-meta {
     font-size: 0.75em;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    display: inline-block;
+    color: rgba(255,255,255,0.7);
+    font-family: 'Orbitron', sans-serif;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
 }
-
-/* 終端機風格下的特殊調整 */
-[data-theme="terminal"] .news-card {
-    border-radius: 0;
-    border: 1px dashed var(--nx-border);
-}
-[data-theme="terminal"] .news-tag {
-    background: var(--nx-accent);
-    color: #000;
-}
-
-        
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -1204,7 +1188,7 @@
             <p style="color: var(--nx-text-muted); font-size: 0.85em;">配合語言模型提供最專業的視野。</p>
         </div>
 
-       <div id="news-feed-container" class="news-scroll-container">
+       <div id="news-feed-container" class="news-grid-container"></div>
             <div style="grid-column: 1 / -1; text-align: center; color: var(--nx-text-muted); padding: 40px;">
                 <div class="nx-typing-bubble" style="justify-content: center; margin-bottom: 10px;">
                     <div class="nx-typing-dot"></div>
@@ -2137,9 +2121,9 @@ async function loadSidebarHistory(uid) {
 async function loadFinanceNews(keyword = 'finance') {
     const container = document.getElementById('news-feed-container');
     
-    // 1. 載入動畫 (維持不變，或微調樣式)
+    // 載入動畫 (維持不變)
     container.innerHTML = `
-        <div style="width:100%; display:flex; justify-content:center; align-items:center; height:300px;">
+        <div style="grid-column: 1 / -1; display:flex; justify-content:center; padding: 40px;">
             <div class="nx-typing-bubble">
                 <div class="nx-typing-dot"></div><div class="nx-typing-dot"></div><div class="nx-typing-dot"></div>
             </div>
@@ -2154,35 +2138,34 @@ async function loadFinanceNews(keyword = 'finance') {
 
         if (data.status !== "ok" || !data.articles) throw new Error(data.message || "無法取得資料");
 
-        container.innerHTML = ''; // 清空
+        container.innerHTML = ''; 
 
         data.articles.forEach(article => {
             if (article.title === "[Removed]" || !article.title) return;
 
-            // 2. 處理圖片 (如果沒有 urlToImage，使用預設金融科技風格圖)
-            const fallbackImage = "https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=1600&auto=format&fit=crop"; 
+            // 圖片處理：若無圖則使用這張深色科技風格預設圖
+            const fallbackImage = "https://images.unsplash.com/photo-1611974765270-ca12586343bb?q=80&w=1000&auto=format&fit=crop"; 
             const imgUrl = article.urlToImage || fallbackImage;
 
             const dateStr = new Date(article.publishedAt).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' });
+            const sourceName = article.source.name || 'News';
 
-            // 3. 建立新版卡片
+            // 建立卡片
             const card = document.createElement('div');
-            card.className = 'news-big-card';
+            card.className = 'news-compact-card'; // 使用新的 class
             card.onclick = () => window.open(article.url, '_blank');
 
             card.innerHTML = `
                 <img src="${imgUrl}" class="news-bg-img" loading="lazy" onerror="this.src='${fallbackImage}'">
                 
                 <div class="news-overlay">
-                    <div class="news-card-meta">
-                        <span class="news-card-tag">${keyword}</span>
-                        <span>•</span>
-                        <span>${article.source.name}</span>
-                        <span>•</span>
+                    <span class="news-mini-tag">${keyword}</span>
+                    <div class="news-compact-title">${article.title}</div>
+                    
+                    <div class="news-compact-meta">
+                        <span>${sourceName}</span>
                         <span>${dateStr}</span>
                     </div>
-                    
-                    <div class="news-card-title">${article.title}</div>
                 </div>
             `;
             container.appendChild(card);
@@ -2190,28 +2173,39 @@ async function loadFinanceNews(keyword = 'finance') {
 
     } catch (error) {
         console.error("News Load Error:", error);
-        container.innerHTML = `<div style="color:var(--nx-text-muted); padding:20px;">無法載入新聞流...</div>`;
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; color:var(--nx-text-muted);">無法載入新聞...</div>`;
     }
 }
-    // 頁面載入後自動執行抓取新聞
-    window.addEventListener('DOMContentLoaded', () => {
-        // 稍微延遲一點讓動畫跑一下，增加儀式感
-        setTimeout(loadFinanceNews, 800);
-    });
-       window.addEventListener('DOMContentLoaded', () => {
-    // 監聽 system_settings/news_config 文件的變化
+   window.addEventListener('DOMContentLoaded', () => {
+    
+    // 顯示初始連線動畫 (可選，增加儀式感)
+    const container = document.getElementById('news-feed-container');
+    if(container) {
+        container.innerHTML = `
+            <div style="width:100%; display:flex; justify-content:center; align-items:center; height:300px;">
+                <div class="nx-typing-bubble">
+                    <div class="nx-typing-dot"></div><div class="nx-typing-dot"></div><div class="nx-typing-dot"></div>
+                </div>
+            </div>`;
+    }
+
+    // 啟動 Firestore 即時監聽
+    // onSnapshot 會在「連線成功當下」執行第一次，並在「資料變更時」再次執行
     onSnapshot(doc(db, "system_settings", "news_config"), (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             const newKeyword = data.target_keyword || 'finance';
             
-            console.log("收到新的推播指令:", newKeyword);
-            // 呼叫上一步修改過的函式
+            console.log("收到指令，更新新聞為:", newKeyword);
             loadFinanceNews(newKeyword);
         } else {
             // 如果還沒有設定檔，載入預設值
             loadFinanceNews('finance');
         }
+    }, (error) => {
+        console.error("監聽失敗:", error);
+        // 錯誤時至少顯示預設新聞
+        loadFinanceNews('finance');
     });
 });
        
@@ -2262,6 +2256,7 @@ async function loadFinanceNews(keyword = 'finance') {
     
 </body>
 </html>
+
 
 
 
