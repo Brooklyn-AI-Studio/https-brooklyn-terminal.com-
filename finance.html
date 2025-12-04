@@ -777,103 +777,116 @@
             width: 32px;
             height: 32px;
         }
-/* --- 新聞小卡 (News Cards) 樣式 --- */
-/* --- 新聞網格容器 (Vertical Grid) --- */
-.news-grid-container {
-    display: grid;
-    /* 自動填滿：每張卡片最小 260px，最大自動延伸 */
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 20px;
-    padding: 20px 0;
+
+/* --- TikTok 風格垂直滑動容器 --- */
+.news-tiktok-container {
+    /* 滿版高度，扣除頭尾留白 */
+    height: calc(100vh - 100px); 
     width: 100%;
+    max-width: 600px;           /* 限制最大寬度，模仿手機比例 */
+    margin: 0 auto;             /* 容器水平置中 */
+    
+    overflow-y: scroll;         /* 允許垂直捲動 */
+    scroll-snap-type: y mandatory; /* 關鍵：強制垂直吸附 */
+    scroll-behavior: smooth;
+    
+    /* 隱藏滾動條 */
+    -ms-overflow-style: none;  
+    scrollbar-width: none;  
+}
+.news-tiktok-container::-webkit-scrollbar { 
+    display: none; 
 }
 
-/* --- 精緻版圖片卡片 (Compact Image Card) --- */
-.news-compact-card {
+/* --- 全螢幕單張卡片 --- */
+.news-tiktok-card {
     position: relative;
-    height: 320px;              /* 固定高度 (比之前 480px 小很多) */
-    border-radius: 16px;        /* 圓角 */
+    width: 100%;
+    height: 85vh;               /* 每張卡片佔據 85% 視窗高度 */
+    margin-bottom: 30px;        /* 卡片之間的間距 */
+    flex-shrink: 0;
+    
+    scroll-snap-align: center;  /* 關鍵：滑動停止時，自動對齊卡片中心 */
+    
+    border-radius: 24px;
+    background: #000;
     overflow: hidden;
-    cursor: pointer;
     border: 1px solid var(--nx-border);
-    background: #1a1a1a;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    transition: transform 0.3s ease;
 }
 
-/* 懸停效果 */
-.news-compact-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    border-color: var(--nx-accent);
-}
-
-/* 背景圖片 */
+/* 背景圖：充滿整個卡片 */
 .news-bg-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
-    opacity: 0.7; /* 預設稍微暗一點，讓文字清楚 */
+    opacity: 0.6;               /* 稍微調暗，讓文字清楚 */
+    transition: transform 10s ease; /* 超慢速放大特效 */
+}
+.news-tiktok-card:hover .news-bg-img {
+    transform: scale(1.1);      /* 滑鼠移上去時緩慢推進 */
+    opacity: 0.4;
 }
 
-.news-compact-card:hover .news-bg-img {
-    transform: scale(1.08); /* 微微放大 */
-    opacity: 0.5;           /* 變更暗，凸顯文字 */
-}
-
-/* 漸層遮罩 (由下往上黑) */
+/* 內容層：壓在圖片上的文字 */
 .news-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.9) 100%);
+    /* 漸層黑底，確保文字可讀性 */
+    background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 40%, transparent 100%);
+    padding: 40px 30px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end; /* 內容靠下 */
-    padding: 20px;
+    gap: 15px;
     z-index: 2;
 }
 
-/* 標籤 (Tag) */
-.news-mini-tag {
+/* 標籤 */
+.news-tag-pill {
     align-self: flex-start;
     background: var(--nx-accent);
     color: #000;
-    font-size: 0.7em;
+    padding: 6px 14px;
+    border-radius: 20px;
     font-weight: 800;
-    padding: 3px 8px;
-    border-radius: 4px;
-    margin-bottom: 8px;
+    font-size: 0.85em;
+    letter-spacing: 1px;
     text-transform: uppercase;
+    box-shadow: 0 0 10px var(--nx-glow);
 }
 
-/* 標題 */
-.news-compact-title {
+/* 標題 (大字體) */
+.news-hero-title {
+    font-size: 1.8rem;
+    font-weight: 800;
     color: #fff;
-    font-size: 1.1rem;      /* 字體縮小 */
-    font-weight: 700;
-    line-height: 1.4;
-    margin-bottom: 6px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-    
-    /* 限制最多 3 行，超過省略 */
+    line-height: 1.3;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+}
+
+/* 摘要與資訊 */
+.news-hero-summary {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    max-height: 80px;
+    overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
-    overflow: hidden;
 }
 
-/* 日期/來源 */
-.news-compact-meta {
-    font-size: 0.75em;
-    color: rgba(255,255,255,0.7);
-    font-family: 'Orbitron', sans-serif;
+.news-footer-meta {
     display: flex;
     justify-content: space-between;
-    margin-top: 5px;
+    margin-top: 10px;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--nx-accent);
+    font-size: 0.8em;
+    opacity: 0.8;
 }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -1725,9 +1738,9 @@ async function getTodayUsageStats() {
 
     // 3. [UI 狀態切換]
     document.querySelector('.nx-main').classList.remove('centered-mode');
-    document.getElementById('view-new-chat').style.display = 'none';
+  //  document.getElementById('view-new-chat').style.display = 'none';
     document.getElementById('view-home').style.display = 'none';
-    document.getElementById('view-dashboard').style.display = 'none';
+// document.getElementById('view-dashboard').style.display = 'none';
     
     const chatHistory = document.getElementById('nx-chat-history');
     if (chatHistory) {
@@ -2119,14 +2132,19 @@ async function loadSidebarHistory(uid) {
     
   // 修改原本的函式，加入 keyword 參數 (預設為 'finance')
 async function loadFinanceNews(keyword = 'finance') {
+    // 改用新的 ID (如果你的 HTML 還是 news-feed-container 也可以不改 ID，但 class 要換)
     const container = document.getElementById('news-feed-container');
     
-    // 載入動畫 (維持不變)
+    // 強制套用新的 TikTok 容器樣式
+    container.className = 'news-tiktok-container'; 
+
+    // 載入動畫
     container.innerHTML = `
-        <div style="grid-column: 1 / -1; display:flex; justify-content:center; padding: 40px;">
-            <div class="nx-typing-bubble">
+        <div style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+            <div class="nx-typing-bubble" style="transform:scale(1.5);">
                 <div class="nx-typing-dot"></div><div class="nx-typing-dot"></div><div class="nx-typing-dot"></div>
             </div>
+            <p style="margin-top:20px; color:var(--nx-accent); letter-spacing:2px; font-family:'Orbitron';">STREAMING DATA...</p>
         </div>
     `;
 
@@ -2143,27 +2161,31 @@ async function loadFinanceNews(keyword = 'finance') {
         data.articles.forEach(article => {
             if (article.title === "[Removed]" || !article.title) return;
 
-            // 圖片處理：若無圖則使用這張深色科技風格預設圖
+            // 圖片處理
             const fallbackImage = "https://images.unsplash.com/photo-1611974765270-ca12586343bb?q=80&w=1000&auto=format&fit=crop"; 
             const imgUrl = article.urlToImage || fallbackImage;
 
-            const dateStr = new Date(article.publishedAt).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' });
-            const sourceName = article.source.name || 'News';
+            const dateStr = new Date(article.publishedAt).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour:'2-digit', minute:'2-digit' });
 
             // 建立卡片
             const card = document.createElement('div');
-            card.className = 'news-compact-card'; // 使用新的 class
+            card.className = 'news-tiktok-card'; // 使用新的 class
+            
+            // 點擊整張卡片開啟新聞
             card.onclick = () => window.open(article.url, '_blank');
 
             card.innerHTML = `
                 <img src="${imgUrl}" class="news-bg-img" loading="lazy" onerror="this.src='${fallbackImage}'">
                 
                 <div class="news-overlay">
-                    <span class="news-mini-tag">${keyword}</span>
-                    <div class="news-compact-title">${article.title}</div>
+                    <span class="news-tag-pill"># ${keyword}</span>
                     
-                    <div class="news-compact-meta">
-                        <span>${sourceName}</span>
+                    <div class="news-hero-title">${article.title}</div>
+                    
+                    <div class="news-hero-summary">${article.description || article.title}</div>
+                    
+                    <div class="news-footer-meta">
+                        <span>${article.source.name}</span>
                         <span>${dateStr}</span>
                     </div>
                 </div>
@@ -2173,7 +2195,7 @@ async function loadFinanceNews(keyword = 'finance') {
 
     } catch (error) {
         console.error("News Load Error:", error);
-        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; color:var(--nx-text-muted);">無法載入新聞...</div>`;
+        container.innerHTML = `<div style="height:100%; display:flex; align-items:center; justify-content:center; color:var(--nx-text-muted);">無法連線至新聞中心</div>`;
     }
 }
    window.addEventListener('DOMContentLoaded', () => {
@@ -2256,6 +2278,7 @@ async function loadFinanceNews(keyword = 'finance') {
     
 </body>
 </html>
+
 
 
 
