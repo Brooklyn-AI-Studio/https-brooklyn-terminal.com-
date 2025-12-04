@@ -317,6 +317,7 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
+
         /* 使用者頭像 */
         .nx-user-profile {
             display: flex; align-items: center; gap: 10px; cursor: pointer;
@@ -1045,6 +1046,16 @@
                 </div>
             </div>
             
+            <div id="admin-panel-btn" class="nx-menu-item" style="display:none; color: #ffcc00; margin-bottom: 10px; border: 1px dashed #ffcc00; justify-content: center;" onclick="openAdminModal()">
+            <svg class="nx-icon" style="color:#ffcc00;" viewBox="0 0 24 24">
+                <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 12c-2.33 0-4.31-1.46-5.11-3.64.03-1.71 3.41-2.65 5.11-2.65s5.07.94 5.11 2.65C16.31 18.54 14.33 20 12 20z"/>
+            </svg>
+            <span>管理員</span>
+        </div>
+        
+        <div class="nx-user-profile" id="user-profile-section">
+            </div
+
             <!-- 使用者資訊 (需要 Firebase) -->
             <div class="nx-user-profile" id="user-profile-section">
                 <img src="" class="nx-avatar" id="nx-user-avatar" style="display:none;">
@@ -1341,22 +1352,27 @@ window.setLanguage = function(lang) {
         const userProfileSection = document.getElementById('user-profile-section');
 
         // 2. 登入狀態監聽
-       onAuthStateChanged(auth, (user) => {
+       onAuthStateChanged(auth, async (user) => {
+           
             window.currentUser = user;
+            const adminBtn = document.getElementById('admin-panel-btn');
+           
             if (user) {
                 nameEl.innerText = user.displayName;
                 if(user.photoURL) {
                     avatarEl.src = user.photoURL;
                     avatarEl.style.display = 'block';
                 }
-                // [新增] 登入成功後，載入該使用者的歷史紀錄
+                //  登入成功後，載入該使用者的歷史紀錄
                 loadSidebarHistory(user.uid);
+                checkAdminRole(user.uid);
             } else {
                 nameEl.innerText = "GUEST";
                 avatarEl.style.display = 'none';
                 // 登出時清空歷史清單
                 document.querySelector('.nx-menu-group[style="flex:1;"]').innerHTML = '<div class="nx-menu-title">歷史紀錄</div>';
                 currentChatId = null;
+                if(adminBtn) adminBtn.style.display = 'none';
             }
         });
 
@@ -1408,7 +1424,7 @@ window.setLanguage = function(lang) {
         if(confirm("確定要登出嗎？")) {
             signOut(auth).then(() => {
                 closeProfileModal();
-                document.getElementById('nx-user-name').innerText = "GUEST";
+                document.getElementById('nx-user-name').innerText = "訪客模式";
                 document.getElementById('nx-user-avatar').style.display = 'none';
                 window.currentUser = null;
                 // 清空歷史紀錄選單
@@ -1882,6 +1898,10 @@ async function getTodayUsageStats() {
                     }
                 }
             };
+
+
+
+       
        // --- [修改版] 載入側邊欄歷史清單 (含折疊功能) ---
 async function loadSidebarHistory(uid) {
     const historyContainer = document.getElementById('history-container');
@@ -2030,6 +2050,52 @@ async function loadSidebarHistory(uid) {
                 }
             });
         }
+
+                   // --- [新增] 檢查是否為管理員 ---
+            async function checkAdminRole(uid) {
+                const adminBtn = document.getElementById('admin-panel-btn');
+                if (!adminBtn) return;
+            
+                try {
+                    // 讀取 users/{uid} 文件
+                    const userRef = doc(db, "users", uid);
+                    const docSnap = await getDoc(userRef);
+            
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        // 判斷 role 欄位是否為 'admin'
+                        if (data.role === 'admin') {
+                            adminBtn.style.display = 'flex'; // 顯示按鈕
+                            console.log("Admin access granted.");
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error checking admin role:", e);
+                }
+                
+                // 若不是管理員或發生錯誤，確保隱藏
+                adminBtn.style.display = 'none';
+            }
+            
+            // --- [新增] 開啟/關閉管理員視窗 ---
+            // 掛載到 window 以便 HTML onclick 呼叫
+            window.openAdminModal = function() {
+                const modal = document.getElementById('admin-modal');
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('show'), 10);
+            };
+            
+            window.closeAdminModal = function() {
+                const modal = document.getElementById('admin-modal');
+                modal.classList.remove('show');
+                setTimeout(() => modal.style.display = 'none', 300);
+            };
+            
+            // 點擊遮罩關閉
+            document.getElementById('admin-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'admin-modal') window.closeAdminModal();
+            });
     </script>
  
 <div id="profile-modal" class="nx-modal-overlay">
@@ -2038,7 +2104,7 @@ async function loadSidebarHistory(uid) {
         <div class="nx-modal-header">
             <div style="display:flex; align-items:center; gap:10px;">
                 <svg class="nx-icon" style="color:var(--nx-accent);" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                <span style="font-weight:bold; letter-spacing:1px;">ACCOUNT PROFILE</span>
+                <span style="font-weight:bold; letter-spacing:1px;">帳戶資料</span>
             </div>
             <button class="nx-tool-btn" onclick="closeProfileModal()" title="關閉">✕</button>
         </div>
@@ -2073,6 +2139,39 @@ async function loadSidebarHistory(uid) {
         </div>
     </div>
 </div>
+<div id="admin-modal" class="nx-modal-overlay">
+    <div class="nx-modal-content" style="border: 1px solid #ffcc00; box-shadow: 0 0 20px rgba(255, 204, 0, 0.2);">
+        
+        <div class="nx-modal-header" style="background: rgba(255, 204, 0, 0.05);">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <svg class="nx-icon" style="color:#ffcc00;" viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <span style="font-weight:bold; letter-spacing:1px; color:#ffcc00;">管理員系統</span>
+            </div>
+            <button class="nx-tool-btn" onclick="closeAdminModal()">✕</button>
+        </div>
+
+        <div style="padding: 25px; overflow-y: auto;">
+            <p style="color: var(--nx-text-muted);">歡迎回到控制中心。</p>
+            
+            <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="nx-suggestion-card" style="border-color: #ffcc00;">
+                    <span>查看使用者數據</span>
+                    <span class="nx-sug-arrow">→</span>
+                </div>
+                <div class="nx-suggestion-card" style="border-color: #ffcc00;">
+                    <span>全站公告推播</span>
+                    <span class="nx-sug-arrow">→</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
     
     
 </body>
