@@ -2172,7 +2172,7 @@ async function loadSidebarHistory(uid) {
     // ==========================================
     
   // 修改原本的函式，加入 keyword 參數 (預設為 'finance')
-async function loadFinanceNews(keyword = '台北股市') {
+async function loadFinanceNews(keyword = 'finance') {
     const container = document.getElementById('news-feed-container');
     container.className = 'news-vertical-feed';
 
@@ -2268,7 +2268,7 @@ async function loadFinanceNews(keyword = '台北股市') {
         <div class="nx-modal-header">
             <div style="display:flex; align-items:center; gap:10px;">
                 <svg class="nx-icon" style="color:var(--nx-accent);" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                <span style="font-weight:bold; letter-spacing:1px;">ACCOUNT PROFILE</span>
+                <span style="font-weight:bold; letter-spacing:1px;">PROFILE</span>
             </div>
             <button class="nx-tool-btn" onclick="closeProfileModal()" title="關閉">✕</button>
         </div>
@@ -2307,6 +2307,7 @@ async function loadFinanceNews(keyword = '台北股市') {
     
 </body>
 </html>
+
 
 
 
