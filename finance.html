@@ -1527,6 +1527,91 @@ window.setLanguage = function(lang) {
     { name: "Gemini 2.5 Pro Exp", id: "gemini-2.5-pro-exp", limit: 10 }, 
     { name: "Gemini 2.0 Flash Exp", id: "gemini-2.0-flash-exp", limit: 10 }
 ];
+// --- [新版] 方案 B：被動接收廣播模式 ---
+
+// 1. 監聽 Firestore 的 "public_news" 文件 (這是管理員存進去的那一份)
+window.addEventListener('DOMContentLoaded', () => {
+    
+    // 顯示等待動畫
+    const container = document.getElementById('news-feed-container');
+    if(container) {
+        container.className = 'news-vertical-feed';
+        container.innerHTML = `
+            <div style="height:100vh; display:flex; align-items:center; justify-content:center;">
+                <div class="nx-typing-bubble">
+                    <div class="nx-typing-dot"></div><div class="nx-typing-dot"></div><div class="nx-typing-dot"></div>
+                </div>
+                <span style="margin-left:15px; color:var(--nx-text-muted);">WAITING FOR SIGNAL...</span>
+            </div>
+        `;
+    }
+
+    // 監聽 system_settings/public_news
+    onSnapshot(doc(db, "system_settings", "public_news"), (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            console.log("收到廣播新聞:", data.keyword);
+            
+            // 直接拿資料庫裡的 articles 來畫圖，完全不用 fetch！
+            renderNewsFromCache(data.keyword, data.articles);
+        } else {
+            if(container) container.innerHTML = '<div style="padding:40px; text-align:center; color:#888;">目前無廣播訊號</div>';
+        }
+    }, (error) => {
+        console.error("監聽錯誤:", error);
+    });
+});
+
+// 2. 渲染函式 (負責把資料畫在螢幕上，不負責抓資料)
+function renderNewsFromCache(keyword, articles) {
+    const container = document.getElementById('news-feed-container');
+    if (!container) return;
+    
+    container.innerHTML = ''; // 清空舊內容
+
+    // 如果資料庫裡是空的
+    if (!articles || articles.length === 0) {
+        container.innerHTML = '<div style="padding:40px; text-align:center; color:#888;">暫無新聞資料</div>';
+        return;
+    }
+
+    // 開始迴圈產生卡片
+    articles.forEach(article => {
+        if (article.title === "[Removed]" || !article.title) return;
+
+        // 圖片與摘要處理 (維持原本的邏輯)
+        const fallbackImage = "https://images.unsplash.com/photo-1611974765270-ca12586343bb?q=80&w=1000&auto=format&fit=crop"; 
+        const imgUrl = article.urlToImage || fallbackImage;
+        const dateStr = new Date(article.publishedAt).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour:'2-digit', minute:'2-digit' });
+
+        let summary = article.description || article.content || "點擊閱讀完整新聞內容...";
+        summary = summary.replace(/\[\+\d+ chars\]/, ""); 
+
+        const card = document.createElement('div');
+        card.className = 'news-fixed-card'; 
+        card.onclick = () => window.open(article.url, '_blank');
+
+        card.innerHTML = `
+            <div class="news-card-visual">
+                <img src="${imgUrl}" class="news-bg-img" loading="lazy" onerror="this.src='${fallbackImage}'">
+                <div class="news-visual-overlay">
+                    <div class="news-title-large">${article.title}</div>
+                </div>
+            </div>
+
+            <div class="news-card-content">
+                <span class="news-tag-pill"># ${keyword || 'NEWS'}</span>
+                <div class="news-summary-text">${summary}</div>
+                <div class="news-meta-row">
+                    <span>${article.source.name}</span>
+                    <span>•</span>
+                    <span>${dateStr}</span>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
 
     // --- 新增：開啟視窗函式 ---
     window.openProfileModal = async function() {
@@ -2307,6 +2392,7 @@ async function loadFinanceNews(keyword = 'finance') {
     
 </body>
 </html>
+
 
 
 
