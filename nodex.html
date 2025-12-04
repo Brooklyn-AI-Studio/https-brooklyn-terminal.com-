@@ -1226,8 +1226,6 @@
        // --- [新增] 管理員更新全域關鍵字 ---
 // --- [新功能] AI 翻譯輔助函式 ---
 async function translateWithGemini(articles) {
-    // 1. 整理要翻譯的內容 (為了節省 token，只傳標題和描述)
-    // 我們把它組合成一個 JSON 字串傳給 AI
     const contentToTranslate = articles.map((art, index) => ({
         id: index,
         title: art.title,
@@ -1242,28 +1240,49 @@ async function translateWithGemini(articles) {
     ${JSON.stringify(contentToTranslate)}
     `;
 
-    // 2. 呼叫您的 Worker (使用 gemini-2.5-flash 速度最快)
-    // 注意：這裡假設 WORKER_URL 變數在您的 code 上方已經定義好了
     const response = await fetch(WORKER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            model: "gemini-2.5-flash", // 使用快速模型
+            model: "gemini-2.5-flash",
             contents: [{ parts: [{ text: prompt }] }]
         })
     });
 
-    const result = await response.json();
-    
-    // 3. 解析 AI 回傳的文字
-    // 這裡通常需要一點防錯處理，因為 AI 有時會包 markdown
+    if (!response.ok) {
+        const text = await response.text();
+        console.error("Gemini 呼叫失敗：", text);
+        return null;
+    }
+
+    let result;
     try {
-        let text = result.candidates[0].content.parts[0].text;
-        text = text.replace(/```json/g, "").replace(/```/g, "").trim(); // 移除可能的 markdown
+        result = await response.json();
+        console.log("Gemini raw result:", result); // 暫時印出來看真正格式
+    } catch (err) {
+        console.error("Gemini JSON 解析失敗:", err);
+        return null;
+    }
+
+    // 🔴 這裡做結構防呆
+    if (
+        !result.candidates ||
+        !result.candidates[0] ||
+        !result.candidates[0].content ||
+        !result.candidates[0].content.parts ||
+        !result.candidates[0].content.parts[0]
+    ) {
+        console.error("Gemini 回傳格式不如預期：", result);
+        return null;
+    }
+
+    try {
+        let text = result.candidates[0].content.parts[0].text || "";
+        text = text.replace(/```json/g, "").replace(/```/g, "").trim();
         return JSON.parse(text);
     } catch (e) {
         console.error("AI 解析失敗:", e);
-        return null; // 翻譯失敗就回傳 null
+        return null;
     }
 }
 
