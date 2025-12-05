@@ -1178,11 +1178,32 @@
                                 </svg>
                                 <span>Gemini-2.0-flash-exp</span>
                             </div>
-                            <div class="nx-dropdown-item" onclick="setModel('gemini-3-pro')">
-                                <svg class="nx-icon" style="width:16px; height:16px; margin-right:8px; color:var(--nx-accent);" viewBox="0 0 24 24" fill="currentColor">
+                          <div class="nx-dropdown-item" onclick="setModel('llama-3.3-70b-versatile')">
+                                <svg class="nx-icon" style="width:16px; height:16px; margin-right:8px; color:#f64e03;" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"></path>
+                                </svg>
+                                <span>Llama 3.3 70B</span>
+                            </div>
+                            
+                            <div class="nx-dropdown-item" onclick="setModel('llama-3.1-8b-instant')">
+                                <svg class="nx-icon" style="width:16px; height:16px; margin-right:8px; color:#f64e03;" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"></path>
+                                </svg>
+                                <span>Llama 3.1 8B</span>
+                            </div>
+                            
+                            <div class="nx-dropdown-item" onclick="setModel('gpt-oss-120b')">
+                                <svg class="nx-icon" style="width:16px; height:16px; margin-right:8px; color:#663399;" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                <span>gpt-oss-120b</span>
+                            </div>
+                            
+                            <div class="nx-dropdown-item" onclick="setModel('gpt-oss-20b')">
+                                <svg class="nx-icon" style="width:16px; height:16px; margin-right:8px; color:#4285F4;" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"></path>
                                 </svg>
-                                <span>Gemini-3-pro</span>
+                                <span>gpt-oss-20b</span>
                             </div>
                             
 
@@ -1583,7 +1604,11 @@ window.setLanguage = function(lang) {
     { name: "Gemini 2.0 Flash Lite", id: "gemini-2.0-flash-lite", limit: Infinity },
     { name: "Gemini 2.5 Pro", id: "gemini-2.5-pro", limit: 50 },
    { name: "Gemini 3 Pro", id: "gemini-3-pro", limit: 10 }, 
-    { name: "Gemini 2.0 Flash Exp", id: "gemini-2.0-flash-exp", limit: 10 }
+    { name: "Gemini 2.0 Flash Exp", id: "gemini-2.0-flash-exp", limit: 10 },
+    { name: "Llama 3.3 70B", id: "llama-3.3-70b-versatile", limit: 20},
+    { name: "Llama 3.1 8B", id: "llama-3.1-8b-instant", limit: 20 },
+    { name: "gpt-oss-120b", id: "gpt-oss-120b", limit: 20 }, 
+    { name: "gpt-oss-20b", id: "gpt-oss-20b", limit: 20 }
 ];
 
     // --- 新增：開啟視窗函式 ---
