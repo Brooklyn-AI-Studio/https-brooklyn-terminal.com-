@@ -2010,31 +2010,137 @@ scrollContainer.addEventListener('wheel', (e) => {
     }
 }, { passive: false });
         // --- 新增：動態調整畫布大小 ---
-window.resizeCanvasPrompt = function() {
+// --- [PATCH] Canvas Size Prompt (Aligned with APP behavior) ---
+window.resizeCanvasPrompt = function () {
     const sizer = document.getElementById('canvas-sizer');
-    const currentW = parseInt(sizer.style.width);
-    const currentH = parseInt(sizer.style.height);
+    if (!sizer) return;
 
-    // 簡單使用 prompt 讓使用者輸入 
-    const newW = prompt("請輸入畫布寬度 (Width px):", currentW);
-    if (newW === null) return; // 取消
-    
-    const newH = prompt("請輸入畫布高度 (Height px):", currentH);
-    if (newH === null) return; // 取消
+    // 1) Grid constants (use existing workspace constants if present)
+    const cell = (typeof CELL_SIZE === 'number' && CELL_SIZE > 0) ? CELL_SIZE : 20;
+    const minW = (typeof MIN_W === 'number' && MIN_W > 0) ? MIN_W : cell * 4;
+    const minH = (typeof MIN_H === 'number' && MIN_H > 0) ? MIN_H : cell * 4;
 
-    if (newW && newH && !isNaN(newW) && !isNaN(newH)) {
-        sizer.style.width = newW + 'px';
-        sizer.style.height = newH + 'px';
-        
-        // 重新置中「初始化按鈕」的位置
-        const emptyState = document.getElementById('empty-state-container');
-        if (emptyState) {
-            // 雖然 CSS 已經是用視窗計算，但若畫布小於視窗，可能需要微調，這裡保持原樣即可
+    // 2) Read current size safely
+    const readPx = (v, fallback) => {
+        const n = parseInt(v, 10);
+        return Number.isFinite(n) && n > 0 ? n : fallback;
+    };
+
+    const currentW = readPx(sizer.style.width, sizer.offsetWidth || 1000);
+    const currentH = readPx(sizer.style.height, sizer.offsetHeight || 1000);
+
+    // 3) i18n prompts
+    const isZh = (typeof state !== 'undefined' && state && state.lang === 'zh');
+    const t = isZh
+        ? {
+            wPrompt: `請輸入畫布寬度（px）\n※ 最小：${minW}px\n※ 會自動對齊 ${cell}px 網格`,
+            hPrompt: `請輸入畫布高度（px）\n※ 最小：${minH}px\n※ 會自動對齊 ${cell}px 網格`,
+            invalid: "請輸入有效的數字！",
+            cancelled: "已取消畫布調整。",
+            applied: (w, h, note) => `畫布已更新為 ${w} × ${h}px${note ? `\n${note}` : ""}`
         }
-    } else {
-        alert("請輸入有效的數字！");
+        : {
+            wPrompt: `Enter canvas width (px)\n* Min: ${minW}px\n* Will snap to ${cell}px grid`,
+            hPrompt: `Enter canvas height (px)\n* Min: ${minH}px\n* Will snap to ${cell}px grid`,
+            invalid: "Please enter valid numbers!",
+            cancelled: "Canvas resize cancelled.",
+            applied: (w, h, note) => `Canvas updated to ${w} × ${h}px${note ? `\n${note}` : ""}`
+        };
+
+    // 4) Prompt input
+    const rawW = prompt(t.wPrompt, String(currentW));
+    if (rawW === null) return; // user cancelled width
+    const rawH = prompt(t.hPrompt, String(currentH));
+    if (rawH === null) return; // user cancelled height
+
+    const inputW = parseInt(rawW, 10);
+    const inputH = parseInt(rawH, 10);
+    if (!Number.isFinite(inputW) || !Number.isFinite(inputH)) {
+        alert(t.invalid);
+        return;
     }
-}
+
+    // 5) Snap + min enforcement
+    const snap = (n) => Math.round(n / cell) * cell;
+
+    let newW = snap(inputW);
+    let newH = snap(inputH);
+
+    const notes = [];
+
+    if (newW < minW) {
+        newW = snap(minW);
+        notes.push(isZh ? `寬度已套用最小值 ${minW}px` : `Width clamped to min ${minW}px`);
+    }
+    if (newH < minH) {
+        newH = snap(minH);
+        notes.push(isZh ? `高度已套用最小值 ${minH}px` : `Height clamped to min ${minH}px`);
+    }
+
+    if (newW !== inputW) {
+        notes.push(isZh ? `寬度已對齊網格 → ${newW}px` : `Width snapped → ${newW}px`);
+    }
+    if (newH !== inputH) {
+        notes.push(isZh ? `高度已對齊網格 → ${newH}px` : `Height snapped → ${newH}px`);
+    }
+
+    // 6) Apply DOM size
+    sizer.style.width = `${newW}px`;
+    sizer.style.height = `${newH}px`;
+
+    // 7) Update in-memory state (soft contract)
+    try {
+        if (typeof state !== 'undefined' && state) {
+            state.canvasW = newW;
+            state.canvasH = newH;
+        }
+    } catch (_) {}
+
+    // 8) LocalStorage backup
+    try {
+        const key = (typeof state !== 'undefined' && state && state.currentProjectId)
+            ? `bt_canvas_${state.currentProjectId}`
+            : `bt_canvas_default`;
+        localStorage.setItem(key, JSON.stringify({
+            w: newW, h: newH, cell, ts: Date.now()
+        }));
+    } catch (_) {}
+
+    // 9) DB hook (if your module supports updating project fields)
+    try {
+        if (typeof state !== 'undefined'
+            && state
+            && state.currentProjectId
+            && typeof window.dbUpdateProject === 'function'
+        ) {
+            // Keep it minimal & non-breaking:
+            window.dbUpdateProject(state.currentProjectId, {
+                canvasW: newW,
+                canvasH: newH
+            });
+        }
+    } catch (e) {
+        console.warn("Canvas size DB update skipped:", e);
+    }
+
+    // 10) Existing sync pipeline hook (nodes-only right now)
+    try {
+        if (typeof window.saveProjectState === 'function') {
+            window.saveProjectState();
+        }
+    } catch (_) {}
+
+    // 11) Optional event hook for any future listeners
+    try {
+        window.dispatchEvent(new CustomEvent('canvas:resized', {
+            detail: { width: newW, height: newH, cell, source: 'prompt' }
+        }));
+    } catch (_) {}
+
+    // 12) User feedback
+    const noteText = notes.length ? notes.join(isZh ? " / " : " / ") : "";
+    alert(t.applied(newW, newH, noteText));
+};
 // 1. 啟動 Presence 系統 (進入專案時呼叫)
         async function startPresenceSystem(workspaceId) {
             if (!currentUser) return;
@@ -2678,4 +2784,5 @@ if(sendBtnJs && chatInputJs) {
 </div>
 </body>
 </html>
+
 
