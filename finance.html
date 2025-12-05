@@ -1278,19 +1278,22 @@
         <div class="nx-chat-area" id="nx-chat-history" style="display:none; flex-direction:column;"></div>
         
     
-  <div id="view-home" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 0; animation: fadeIn 0.5s forwards; overflow-y: auto;">
-        
-       <div style="text-align: center; margin-bottom: 30px; margin-top: 50px;">
-    <h2 style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; letter-spacing: 2px; color: var(--nx-text); margin-bottom: 5px;">
-        世界金融 <span style="color: var(--nx-accent);">即時新聞</span>
-    </h2>
-    <p style="color: var(--nx-text-muted); font-size: 0.85em; margin-bottom: 20px;">
-        配合語言模型提供最專業的視野。
-    </p>
+<div id="view-home" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 0; animation: fadeIn 0.5s forwards; overflow-y: auto;">
     
-    <div id="news-filter-container" class="news-filter-bar"></div>
-</div>
+    <div style="text-align: center; margin-bottom: 30px; margin-top: 50px;">
+        <h2 style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; letter-spacing: 2px; color: var(--nx-text); margin-bottom: 5px;">
+            世界金融 <span style="color: var(--nx-accent);">即時新聞</span>
+        </h2>
+        <p style="color: var(--nx-text-muted); font-size: 0.85em; margin-bottom: 20px;">
+            配合語言模型提供最專業的視野。
+        </p>
+        
+        <div id="news-filter-container" class="news-filter-bar"></div>
     </div>
+
+    <div id="news-feed-container" class="news-vertical-feed" style="width: 100%; min-height: 500px;"></div>
+
+</div>
 
         <!-- 全新設計的輸入框區塊 -->
         <div class="nx-input-container"style="display:none;">
@@ -1565,31 +1568,35 @@ window.setLanguage = function(lang) {
     { name: "Gemini 2.0 Flash Exp", id: "gemini-2.0-flash-exp", limit: 10 }
 ];
 // --- [新版] 方案 B：被動接收廣播模式 ---
+// 全域變數，用來暫存現在的所有新聞資料，方便過濾
+let currentCachedArticles = [];
 
-// 1. 監聽 Firestore 的 "public_news" 文件 (這是管理員存進去的那一份)
+// 1. 監聽 Firestore 的 "public_news" 文件
 window.addEventListener('DOMContentLoaded', () => {
     
-    // 顯示等待動畫
+    // 確保容器存在
     const container = document.getElementById('news-feed-container');
+    
+    // 顯示等待動畫
     if(container) {
-        container.className = 'news-vertical-feed';
         container.innerHTML = `
-            <div style="height:100vh; display:flex; align-items:center; justify-content:center;">
+            <div style="height:300px; display:flex; align-items:center; justify-content:center;">
                 <div class="nx-typing-bubble">
                     <div class="nx-typing-dot"></div><div class="nx-typing-dot"></div><div class="nx-typing-dot"></div>
                 </div>
-                <span style="margin-left:15px; color:var(--nx-text-muted);">WAITING FOR SIGNAL...</span>
+                <span style="margin-left:15px; color:var(--nx-text-muted); font-size: 0.8em;">WAITING FOR SIGNAL...</span>
             </div>
         `;
     }
 
     // 監聽 system_settings/public_news
+    // 注意：這裡假設 db 已經在上方 import 並初始化完成
     onSnapshot(doc(db, "system_settings", "public_news"), (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             console.log("收到廣播新聞:", data.keyword);
             
-            // 直接拿資料庫裡的 articles 來畫圖，完全不用 fetch！
+            // 呼叫渲染函式
             renderNewsFromCache(data.keyword, data.articles);
         } else {
             if(container) container.innerHTML = '<div style="padding:40px; text-align:center; color:#888;">目前無廣播訊號</div>';
@@ -1598,8 +1605,7 @@ window.addEventListener('DOMContentLoaded', () => {
         console.error("監聽錯誤:", error);
     });
 });
-// 全域變數，用來暫存現在的所有新聞資料，方便過濾
-let currentCachedArticles = [];
+
 // 2. 渲染函式 (升級版：支援 Hashtag 過濾)
 function renderNewsFromCache(keywordString, articles) {
     const container = document.getElementById('news-feed-container');
@@ -1614,14 +1620,16 @@ function renderNewsFromCache(keywordString, articles) {
     if (filterContainer) {
         filterContainer.innerHTML = ''; // 清空舊 tags
         
-        // 1. 提取所有不重複的 tag (如果資料庫有存 tags 欄位最好，沒有就從文章 map 出來)
-        // 優先讀取文章裡的 _filterTag，如果沒有就用預設 keyword
+        // 1. 提取所有不重複的 tag
         const tags = new Set();
-        articles.forEach(art => {
-            if (art._filterTag) tags.add(art._filterTag);
-        });
+        if (articles) {
+            articles.forEach(art => {
+                // 如果後端有存 _filterTag 就用，沒有就用預設 keyword
+                if (art._filterTag) tags.add(art._filterTag);
+            });
+        }
 
-        // 轉換成陣列，
+        // 轉換成陣列，並在最前面加上 "全部"
         const tagList = ['全部', ...Array.from(tags)];
 
         // 2. 產生按鈕
@@ -1658,6 +1666,7 @@ function renderNewsFromCache(keywordString, articles) {
         // 加入 dataset 方便過濾
         card.dataset.tag = articleTag;
         
+        // 點擊卡片開啟連結
         card.onclick = () => window.open(article.url, '_blank');
 
         card.innerHTML = `
@@ -1694,7 +1703,6 @@ function handleFilterClick(clickedBtn, selectedTag) {
     cards.forEach(card => {
         if (selectedTag === '全部') {
             card.style.display = 'flex'; // 顯示所有
-            // 稍微加個動畫讓它感覺有在切換
             card.style.opacity = '0';
             setTimeout(() => card.style.opacity = '1', 50);
         } else {
@@ -1709,7 +1717,6 @@ function handleFilterClick(clickedBtn, selectedTag) {
         }
     });
 }
-
     // --- 開啟視窗函式 ---
     window.openProfileModal = async function() {
         const modal = document.getElementById('profile-modal');
@@ -2489,6 +2496,7 @@ async function loadFinanceNews(keyword = 'finance') {
     
 </body>
 </html>
+
 
 
 
