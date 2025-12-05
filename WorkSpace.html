@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     
     <script>
-        tailwind.config = {
+        tailwind.config = { 
             darkMode: 'class',
             theme: {
                 extend: {
@@ -1940,7 +1940,76 @@ function renderLLMChatbotContent(item) {
             // ------------------------------------------
             }
         }
-// --- 新增：滑鼠中鍵拖曳畫布 (Panning) ---
+const scrollContainer = document.getElementById('canvas-scroll-container');
+const canvasSizer = document.getElementById('canvas-sizer');
+
+function canScrollX() {
+  // 只要內容寬度 > 容器寬度，就允許水平移動
+  return scrollContainer.scrollWidth > scrollContainer.clientWidth + 1;
+}
+function canScrollY() {
+  return scrollContainer.scrollHeight > scrollContainer.clientHeight + 1;
+}
+
+// --- Middle Mouse Pan Logic (with guard) ---
+let isPanning = false;
+let startX, startY, startScrollLeft, startScrollTop;
+
+scrollContainer.addEventListener('mousedown', (e) => {
+  if (e.button === 1) {
+    // 若水平/垂直都不能捲，就不啟動 pan（可選）
+    if (!canScrollX() && !canScrollY()) return;
+
+    e.preventDefault();
+    isPanning = true;
+    scrollContainer.style.cursor = 'grabbing';
+
+    startX = e.pageX - scrollContainer.offsetLeft;
+    startY = e.pageY - scrollContainer.offsetTop;
+    startScrollLeft = scrollContainer.scrollLeft;
+    startScrollTop = scrollContainer.scrollTop;
+  }
+});
+
+scrollContainer.addEventListener('mouseup', () => {
+  isPanning = false;
+  scrollContainer.style.cursor = 'default';
+});
+scrollContainer.addEventListener('mouseleave', () => {
+  isPanning = false;
+  scrollContainer.style.cursor = 'default';
+});
+
+scrollContainer.addEventListener('mousemove', (e) => {
+  if (!isPanning) return;
+  e.preventDefault();
+
+  const x = e.pageX - scrollContainer.offsetLeft;
+  const y = e.pageY - scrollContainer.offsetTop;
+
+  const walkX = x - startX;
+  const walkY = y - startY;
+
+  // ⭐ 關鍵：只有可水平捲動時才動 scrollLeft
+  if (canScrollX()) {
+    scrollContainer.scrollLeft = startScrollLeft - walkX;
+  }
+  if (canScrollY()) {
+    scrollContainer.scrollTop = startScrollTop - walkY;
+  }
+});
+
+// --- Wheel: Shift + wheel = horizontal (with guard) ---
+scrollContainer.addEventListener('wheel', (e) => {
+  if (e.shiftKey) {
+    // ⭐ 沒有水平空間就不要攔截，也不要亂改 scrollLeft
+    if (!canScrollX()) return;
+
+    e.preventDefault();
+    const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+    scrollContainer.scrollLeft += delta;
+  }
+}, { passive: false });
 // --- Middle Mouse Pan Logic (從 APP.txt 復刻) ---
 const scrollContainer = document.getElementById('canvas-scroll-container'); // 對應 APP.txt 的 .workspace
 let isPanning = false;
@@ -2784,5 +2853,6 @@ if(sendBtnJs && chatInputJs) {
 </div>
 </body>
 </html>
+
 
 
