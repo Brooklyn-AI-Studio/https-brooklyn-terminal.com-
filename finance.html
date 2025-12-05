@@ -973,7 +973,33 @@
     font-weight: bold;
     box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
 }
-  
+/* --- [新增] 新聞連結按鈕樣式 --- */
+.news-read-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 15px; /* 與上方資訊留點距離 */
+    padding: 8px 16px;
+    
+    background: transparent;
+    border: 1px solid var(--nx-accent); /* 綠色邊框 */
+    color: var(--nx-accent);            /* 綠色文字 */
+    
+    border-radius: 6px;
+    text-decoration: none; /* 去除底線 */
+    font-size: 0.85em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.news-read-more-btn:hover {
+    background: var(--nx-accent); /* 滑鼠移過去變實心 */
+    color: #000;                  /* 文字變黑色 */
+    transform: translateY(-2px);  /* 微微上浮 */
+}
+
+        
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -1614,35 +1640,29 @@ function renderNewsFromCache(keywordString, articles) {
     if (!container) return;
     
     container.innerHTML = ''; // 清空新聞
-    currentCachedArticles = articles || []; // 存入全域變數
+    currentCachedArticles = articles || []; 
 
-    // --- (A) 處理過濾器 Hashtags ---
+    // --- (A) 處理過濾器 Hashtags (維持不變) ---
     if (filterContainer) {
-        filterContainer.innerHTML = ''; // 清空舊 tags
-        
-        // 1. 提取所有不重複的 tag
+        filterContainer.innerHTML = ''; 
         const tags = new Set();
         if (articles) {
             articles.forEach(art => {
-                // 如果後端有存 _filterTag 就用，沒有就用預設 keyword
                 if (art._filterTag) tags.add(art._filterTag);
             });
         }
-
-        // 轉換成陣列，並在最前面加上 "全部"
         const tagList = ['全部', ...Array.from(tags)];
 
-        // 2. 產生按鈕
         tagList.forEach((tag, index) => {
             const btn = document.createElement('div');
-            btn.className = `news-filter-tag ${index === 0 ? 'active' : ''}`; // 預設選中全部
+            btn.className = `news-filter-tag ${index === 0 ? 'active' : ''}`;
             btn.innerText = tag === '全部' ? '# 全部' : `# ${tag}`;
             btn.onclick = () => handleFilterClick(btn, tag);
             filterContainer.appendChild(btn);
         });
     }
 
-    // --- (B) 渲染所有文章 ---
+    // --- (B) 渲染新聞卡片 ---
     if (!articles || articles.length === 0) {
         container.innerHTML = '<div style="padding:40px; text-align:center; color:#888;">暫無新聞資料</div>';
         return;
@@ -1655,19 +1675,17 @@ function renderNewsFromCache(keywordString, articles) {
         const imgUrl = article.urlToImage || fallbackImage;
         const dateStr = new Date(article.publishedAt).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour:'2-digit', minute:'2-digit' });
         
-        // 使用文章自帶的 tag，如果沒有則使用全域關鍵字
         const articleTag = article._filterTag || keywordString || 'NEWS';
-
         let summary = article.description || article.content || "點擊閱讀完整新聞內容...";
         summary = summary.replace(/\[\+\d+ chars\]/, ""); 
 
         const card = document.createElement('div');
         card.className = 'news-fixed-card'; 
-        // 加入 dataset 方便過濾
-        card.dataset.tag = articleTag;
         
-        // 點擊卡片開啟連結
-        card.onclick = () => window.open(article.url, '_blank');
+        // [修改 1] 移除整張卡片的 onclick 事件
+        // card.onclick = () => window.open(article.url, '_blank'); <--- 這一行刪除了
+        
+        card.dataset.tag = articleTag;
 
         card.innerHTML = `
             <div class="news-card-visual">
@@ -1680,11 +1698,16 @@ function renderNewsFromCache(keywordString, articles) {
             <div class="news-card-content">
                 <span class="news-tag-pill"># ${articleTag}</span>
                 <div class="news-summary-text">${summary}</div>
+                
                 <div class="news-meta-row">
                     <span>${article.source.name}</span>
                     <span>•</span>
                     <span>${dateStr}</span>
                 </div>
+
+                <a href="${article.url}" target="_blank" class="news-read-more-btn">
+                    前往連結
+                </a>
             </div>
         `;
         container.appendChild(card);
@@ -2496,6 +2519,7 @@ async function loadFinanceNews(keyword = 'finance') {
     
 </body>
 </html>
+
 
 
 
