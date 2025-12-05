@@ -1235,6 +1235,44 @@
             // 可選：紀錄使用者的偏好，下次進來保持收合
             // localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
         };
+       // --- [新增] 登入視窗控制函式 ---
+
+// 1. 顯示登入視窗
+window.showLoginWarning = function() {
+    const modal = document.getElementById('login-warning-modal');
+    modal.style.display = 'flex';
+    // 些微延遲觸發 CSS 動畫
+    setTimeout(() => modal.classList.add('show'), 10);
+};
+
+// 2. 關閉登入視窗
+window.closeLoginWarning = function() {
+    const modal = document.getElementById('login-warning-modal');
+    modal.classList.remove('show');
+    setTimeout(() => modal.style.display = 'none', 300);
+};
+
+// 3. 處理登入按鈕點擊
+window.handleLoginRequest = function() {
+    // 使用您原本定義好的 auth 與 provider
+    // 注意：需確保 auth, provider, signInWithPopup 已被 import
+    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    
+    // 如果您原本的變數 auth 是全域可用的，可以直接用，若怕錯誤，重新初始化一次也無妨:
+    // const auth = getAuth(); 
+    // const provider = new GoogleAuthProvider();
+
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            // 登入成功
+            window.closeLoginWarning();
+            // 可以在這裡加一行提示
+            alert("登入成功！歡迎回來 " + result.user.displayName);
+        })
+        .catch((error) => {
+            alert("登入失敗: " + error.message);
+        });
+};
        // --- [新增] 管理員更新全域關鍵字 ---
 // --- [新功能] AI 翻譯輔助函式 ---
 async function translateWithGemini(articles) {
@@ -1830,8 +1868,8 @@ async function getTodayUsageStats() {
         // 發送訊息主函式
       async function handleSendMessage() {
     // 1. [強制登入檢查]
-    if (!window.currentUser) {
-        appendSystemMessage("請先點擊左下角登入 Google 帳號。");
+   if (!window.currentUser) {
+        window.showLoginWarning(); 
         return;
     }
     const uid = window.currentUser.uid; // 取得 UID
@@ -2410,6 +2448,36 @@ async function loadSidebarHistory(uid) {
         </div>
     </div>
 </div>
+<div id="login-warning-modal" class="nx-modal-overlay">
+    <div class="nx-modal-content" style="max-width: 400px; height: auto; text-align: center; border: 1px solid var(--nx-accent); box-shadow: 0 0 30px rgba(0, 255, 204, 0.15);">
+        
+        <div class="nx-modal-header" style="justify-content: center; border-bottom: none; padding-top: 30px;">
+            <div style="width: 60px; height: 60px; background: rgba(0, 255, 204, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <svg class="nx-icon" style="width: 32px; height: 32px; color: var(--nx-accent);" viewBox="0 0 24 24">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <polyline points="10 17 15 12 10 7"></polyline>
+                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                </svg>
+            </div>
+        </div>
 
+        <div style="padding: 0 30px 30px 30px;">
+            <h2 style="color: var(--nx-text); margin-bottom: 10px; font-size: 1.5em;">需要登入</h2>
+            <p style="color: var(--nx-text-muted); font-size: 0.95em; line-height: 1.6; margin-bottom: 25px;">
+                NodeX提供免費額度高階模型Gemini、ChatGPT，以及Llama等歷史紀錄功能。請登入您的 Google 帳號以繼續使用。
+            </p>
+
+            <button onclick="handleLoginRequest()" class="nx-btn-new" 
+                    style="width: 100%; justify-content: center; background: var(--nx-accent); color: #000; border: none; font-weight: bold; font-size: 1em; height: 45px;">
+                <svg class="nx-icon" style="stroke: #000;" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                立即登入 (Google)
+            </button>
+            
+            <button onclick="closeLoginWarning()" style="background: transparent; border: none; color: var(--nx-text-muted); margin-top: 15px; cursor: pointer; font-size: 0.9em; text-decoration: underline;">
+                稍後再說
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
