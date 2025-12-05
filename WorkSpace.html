@@ -1940,6 +1940,8 @@ function renderLLMChatbotContent(item) {
             // ------------------------------------------
             }
         }
+        
+// --- Middle Mouse Pan Logic (從 APP.txt 復刻) ---
 const scrollContainer = document.getElementById('canvas-scroll-container');
 const canvasSizer = document.getElementById('canvas-sizer');
 
@@ -2010,76 +2012,8 @@ scrollContainer.addEventListener('wheel', (e) => {
     scrollContainer.scrollLeft += delta;
   }
 }, { passive: false });
-// --- Middle Mouse Pan Logic (從 APP.txt 復刻) ---
-const scrollContainer = document.getElementById('canvas-scroll-container'); // 對應 APP.txt 的 .workspace
-let isPanning = false;
-let startX, startY, scrollLeft, scrollTop;
 
-scrollContainer.addEventListener('mousedown', (e) => {
-    // e.button === 1 代表滑鼠中鍵 (滾輪點擊)
-    if (e.button === 1) {
-        e.preventDefault(); // 防止瀏覽器預設的自動捲動圖示出現
-        isPanning = true;
-        
-        // 改變游標樣式 (對應 CSS .cursor-grabbing)
-        scrollContainer.style.cursor = 'grabbing'; 
-        
-        // 記錄初始位置 (相對於容器)
-        // APP.txt 使用: e.pageX - workspace.offsetLeft
-        startX = e.pageX - scrollContainer.offsetLeft;
-        startY = e.pageY - scrollContainer.offsetTop;
-        
-        // 記錄目前的捲動位置
-        scrollLeft = scrollContainer.scrollLeft;
-        scrollTop = scrollContainer.scrollTop;
-    }
-});
-
-scrollContainer.addEventListener('mouseleave', () => {
-    isPanning = false;
-    scrollContainer.style.cursor = 'default';
-});
-
-scrollContainer.addEventListener('mouseup', () => {
-    isPanning = false;
-    scrollContainer.style.cursor = 'default';
-});
-
-scrollContainer.addEventListener('mousemove', (e) => {
-    if (!isPanning) return;
-    e.preventDefault();
-    
-    // 計算滑鼠移動的新位置
-    const x = e.pageX - scrollContainer.offsetLeft;
-    const y = e.pageY - scrollContainer.offsetTop;
-    
-    // 計算位移量 (APP.txt 邏輯: 原始位置 - 新位置)
-    const walkX = (x - startX); 
-    const walkY = (y - startY);
-    
-    // 更新捲軸位置 (反向移動實現拖曳效果)
-    scrollContainer.scrollLeft = scrollLeft - walkX;
-    scrollContainer.scrollTop = scrollTop - walkY;
-});
-        // --- 滾輪捲動：一般垂直，Shift + 滾輪 = 水平 --- 
-scrollContainer.addEventListener('wheel', (e) => {
-    // Shift + 滾輪 => 移動水平捲軸
-    if (e.shiftKey) {
-        e.preventDefault();  // 擋掉瀏覽器預設行為，避免同時上下滾
-
-        // 以 deltaY 為主（大部分滑鼠只會出 deltaY）
-        // 若是觸控板或橫向滾輪，有 deltaX 也一起考慮
-        const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-        scrollContainer.scrollLeft += delta;
-    } else {
-        // 不特別處理，交給瀏覽器做「垂直捲動」即可
-        // （如果你想完全自己控制，也可以改成：）
-        // e.preventDefault();
-        // scrollContainer.scrollTop += e.deltaY;
-    }
-}, { passive: false });
         // --- 新增：動態調整畫布大小 ---
-// --- [PATCH] Canvas Size Prompt (Aligned with APP behavior) ---
 window.resizeCanvasPrompt = function () {
     const sizer = document.getElementById('canvas-sizer');
     if (!sizer) return;
@@ -2853,6 +2787,7 @@ if(sendBtnJs && chatInputJs) {
 </div>
 </body>
 </html>
+
 
 
 
