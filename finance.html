@@ -939,6 +939,41 @@
         height: 50%;
     }
 }
+/* --- News Filter Hashtags --- */
+.news-filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeIn 0.5s;
+}
+
+.news-filter-tag {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--nx-border);
+    color: var(--nx-text-muted);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.news-filter-tag:hover {
+    border-color: var(--nx-accent);
+    color: var(--nx-text);
+}
+
+.news-filter-tag.active {
+    background: rgba(0, 255, 204, 0.1); /* 使用你的主題色透明度 */
+    border-color: var(--nx-accent);
+    color: var(--nx-accent);
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+}
+  
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -1245,14 +1280,16 @@
     
   <div id="view-home" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 0; animation: fadeIn 0.5s forwards; overflow-y: auto;">
         
-        <div style="text-align: center; margin-bottom: 30px; margin-top: 50px;">
-            <h2 style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; letter-spacing: 2px; color: var(--nx-text); margin-bottom: 5px;">
-                世界金融 <span style="color: var(--nx-accent);">即時新聞</span>
-            </h2>
-            <p style="color: var(--nx-text-muted); font-size: 0.85em;">配合語言模型提供最專業的視野。</p>
-        </div>
-          <div id="news-feed-container" class="news-vertical-feed">
-        </div>
+       <div style="text-align: center; margin-bottom: 30px; margin-top: 50px;">
+    <h2 style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; letter-spacing: 2px; color: var(--nx-text); margin-bottom: 5px;">
+        世界金融 <span style="color: var(--nx-accent);">即時新聞</span>
+    </h2>
+    <p style="color: var(--nx-text-muted); font-size: 0.85em; margin-bottom: 20px;">
+        配合語言模型提供最專業的視野。
+    </p>
+    
+    <div id="news-filter-container" class="news-filter-bar"></div>
+</div>
     </div>
 
         <!-- 全新設計的輸入框區塊 -->
@@ -1561,34 +1598,66 @@ window.addEventListener('DOMContentLoaded', () => {
         console.error("監聽錯誤:", error);
     });
 });
-
-// 2. 渲染函式 (負責把資料畫在螢幕上，不負責抓資料)
-function renderNewsFromCache(keyword, articles) {
+// 全域變數，用來暫存現在的所有新聞資料，方便過濾
+let currentCachedArticles = [];
+// 2. 渲染函式 (升級版：支援 Hashtag 過濾)
+function renderNewsFromCache(keywordString, articles) {
     const container = document.getElementById('news-feed-container');
+    const filterContainer = document.getElementById('news-filter-container');
+    
     if (!container) return;
     
-    container.innerHTML = ''; // 清空舊內容
+    container.innerHTML = ''; // 清空新聞
+    currentCachedArticles = articles || []; // 存入全域變數
 
-    // 如果資料庫裡是空的
+    // --- (A) 處理過濾器 Hashtags ---
+    if (filterContainer) {
+        filterContainer.innerHTML = ''; // 清空舊 tags
+        
+        // 1. 提取所有不重複的 tag (如果資料庫有存 tags 欄位最好，沒有就從文章 map 出來)
+        // 優先讀取文章裡的 _filterTag，如果沒有就用預設 keyword
+        const tags = new Set();
+        articles.forEach(art => {
+            if (art._filterTag) tags.add(art._filterTag);
+        });
+
+        // 轉換成陣列，
+        const tagList = ['全部', ...Array.from(tags)];
+
+        // 2. 產生按鈕
+        tagList.forEach((tag, index) => {
+            const btn = document.createElement('div');
+            btn.className = `news-filter-tag ${index === 0 ? 'active' : ''}`; // 預設選中全部
+            btn.innerText = tag === '全部' ? '# 全部' : `# ${tag}`;
+            btn.onclick = () => handleFilterClick(btn, tag);
+            filterContainer.appendChild(btn);
+        });
+    }
+
+    // --- (B) 渲染所有文章 ---
     if (!articles || articles.length === 0) {
         container.innerHTML = '<div style="padding:40px; text-align:center; color:#888;">暫無新聞資料</div>';
         return;
     }
 
-    // 開始迴圈產生卡片
     articles.forEach(article => {
         if (article.title === "[Removed]" || !article.title) return;
 
-        // 圖片與摘要處理 (維持原本的邏輯)
         const fallbackImage = "https://images.unsplash.com/photo-1611974765270-ca12586343bb?q=80&w=1000&auto=format&fit=crop"; 
         const imgUrl = article.urlToImage || fallbackImage;
         const dateStr = new Date(article.publishedAt).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour:'2-digit', minute:'2-digit' });
+        
+        // 使用文章自帶的 tag，如果沒有則使用全域關鍵字
+        const articleTag = article._filterTag || keywordString || 'NEWS';
 
         let summary = article.description || article.content || "點擊閱讀完整新聞內容...";
         summary = summary.replace(/\[\+\d+ chars\]/, ""); 
 
         const card = document.createElement('div');
         card.className = 'news-fixed-card'; 
+        // 加入 dataset 方便過濾
+        card.dataset.tag = articleTag;
+        
         card.onclick = () => window.open(article.url, '_blank');
 
         card.innerHTML = `
@@ -1600,7 +1669,7 @@ function renderNewsFromCache(keyword, articles) {
             </div>
 
             <div class="news-card-content">
-                <span class="news-tag-pill"># ${keyword || 'NEWS'}</span>
+                <span class="news-tag-pill"># ${articleTag}</span>
                 <div class="news-summary-text">${summary}</div>
                 <div class="news-meta-row">
                     <span>${article.source.name}</span>
@@ -1613,7 +1682,35 @@ function renderNewsFromCache(keyword, articles) {
     });
 }
 
-    // --- 新增：開啟視窗函式 ---
+// --- (C) 過濾點擊處理函式 ---
+function handleFilterClick(clickedBtn, selectedTag) {
+    // 1. 更新按鈕樣式
+    document.querySelectorAll('.news-filter-tag').forEach(btn => btn.classList.remove('active'));
+    clickedBtn.classList.add('active');
+
+    // 2. 篩選卡片
+    const cards = document.querySelectorAll('.news-fixed-card');
+    
+    cards.forEach(card => {
+        if (selectedTag === '全部') {
+            card.style.display = 'flex'; // 顯示所有
+            // 稍微加個動畫讓它感覺有在切換
+            card.style.opacity = '0';
+            setTimeout(() => card.style.opacity = '1', 50);
+        } else {
+            // 比對 dataset.tag
+            if (card.dataset.tag === selectedTag) {
+                card.style.display = 'flex';
+                card.style.opacity = '0';
+                setTimeout(() => card.style.opacity = '1', 50);
+            } else {
+                card.style.display = 'none';
+            }
+        }
+    });
+}
+
+    // --- 開啟視窗函式 ---
     window.openProfileModal = async function() {
         const modal = document.getElementById('profile-modal');
         const user = window.currentUser;
@@ -2392,6 +2489,7 @@ async function loadFinanceNews(keyword = 'finance') {
     
 </body>
 </html>
+
 
 
 
