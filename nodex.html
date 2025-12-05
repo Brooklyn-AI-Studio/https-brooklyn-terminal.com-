@@ -1254,19 +1254,14 @@ window.closeLoginWarning = function() {
 
 // 3. 處理登入按鈕點擊
 window.handleLoginRequest = function() {
-    // 使用您原本定義好的 auth 與 provider
-    // 注意：需確保 auth, provider, signInWithPopup 已被 import
-    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    
-    // 如果您原本的變數 auth 是全域可用的，可以直接用，若怕錯誤，重新初始化一次也無妨:
-    // const auth = getAuth(); 
-    // const provider = new GoogleAuthProvider();
+    // 直接使用全域已經定義好的 auth 和 provider 變數即可
+    // 這裡不需要再 import 任何東西
 
     signInWithPopup(auth, provider)
         .then((result) => {
             // 登入成功
             window.closeLoginWarning();
-            // 可以在這裡加一行提示
+            // 提示使用者
             alert("登入成功！歡迎回來 " + result.user.displayName);
         })
         .catch((error) => {
