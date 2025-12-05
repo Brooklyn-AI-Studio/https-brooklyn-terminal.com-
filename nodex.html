@@ -1287,19 +1287,16 @@ window.updateGlobalKeyword = async function() {
     const inputEl = document.getElementById('admin-news-keyword');
     const countEl = document.getElementById('admin-news-count'); 
     
-    // 取得輸入值
+    // 1. 取得輸入設定
     const rawKeywords = inputEl.value.trim();
-    // 預設每主題 3 篇 (如果沒有 countEl 則預設 3)
     const articlesPerTopic = countEl ? (parseInt(countEl.value) || 3) : 3;
 
     if (!rawKeywords) return alert("請輸入關鍵字！");
 
-    // 1. 處理關鍵字陣列 (支援半形與全形逗號切割)
+    // 2. 處理關鍵字 (限制 8 個)
     let keywordList = rawKeywords.split(/[,，]/).map(k => k.trim()).filter(k => k);
-
-    // [關鍵修改] 限制最多 8 個主題
     if (keywordList.length > 8) {
-        alert(`您輸入了 ${keywordList.length} 個主題，系統上限為 8 個。\n將自動只保留前 8 個：\n${keywordList.slice(0, 8).join(', ')}`);
+        alert(`關鍵字過多，系統將自動取前 8 個：\n${keywordList.slice(0, 8).join(', ')}`);
         keywordList = keywordList.slice(0, 8);
     }
 
@@ -1308,75 +1305,110 @@ window.updateGlobalKeyword = async function() {
     btn.disabled = true;
 
     try {
-        // 2. 顯示狀態
-        btn.innerText = `1/3 正在平行抓取 ${keywordList.length} 個主題...`;
+        btn.innerText = `1/3 雙引擎啟動：搜尋 ${keywordList.length} 個主題...`;
         
         let aggregatedArticles = [];
 
-        // 3. 使用 Promise.all 平行抓取
-        const fetchPromises = keywordList.map(async (key) => {
-            // 抓取新聞 (你可以根據需求調整 sortBy)
-            const WORKER_NEWS_URL = `https://nodex-proxy.coreinformation30.workers.dev/news?q=${encodeURIComponent(key)}&sortBy=relevancy`;
-            const res = await fetch(WORKER_NEWS_URL);
-            const data = await res.json();
-            
-            if (data.status === "ok" && data.articles) {
-                // 取出指定數量，並加上標籤 (Tag)
-                return data.articles.slice(0, articlesPerTopic).map(art => ({
-                    ...art,
-                    _filterTag: key // 加上標記，讓前端知道這是哪個主題
-                }));
-            }
-            return [];
-        });
+        // 3. 定義雙引擎抓取函式
+        const fetchTopic = async (key) => {
+            // [引擎 A] News API (透過你的 Proxy)
+            const apiPromise = fetch(`https://nodex-proxy.coreinformation30.workers.dev/news?q=${encodeURIComponent(key)}&sortBy=relevancy`)
+                .then(res => res.json())
+                .then(data => (data.status === "ok" ? data.articles : []))
+                .catch(() => []); // 失敗就回傳空陣列
 
-        const results = await Promise.all(fetchPromises);
+            // [引擎 B] Google News RSS (透過 rss2json 轉譯)
+            const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(key)}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant`;
+            const rssPromise = fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok' && data.items) {
+                        // 轉換 RSS 格式 -> News API 格式
+                        return data.items.map(item => ({
+                            title: item.title,
+                            description: item.description || item.content || "",
+                            url: item.link,
+                            urlToImage: item.enclosure?.link || item.thumbnail || null, // 嘗試抓圖
+                            publishedAt: item.pubDate,
+                            source: { name: "Google News (RSS)" }, // 標記來源
+                            _isRSS: true // 內部標記
+                        }));
+                    }
+                    return [];
+                })
+                .catch(() => []);
+
+            // 平行執行兩個請求
+            const [apiArticles, rssArticles] = await Promise.all([apiPromise, rssPromise]);
+
+            // [混合邏輯]
+            // 1. 優先使用 API 新聞
+            let combined = [...apiArticles];
+
+            // 2. 如果 API 不夠 (例如少於目標數量)，用 RSS 補
+            // 或者你想要混和，可以直接 push 進去
+            // 這裡採用「去重複補強」策略：
+            rssArticles.forEach(rssArt => {
+                // 檢查標題是否太相似 (簡單防重複)
+                const isDuplicate = combined.some(existing => 
+                    existing.title.includes(rssArt.title) || rssArt.title.includes(existing.title)
+                );
+                if (!isDuplicate) {
+                    combined.push(rssArt);
+                }
+            });
+
+            // 3. 截取指定數量並標記 Tag
+            return combined.slice(0, articlesPerTopic).map(art => ({
+                ...art,
+                _filterTag: key
+            }));
+        };
+
+        // 4. 對所有關鍵字執行抓取
+        const results = await Promise.all(keywordList.map(key => fetchTopic(key)));
         
-        // 合併所有結果
+        // 合併結果
         results.forEach(articles => {
             aggregatedArticles = [...aggregatedArticles, ...articles];
         });
 
-        if (aggregatedArticles.length === 0) throw new Error("未找到任何新聞資料");
+        if (aggregatedArticles.length === 0) throw new Error("雙引擎皆無法取得資料");
 
-        // 4. 翻譯流程 (放寬限制，因為 Gemini Flash context 很大，處理 30-40 篇沒問題)
-        btn.innerText = `2/3 AI 正在翻譯 ${aggregatedArticles.length} 篇新聞...`;
+        // 5. 翻譯 (選擇性：RSS 的摘要通常比較短，翻譯比較快)
+        btn.innerText = `2/3 AI 智慧翻譯 (${aggregatedArticles.length} 篇)...`;
         
-        // 這裡直接傳入所有文章進行翻譯
+        // 為了節省 AI Token，我們可以只翻譯「非中文」的新聞
+        // 這裡為了簡單，維持全部翻譯，但建議你監控 Token 用量
         const translatedData = await translateWithGemini(aggregatedArticles);
 
-        // 如果翻譯成功，覆蓋標題與摘要
         let finalArticles = aggregatedArticles;
         if (translatedData) {
             finalArticles = aggregatedArticles.map((art, index) => {
                 const trans = translatedData.find(t => t.id === index);
                 if (trans) {
-                    return {
-                        ...art,
-                        title: trans.title,
-                        description: trans.description
-                    };
+                    return { ...art, title: trans.title, description: trans.description };
                 }
                 return art;
             });
         }
 
-        // 5. 存檔
-        btn.innerText = "3/3 正在同步給使用者...";
+        // 6. 寫入資料庫
+        btn.innerText = "3/3 同步至全球節點...";
         
         await setDoc(doc(db, "system_settings", "public_news"), {
-            keyword: keywordList.join(', '), // 存入處理過的關鍵字字串
-            tags: keywordList,              // 存入標籤陣列
+            keyword: keywordList.join(', '),
+            tags: keywordList,
             articles: finalArticles, 
             updatedBy: window.currentUser ? window.currentUser.uid : 'admin',
             updatedAt: new Date()
         });
 
-        alert(`✅ 完成！已聚合 ${keywordList.length} 個主題 (共 ${finalArticles.length} 篇新聞)。`);
+        alert(`✅ 混合模式完成！\n關鍵字：${keywordList.length} 個\n總新聞數：${finalArticles.length} 篇\n(含 API 與 RSS 來源)`);
 
     } catch (e) {
         console.error("Error:", e);
-        alert("❌ 失敗: " + e.message);
+        alert("❌ 執行失敗: " + e.message);
     } finally {
         btn.innerText = originalText;
         btn.disabled = false;
