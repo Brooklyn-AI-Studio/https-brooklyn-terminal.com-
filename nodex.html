@@ -1364,22 +1364,40 @@ window.updateGlobalKeyword = async function() {
                 .then(data => (data.status === "ok" ? data.articles : []))
                 .catch(() => []); // 失敗就回傳空陣列
 
-            // [引擎 B] Google News RSS (透過 rss2json 轉譯)
+            // [引擎 B] Google News RSS (透過 rss2json 轉譯) - 修正版
             const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(key)}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant`;
             const rssPromise = fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'ok' && data.items) {
-                        // 轉換 RSS 格式 -> News API 格式
-                        return data.items.map(item => ({
-                            title: item.title,
-                            description: item.description || item.content || "",
-                            url: item.link,
-                            urlToImage: item.enclosure?.link || item.thumbnail || null, // 嘗試抓圖
-                            publishedAt: item.pubDate,
-                            source: { name: "Google News (RSS)" }, // 標記來源
-                            _isRSS: true // 內部標記
-                        }));
+                        return data.items.map(item => {
+                            
+                            // 1. [新增] 嘗試從 HTML 內容中抓取圖片
+                            // Google News 的圖片通常藏在 description 的 img 標籤裡
+                            let imgMatch = null;
+                            const htmlContent = item.description || item.content || "";
+                            
+                            // 使用 Regex 尋找 <img src="...">
+                            imgMatch = htmlContent.match(/src="([^"]+)"/);
+                            const imgFromHtml = imgMatch ? imgMatch[1] : null;
+
+                            // 2. [新增] 移除 HTML 標籤，只保留純文字摘要 (讓版面更乾淨)
+                            const cleanDesc = htmlContent.replace(/<[^>]+>/g, '').substring(0, 100) + "...";
+
+                            return {
+                                title: item.title,
+                                description: cleanDesc, // 使用清理後的純文字摘要
+                                url: item.link,
+                                
+                                // 3. [修改] 圖片優先順序：標準欄位 -> HTML內嵌圖片 -> 預設圖片
+                                urlToImage: item.enclosure?.link || item.thumbnail || imgFromHtml || "https://images.unsplash.com/photo-1611974765270-ca12586343bb?auto=format&fit=crop&w=800&q=80", 
+                                
+                                publishedAt: item.pubDate,
+                                source: { name: "Google News (RSS)" }, 
+                                _isRSS: true,
+                                _filterTag: key // [新增] 補上關鍵字 Tag 方便過濾
+                            };
+                        });
                     }
                     return [];
                 })
