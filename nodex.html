@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -1946,66 +1946,35 @@ async function getTodayUsageStats() {
 
         const aiMsgContent = appendAiMessageStart();
         
-     const reader = response.body.getReader();
+        const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullText = "";
         let isFirstChunk = true;
-        let buffer = ""; // 用來暫存不完整的 JSON 字串
+        let fullTextBuffer = "";
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
             if (isFirstChunk && loadingId) {
-                removeMessage(loadingId);
-                isFirstChunk = false;
-            }
+        removeMessage(loadingId);
+        isFirstChunk = false;
+    }
 
-            // 1. 解碼當前區塊並加入緩衝區
             const chunk = decoder.decode(value, { stream: true });
-            buffer += chunk;
-
-            // 2. 以換行符號切割 (標準 SSE 格式通常一行一個 JSON)
-            const lines = buffer.split("\n");
+            fullTextBuffer += chunk;
+            const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
             
-            // 3. 保留最後一行 (因為可能還沒傳輸完成，是不完整的 JSON)
-            buffer = lines.pop(); 
-
-            // 4. 解析每一行完整的資料
-            for (const line of lines) {
-                const trimmedLine = line.trim();
-                if (!trimmedLine) continue; // 跳過空行
-                
-                // 去除 SSE 的 "data: " 前綴 (如果有)
-                let jsonStr = trimmedLine;
-                if (jsonStr.startsWith("data: ")) {
-                    jsonStr = jsonStr.slice(6);
-                }
-
-                // 如果收到結束訊號則忽略
-                if (jsonStr === "[DONE]") continue;
-
-                try {
-                    // 嘗試解析 JSON
-                    const json = JSON.parse(jsonStr);
-                    
-                    // 5. 【關鍵修正】只抓取 candidates 裡面的 text，避開引用資料
-                    if (json.candidates && 
-                        json.candidates[0].content && 
-                        json.candidates[0].content.parts) {
+            if (matches) {
+                matches.forEach(match => {
+                    let textPart = match.replace(/"text":\s*"/, "").replace(/"$/, "");
+                    try {
+                       
+                        textPart = JSON.parse(`"${textPart}"`); 
+                        fullText += textPart;
                         
-                        const parts = json.candidates[0].content.parts;
-                        // 遍歷 parts 組合文字 (有時會有這多個 part)
-                        for (const part of parts) {
-                            if (part.text) {
-                                fullText += part.text;
-                            }
-                        }
-
-                        // 渲染 Markdown
+                        // Markdown + LaTeX 渲染
                         aiMsgContent.innerHTML = marked.parse(fullText);
-                        
-                        // 渲染數學公式 (LaTeX)
                         if (window.renderMathInElement) {
                             renderMathInElement(aiMsgContent, {
                                 delimiters: [
@@ -2017,16 +1986,14 @@ async function getTodayUsageStats() {
                                 throwOnError: false
                             });
                         }
-                        
-                        // 捲動到底部
+
                         if (chatHistory) {
                             chatHistory.scrollTop = chatHistory.scrollHeight;
                         }
+                    } catch (e) {
+                        // 這裡可以加 console.error(e) 方便除錯
                     }
-                } catch (e) {
-                    // 如果這行 JSON 解析失敗(例如被截斷)，通常沒關係，下一輪 buffer 會補齊
-                    // console.warn("JSON Parse skipping line:", e);
-                }
+                });
             }
         }
 
