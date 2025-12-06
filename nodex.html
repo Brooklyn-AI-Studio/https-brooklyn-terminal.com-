@@ -1198,7 +1198,13 @@
                         <div class="nx-dropdown-item" onclick="setModel('openai/gpt-oss-20b')">
                             <img src="chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
                             <span>GPT-oss-20b</span>
-                        </div>            
+                        </div>
+                            
+                         <div class="nx-dropdown-item" onclick="setModel('qwen/qwen3-32b')">
+                            <img src="chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
+                            <span>qwen/qwen3-32b</span>
+                        </div>   
+                            
 
                         </div>
                     </div>
@@ -1633,7 +1639,9 @@ window.setLanguage = function(lang) {
     { name: "Llama 3.3 70B", id: "llama-3.3-70b-versatile", limit: 20},
     { name: "Llama 3.1 8B", id: "llama-3.1-8b-instant", limit: 20 },
     { name: "gpt-oss-120b", id: "openai/gpt-oss-120b", limit: 10 }, 
-    { name: "gpt-oss-20b", id: "openai/gpt-oss-20b", limit: 10 }
+    { name: "gpt-oss-20b", id: "openai/gpt-oss-20b", limit: 10 },
+    { name: "qwen/qwen3-32b", id: "qwen/qwen3-32b", limit: 50 }
+       
 ];
 
     // --- 新增：開啟視窗函式 ---
