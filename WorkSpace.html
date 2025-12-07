@@ -1940,66 +1940,55 @@ function renderLLMChatbotContent(item) {
             }
         }
         
-// --- Middle Mouse Pan Logic (從 APP.txt 復刻) ---
+// --- Middle Mouse Pan Logic (優化整合版) ---
 const scrollContainer = document.getElementById('canvas-scroll-container');
 
-
-function canScrollX() {
-  // 只要內容寬度 > 容器寬度，就允許水平移動
-  return scrollContainer.scrollWidth > scrollContainer.clientWidth + 1;
-}
-function canScrollY() {
-  return scrollContainer.scrollHeight > scrollContainer.clientHeight + 1;
-}
-
-// --- Middle Mouse Pan Logic (with guard) ---
 let isPanning = false;
 let startX, startY, startScrollLeft, startScrollTop;
 
 scrollContainer.addEventListener('mousedown', (e) => {
-  if (e.button === 1) {
-    // 若水平/垂直都不能捲，就不啟動 pan（可選）
-    if (!canScrollX() && !canScrollY()) return;
+    // e.button === 1 代表滑鼠中鍵 (滾輪點擊)
+    if (e.button === 1) {
+        e.preventDefault(); // 防止瀏覽器預設的自動捲動圖示出現
+        isPanning = true;
+        
+        // 改變游標樣式 (直接設定 style，不依賴外部 CSS class)
+        scrollContainer.style.cursor = 'grabbing';
+        
+        // 記錄初始位置與目前的捲軸位置
+        startX = e.pageX - scrollContainer.offsetLeft;
+        startY = e.pageY - scrollContainer.offsetTop;
+        startScrollLeft = scrollContainer.scrollLeft;
+        startScrollTop = scrollContainer.scrollTop;
+    }
+});
 
-    e.preventDefault();
-    isPanning = true;
-    scrollContainer.style.cursor = 'grabbing';
-
-    startX = e.pageX - scrollContainer.offsetLeft;
-    startY = e.pageY - scrollContainer.offsetTop;
-    startScrollLeft = scrollContainer.scrollLeft;
-    startScrollTop = scrollContainer.scrollTop;
-  }
+scrollContainer.addEventListener('mouseleave', () => {
+    isPanning = false;
+    scrollContainer.style.cursor = 'default'; // 恢復游標
 });
 
 scrollContainer.addEventListener('mouseup', () => {
-  isPanning = false;
-  scrollContainer.style.cursor = 'default';
-});
-scrollContainer.addEventListener('mouseleave', () => {
-  isPanning = false;
-  scrollContainer.style.cursor = 'default';
+    isPanning = false;
+    scrollContainer.style.cursor = 'default'; // 恢復游標
 });
 
 scrollContainer.addEventListener('mousemove', (e) => {
-  if (!isPanning) return;
-  e.preventDefault();
-
-  const x = e.pageX - scrollContainer.offsetLeft;
-  const y = e.pageY - scrollContainer.offsetTop;
-
-  const walkX = x - startX;
-  const walkY = y - startY;
-
-  // ⭐ 關鍵：只有可水平捲動時才動 scrollLeft
-  if (canScrollX()) {
+    if (!isPanning) return;
+    e.preventDefault();
+    
+    // 計算滑鼠移動的距離
+    const x = e.pageX - scrollContainer.offsetLeft;
+    const y = e.pageY - scrollContainer.offsetTop;
+    
+    // 計算位移量
+    const walkX = (x - startX); 
+    const walkY = (y - startY);
+    
+    // 更新捲軸位置 (反向移動實現拖曳效果)
     scrollContainer.scrollLeft = startScrollLeft - walkX;
-  }
-  if (canScrollY()) {
     scrollContainer.scrollTop = startScrollTop - walkY;
-  }
 });
-
 // --- Wheel: Shift + wheel = horizontal (with guard) ---
 scrollContainer.addEventListener('wheel', (e) => {
   if (e.shiftKey) {
@@ -2786,6 +2775,7 @@ if(sendBtnJs && chatInputJs) {
 </div>
 </body>
 </html>
+
 
 
 
