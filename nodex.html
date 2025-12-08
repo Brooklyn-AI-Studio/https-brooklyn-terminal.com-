@@ -558,11 +558,11 @@
 .nx-modal-content {
     background: var(--nx-sidebar);
     width: 90%; 
-    max-width: 650px;    /* 限制最大寬度，像 ChatGPT 那樣 */
+    max-width: 650px;    
     height: 70vh;        /* 高度適中 */
     border-radius: 16px; 
     border: 1px solid var(--nx-border);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5); /* 強烈的陰影讓它看起來懸浮 */
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     display: flex; 
     flex-direction: column;
     overflow: hidden;
@@ -1181,27 +1181,27 @@
                                 <span>Gemini-2.0-flash-exp</span>
                             </div>
                          <div class="nx-dropdown-item" onclick="setModel('llama-3.3-70b-versatile')">
-                            <img src="llama.png" style="width:16px; height:16px; margin-right:8px;" alt="Llama Icon">
+                            <img src="LLM-Pics/llama.png" style="width:16px; height:16px; margin-right:8px;" alt="Llama Icon">
                             <span>Llama 3.3 70B</span>
                         </div>
                         
                         <div class="nx-dropdown-item" onclick="setModel('llama-3.1-8b-instant')">
-                            <img src="llama.png" style="width:16px; height:16px; margin-right:8px;" alt="Llama Icon">
+                            <img src="LLM-Pics/llama.png" style="width:16px; height:16px; margin-right:8px;" alt="Llama Icon">
                             <span>Llama 3.1 8B</span>
                         </div>
                         
                         <div class="nx-dropdown-item" onclick="setModel('openai/gpt-oss-120b')">
-                            <img src="chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
+                            <img src="LLM-Pics/chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
                             <span>GPT-oss-120b</span>
                         </div>
                         
                         <div class="nx-dropdown-item" onclick="setModel('openai/gpt-oss-20b')">
-                            <img src="chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
+                            <img src="LLM-Pics/chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
                             <span>GPT-oss-20b</span>
                         </div>
                             
                          <div class="nx-dropdown-item" onclick="setModel('qwen/qwen3-32b')">
-                            <img src="Qwen_logo.svg.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
+                            <img src="LLM-Pics/Qwen_logo.svg.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
                             <span>qwen3-32b</span>
                         </div>   
                             
@@ -1638,9 +1638,9 @@ window.setLanguage = function(lang) {
     { name: "Gemini 2.0 Flash Exp", id: "gemini-2.0-flash-exp", limit: 10 },
     { name: "Llama 3.3 70B", id: "llama-3.3-70b-versatile", limit: 20},
     { name: "Llama 3.1 8B", id: "llama-3.1-8b-instant", limit: 20 },
-    { name: "gpt-oss-120b", id: "openai/gpt-oss-120b", limit: 10 }, 
-    { name: "gpt-oss-20b", id: "openai/gpt-oss-20b", limit: 10 },
-    { name: "qwen/qwen3-32b", id: "qwen/qwen3-32b", limit: 10 }
+    { name: "Gpt-oss-120b", id: "openai/gpt-oss-120b", limit: 10 }, 
+    { name: "Gpt-oss-20b", id: "openai/gpt-oss-20b", limit: 10 },
+    { name: "Qwen3-32b", id: "qwen/qwen3-32b", limit: 10 }
        
 ];
 
