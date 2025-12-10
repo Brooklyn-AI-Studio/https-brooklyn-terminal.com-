@@ -1599,6 +1599,7 @@ window.saveProjectState = async () => {
             }
         }     
 });
+        
 
         function createItem(x, y, w, h, color, type, savedItem = null) {
             // const id = 'item_' + Date.now() + Math.random().toString(36).substr(2, 5);
@@ -2746,6 +2747,57 @@ if(sendBtnJs && chatInputJs) {
                 console.warn("Global Nav elements not found. Check HTML.");
             }
         };
+        // --- Figma 風格中鍵拖曳功能 (Pan Workspace) ---
+
+const scrollContainer = document.getElementById('canvas-scroll-container');
+let isPanning = false;
+let startX, startY, initialScrollLeft, initialScrollTop;
+
+// 1. 滑鼠按下事件 (MouseDown)
+scrollContainer.addEventListener('mousedown', (e) => {
+    // e.button === 1 代表滑鼠中鍵 (0是左鍵, 2是右鍵)
+    // 如果您也希望支援「空白鍵 + 左鍵」拖曳，可以在這裡增加判斷
+    if (e.button === 1) { 
+        e.preventDefault(); // 防止瀏覽器出現預設的捲動圖示 (圓圈圈)
+        
+        isPanning = true;
+        scrollContainer.style.cursor = 'grabbing'; // 改變游標變成「抓取中」的手勢
+        
+        // 紀錄按下時的滑鼠位置與目前的捲軸位置
+        startX = e.pageX - scrollContainer.offsetLeft;
+        startY = e.pageY - scrollContainer.offsetTop;
+        initialScrollLeft = scrollContainer.scrollLeft;
+        initialScrollTop = scrollContainer.scrollTop;
+    }
+});
+
+// 2. 滑鼠移動事件 (MouseMove)
+scrollContainer.addEventListener('mousemove', (e) => {
+    if (!isPanning) return;
+    
+    e.preventDefault();
+    
+    const x = e.pageX - scrollContainer.offsetLeft;
+    const y = e.pageY - scrollContainer.offsetTop;
+    
+    // 計算滑鼠移動的距離
+    const walkX = (x - startX); 
+    const walkY = (y - startY);
+    
+    // 更新捲軸位置 (原本位置 - 移動距離 = 視窗反向移動)
+    scrollContainer.scrollLeft = initialScrollLeft - walkX;
+    scrollContainer.scrollTop = initialScrollTop - walkY;
+});
+
+// 3. 滑鼠放開或離開事件 (MouseUp / MouseLeave)
+const stopPanning = () => {
+    isPanning = false;
+    // 恢復游標樣式。注意：您的CSS中設定該容器為 cursor-default
+    scrollContainer.style.cursor = 'default'; 
+};
+
+scrollContainer.addEventListener('mouseup', stopPanning);
+scrollContainer.addEventListener('mouseleave', stopPanning);
        
     </script>
         <div id="global-nav-container" class="fixed top-6 right-6 z-[1000] flex flex-col items-end pointer-events-none font-sans">
@@ -2786,6 +2838,7 @@ if(sendBtnJs && chatInputJs) {
 </div>
 </body>
 </html>
+
 
 
 
