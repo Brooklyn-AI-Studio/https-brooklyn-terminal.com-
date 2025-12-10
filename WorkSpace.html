@@ -118,12 +118,14 @@
       /* 隱藏捲軸 */
 #canvas-scroll-container {
     background-color: #000000; 
-    /* 讓操作區在畫面中留一點邊距，看起來像一張桌子上的圖紙 */
     padding: 50px; 
     
     /* 隱藏捲軸 */
     scrollbar-width: none; 
     -ms-overflow-style: none;
+    
+    /* ★ 新增：確保內容區域不會被限制 ★ */
+    display: block;  /* 取消 flex 布局對子元素的限制 */
 }
 #canvas-scroll-container::-webkit-scrollbar {
     display: none; /* Chrome/Safari */
@@ -134,7 +136,12 @@
     border: 2px solid var(--accent-color);
     box-shadow: 0 0 30px rgba(0, 255, 157, 0.15);
     
-    margin: 0; /* 改成 0，取消水平置中 */
+    /* ★ 關鍵修改：使用 inline-block 讓它不會被壓縮 ★ */
+    display: inline-block;
+    
+    /* 移除 margin: 0，改用這個確保位置 */
+    vertical-align: top;
+    
     container-type: size;
     background-image: 
         linear-gradient(to right, rgba(0, 255, 157, 0.1) 1px, transparent 1px),
@@ -2779,6 +2786,7 @@ if(sendBtnJs && chatInputJs) {
 </div>
 </body>
 </html>
+
 
 
 
