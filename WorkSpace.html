@@ -1989,6 +1989,10 @@ scrollContainer.addEventListener('mousemove', (e) => {
     scrollContainer.scrollLeft = startScrollLeft - walkX;
     scrollContainer.scrollTop = startScrollTop - walkY;
 });
+        function canScrollX() {
+    // 判斷內容寬度是否大於容器可視寬度
+    return scrollContainer.scrollWidth > scrollContainer.clientWidth;
+}
 // --- Wheel: Shift + wheel = horizontal (with guard) ---
 scrollContainer.addEventListener('wheel', (e) => {
   if (e.shiftKey) {
@@ -2001,7 +2005,7 @@ scrollContainer.addEventListener('wheel', (e) => {
   }
 }, { passive: false });
 
-        // --- 新增：動態調整畫布大小 ---
+        // --- 動態調整畫布大小 ---
 window.resizeCanvasPrompt = function () {
     const sizer = document.getElementById('canvas-sizer');
     if (!sizer) return;
@@ -2775,6 +2779,7 @@ if(sendBtnJs && chatInputJs) {
 </div>
 </body>
 </html>
+
 
 
 
