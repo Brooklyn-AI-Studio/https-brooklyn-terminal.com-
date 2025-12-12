@@ -217,7 +217,40 @@
             color: var(--nx-accent); 
             transform: translateY(-1px);
         }
+        /* --- 新增：選單切換按鈕樣式 --- */
+        .nx-btn-menu {
+            background: transparent;  /* 透明背景 */
+            border: 1px solid transparent; /* 預留邊框 */
+            color: var(--nx-text);
+            cursor: pointer;
+            padding: 10px;
+            margin-bottom: 10px;      /* 與下方新對話按鈕保持距離 */
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* 展開時：靠左對齊 */
+            border-radius: var(--nx-radius);
+            transition: all 0.2s;
+            width: 100%;              /* 展開時：佔滿寬度 */
+        }
 
+        .nx-btn-menu:hover {
+            background: var(--nx-hover-bg);
+            color: var(--nx-accent);
+        }
+        .nx-sidebar.collapsed .nx-btn-menu {
+            justify-content: center;  /* 收合時：內容置中 */
+            width: 40px;              /* 收合時：固定寬度 */
+            height: 40px;             /* 收合時：固定高度 */
+            border-radius: 50%;       /* 收合時：變為圓形 */
+            margin: 0 auto 10px auto; /* 收合時：水平置中 + 下方留白 */
+            padding: 0;               /* 移除內距以確保 Icon 居中 */
+        }
+
+        /* 確保 Icon 大小適中 */
+        .nx-btn-menu .nx-icon {
+            width: 24px;
+            height: 24px;
+        }
         /* 選單群組 */
         .nx-menu-group { margin-bottom: 20px; }
         .nx-menu-title { 
@@ -945,7 +978,15 @@
     <div class="nx-sidebar collapsed"> 
         <div class="nx-menu-group"> 
         </div>
-
+        <button class="nx-btn-menu" onclick="toggleSidebar()" title="切換側邊欄">
+            <svg class="nx-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <button class="nx-btn-new" onclick="startNewChat()" style="margin-bottom: 20px; width: 100%;">
+        </button>
             <button class="nx-btn-new" onclick="startNewChat()" style="margin-bottom: 20px; width: 100%;">
             <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span id="txt-newChat">新對話</span>
