@@ -1061,18 +1061,13 @@
            <h2 id="new-chat-title" style="font-size: 2rem; font-weight: 500; color: var(--nx-text); letter-spacing: 1px; margin-bottom: 20px;">
                 我們該從哪裡開始？
             </h2>
-        </div>
-
-    <div id="view-dashboard" style="display: none; width: 100%; flex-direction: column; align-items: center;">
-        <div class="nx-welcome">
-            <h1 id="txt-welcome">早安，<br><span>使用者</span></h1>
             <div class="nx-suggestion-grid">
-                <div class="nx-suggestion-card" onclick="triggerPresetAction('聊聊今日股市新聞與大盤走勢', 'gemini-2.5-flash-lite', true)">
-                <span>聊聊今日股市</span> 
+                <div class="nx-suggestion-card" onclick="triggerPresetAction('聊聊今日台灣股市新聞與大盤走勢', 'gemini-2.5-flash-lite', true)">
+                <span>聊聊今日台灣股市</span> 
                 <span class="nx-sug-arrow">↗</span>
                 </div>
 
-                <div class="nx-suggestion-card" onclick="triggerPresetAction('分析 NVDA 最近一季財報重點', 'gemini-2.5-pro', false)">
+                <div class="nx-suggestion-card" onclick="triggerPresetAction('分析 NVDA 最近一季財報重點', 'gemini-2.5-pro', true)">
                     <span>分析 NVDA 財報重點</span> 
                     <span class="nx-sug-arrow">↗</span>
                 </div>
@@ -1082,11 +1077,17 @@
                     <span class="nx-sug-arrow">↗</span>
                 </div>
 
-                <div class="nx-suggestion-card" onclick="triggerPresetAction('比較 iPhone 16 與 Samsung S24 的最新評測', 'gemini-2.5-flash', true)">
-                    <span>iPhone vs Samsung</span> 
+                <div class="nx-suggestion-card" onclick="triggerPresetAction('查看今天的新聞重點?', 'gemini-2.5-flash-lite', true)">
+                    <span>重點新聞有什麼?</span> 
                     <span class="nx-sug-arrow">↗</span>
                 </div>
             </div>
+        </div>
+
+    <div id="view-dashboard" style="display: none; width: 100%; flex-direction: column; align-items: center;">
+        <div class="nx-welcome">
+            <h1 id="txt-welcome">早安，<br><span>使用者</span></h1>
+            
         </div>
     </div>
 
