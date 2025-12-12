@@ -229,14 +229,33 @@
 
         /* --- NodeX 文字樣式 (深灰色) --- */
         .nx-sidebar-logo-text {
-            font-family: 'Orbitron', sans-serif; /* 維持原本的科技感字體，也可改 Inter */
-            font-size: 1.2rem;      /* 字體大小 */
-            font-weight: 700;       /* 粗體 */
-            color: #666666;         /* 深灰色 (想要更深可改 #444) */
-            letter-spacing: 1px;    /* 字距 */
-            white-space: nowrap;    /* 防止換行 */
-            opacity: 1;
-            transition: opacity 0.2s ease; /* 淡入淡出動畫 */
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #666666;          
+            letter-spacing: 1px;
+            white-space: nowrap; 
+            display: block;         
+            opacity: 1;             
+            margin-left: 5px;      
+            
+            /* 轉場動畫，讓位置切換時滑順一點 */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+
+        /* --- 收合時的「飛出」效果 (保持您原本的邏輯) --- */
+        .nx-sidebar.collapsed .nx-sidebar-logo-text {
+            /* 這裡不需要改 display，因為基礎設定已經是 block 了 */
+            pointer-events: none; 
+
+            /* 脫離側邊欄，固定在螢幕上 */
+            position: fixed;
+            z-index: 100;
+            
+            /* 定位在側邊欄外側 */
+            left: 90px;   
+            top: 28px;    
+            color: #888888; 
         }
 
         /* --- 修改原本的選單按鈕樣式 (配合 Header 微調) --- */
@@ -1142,23 +1161,23 @@
                 我們該從哪裡開始？
             </h2>
             <div class="nx-suggestion-grid">
-                <div class="nx-suggestion-card" onclick="triggerPresetAction('聊聊今日台灣股市新聞與大盤走勢', 'gemini-2.5-flash-lite', true)">
-                <span>聊聊今日台灣股市</span> 
+                <div class="nx-suggestion-card" onclick="triggerPresetAction('聊聊今日台灣股市新聞與大盤走勢，以及漲跌幅排行。台積電、鴻海、力積電等科技股價。', 'gemini-2.5-flash-lite', true)">
+                <span>台灣科技股最新情報</span> 
                 <span class="nx-sug-arrow">↗</span>
                 </div>
 
-                <div class="nx-suggestion-card" onclick="triggerPresetAction('分析 NVDA 最近一季財報重點', 'gemini-2.5-pro', true)">
-                    <span>分析 NVDA 財報重點</span> 
+                <div class="nx-suggestion-card" onclick="triggerPresetAction('查詢近期娛樂圈等八卦新聞，以及大事件', 'gemini-2.5-flash-lite', true)">
+                    <span>想探聽一點八卦新聞</span> 
                     <span class="nx-sug-arrow">↗</span>
                 </div>
 
-                <div class="nx-suggestion-card" onclick="triggerPresetAction('幫我寫一個 Python 爬蟲範例', 'llama-3.3-70b-versatile', false)">
-                    <span>Python 爬蟲教學</span> 
+                <div class="nx-suggestion-card" onclick="triggerPresetAction('請幫我查看最近台灣有什麼新上映的電影，以及電影的詳細資訊。', 'gemini-2.5-flash-lite', true)">
+                    <span>最近有什麼值得期待的電影?</span> 
                     <span class="nx-sug-arrow">↗</span>
                 </div>
 
                 <div class="nx-suggestion-card" onclick="triggerPresetAction('查看今天的新聞重點?', 'gemini-2.5-flash-lite', true)">
-                    <span>重點新聞有什麼?</span> 
+                    <span>迅速查看本日重點新聞</span> 
                     <span class="nx-sug-arrow">↗</span>
                 </div>
             </div>
