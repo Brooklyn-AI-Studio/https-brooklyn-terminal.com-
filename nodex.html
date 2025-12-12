@@ -8,113 +8,103 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&family=Courier+New&display=swap" rel="stylesheet">
     
     <style>
-                        /* 進度條樣式 */
-                .usage-item {
-                    font-size: 0.9em;
-                }
-                .usage-header {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 5px;
-                    color: var(--nx-text-muted);
-                }
-                .progress-track {
-                    width: 100%;
-                    height: 6px;
-                    background: rgba(255, 255, 255, 0.1);
-                    border-radius: 10px;
-                    overflow: hidden;
-                }
-                .progress-fill {
-                    height: 100%;
-                    background: var(--nx-accent);
-                    width: 0%;
-                    transition: width 0.5s ease;
-                    border-radius: 10px;
-                }
-                /* 針對快用完的額度變色 */
-                .progress-fill.warning { background: #ffcc00; }
-                .progress-fill.danger { background: #ff6b6b; }
+                        
+        .usage-item {font-size: 0.9em;}
+        .usage-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            color: var(--nx-text-muted);
+        }
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--nx-accent);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+        
+        .progress-fill.warning { background: #ffcc00; } /* 額度變色 */
+        .progress-fill.danger { background: #ff6b6b; }
 
-                    /* --- 歷史紀錄滾動條美化 --- */
-            #history-container::-webkit-scrollbar {
-                width: 4px; /* 極細滾動條 */
-            }
-            #history-container::-webkit-scrollbar-track {
-                background: transparent; 
-            }
-            #history-container::-webkit-scrollbar-thumb {
+        /* --- 歷史紀錄滾動條美化 --- */
+        #history-container::-webkit-scrollbar {width: 4px; } 
+        #history-container::-webkit-scrollbar-track {background: transparent;}
+        #history-container::-webkit-scrollbar-thumb {
                 background: var(--nx-border); /* 預設為邊框色 */
                 border-radius: 4px;
-            }
-            #history-container::-webkit-scrollbar-thumb:hover {
+        }
+        #history-container::-webkit-scrollbar-thumb:hover {
                 background: var(--nx-accent); /* 滑鼠移過去變亮色 */
+        }
+
+        /* --- 圓點動畫  --- */
+        .nx-typing-bubble {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;         
+            width: fit-content;
+            height: auto;    
+            background: transparent;
+            border: none;            
+            padding: 0;             
+            border-radius: 0;        
+            box-shadow: none;        
+            margin-top: 5px;   
+            margin-left: 2px; 
+            opacity: 0.8;     
+        }            
+        .nx-typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--nx-text-muted); 
+            border-radius: 50%;
+            animation: nx-bounce 1.4s infinite ease-in-out both;
+        }
+        /* 讓三個圓點依序跳動 (透過延遲時間) */
+        .nx-typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .nx-typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        .nx-typing-dot:nth-child(3) { animation-delay: 0s; }
+
+        /* 定義跳動的關鍵影格 */
+        @keyframes nx-bounce {
+            0%, 80%, 100% { 
+            transform: scale(0.6); 
+            opacity: 0.6;
+        }
+            40% { 
+                transform: scale(1); 
+                opacity: 1;
+                background-color: var(--nx-accent); /* 跳起來時變亮色 */
             }
-                   
-           /* --- Thinking 跳動圓點動畫  --- */
-            .nx-typing-bubble {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;          /* 稍微增加圓點之間的距離，讓它們散開一點 */
-                width: fit-content;
-                height: auto;      /* 高度自動，不再固定 */
-                
-                background: transparent; /* 背景透明 */
-                border: none;            /* 移除邊框 */
-                padding: 0;              /* 移除內距 */
-                border-radius: 0;        /* 移除圓角 */
-                box-shadow: none;        /* 確保沒有陰影 */
-            
-                /* --- 微調位置 --- */
-                margin-top: 5px;   /* 與上方 "NodeX AI" 文字保持一點距離 */
-                margin-left: 2px;  /* 稍微對齊上方的文字起始處 */
-                opacity: 0.8;      /* 稍微降低一點透明度，看起來更柔和 */
-            }
-                        
-            .nx-typing-dot {
-                width: 8px;
-                height: 8px;
-                background-color: var(--nx-text-muted); /* 圓點顏色 */
-                border-radius: 50%;
-                animation: nx-bounce 1.4s infinite ease-in-out both;
-            }
-            
-            /* 讓三個圓點依序跳動 (透過延遲時間) */
-            .nx-typing-dot:nth-child(1) { animation-delay: -0.32s; }
-            .nx-typing-dot:nth-child(2) { animation-delay: -0.16s; }
-            .nx-typing-dot:nth-child(3) { animation-delay: 0s; }
-            
-            /* 定義跳動的關鍵影格 */
-            @keyframes nx-bounce {
-                0%, 80%, 100% { 
-                    transform: scale(0.6); 
-                    opacity: 0.6;
-                }
-                40% { 
-                    transform: scale(1); 
-                    opacity: 1;
-                    background-color: var(--nx-accent); /* 跳起來時變亮色 */
-                }
-            }
-                    /*  模態框 CSS */
-            .nx-modal-overlay {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
-                z-index: 9999; display: none; align-items: center; justify-content: center;
-                animation: fadeIn 0.2s;
-            }
-            .nx-modal-content {
-                background: var(--nx-sidebar); border: 1px solid var(--nx-border);
-                width: 90%; max-width: 500px; height: 60vh;
-                border-radius: 12px; display: flex; flex-direction: column;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            }
-            .nx-modal-header {
-                padding: 15px; border-bottom: 1px solid var(--nx-border);
-                display: flex; justify-content: space-between; align-items: center;
-                background: var(--nx-card-bg); border-radius: 12px 12px 0 0;
-            }
-        /* --- CSS 變數系統 --- */
+        }
+
+        /*  模態框 CSS */
+        .nx-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            z-index: 9999; display: none; align-items: center; justify-content: center;
+            animation: fadeIn 0.2s;
+        }
+        .nx-modal-content {
+            background: var(--nx-sidebar); border: 1px solid var(--nx-border);
+            width: 90%; max-width: 500px; height: 60vh;
+            border-radius: 12px; display: flex; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .nx-modal-header {
+            padding: 15px; border-bottom: 1px solid var(--nx-border);
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--nx-card-bg); border-radius: 12px 12px 0 0;
+        }
+
         :root {
             /* 預設為 Tech 風格 */
             --nx-bg: #050505;
@@ -185,7 +175,7 @@
             z-index: 999; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
 
-        /* --- 側邊欄 --- */
+        /* --- 工作欄 --- */
         .nx-sidebar {
             width: 260px;
             background: var(--nx-sidebar);
@@ -259,10 +249,9 @@
             margin-top: auto;
             border-top: 1px solid var(--nx-border); 
             padding-top: 15px;
-            /* 關鍵屬性 */
             position: relative;
-            z-index: 1000; /* 確保層級最高 */
-            background: var(--nx-sidebar); /* 防止背景透明看到後面的東西 */
+            z-index: 1000; 
+            background: var(--nx-sidebar); 
         }
         .nx-tool-row { 
             display: flex; 
@@ -281,7 +270,7 @@
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; 
             transition: all 0.3s;
-            position: relative; /* 為了定位選單 */
+            position: relative; 
         }
         .nx-footer-btn:hover, .nx-footer-btn.active { color: var(--nx-accent); border-color: var(--nx-accent); }
 
@@ -341,9 +330,8 @@
             flex: 1;
             overflow-y: auto; 
             padding: 40px; 
-            /* [新增] 底部留白，避免最後一則訊息被懸浮輸入框擋住 */
+            /* 底部留白，避免最後一則訊息被懸浮輸入框擋住 */
             padding-bottom: 140px; 
-            
             display: flex; 
             flex-direction: column; 
             align-items: center;
@@ -357,7 +345,7 @@
             font-weight: 300; 
             line-height: 1.2;
         }
-               .nx-welcome span { 
+        .nx-welcome span { 
             color: var(--nx-accent); 
             font-weight: 700; 
         }
@@ -366,9 +354,12 @@
         [data-theme="business"] .nx-welcome span,
         [data-theme="tech"] .nx-welcome span {
             background: linear-gradient(90deg, var(--nx-text), var(--nx-accent));
+            background-clip: text;
             -webkit-background-clip: text;
+            color: transparent;
             -webkit-text-fill-color: transparent;
         }
+        
 
         /* 建議卡片網格 */
         .nx-suggestion-grid {
@@ -396,19 +387,17 @@
         }
         .nx-sug-arrow { opacity: 0.5; font-size: 0.8em; }
 
-       /* --- 新版輸入框樣式 (固定底部懸浮版) --- */
+       /* --- 輸入框樣式 --- */
         .nx-input-container {
             width: 100%;
             max-width: 800px;
-            /* 改用絕對定位，強制固定在父容器 (.nx-main) 的底部 */
             position: absolute; 
             bottom: 30px;       /* 距離底部留一些空間 */
             left: 50%;          /* 設定左側位置在 50% */
             transform: translateX(-50%); /* 向左回推自身寬度的一半，達成完美置中 */
-            
             padding: 0 20px;
             z-index: 50;        /* 層級調高，確保浮在文字上方 */
-            margin: 0;          /* 移除原本的 margin 設定 */
+            margin: 0;         
         }
         
         .nx-input-wrapper {
@@ -475,7 +464,7 @@
             background: var(--nx-hover-bg);
         }
         
-        /* 膠囊狀按鈕 (左側功能) */
+        /* 膠囊狀按鈕  */
         .nx-pill-btn {
             border: 1px solid transparent;
             background: rgba(255,255,255,0.03);
@@ -502,7 +491,7 @@
         .nx-send-btn:hover { transform: scale(1.05); opacity: 0.9; }
         [data-theme="terminal"] .nx-send-btn { border-radius: 0; background: var(--nx-text); }
 
-        /* 回首頁按鈕 (Dropdown 樣式) */
+        /* 回首頁按鈕  */
         .back-to-home-container {
             position: absolute; top: 20px; right: 20px; z-index: 50;
         }
@@ -535,86 +524,76 @@
 
         /* RWD */
         @media (max-width: 768px) {
-            .nx-sidebar { display: none; } /* 手機版暫時隱藏側欄 */
+            .nx-sidebar { display: none; }
             .nx-welcome h1 { font-size: 1.8rem; }
             .nx-suggestion-grid { grid-template-columns: 1fr; }
         }
-        /* --- 臨時對話框 (Central Spotlight Style) --- */
-.nx-modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.6); /* 背景變暗 */
-    backdrop-filter: blur(5px);      /* 背景模糊，凸顯前景 */
-    z-index: 9999; 
-    display: none; 
-    align-items: center; justify-content: center; /* 上下左右置中關鍵 */
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
 
-.nx-modal-overlay.show {
-    opacity: 1;
-}
+        .nx-modal-overlay.show {
+            opacity: 1;
+        }
 
-.nx-modal-content {
-    background: var(--nx-sidebar);
-    width: 90%; 
-    max-width: 650px;    
-    height: 70vh;        /* 高度適中 */
-    border-radius: 16px; 
-    border: 1px solid var(--nx-border);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    display: flex; 
-    flex-direction: column;
-    overflow: hidden;
-    transform: scale(0.95);
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
+        .nx-modal-content {
+            background: var(--nx-sidebar);
+            width: 90%; 
+            max-width: 650px;    
+            height: 70vh;        /* 高度適中 */
+            border-radius: 16px; 
+            border: 1px solid var(--nx-border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex; 
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-.nx-modal-overlay.show .nx-modal-content {
-    transform: scale(1);
-}
+        .nx-modal-overlay.show .nx-modal-content {
+            transform: scale(1);
+        }
 
-/* 標題列 */
-.nx-modal-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--nx-border);
-    display: flex; justify-content: space-between; align-items: center;
-    background: rgba(255,255,255,0.02);
-}
+        /* 標題列 */
+        .nx-modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--nx-border);
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.02);
+        }
 
-/* 對話歷史區 */
-#temp-chat-history {
-    flex: 1; 
-    overflow-y: auto; 
-    padding: 20px;
-    scroll-behavior: smooth;
-}
+        /* 對話歷史區 */
+        #temp-chat-history {
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px;
+            scroll-behavior: smooth;
+        }
 
-/* 底部輸入區 (模仿你的截圖) */
-.nx-modal-input-area {
-    padding: 20px;
-    background: var(--nx-sidebar);
-    border-top: 1px solid var(--nx-border);
-}
+        /* 底部輸入區  */
+        .nx-modal-input-area {
+            padding: 20px;
+            background: var(--nx-sidebar);
+            border-top: 1px solid var(--nx-border);
+        }
 
-.nx-modal-input-wrapper {
-    display: flex; 
-    align-items: center; 
-    gap: 10px;
-    background: var(--nx-input-bg);
-    border: 1px solid var(--nx-border);
-    border-radius: 12px;
-    padding: 8px 15px;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-}
+        .nx-modal-input-wrapper {
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+            background: var(--nx-input-bg);
+            border: 1px solid var(--nx-border);
+            border-radius: 12px;
+            padding: 8px 15px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
 
-.nx-modal-input-wrapper:focus-within {
-    border-color: var(--nx-accent);
-    box-shadow: 0 0 10px var(--nx-glow);
-}
+        .nx-modal-input-wrapper:focus-within {
+            border-color: var(--nx-accent);
+            box-shadow: 0 0 10px var(--nx-glow);
+        }
+
         /* --- 側邊欄收合模式 (Mini Sidebar) --- */
         
-        /* 1. 基礎轉場設定 (讓縮放很平滑) */
+        /* 基礎轉場設定  */
         .nx-sidebar {
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: visible !important; /* 讓彈出選單可以超出邊界 */
@@ -651,14 +630,14 @@
         .nx-sidebar.collapsed .nx-btn-new {
             width: 40px; 
             height: 40px; 
-            border-radius: 50%; /* 變成圓形按鈕比較好看 */
+            border-radius: 50%; 
             margin: 0 auto 20px auto; /* 水平居中 */
         }
 
         .nx-sidebar.collapsed .nx-menu-group {
             margin-bottom: 10px;
         }
-/* --- [修正] 側邊欄收合模式的底部工具列優化 --- */
+        /* --- [修正] 側邊欄收合模式的底部工具列優化 --- */
         
         /* 1. 讓地球和太陽按鈕變成「垂直排列」 */
         .nx-sidebar.collapsed .nx-tool-row {
@@ -759,10 +738,11 @@
             font-size: 1.8rem;      /* 字體放大 */
             font-weight: 800;       /* 字體加粗 */
             letter-spacing: 2px;    /* 增加字距 */
-            background: linear-gradient(90deg, var(--nx-accent), var(--nx-text)); /* (選用) 文字漸層質感 */
+            background: linear-gradient(90deg, var(--nx-accent), var(--nx-text)); 
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            /* 修正文字漸層在某些瀏覽器的顯示問題，若不需要漸層可移除上面三行並設 color: var(--nx-text); */
+        
         }
 
         /* 3. 展開狀態：調整 Header 排版 (讓文字靠左或置中，這裡設為靠左對齊) */
@@ -779,94 +759,94 @@
             height: 32px;
         }
     </style>
+
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     
     <style>
-        /* --- 專業版 Markdown & LaTeX 樣式優化 --- */
-    .markdown-body { 
-        line-height: 1.5; 
-        font-size: 0.95rem; 
-        color: var(--nx-text); 
-        word-wrap: break-word;
-        font-family: 'Inter', system-ui, sans-serif;
-    
-        /* 強制換行與斷字設定，防止跑版 */
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        word-break: break-word;
-        white-space: pre-wrap; /* 保留空白與換行格式 */
-    }
-
-    /* 標題優化 */
-    .markdown-body h1, .markdown-body h2, .markdown-body h3 { 
-        margin-top: 1.2em; 
-        margin-bottom: 0.5em; 
-        font-weight: 700; 
-        line-height: 1.3;
-        color: var(--nx-text);
-    }
-    .markdown-body h1 { font-size: 1.6em; border-bottom: 1px solid var(--nx-border); padding-bottom: 0.3em; color: var(--nx-accent); }
-    .markdown-body h2 { font-size: 1.4em; color: var(--nx-accent); }
-    .markdown-body h3 { font-size: 1.2em; }
-
-    /* 列表優化 */
-    .markdown-body ul, .markdown-body ol { padding-left: 1.5em; margin-bottom: 0.8em; }
-    .markdown-body li { margin-bottom: 0.1em; }
-    .markdown-body li::marker { color: var(--nx-accent); } /* 讓列表點點變色 */
-
-    /* 程式碼區塊 */
-    .markdown-body pre { 
-        background: #1e1e1e; 
-        padding: 12px; 
-        border-radius: 8px; 
-        overflow-x: auto; 
-        margin: 0.8em 0; 
-        border: 1px solid var(--nx-border);
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .markdown-body code { 
-        font-family: 'Courier New', monospace; 
-        font-size: 0.9em;
-        background: rgba(255, 255, 255, 0.1);
-        padding: 2px 5px;
-        border-radius: 4px;
-        color: #ff79c6;
-    }
-    .markdown-body pre code { 
-        background: transparent; 
-        padding: 0; 
-        color: #f8f8f2; 
-    }
-
-    /* 引用塊 */
-    .markdown-body blockquote { 
-        border-left: 4px solid var(--nx-accent); 
-        padding: 4px 0 4px 16px; 
-        margin: 0.8em 0; 
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 0 4px 4px 0;
-        color: var(--nx-text-muted);
-    }
-
-    /* 表格 */
-    .markdown-body table { width: 100%; border-collapse: collapse; margin: 1.5em 0; }
-    .markdown-body th, .markdown-body td { 
-        border: 1px solid var(--nx-border); 
-        padding: 8px; 
-        text-align: left; 
-    }
-    .markdown-body th { background: var(--nx-hover-bg); color: var(--nx-accent); }
-
-    /* KaTeX 數學公式微調 */
-    .katex { font-size: 1.1em !important; } /* 讓數學符號稍微大一點 */
-    .katex-display { margin: 1em 0 !important; overflow-x: auto; overflow-y: hidden; }
-
-        /* --- 新對話：置中模式樣式 --- */
+        /* --- Markdown & LaTeX 樣式優化 --- */
+        .markdown-body { 
+            line-height: 1.5; 
+            font-size: 0.95rem; 
+            color: var(--nx-text); 
+            word-wrap: break-word;
+            font-family: 'Inter', system-ui, sans-serif;
         
-        /* 當啟用置中模式時，輸入框移到畫面正中央 */
+            /* 強制換行與斷字設定，防止跑版 */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            white-space: pre-wrap; /* 保留空白與換行格式 */
+        }
+
+        /* 標題優化 */
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 { 
+            margin-top: 1.2em; 
+            margin-bottom: 0.5em; 
+            font-weight: 700; 
+            line-height: 1.3;
+            color: var(--nx-text);
+        }
+        .markdown-body h1 { font-size: 1.6em; border-bottom: 1px solid var(--nx-border); padding-bottom: 0.3em; color: var(--nx-accent); }
+        .markdown-body h2 { font-size: 1.4em; color: var(--nx-accent); }
+        .markdown-body h3 { font-size: 1.2em; }
+
+        /* 列表優化 */
+        .markdown-body ul, .markdown-body ol { padding-left: 1.5em; margin-bottom: 0.8em; }
+        .markdown-body li { margin-bottom: 0.1em; }
+        .markdown-body li::marker { color: var(--nx-accent); } 
+
+        /* 程式碼區塊 */
+        .markdown-body pre { 
+            background: #1e1e1e; 
+            padding: 12px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            margin: 0.8em 0; 
+            border: 1px solid var(--nx-border);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .markdown-body code { 
+            font-family: 'Courier New', monospace; 
+            font-size: 0.9em;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #ff79c6;
+        }
+        .markdown-body pre code { 
+            background: transparent; 
+            padding: 0; 
+            color: #f8f8f2; 
+        }
+
+        /* 引用塊 */
+        .markdown-body blockquote { 
+            border-left: 4px solid var(--nx-accent); 
+            padding: 4px 0 4px 16px; 
+            margin: 0.8em 0; 
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 0 4px 4px 0;
+            color: var(--nx-text-muted);
+        }
+
+        /* 表格 */
+        .markdown-body table { width: 100%; border-collapse: collapse; margin: 1.5em 0; }
+        .markdown-body th, .markdown-body td { 
+            border: 1px solid var(--nx-border); 
+            padding: 8px; 
+            text-align: left; 
+        }
+        .markdown-body th { background: var(--nx-hover-bg); color: var(--nx-accent); }
+
+        /* KaTeX 數學公式微調 */
+        .katex { font-size: 1.3em !important; } 
+        .katex-display { margin: 1em 0 !important; overflow-x: auto; overflow-y: hidden; }
+
+        
+        /* 輸入框移到畫面正中央 */
         .nx-main.centered-mode .nx-input-container {
             bottom: auto;           /* 取消底部的黏著 */
             top: 50%;               /* 移動到垂直 50% */
@@ -906,17 +886,15 @@
             transform: translateX(-10px); /* 微小位移特效 */
         }
 
-        /* 3. [展開模式] Hover 效果 */
+        /*  Hover 效果 */
         /* 當滑鼠移入 Header 區域，按鈕顯現 */
         .nx-sidebar-header:hover .sidebar-toggle-btn {
             opacity: 1;
             transform: translateX(0);
         }
 
-        /* ------------------------------------------------ */
         /* 4. [收合模式] 特殊處理 (關鍵修正) */
-        /* ------------------------------------------------ */
-        
+      
         /* 收合時：內容強制置中 */
         .nx-sidebar.collapsed .nx-sidebar-header {
             justify-content: center;
@@ -957,9 +935,7 @@
     </style>
 </head>
     
-  
     <body data-theme="business"><div class="nx-sidebar collapsed"> 
-
    <div class="nx-sidebar-header">
         <div class="nx-brand" onclick="toggleSidebar()" title="Toggle Sidebar">
             <svg class="nx-logo-svg" viewBox="0 0 24 24">
@@ -980,6 +956,7 @@
     </div>
     
     <div class="nx-menu-group">
+
     </div>
 
         <button class="nx-btn-new" onclick="startNewChat()" style="margin-bottom: 20px; width: 100%;">
@@ -1001,18 +978,6 @@
             <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
             <span id="txt-finance">金融</span>
         </div>
-
-        <div class="nx-menu-item" onclick="window.location.href='tech.html'">
-            <svg class="nx-icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-            <span id="txt-tech">科技</span>
-        </div>
-   
-        <div class="nx-menu-item" onclick="window.location.href='trends.html'">
-            <svg class="nx-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.5-3.3a9 9 0 0 0 2.5 2.8z"></path>
-            </svg>
-            <span id="txt-trending">趨勢</span>
-       </div>
     </div>
 
     <div class="nx-menu-group" id="history-container" style="flex:1; overflow-y: auto; min-height: 0; padding-right: 5px;">
