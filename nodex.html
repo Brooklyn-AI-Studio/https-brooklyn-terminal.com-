@@ -217,6 +217,55 @@
             color: var(--nx-accent); 
             transform: translateY(-1px);
         }
+        /* --- 側邊欄頂部容器設定 --- */
+        .nx-sidebar-top-header {
+            display: flex;
+            align-items: center; /* 垂直置中 */
+            gap: 0px;            /* 按鈕與文字的間距 */
+            margin-bottom: 20px; /* 與下方新對話按鈕的距離 */
+            padding-left: 5px;   /* 微調左邊距 */
+            height: 40px;        /* 固定高度 */
+        }
+
+        /* --- NodeX 文字樣式 (深灰色) --- */
+        .nx-sidebar-logo-text {
+            font-family: 'Orbitron', sans-serif; /* 維持原本的科技感字體，也可改 Inter */
+            font-size: 1.2rem;      /* 字體大小 */
+            font-weight: 700;       /* 粗體 */
+            color: #666666;         /* 深灰色 (想要更深可改 #444) */
+            letter-spacing: 1px;    /* 字距 */
+            white-space: nowrap;    /* 防止換行 */
+            opacity: 1;
+            transition: opacity 0.2s ease; /* 淡入淡出動畫 */
+        }
+
+        /* --- 修改原本的選單按鈕樣式 (配合 Header 微調) --- */
+        .nx-btn-menu {
+            /* 移除原本的 margin-bottom，因為改由容器控制 */
+            margin-bottom: 0 !important; 
+            width: 40px; 
+            height: 40px;
+            padding: 8px; /* 讓 icon 稍微縮小一點點，比較精緻 */
+            border: none; /* 移除邊框 */
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+
+        /* --- 關鍵：收合模式 (.collapsed) 的變化 --- */
+
+        /* 1. 收合時：隱藏 NodeX 文字 */
+        .nx-sidebar.collapsed .nx-sidebar-logo-text {
+            opacity: 0;
+            pointer-events: none;
+            display: none; /* 確保不佔空間 */
+        }
+
+        /* 2. 收合時：讓容器置中 (確保漢堡按鈕在正中間) */
+        .nx-sidebar.collapsed .nx-sidebar-top-header {
+            justify-content: center;
+            padding-left: 0;
+        }
         /* --- 新增：選單切換按鈕樣式 --- */
         .nx-btn-menu {
             background: transparent;  /* 透明背景 */
@@ -978,13 +1027,17 @@
     <div class="nx-sidebar collapsed"> 
         <div class="nx-menu-group"> 
         </div>
-        <button class="nx-btn-menu" onclick="toggleSidebar()" title="切換側邊欄">
-            <svg class="nx-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-        </button>
+        <div class="nx-sidebar-top-header">
+    
+            <button class="nx-btn-menu" onclick="toggleSidebar()" title="切換側邊欄">
+                <svg class="nx-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <span class="nx-sidebar-logo-text">NodeX</span>
+            </div>
             <button class="nx-btn-new" onclick="startNewChat()" style="margin-bottom: 20px; width: 100%;">
             <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span id="txt-newChat">新對話</span>
@@ -2147,7 +2200,7 @@
 
         historyContainer.innerHTML = `
             <div class="nx-menu-title" onclick="toggleHistoryList()" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; user-select: none;">
-                <span>歷史紀錄 (History)</span>
+                <span>歷史紀錄</span>
                 <span id="nx-history-arrow-icon" class="nx-history-arrow">▼</span>
             </div>
             <div id="nx-history-list-content" style="display:block;">
@@ -2445,9 +2498,9 @@
         </div>
 
         <div style="padding: 0 30px 30px 30px;">
-            <h2 style="color: var(--nx-text); margin-bottom: 10px; font-size: 1.5em;">需要登入</h2>
+            <h2 style="color: var(--nx-text); margin-bottom: 10px; font-size: 1.5em;">登入立即體驗</h2>
             <p style="color: var(--nx-text-muted); font-size: 0.95em; line-height: 1.6; margin-bottom: 25px;">
-                NodeX提供免費額度高階模型Gemini、ChatGPT，以及Llama等歷史紀錄功能。請登入您的 Google 帳號以繼續使用。
+                NodeX提供免費額度高階模型Gemini、ChatGPT、Llama，以及Qwen等。請登入您的 Google 帳號以繼續使用。
             </p>
 
             <button onclick="handleLoginRequest()" class="nx-btn-new" 
