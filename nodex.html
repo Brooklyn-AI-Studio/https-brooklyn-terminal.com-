@@ -229,20 +229,15 @@
 
        /* --- 1. 基礎狀態  --- */
         .nx-sidebar-logo-text {
-            /* 字體設定 */
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #666666;          
-            letter-spacing: 1px;
-            white-space: nowrap;
-            display: block;          
-            opacity: 1;              
-            margin-left: 5px;        /* 與漢堡按鈕的間距 */
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            pointer-events: none;
+            position: fixed;
+            z-index: 100;    
+            left: 90px;       
+            top: 28px;       
+            color: #888888; 
         }
 
-        /* --- 2. 收合狀態 (.collapsed)：文字「飛」到側邊欄外側 --- */
+        /* --- 收合狀態  --- */
         .nx-sidebar.collapsed .nx-sidebar-logo-text {
             pointer-events: none;
             position: fixed;
@@ -251,41 +246,52 @@
             top: 28px;       
             color: #888888; 
         }
+
+            /* --- 新增：選單切換按鈕樣式 --- */
+            .nx-btn-menu {
+        /* 1. 設定固定大小 (關鍵) */
+        width: 40px !important;
+        height: 40px !important;
+
+        /* 2. 設定 50% 圓角變圓形 */
+        border-radius: 50% !important;
+
+        /* 3. 讓內部的三條線圖示置中 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0; /* 移除內距，避免影響圓形 */
+
+        /* 4. 基礎外觀 (透明背景、顏色) */
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--nx-text);
+        cursor: pointer;
+        transition: all 0.2s;
         
-        /* --- 新增：選單切換按鈕樣式 --- */
-        .nx-btn-menu {
-            background: transparent;  /* 透明背景 */
-            border: 1px solid transparent; /* 預留邊框 */
-            color: var(--nx-text);
-            cursor: pointer;
-            padding: 10px;
-            margin-bottom: 10px;      /* 與下方新對話按鈕保持距離 */
-            display: flex;
-            align-items: center;
-            justify-content: flex-start; /* 展開時：靠左對齊 */
-            border-radius: var(--nx-radius);
-            transition: all 0.2s;
-            width: 100%;              /* 展開時：佔滿寬度 */
-        }
+        /* 5. 確保它不會被其他容器拉伸 */
+        flex-shrink: 0; 
+    }
 
-        .nx-btn-menu:hover {
-            background: var(--nx-hover-bg);
-            color: var(--nx-accent);
-        }
-        .nx-sidebar.collapsed .nx-btn-menu {
-            justify-content: center;  /* 收合時：內容置中 */
-            width: 40px;              /* 收合時：固定寬度 */
-            height: 40px;             /* 收合時：固定高度 */
-            border-radius: 50%;       /* 收合時：變為圓形 */
-            margin: 0 auto 10px auto; /* 收合時：水平置中 + 下方留白 */
-            padding: 0;               /* 移除內距以確保 Icon 居中 */
-        }
+    /* 滑鼠移上去的效果 */
+    .nx-btn-menu:hover {
+        background: var(--nx-hover-bg);
+        color: var(--nx-accent);
+    }
 
-        /* 確保 Icon 大小適中 */
-        .nx-btn-menu .nx-icon {
-            width: 24px;
-            height: 24px;
-        }
+    /* 確保容器對齊 (讓圓形按鈕靠左，與下方的項目對齊) */
+    .nx-sidebar-top-header {
+        display: flex;
+        align-items: center;
+        padding-left: 10px; /* 如果覺得太靠左，可以微調這個數字 */
+        height: 40px;
+    }
+
+    /* 收合時確保置中 (這段應該原本就有，為了保險起見再次確認) */
+    .nx-sidebar.collapsed .nx-sidebar-top-header {
+        padding-left: 0;
+        justify-content: center;
+    }
         /* 選單群組 */
         .nx-menu-group { margin-bottom: 20px; }
         .nx-menu-title { 
