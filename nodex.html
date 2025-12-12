@@ -1420,10 +1420,10 @@
             btn.innerText = originalText;
             btn.disabled = false;
         }
-};
+    };
        // --- 新對話模式 ---
-       window.startNewChat = function() {
-           currentChatId = null;
+        window.startNewChat = function() {
+            currentChatId = null;
             // 1. 定義歡迎語清單
             const titles = [
                 "兩個人生日一樣的機率，比直覺高很多。（問問:生日悖論）",
@@ -1443,23 +1443,18 @@
 
             // 2. 隨機挑選一個標題
             const randomTitle = titles[Math.floor(Math.random() * titles.length)];
-            
             // 3. 更新畫面上的標題文字
             const titleEl = document.getElementById('new-chat-title');
             if (titleEl) titleEl.innerText = randomTitle;
-
             // 4. 清空聊天畫面
             const chatHistory = document.getElementById('nx-chat-history');
             if(chatHistory) chatHistory.innerHTML = ''; 
-            
             // 5. 切換 UI 狀態
             document.getElementById('view-home').style.display = 'none';
             document.getElementById('view-dashboard').style.display = 'none';
             document.getElementById('view-new-chat').style.display = 'flex';
-            
             // 6. 啟動 CSS 置中模式
             document.querySelector('.nx-main').classList.add('centered-mode');
-            
             // 7. 重置輸入框
             const input = document.getElementById('nx-input');
             input.value = '';
@@ -1467,11 +1462,11 @@
             input.style.height = 'auto';
         };
     
-        // --- [補強] 將 UI 控制函式掛載到 window 以便 HTML 呼叫 ---
+        // ---將 UI 控制函式掛載到 window 以便 HTML 呼叫 ---
         window.switchView = function(viewName) {
             document.getElementById('view-home').style.display = viewName === 'home' ? 'flex' : 'none';
             document.getElementById('view-dashboard').style.display = viewName === 'dashboard' ? 'flex' : 'none';
-            // 更新選單激活狀態 (簡易版)
+            // 更新選單激活狀態 
             document.querySelectorAll('.nx-menu-item').forEach(el => el.classList.remove('active'));
             if(viewName === 'home') document.getElementById('menu-home').classList.add('active');
         };
@@ -1490,40 +1485,36 @@
             window.toggleMenu('theme-menu'); // 關閉選單
         };
 
-       // [新增] 語言切換函式
-// [新增] 語言切換函式
-window.setLanguage = function(lang) {
-    // 1. 執行切換邏輯
-    if (lang === 'en') {
-        alert("Language switched to English (Demo)");
-        // 在這裡加入介面文字更換的程式碼...
-    } else {
-        alert("已切換至繁體中文");
-    }
+        // 語言切換函式
+        window.setLanguage = function(lang) {
+            // 1. 執行切換邏輯
+            if (lang === 'en') {
+                alert("Language switched to English");  
+            } else {
+                alert("已切換至繁體中文");
+            }
     
-    // 2. 更新選單的「勾選」狀態 (Visual Feedback)
-    document.querySelectorAll('#lang-menu .nx-dropdown-item').forEach(item => {
-        item.classList.remove('active');
-        // 判斷當前語言並加亮對應選項
-        if (item.innerText.includes(lang === 'en' ? 'English' : '繁體中文')) {
-            item.classList.add('active');
-        }
-    });
+        // 2. 更新選單的「勾選」狀態 
+        document.querySelectorAll('#lang-menu .nx-dropdown-item').forEach(item => {
+            item.classList.remove('active');
+            // 判斷當前語言並加亮對應選項
+            if (item.innerText.includes(lang === 'en' ? 'English' : '繁體中文')) {
+                item.classList.add('active');
+            }
+        });
     
-    window.toggleMenu('lang-menu');
-};
+        window.toggleMenu('lang-menu');
+
+        };
         
-        // 點擊頁面其他地方關閉 Dropdown 
         document.addEventListener('click', (e) => {
-            // 如果點擊的對象不是 Footer按鈕、不是回首頁按鈕、也不是模型切換按鈕
             if (!e.target.closest('.nx-footer-btn') && 
                 !e.target.closest('.back-to-home-container') && 
-                !e.target.closest('#model-selector-btn')) { // [新增] 排除模型按鈕
-                
+                !e.target.closest('#model-selector-btn')) { 
                 document.querySelectorAll('.nx-dropdown-menu').forEach(m => m.style.display = 'none');
             }
         });
-        // 1. Firebase 設定
+
         const firebaseConfig = {
             apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
             authDomain: "brooklyn-terminal.firebaseapp.com",
@@ -1550,7 +1541,7 @@ window.setLanguage = function(lang) {
         onAuthStateChanged(auth, async (user) => {
             window.currentUser = user;
             const adminBtn = document.getElementById('admin-panel-btn');
-            // [修正] 改用 ID 抓取歷史紀錄容器，避免抓不到導致崩潰
+            // 改用 ID 抓取歷史紀錄容器
             const historyContainer = document.getElementById('history-container'); 
 
             if (user) {
@@ -1580,25 +1571,23 @@ window.setLanguage = function(lang) {
             }
         });
 
-        // 3. 點擊頭像登入/登出 (已升級為個人檔案視窗)
-    
-    // --- 新增：用量規則設定 ---
-   const MODEL_LIMITS = [
-    { name: "Gemini 2.5 Flash", id: "gemini-2.5-flash", limit: 50 },
-    { name: "Gemini 2.0 Flash", id: "gemini-2.0-flash", limit: Infinity },
-    { name: "Gemini 2.5 Flash Lite", id: "gemini-2.5-flash-lite", limit: Infinity },
-    { name: "Gemini 2.0 Flash Lite", id: "gemini-2.0-flash-lite", limit: Infinity },
-    { name: "Gemini 2.5 Pro", id: "gemini-2.5-pro", limit: 50 },
-    { name: "Gemini 2.0 Flash Exp", id: "gemini-2.0-flash-exp", limit: 10 },
-    { name: "Llama 3.3 70B", id: "llama-3.3-70b-versatile", limit: 20},
-    { name: "Llama 3.1 8B", id: "llama-3.1-8b-instant", limit: 20 },
-    { name: "Gpt-oss-120b", id: "openai/gpt-oss-120b", limit: 10 }, 
-    { name: "Gpt-oss-20b", id: "openai/gpt-oss-20b", limit: 10 },
-    { name: "Qwen3-32b", id: "qwen/qwen3-32b", limit: 10 }
-       
-];
+    // ---用量規則設定 ---
+    const MODEL_LIMITS = [
+            { name: "Gemini 2.5 Flash", id: "gemini-2.5-flash", limit: 50 },
+            { name: "Gemini 2.0 Flash", id: "gemini-2.0-flash", limit: Infinity },
+            { name: "Gemini 2.5 Flash Lite", id: "gemini-2.5-flash-lite", limit: Infinity },
+            { name: "Gemini 2.0 Flash Lite", id: "gemini-2.0-flash-lite", limit: Infinity },
+            { name: "Gemini 2.5 Pro", id: "gemini-2.5-pro", limit: 50 },
+            { name: "Gemini 2.0 Flash Exp", id: "gemini-2.0-flash-exp", limit: 10 },
+            { name: "Llama 3.3 70B", id: "llama-3.3-70b-versatile", limit: 20},
+            { name: "Llama 3.1 8B", id: "llama-3.1-8b-instant", limit: 20 },
+            { name: "Gpt-oss-120b", id: "openai/gpt-oss-120b", limit: 10 }, 
+            { name: "Gpt-oss-20b", id: "openai/gpt-oss-20b", limit: 10 },
+            { name: "Qwen3-32b", id: "qwen/qwen3-32b", limit: 10 }
+            
+        ];
 
-    // --- 新增：開啟視窗函式 ---
+    // ---開啟視窗函式 ---
     window.openProfileModal = async function() {
         const modal = document.getElementById('profile-modal');
         const user = window.currentUser;
@@ -1613,7 +1602,7 @@ window.setLanguage = function(lang) {
         document.getElementById('modal-email').innerText = user.email || "";
 
         renderUsageStats();
-        // [修改] 等待雲端數據讀取完畢
+        //等待雲端數據讀取完畢
         const todayStats = await getTodayUsageStats(); 
         renderUsageStats(todayStats); // 把數據傳進去
         // 顯示
@@ -1621,14 +1610,14 @@ window.setLanguage = function(lang) {
         setTimeout(() => modal.classList.add('show'), 10);
     };
 
-    // --- 新增：關閉視窗函式 ---
+    // --- 關閉視窗函式 ---
     window.closeProfileModal = function() {
         const modal = document.getElementById('profile-modal');
         modal.classList.remove('show');
         setTimeout(() => modal.style.display = 'none', 300);
     };
 
-    // --- 新增：登出處理 ---
+    // --- 登出處理 ---
     window.handleLogout = function() {
         if(confirm("確定要登出嗎？")) {
             signOut(auth).then(() => {
@@ -1643,16 +1632,14 @@ window.setLanguage = function(lang) {
         }
     };
 
-    // --- 新增：渲染進度條 ---
-    // [修正] 接收 stats 參數 (預設為空物件)
+    // --- 渲染進度條 ---
+    // 接收 stats 參數 (預設為空物件)
     function renderUsageStats(stats = {}) {
         const container = document.getElementById('usage-stats-container');
         if(!container) return;
         container.innerHTML = ''; 
 
         MODEL_LIMITS.forEach(model => {
-            // [修正] 從傳入的 stats 物件中讀取該模型 ID 的次數
-            // 如果找不到該 ID 的紀錄，預設為 0
             const dbKey = model.id.replace(/\./g, '_');
             const used = stats[dbKey] || 0;
             
@@ -1687,7 +1674,7 @@ window.setLanguage = function(lang) {
         });
     }
 
-    // --- 修改：綁定新的點擊事件 ---
+    // --- 綁定新的點擊事件 ---
     userProfileSection.addEventListener('click', () => {
         if (window.currentUser) {
             openProfileModal(); // 已登入：開視窗
@@ -1704,12 +1691,10 @@ window.setLanguage = function(lang) {
         });
     }
         
-        // --- LLM 核心邏輯開始 ---
-        
+        // --- LLM 核心邏輯 ---
         const WORKER_URL = "https://nodex-proxy.coreinformation30.workers.dev"; 
         const DAILY_LIMIT = 40;
         
-
         let currentModel = "gemini-2.5-flash";
        // 1. 定義搜尋狀態
         let isSearchEnabled = false;
@@ -1731,14 +1716,14 @@ window.setLanguage = function(lang) {
                 btn.style.color = 'var(--nx-text-muted)';
             }
         };
+
        window.setModel = function(modelName) {
             currentModel = modelName;
-            
-            // 1. 更新按鈕文字
+
             const textEl = document.getElementById('current-model-text');
             if(textEl) textEl.innerText = modelName;
             
-            // 2. 更新選單的選中狀態 (Visual Feedback)
+            // 2. 更新選單的選中狀態 
             document.querySelectorAll('#model-menu .nx-dropdown-item').forEach(item => {
                 item.classList.remove('active');
                 if(item.innerText.includes(modelName)) {
@@ -1755,177 +1740,168 @@ window.setLanguage = function(lang) {
         const homeView = document.getElementById('view-home');
         const dashboardView = document.getElementById('view-dashboard');
 
-       // --- [升級版] Firestore 用量統計系統 ---
 
-// 1. 取得今日日期字串 (作為文件的 ID)
-function getTodayDateStr() {
-    const d = new Date();
-    return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
-}
-// --- [新增] 檢查模型額度是否足夠 ---
-async function checkModelAvailability(modelName) {
-    // 1. 找到該模型的限制設定
-    const config = MODEL_LIMITS.find(m => m.id === modelName);
-    
-    // 如果找不到設定，或是設為無限，直接通過
-    if (!config || config.limit === Infinity) return true;
 
-    // 2. 讀取今日用量
-    const stats = await getTodayUsageStats();
-    const dbKey = modelName.replace(/\./g, '_');
-    const used = stats[dbKey] || 0;
-
-    // 3. 比較用量
-    if (used >= config.limit) {
-        return false; // 額度已滿
+    // 1. 取得今日日期字串 (作為文件的 ID)
+    function getTodayDateStr() {
+        const d = new Date();
+        return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
     }
-    return true; // 還有額度
-}
-// 2. [新] 增加用量 (寫入 Firestore)
-async function incrementModelUsage(modelName) {
-    if (!window.currentUser) return;
-    const uid = window.currentUser.uid;
-    const dateStr = getTodayDateStr();
-    const usageRef = doc(db, "users", uid, "usage_records", dateStr);
-    
-    // 1. 處理 Key
-    const dbKey = modelName.replace(/\./g, '_'); 
-
-    try {
-        // 2. 直接寫入 (原子操作)
-        // merge: true 代表：如果文件不存在就建立；如果欄位不存在就新增；如果存在就 +1
-        await setDoc(usageRef, {
-            [dbKey]: increment(1), 
-            lastUpdated: new Date()
-        }, { merge: true });
-        
-        console.log(`Usage updated for ${modelName} -> ${dbKey}`);
-    } catch (e) {
-        console.error("Update Usage Error:", e);
-    }
-}
-
-// 3. [新] 讀取今日用量 (讀取 Firestore)
-async function getTodayUsageStats() {
-    if (!window.currentUser) return {};
-    
-    const uid = window.currentUser.uid;
-    const dateStr = getTodayDateStr();
-    const usageRef = doc(db, "users", uid, "usage_records", dateStr);
-    
-    try {
-        const docSnap = await getDoc(usageRef);
-        if (docSnap.exists()) {
-            return docSnap.data(); // 回傳 { "gemini-2.5-flash": 12, ... }
+    // --- 檢查模型額度是否足夠 ---
+    async function checkModelAvailability(modelName) {
+        // 1. 找到該模型的限制設定
+        const config = MODEL_LIMITS.find(m => m.id === modelName);
+        // 如果找不到設定，或是設為無限，直接通過
+        if (!config || config.limit === Infinity) return true;
+        // 2. 讀取今日用量
+        const stats = await getTodayUsageStats();
+        const dbKey = modelName.replace(/\./g, '_');
+        const used = stats[dbKey] || 0;
+        // 3. 比較用量
+        if (used >= config.limit) {
+            return false; // 額度已滿
         }
-    } catch (e) {
-        console.error("Get Usage Error:", e);
+        return true; // 還有額度
     }
-    return {}; // 如果沒資料回傳空物件
-}
+    // 增加用量 
+    async function incrementModelUsage(modelName) {
+        if (!window.currentUser) return;
+        const uid = window.currentUser.uid;
+        const dateStr = getTodayDateStr();
+        const usageRef = doc(db, "users", uid, "usage_records", dateStr);
+    
+        // 處理 Key
+        const dbKey = modelName.replace(/\./g, '_'); 
+
+        try {
+            // 2. 直接寫入 (原子操作)
+            // merge: true 代表：如果文件不存在就建立；如果欄位不存在就新增；如果存在就 +1
+            await setDoc(usageRef, {
+                [dbKey]: increment(1), 
+                lastUpdated: new Date()
+            }, { merge: true });
+            
+            console.log(`Usage updated for ${modelName} -> ${dbKey}`);
+        } catch (e) {
+            console.error("Update Usage Error:", e);
+        }
+    }
+
+    // 3. [新] 讀取今日用量 (讀取 Firestore)
+    async function getTodayUsageStats() {
+        if (!window.currentUser) return {};
+        const uid = window.currentUser.uid;
+        const dateStr = getTodayDateStr();
+        const usageRef = doc(db, "users", uid, "usage_records", dateStr);
+    
+        try {
+            const docSnap = await getDoc(usageRef);
+            if (docSnap.exists()) {
+                return docSnap.data(); // 回傳 { "gemini-2.5-flash": 12, ... }
+            }
+        } catch (e) {
+            console.error("Get Usage Error:", e);
+        }
+        return {}; // 如果沒資料回傳空物件
+    }
 
         // 發送訊息主函式
-      async function handleSendMessage() {
-    // 1. [強制登入檢查]
-   if (!window.currentUser) {
-        window.showLoginWarning(); 
-        return;
-    }
-    const uid = window.currentUser.uid; // 取得 UID
-
-    const userText = chatInput.value.trim();
-    if (!userText) return;
-    const isAvailable = await checkModelAvailability(currentModel);
-    
-    if (!isAvailable) {
-        appendSystemMessage(`額度已滿：您今日的 ${currentModel} 用量已達上限。請切換至其他模型繼續使用。`);
-        return; // 直接中斷，不發送請求，也不扣額度
-    }
-    marked.setOptions({
-    breaks: true,  // <--- 將 \n 轉換為 <br>
-    gfm: true,     // 啟用 GitHub 風格 Markdown (支援表格、刪除線)
-    headerIds: false,
-    mangle: false
-});
-
-    // 3. [UI 狀態切換]
-    document.querySelector('.nx-main').classList.remove('centered-mode');
-    document.getElementById('view-new-chat').style.display = 'none';
-    document.getElementById('view-home').style.display = 'none';
-    document.getElementById('view-dashboard').style.display = 'none';
-    
-    const chatHistory = document.getElementById('nx-chat-history');
-    if (chatHistory) {
-        chatHistory.style.display = 'flex';
-        chatHistory.style.flexDirection = 'column';
-    }
-
-    chatInput.value = '';
-    chatInput.style.height = 'auto';
-
-    appendUserMessage(userText);
-    incrementModelUsage(currentModel);
-
-    // 🔹 先在外面宣告，讓 try / catch 都看得到
-    let loadingId;
-
-    // ----------------------------------------------------
-    // 🚀 Firestore + 呼叫 LLM
-    // ----------------------------------------------------
-    try {
-        // 1. 如果是新對話，先建立文件
-        if (!currentChatId) {
-            const chatRef = await addDoc(collection(db, "chats"), {
-                userId: uid,
-                title: userText.substring(0, 20) + "...", 
-                createdAt: new Date(),
-                lastMessage: new Date()
-            });
-            currentChatId = chatRef.id;
-            loadSidebarHistory(uid); // 刷新側邊欄
+    async function handleSendMessage() {
+        if (!window.currentUser) {
+            window.showLoginWarning(); 
+            return;
         }
 
-        // 2. 儲存使用者訊息
-        await addDoc(collection(db, "chats", currentChatId, "messages"), {
-            role: "user",
-            content: userText,
-            timestamp: new Date()
+        const uid = window.currentUser.uid; // 取得 UID
+        const userText = chatInput.value.trim();
+        if (!userText) return;
+        const isAvailable = await checkModelAvailability(currentModel);
+        if (!isAvailable) {
+            appendSystemMessage(`額度已滿：您今日的 ${currentModel} 用量已達上限。請切換至其他模型繼續使用。`);
+            return; 
+        }
+        marked.setOptions({
+        breaks: true,  
+        gfm: true,     
+        headerIds: false,
+        mangle: false
         });
 
-        // 3. 呼叫 LLM
-        loadingId = appendLoadingIndicator();  // ⬅️ 改成賦值，不用 const
+        // UI 狀態切換
+        document.querySelector('.nx-main').classList.remove('centered-mode');
+        document.getElementById('view-new-chat').style.display = 'none';
+        document.getElementById('view-home').style.display = 'none';
+        document.getElementById('view-dashboard').style.display = 'none';
+    
+        const chatHistory = document.getElementById('nx-chat-history');
+        if (chatHistory) {
+            chatHistory.style.display = 'flex';
+            chatHistory.style.flexDirection = 'column';
+        }
+
+        chatInput.value = '';
+        chatInput.style.height = 'auto';
+
+        appendUserMessage(userText);
+        incrementModelUsage(currentModel);
+
+        let loadingId;
+
+    // 呼叫 LLM
+
+        try {
+            // 如果是新對話，先建立文件
+            if (!currentChatId) {
+                const chatRef = await addDoc(collection(db, "chats"), {
+                    userId: uid,
+                    title: userText.substring(0, 20) + "...", 
+                    createdAt: new Date(),
+                    lastMessage: new Date()
+                });
+                currentChatId = chatRef.id;
+                loadSidebarHistory(uid); // 刷新側邊欄
+            }
+
+            // 2. 儲存使用者訊息
+            await addDoc(collection(db, "chats", currentChatId, "messages"), {
+                role: "user",
+                content: userText,
+                timestamp: new Date()
+            });
+
+            // 呼叫 LLM
+            loadingId = appendLoadingIndicator(); 
                 
-        const response = await fetch(WORKER_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                model: currentModel,
-                useSearch: isSearchEnabled,
-                contents: [{ parts: [{ text: userText }] }] })
-        });
+            const response = await fetch(WORKER_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    model: currentModel,
+                    useSearch: isSearchEnabled,
+                    contents: [{ parts: [{ text: userText }] }] })
+            });
 
-        if (!response.ok) throw new Error("Worker Error: " + response.statusText);
+            if (!response.ok) throw new Error("Worker Error: " + response.statusText);
 
-        const aiMsgContent = appendAiMessageStart();
+            const aiMsgContent = appendAiMessageStart();
         
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullText = "";
-        let isFirstChunk = true;
-        let fullTextBuffer = "";
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullText = "";
+            let isFirstChunk = true;
+            let fullTextBuffer = "";
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                if (isFirstChunk && loadingId) {
+                    removeMessage(loadingId);
+                    isFirstChunk = false;
+                }
 
-            if (isFirstChunk && loadingId) {
-        removeMessage(loadingId);
-        isFirstChunk = false;
-    }
-
-            const chunk = decoder.decode(value, { stream: true });
-            fullTextBuffer += chunk;
-            const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
+                const chunk = decoder.decode(value, { stream: true });
+                fullTextBuffer += chunk;
+                const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
             
             if (matches) {
                 matches.forEach(match => {
@@ -1934,7 +1910,6 @@ async function getTodayUsageStats() {
                        
                         textPart = JSON.parse(`"${textPart}"`); 
                         fullText += textPart;
-                        
                         // Markdown + LaTeX 渲染
                         aiMsgContent.innerHTML = marked.parse(fullText);
                         if (window.renderMathInElement) {
@@ -1953,29 +1928,28 @@ async function getTodayUsageStats() {
                             chatHistory.scrollTop = chatHistory.scrollHeight;
                         }
                     } catch (e) {
-                        // 這裡可以加 console.error(e) 方便除錯
+                        console.error(e) 
                     }
                 });
             }
         }
 
         // 4. 儲存 AI 回覆
-        await addDoc(collection(db, "chats", currentChatId, "messages"), {
-            role: "model",
-            content: fullText,
-            timestamp: new Date()
-        });
+            await addDoc(collection(db, "chats", currentChatId, "messages"), {
+                role: "model",
+                content: fullText,
+                timestamp: new Date()
+            });
 
-    } catch (error) {
-        // 避免 loadingId 還沒設好就硬移除
-        if (loadingId) {
-            removeMessage(loadingId);
-        }
-        appendSystemMessage(`❌ 系統錯誤: ${error.message}`);
-        console.error(error);
+        } catch (error) {
+            // 避免 loadingId 還沒設好就硬移除
+            if (loadingId) {
+                removeMessage(loadingId);
+            }
+            appendSystemMessage(`系統錯誤: ${error.message}`);
+            console.error(error);
+         }
     }
-}
-
         // --- UI 輔助函式 (適配 NodeX 風格) ---
         
       function appendUserMessage(text) {
