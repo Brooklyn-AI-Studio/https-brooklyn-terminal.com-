@@ -1952,15 +1952,25 @@
 
         try {
             // 如果是新對話，先建立文件
-            if (!currentChatId) {
-                const chatRef = await addDoc(collection(db, "chats"), {
-                    userId: uid,
-                    title: userText.substring(0, 20) + "...", 
-                    createdAt: new Date(),
-                    lastMessage: new Date()
+            if (window.currentUser) {
+                // 如果是新對話，先建立文件
+                if (!currentChatId) {
+                    const chatRef = await addDoc(collection(db, "chats"), {
+                        userId: uid,
+                        title: userText.substring(0, 20) + "...", 
+                        createdAt: new Date(),
+                        lastMessage: new Date()
+                    });
+                    currentChatId = chatRef.id;
+                    loadSidebarHistory(uid); 
+                }
+
+                // 儲存使用者訊息
+                await addDoc(collection(db, "chats", currentChatId, "messages"), {
+                    role: "user",
+                    content: userText,
+                    timestamp: new Date()
                 });
-                currentChatId = chatRef.id;
-                loadSidebarHistory(uid); // 刷新側邊欄
             }
 
             // 2. 儲存使用者訊息
@@ -2034,6 +2044,14 @@
                 });
             }
         }
+        
+        if (window.currentUser && currentChatId) {
+                await addDoc(collection(db, "chats", currentChatId, "messages"), {
+                    role: "model",
+                    content: fullText,
+                    timestamp: new Date()
+                });
+            }
 
         // 4. 儲存 AI 回覆
             await addDoc(collection(db, "chats", currentChatId, "messages"), {
