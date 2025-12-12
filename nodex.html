@@ -954,12 +954,13 @@
             transform: translate(-50%, -50%) scale(1); /* 放大回正常比例 */
         }
     
-
     </style>
 </head>
-<body data-theme="business"><div class="nx-sidebar"> <!-- 預設主題 -->
+    
+    <-- 工作列預設收合 -->  
+    <body data-theme="business"><div class="nx-sidebar collapsed"> <-- 工作列預設收合 -->
 
-    <!-- 左側導航欄 -->
+    <-- 工作列 -->
    <div class="nx-sidebar-header">
         <div class="nx-brand" onclick="toggleSidebar()" title="Toggle Sidebar">
             <svg class="nx-logo-svg" viewBox="0 0 24 24">
@@ -1111,11 +1112,11 @@
         </div>
     </div>
 
-        <!-- 全新設計的輸入框區塊 -->
+        <-- 輸入框區塊 -->
         <div class="nx-input-container">
             <div class="nx-input-wrapper">
                 <!-- 第一層：輸入區 -->
-                <textarea class="nx-textarea" id="nx-input" rows="1" placeholder="詢問任何問題。我相信你有很多疑問。"></textarea>
+                <textarea class="nx-textarea" id="nx-input" rows="1" placeholder="詢問任何問題。"></textarea>
                 
                 <!-- 第二層：工具列 -->
                 <div class="nx-input-footer">
