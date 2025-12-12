@@ -1950,21 +1950,19 @@
             console.error(error);
          }
     }
-        // --- UI 輔助函式 (適配 NodeX 風格) ---
+        // --- UI 輔助函式  ---
         
-      function appendUserMessage(text) {
-            const div = document.createElement('div');
-            // 寬度鎖定與置中設定
-            div.style.width = '100%';
-            div.style.maxWidth = '800px'; 
-            div.style.marginBottom = '20px';
-            
-            div.style.display = 'flex';
-            div.style.flexDirection = 'column';
-            div.style.alignItems = 'flex-end'; 
-
-            // 1. 取得使用者名稱 (如果沒登入顯示 GUEST)
-            const userName = window.currentUser ? window.currentUser.displayName : 'GUEST';
+    function appendUserMessage(text) {
+        const div = document.createElement('div');
+         // 寬度鎖定與置中設定
+        div.style.width = '100%';
+        div.style.maxWidth = '800px'; 
+        div.style.marginBottom = '20px';
+        div.style.display = 'flex';
+        div.style.flexDirection = 'column';
+        div.style.alignItems = 'flex-end'; 
+        // 1. 取得使用者名稱 (如果沒登入顯示 GUEST)
+        const userName = window.currentUser ? window.currentUser.displayName : 'GUEST';
 
             div.innerHTML = `
                 <div style="font-size:0.8em; color:var(--nx-text-muted); margin-bottom:5px; text-transform: uppercase;">
@@ -1979,12 +1977,11 @@
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
 
-        function appendAiMessageStart() {
-            const div = document.createElement('div');
-            // [維持設定] 讓容器寬度與輸入框一致，並置中
-            div.style.width = '100%';
-            div.style.maxWidth = '800px'; 
-            div.style.marginBottom = '30px';
+    function appendAiMessageStart() {
+        const div = document.createElement('div');
+        div.style.width = '100%';
+        div.style.maxWidth = '800px'; 
+        div.style.marginBottom = '30px';
             
             div.innerHTML = `
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
@@ -2003,199 +2000,189 @@
             chatHistory.appendChild(div);
             return div.querySelector('.ai-content');
         }
-        function appendSystemMessage(text) {
-            const div = document.createElement('div');
-            div.style.width = '100%';
-            div.style.textAlign = 'center';
-            div.style.margin = '20px 0';
-            div.innerHTML = `<span style="background:rgba(255,0,0,0.1); color:#ff6b6b; padding:5px 10px; border-radius:4px; font-size:0.8em; border:1px solid rgba(255,0,0,0.2);">${text}</span>`;
-            chatHistory.appendChild(div);
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-        }
-
-       function appendLoadingIndicator() {
-    const id = 'loading-' + Date.now();
-    const div = document.createElement('div');
-    div.id = id;
-    
-    // 保持與 AI 回覆一致的排版寬度
-    div.style.width = '100%';
-    div.style.maxWidth = '800px';
-    div.style.marginBottom = '30px';
-    
-    // 內層結構：上方是 AI 頭像資訊，下方是跳動圓點氣泡
-    div.innerHTML = `
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-            <div style="width:28px; height:28px; background:rgba(0, 255, 204, 0.1); border-radius:6px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(0, 255, 204, 0.2);">
-                <svg style="width:18px; height:18px; stroke:var(--nx-accent); fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </div>
-            <span style="font-size:0.95em; font-weight:bold; color:var(--nx-accent); letter-spacing:0.5px;">NodeX</span>
-        </div>
-        
-        <div class="nx-typing-bubble">
-            <div class="nx-typing-dot"></div>
-            <div class="nx-typing-dot"></div>
-            <div class="nx-typing-dot"></div>
-        </div>
-    `;
-    
-    // 加入到對話紀錄
-    const chatHistory = document.getElementById('nx-chat-history');
-    if(chatHistory) {
+    function appendSystemMessage(text) {
+        const div = document.createElement('div');
+        div.style.width = '100%';
+        div.style.textAlign = 'center';
+        div.style.margin = '20px 0';
+        div.innerHTML = `<span style="background:rgba(255,0,0,0.1); color:#ff6b6b; padding:5px 10px; border-radius:4px; font-size:0.8em; border:1px solid rgba(255,0,0,0.2);">${text}</span>`;
         chatHistory.appendChild(div);
-        chatHistory.scrollTop = chatHistory.scrollHeight; // 捲動到底部
+        chatHistory.scrollTop = chatHistory.scrollHeight;
     }
+
+    function appendLoadingIndicator() {
+        const id = 'loading-' + Date.now();
+        const div = document.createElement('div');
+        div.id = id;
+        div.style.width = '100%';
+        div.style.maxWidth = '800px';
+        div.style.marginBottom = '30px';
+    
+        // 內層結構：上方是 AI 頭像資訊，下方是跳動圓點氣泡
+        div.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                <div style="width:28px; height:28px; background:rgba(0, 255, 204, 0.1); border-radius:6px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(0, 255, 204, 0.2);">
+                    <svg style="width:18px; height:18px; stroke:var(--nx-accent); fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </div>
+                <span style="font-size:0.95em; font-weight:bold; color:var(--nx-accent); letter-spacing:0.5px;">NodeX</span>
+            </div>
+
+            <div class="nx-typing-bubble">
+                <div class="nx-typing-dot"></div>
+                <div class="nx-typing-dot"></div>
+                <div class="nx-typing-dot"></div>
+            </div>
+        `;
+    
+        // 加入到對話紀錄
+        const chatHistory = document.getElementById('nx-chat-history');
+        if(chatHistory) {
+            chatHistory.appendChild(div);
+            chatHistory.scrollTop = chatHistory.scrollHeight; /
+        }
     
     return id;
-}
-        function removeMessage(id) {
-            const el = document.getElementById(id);
-            if(el) el.remove();
-        }
+    }
+    
+    function removeMessage(id) {
+        const el = document.getElementById(id);
+        if(el) el.remove();
+    }
 
-        // 綁定事件
-        sendBtn.addEventListener('click', handleSendMessage);
-        // [優化] 主對話框 Enter 發送 (支援 Shift+Enter 換行，並防止輸入法誤傳)
-        chatInput.addEventListener('keydown', (e) => {
-            // [修正] 直接使用 e.isComposing 即可
-            if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
-                e.preventDefault(); // 阻止預設換行 (避免多出一個空行)
-                handleSendMessage();
+    // 綁定事件
+    sendBtn.addEventListener('click', handleSendMessage);
+    // 主對話框 Enter 發送 
+    chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+            e.preventDefault(); 
+            handleSendMessage();
             }
         });
-                   // --- [新增] 切換歷史紀錄折疊狀態 ---
-            window.toggleHistoryList = function() {
-                const list = document.getElementById('nx-history-list-content');
-                const arrow = document.getElementById('nx-history-arrow-icon');
-                
-                if (list && arrow) {
-                    if (list.style.display === 'none') {
-                        list.style.display = 'block'; // 展開
-                        arrow.classList.remove('folded');
+    // --- 切換歷史紀錄折疊狀態 ---
+    window.toggleHistoryList = function() {
+        const list = document.getElementById('nx-history-list-content');
+        const arrow = document.getElementById('nx-history-arrow-icon');
+            if (list && arrow) {
+                if (list.style.display === 'none') {
+                    list.style.display = 'block'; // 展開
+                    arrow.classList.remove('folded');
                     } else {
                         list.style.display = 'none';  // 收合
                         arrow.classList.add('folded');
                     }
                 }
-            };
+    };
 
+       // --- 載入側邊欄歷史清單---
+    async function loadSidebarHistory(uid) {
+        const historyContainer = document.getElementById('history-container');
+        if(!historyContainer) return;
 
-
-       
-       // --- [修改版] 載入側邊欄歷史清單 (含折疊功能) ---
-async function loadSidebarHistory(uid) {
-    const historyContainer = document.getElementById('history-container');
-    if(!historyContainer) return;
-    
-    // 1. 建立標題列 (包含點擊事件) 與 清單容器
-    historyContainer.innerHTML = `
-        <div class="nx-menu-title" onclick="toggleHistoryList()" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; user-select: none;">
-            <span>歷史紀錄 (History)</span>
-            <span id="nx-history-arrow-icon" class="nx-history-arrow">▼</span>
-        </div>
-        <div id="nx-history-list-content" style="display:block;">
+        historyContainer.innerHTML = `
+            <div class="nx-menu-title" onclick="toggleHistoryList()" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; user-select: none;">
+                <span>歷史紀錄 (History)</span>
+                <span id="nx-history-arrow-icon" class="nx-history-arrow">▼</span>
             </div>
-    `;
+            <div id="nx-history-list-content" style="display:block;">
+                </div>
+        `;
     
-    const listContent = document.getElementById('nx-history-list-content');
+        const listContent = document.getElementById('nx-history-list-content');
 
-    try {
-        const q = query(collection(db, "chats"), where("userId", "==", uid), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
+        try {
+            const q = query(collection(db, "chats"), where("userId", "==", uid), orderBy("createdAt", "desc"));
+            const querySnapshot = await getDocs(q);
 
-        if (querySnapshot.empty) {
-            listContent.innerHTML = '<div style="padding:10px; color:var(--nx-text-muted); font-size:0.8em; text-align:center;">尚無紀錄</div>';
-            return;
-        }
+            if (querySnapshot.empty) {
+                listContent.innerHTML = '<div style="padding:10px; color:var(--nx-text-muted); font-size:0.8em; text-align:center;">尚無紀錄</div>';
+                return;
+            }
 
-        querySnapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const chatId = docSnap.id;
-            
-            // 建立單個項目
-            const item = document.createElement('div');
-            item.className = 'nx-menu-item';
-            item.style.fontSize = '0.85em';
-            
-            // 標題
-            const titleSpan = document.createElement('span');
-            titleSpan.className = 'nx-chat-title-text';
-            titleSpan.innerText = data.title || '新對話';
-            
-            // 操作按鈕 (編輯/刪除)
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'nx-chat-actions';
-            
-            // (A) 重新命名
-            const editBtn = document.createElement('button');
-            editBtn.className = 'nx-action-btn';
-            editBtn.title = '重新命名';
-            editBtn.innerHTML = '<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
-            editBtn.onclick = (e) => {
-                e.stopPropagation();
-                renameChatSession(chatId, data.title);
-            };
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const chatId = docSnap.id;
+                
+                // 建立單個項目
+                const item = document.createElement('div');
+                item.className = 'nx-menu-item';
+                item.style.fontSize = '0.85em';
+                
+                // 標題
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'nx-chat-title-text';
+                titleSpan.innerText = data.title || '新對話';
+                
+                // 操作按鈕 (編輯/刪除)
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'nx-chat-actions';
+                
+                // 重新命名
+                const editBtn = document.createElement('button');
+                editBtn.className = 'nx-action-btn';
+                editBtn.title = '重新命名';
+                editBtn.innerHTML = '<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    renameChatSession(chatId, data.title);
+                };
 
-            // (B) 刪除
-            const delBtn = document.createElement('button');
-            delBtn.className = 'nx-action-btn delete';
-            delBtn.title = '刪除對話';
-            delBtn.innerHTML = '<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
-            delBtn.onclick = (e) => {
-                e.stopPropagation();
-                deleteChatSession(chatId);
-            };
+                // 刪除
+                const delBtn = document.createElement('button');
+                delBtn.className = 'nx-action-btn delete';
+                delBtn.title = '刪除對話';
+                delBtn.innerHTML = '<svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteChatSession(chatId);
+                };
 
-            actionsDiv.appendChild(editBtn);
-            actionsDiv.appendChild(delBtn);
-            
-            item.appendChild(titleSpan);
-            item.appendChild(actionsDiv);
+                actionsDiv.appendChild(editBtn);
+                actionsDiv.appendChild(delBtn);
+                
+                item.appendChild(titleSpan);
+                item.appendChild(actionsDiv);
 
-            // 點擊載入
-            item.onclick = () => loadChatSession(chatId);
+                // 點擊載入
+                item.onclick = () => loadChatSession(chatId);
             
-            // 注意：這裡是 append 到 listContent，而不是 historyContainer
-            listContent.appendChild(item);
-        });
-    } catch(e) {
-        console.error("Load History Error:", e);
-        listContent.innerHTML = '<div style="color:red; font-size:0.8em; padding:10px;">載入失敗</div>';
+                // 注意：這裡是 append 到 listContent，而不是 historyContainer
+                listContent.appendChild(item);
+            });
+                } catch(e) {
+                    console.error("Load History Error:", e);
+                    listContent.innerHTML = '<div style="color:red; font-size:0.8em; padding:10px;">載入失敗</div>';
+                }
     }
-}
 
-        // --- [新增] 重新命名對話 ---
-        async function renameChatSession(chatId, oldTitle) {
-            const newTitle = prompt("請輸入新的對話標題：", oldTitle);
-            if (newTitle && newTitle.trim() !== "") {
-                try {
-                    const chatRef = doc(db, "chats", chatId);
-                    await updateDoc(chatRef, {
-                        title: newTitle.trim()
+    // --- 重新命名對話 ---
+    async function renameChatSession(chatId, oldTitle) {
+        const newTitle = prompt("請輸入新的對話標題：", oldTitle);
+        if (newTitle && newTitle.trim() !== "") {
+            try {
+                const chatRef = doc(db, "chats", chatId);
+                await updateDoc(chatRef, {
+                    title: newTitle.trim()
                     });
-                    // 重新整理列表
                     if (window.currentUser) loadSidebarHistory(window.currentUser.uid);
                 } catch (error) {
                     alert("重新命名失敗：" + error.message);
                 }
             }
-        }
+    }
 
-        // --- [新增] 刪除對話 ---
-        async function deleteChatSession(chatId) {
-            if (confirm("確定要刪除此對話紀錄嗎？此動作無法復原。")) {
-                try {
-                    // 1. 刪除 Firestore 文件
-                    await deleteDoc(doc(db, "chats", chatId));
-                    
-                    // 2. 如果刪除的是當前正在看的對話，清空畫面並回到「新對話」頁面
+    // --- 刪除對話 ---
+    async function deleteChatSession(chatId) {
+        if (confirm("確定要刪除此對話紀錄嗎？此動作無法復原。")) {
+            try {
+                // 1. 刪除 Firestore 文件
+                await deleteDoc(doc(db, "chats", chatId));
+                // 2. 如果刪除的是當前正在看的對話，清空畫面並回到「新對話」頁面
                     if (currentChatId === chatId) {
                         startNewChat();
                     }
-                    
                     // 3. 重新整理列表
                     if (window.currentUser) loadSidebarHistory(window.currentUser.uid);
                     
@@ -2204,22 +2191,21 @@ async function loadSidebarHistory(uid) {
                     alert("刪除失敗 (可能是權限不足): " + error.message);
                 }
             }
-        }
-        // --- [新增] 載入特定對話內容 ---
-        async function loadChatSession(chatId) {
-            currentChatId = chatId; // 設定當前 ID
-            
-            // 清空畫面
-            document.getElementById('nx-chat-history').innerHTML = '';
-            document.getElementById('view-home').style.display = 'none';
-            document.getElementById('view-dashboard').style.display = 'none';
-            document.getElementById('view-new-chat').style.display = 'none';
-            document.getElementById('nx-chat-history').style.display = 'flex';
-            document.querySelector('.nx-main').classList.remove('centered-mode');
+    }
 
+    // --- [新增] 載入特定對話內容 ---
+    async function loadChatSession(chatId) {
+        currentChatId = chatId; 
+        // 清空畫面
+        document.getElementById('nx-chat-history').innerHTML = '';
+        document.getElementById('view-home').style.display = 'none';
+        document.getElementById('view-dashboard').style.display = 'none';
+        document.getElementById('view-new-chat').style.display = 'none';
+        document.getElementById('nx-chat-history').style.display = 'flex';
+        document.querySelector('.nx-main').classList.remove('centered-mode');
             // 抓取該對話的所有訊息
-            const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "asc"));
-            const querySnapshot = await getDocs(q);
+        const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "asc"));
+        const querySnapshot = await getDocs(q);
 
             querySnapshot.forEach((doc) => {
                 const msg = doc.data();
@@ -2232,51 +2218,49 @@ async function loadSidebarHistory(uid) {
                     // 如果有 LaTeX 記得在這裡也要 renderMathInElement
                 }
             });
-        }
+    }
 
-                   // --- [新增] 檢查是否為管理員 ---
-            async function checkAdminRole(uid) {
-                const adminBtn = document.getElementById('admin-panel-btn');
-                if (!adminBtn) return;
+        // ---檢查是否為管理員 ---
+    async function checkAdminRole(uid) {
+        const adminBtn = document.getElementById('admin-panel-btn');
+            if (!adminBtn) return;
             
-                try {
-                    // 讀取 users/{uid} 文件
-                    const userRef = doc(db, "users", uid);
-                    const docSnap = await getDoc(userRef);
-            
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        // 判斷 role 欄位是否為 'admin'
-                        if (data.role === 'admin') {
-                            adminBtn.style.display = 'flex'; // 顯示按鈕
-                            console.log("Admin access granted.");
-                            return;
+            try {
+                // 讀取 users/{uid} 文件
+                const userRef = doc(db, "users", uid);
+                const docSnap = await getDoc(userRef);
+    
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    // 判斷 role 欄位是否為 'admin'
+                    if (data.role === 'admin') {
+                        adminBtn.style.display = 'flex'; // 顯示按鈕
+                        console.log("Admin access granted.");
+                        return;
                         }
                     }
                 } catch (e) {
                     console.error("Error checking admin role:", e);
                 }
-                
-                // 若不是管理員或發生錯誤，確保隱藏
                 adminBtn.style.display = 'none';
-            }
+    }
             
-            // --- [新增] 開啟/關閉管理員視窗 ---
-            // 掛載到 window 以便 HTML onclick 呼叫
-            window.openAdminModal = function() {
-                const modal = document.getElementById('admin-modal');
-                modal.style.display = 'flex';
-                setTimeout(() => modal.classList.add('show'), 10);
-            };
             
-            window.closeAdminModal = function() {
-                const modal = document.getElementById('admin-modal');
-                modal.classList.remove('show');
-                setTimeout(() => modal.style.display = 'none', 300);
-            };
+        // 掛載到 window 以便 HTML onclick 呼叫
+    window.openAdminModal = function() {
+        const modal = document.getElementById('admin-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+    };
+
+    window.closeAdminModal = function() {
+        const modal = document.getElementById('admin-modal');
+        modal.classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 300);
+    };
             
-            // 點擊遮罩關閉
-            document.getElementById('admin-modal').addEventListener('click', (e) => {
+    // 點擊遮罩關閉
+    document.getElementById('admin-modal').addEventListener('click', (e) => {
                 if (e.target.id === 'admin-modal') window.closeAdminModal();
             });
     </script>
