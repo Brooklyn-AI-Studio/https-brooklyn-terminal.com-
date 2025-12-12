@@ -227,50 +227,32 @@
             height: 40px;        /* 固定高度 */
         }
 
-       /* --- 1. 基礎狀態  --- */
-        .nx-sidebar-logo-text {
-            pointer-events: none;
-            position: fixed;
-            z-index: 100;    
-            left: 90px;       
-            top: 28px;       
-            color: #888888; 
-        }
 
-        /* --- 收合狀態  --- */
-        .nx-sidebar.collapsed .nx-sidebar-logo-text {
-            pointer-events: none;
-            position: fixed;
-            z-index: 100;    
-            left: 90px;       
-            top: 28px;       
-            color: #888888; 
-        }
 
-            /* --- 新增：選單切換按鈕樣式 --- */
-            .nx-btn-menu {
-        /* 1. 設定固定大小 (關鍵) */
-        width: 40px !important;
-        height: 40px !important;
+        /* --- 新增：選單切換按鈕樣式 --- */
+    .nx-btn-menu {
+            /* 1. 設定固定大小 (關鍵) */
+            width: 40px !important;
+            height: 40px !important;
 
-        /* 2. 設定 50% 圓角變圓形 */
-        border-radius: 50% !important;
+            /* 2. 設定 50% 圓角變圓形 */
+            border-radius: 50% !important;
 
-        /* 3. 讓內部的三條線圖示置中 */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0; /* 移除內距，避免影響圓形 */
+            /* 3. 讓內部的三條線圖示置中 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0; /* 移除內距，避免影響圓形 */
 
-        /* 4. 基礎外觀 (透明背景、顏色) */
-        background: transparent;
-        border: 1px solid transparent;
-        color: var(--nx-text);
-        cursor: pointer;
-        transition: all 0.2s;
-        
-        /* 5. 確保它不會被其他容器拉伸 */
-        flex-shrink: 0; 
+            /* 4. 基礎外觀 (透明背景、顏色) */
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--nx-text);
+            cursor: pointer;
+            transition: all 0.2s;
+            
+            /* 5. 確保它不會被其他容器拉伸 */
+            flex-shrink: 0; 
     }
 
     /* 滑鼠移上去的效果 */
@@ -1028,8 +1010,7 @@
                     <line x1="3" y1="18" x2="21" y2="18"></line>
                 </svg>
             </button>
-            <span class="nx-sidebar-logo-text">NodeX</span>
-            </div>
+        </div>
             <button class="nx-btn-new" onclick="startNewChat()" style="margin-bottom: 20px; width: 100%;">
             <svg class="nx-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span id="txt-newChat">新對話</span>
