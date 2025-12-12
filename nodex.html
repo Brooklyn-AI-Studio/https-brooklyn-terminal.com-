@@ -1080,22 +1080,21 @@
             <div class="nx-input-wrapper">
                 <!-- 第一層：輸入區 -->
                 <textarea class="nx-textarea" id="nx-input" rows="1" placeholder="詢問任何問題。"></textarea>
-                
                 <!-- 第二層：工具列 -->
                 <div class="nx-input-footer">
                     <!-- 左側功能：搜尋 + 模型 -->
                     <div class="nx-input-left">
-                       <button class="nx-tool-btn nx-pill-btn" id="btn-web-search" onclick="toggleSearch()" title="網頁搜尋 (Web Search)">
+                        <button class="nx-tool-btn nx-pill-btn" id="btn-web-search" onclick="toggleSearch()" title="網頁搜尋">
                         <svg class="nx-icon" style="width:16px;height:16px;" viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="2" y1="12" x2="22" y2="12"></line>
                             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                         </svg>
                         <span style="font-size:0.8em; font-weight:600;">搜尋</span>
-                    </button>
+                        </button>
                         
-                       <div style="position:relative;">
-                        <button class="nx-tool-btn nx-pill-btn" onclick="toggleMenu('model-menu')" id="model-selector-btn" title="切換模型 (Switch Model)">
+                        <div style="position:relative;">
+                        <button class="nx-tool-btn nx-pill-btn" onclick="toggleMenu('model-menu')" id="model-selector-btn" title="切換模型">
                             <svg class="nx-icon" style="width:16px;height:16px;" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
                             <span id="current-model-text" style="font-size:0.8em; font-weight:600;">gemini-2.5-flash</span>
                             <span style="font-size:0.7em; opacity:0.7;">▼</span>
@@ -1144,37 +1143,42 @@
                                 </svg>
                                 <span>Gemini-2.0-flash-exp</span>
                             </div>
-                         <div class="nx-dropdown-item" onclick="setModel('llama-3.3-70b-versatile')">
-                            <img src="LLM-Pics/llama.png" style="width:16px; height:16px; margin-right:8px;" alt="Llama Icon">
-                            <span>Llama 3.3 70B</span>
-                        </div>
+
+                            <div class="nx-dropdown-item" onclick="setModel('llama-3.3-70b-versatile')">
+                                <img src="LLM-Pics/llama.png" style="width:16px; height:16px; margin-right:8px;" alt="Llama Icon">
+                                <span>Llama 3.3 70B</span>
+                            </div>
                         
-                        <div class="nx-dropdown-item" onclick="setModel('llama-3.1-8b-instant')">
-                            <img src="LLM-Pics/llama.png" style="width:16px; height:16px; margin-right:8px;" alt="Llama Icon">
-                            <span>Llama 3.1 8B</span>
-                        </div>
+                            <div class="nx-dropdown-item" onclick="setModel('llama-3.1-8b-instant')">
+                                <img src="LLM-Pics/llama.png" style="width:16px; height:16px; margin-right:8px;" alt="Llama Icon">
+                                <span>Llama 3.1 8B</span>
+                            </div>
                         
-                        <div class="nx-dropdown-item" onclick="setModel('openai/gpt-oss-120b')">
-                            <img src="LLM-Pics/chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
-                            <span>GPT-oss-120b</span>
-                        </div>
+                            <div class="nx-dropdown-item" onclick="setModel('openai/gpt-oss-120b')">
+                                <img src="LLM-Pics/chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
+                                <span>GPT-oss-120b</span>
+                            </div>
                         
-                        <div class="nx-dropdown-item" onclick="setModel('openai/gpt-oss-20b')">
-                            <img src="LLM-Pics/chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
-                            <span>GPT-oss-20b</span>
-                        </div>
-                            
-                         <div class="nx-dropdown-item" onclick="setModel('qwen/qwen3-32b')">
-                            <img src="LLM-Pics/Qwen_logo.svg.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
-                            <span>qwen3-32b</span>
-                        </div>   
-                            
+                            <div class="nx-dropdown-item" onclick="setModel('openai/gpt-oss-20b')">
+                                <img src="LLM-Pics/chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
+                                <span>GPT-oss-20b</span>
+                            </div>
+                                
+                            <div class="nx-dropdown-item" onclick="setModel('qwen/qwen3-32b')">
+                                <img src="LLM-Pics/Qwen_logo.svg.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
+                                <span>qwen3-32b</span>
+                            </div>   
+
+                            <div class="nx-dropdown-item" onclick="setModel('gemini-3-pro')">
+                                <img src="LLM-Pics/Qwen_logo.svg.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
+                                <span>Gemini-3-pro</span>
+                            </div>  
 
                         </div>
-                    </div>
+                        </div>
                     </div>
 
-                    <!-- 右側功能：附件 + 語音 + 發送 -->
+                    <!-- 語音 + 發送 -->
                     <div class="nx-input-right">
                         <button class="nx-tool-btn" title="Attach File">
                             <svg class="nx-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
@@ -1188,129 +1192,122 @@
                     </div>
                 </div>
             </div>
+
             <div style="text-align:center; font-size:0.7em; color:var(--nx-text-muted); margin-top:10px;">
                 NodeX can make mistakes. Please verify important information.
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK (用於同步登入狀態) -->
-   <script type="module">
-       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs,getDoc, doc, updateDoc, deleteDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        // --- [新增] 側邊欄收合切換 ---
-        window.toggleSidebar = function() {
-            const sidebar = document.querySelector('.nx-sidebar');
-            sidebar.classList.toggle('collapsed');
-            
-            // 可選：紀錄使用者的偏好，下次進來保持收合
-            // localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
-        };
-       // --- [新增] 登入視窗控制函式 ---
+<!-- Firebase SDK  -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, where, orderBy, getDocs,getDoc, doc, updateDoc, deleteDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    // --- 側邊欄收合切換 ---
+    window.toggleSidebar = function() {
+        const sidebar = document.querySelector('.nx-sidebar');
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
+    };
 
-// 1. 顯示登入視窗
-window.showLoginWarning = function() {
-    const modal = document.getElementById('login-warning-modal');
-    modal.style.display = 'flex';
-    // 些微延遲觸發 CSS 動畫
-    setTimeout(() => modal.classList.add('show'), 10);
-};
+    // ---登入視窗控制函式 ---
 
-// 2. 關閉登入視窗
-window.closeLoginWarning = function() {
-    const modal = document.getElementById('login-warning-modal');
-    modal.classList.remove('show');
-    setTimeout(() => modal.style.display = 'none', 300);
-};
+    // 顯示登入視窗
+    window.showLoginWarning = function() {
+        const modal = document.getElementById('login-warning-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+    };
 
-// 3. 處理登入按鈕點擊
-window.handleLoginRequest = function() {
-    // 直接使用全域已經定義好的 auth 和 provider 變數即可
-    // 這裡不需要再 import 任何東西
+    // 2. 關閉登入視窗
+    window.closeLoginWarning = function() {
+        const modal = document.getElementById('login-warning-modal');
+        modal.classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 300);
+    };
 
-    signInWithPopup(auth, provider)
-        .then((result) => {
-            // 登入成功
-            window.closeLoginWarning();
-            // 提示使用者
-            alert("登入成功！歡迎回來 " + result.user.displayName);
-        })
-        .catch((error) => {
-            alert("登入失敗: " + error.message);
+    // 3. 處理登入按鈕點擊
+    window.handleLoginRequest = function() {
+        signInWithPopup(auth, provider)
+            .then((result) => {
+
+                window.closeLoginWarning();
+                alert("登入成功！" + result.user.displayName);
+            })
+            .catch((error) => {
+                alert("登入失敗: " + error.message);
+            });
+    };
+    // --- 管理員更新全域關鍵字 ---
+    // --- AI 翻譯輔助函式 ---
+    async function translateWithGemini(articles) {
+        const contentToTranslate = articles.map((art, index) => ({
+            id: index,
+            title: art.title,
+            description: art.description || "No description"
+        }));
+
+        const prompt = `
+        你是一個專業的新聞翻譯員。請將以下 JSON 資料中的 "title" 和 "description" 翻譯成繁體中文（台灣用語）。
+        請保持原本的 JSON 格式回傳，不要包含 markdown 標記 (如 \`\`\`json)，直接回傳純 JSON 字串。
+        資料：
+        ${JSON.stringify(contentToTranslate)}
+        `;
+
+        const response = await fetch(WORKER_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "gemini-2.5-flash",
+                stream: false,              // 🔴 告訴 Worker：我要非串流 JSON
+                contents: [{ parts: [{ text: prompt }] }]
+            })
         });
-};
-       // --- [新增] 管理員更新全域關鍵字 ---
-// --- [新功能] AI 翻譯輔助函式 ---
-async function translateWithGemini(articles) {
-    const contentToTranslate = articles.map((art, index) => ({
-        id: index,
-        title: art.title,
-        description: art.description || "No description"
-    }));
 
-    const prompt = `
-    你是一個專業的金融新聞翻譯員。請將以下 JSON 資料中的 "title" 和 "description" 翻譯成繁體中文（台灣用語）。
-    請保持原本的 JSON 格式回傳，不要包含 markdown 標記 (如 \`\`\`json)，直接回傳純 JSON 字串。
+        if (!response.ok) {
+            const text = await response.text();
+            console.error("Gemini 呼叫失敗：", text);
+            return null;
+        }
+
+        let result;
+            try {
+                result = await response.json();
+                console.log("Gemini raw result:", result); // 除錯用，OK 後可刪
+            } catch (err) {
+                console.error("Gemini JSON 解析失敗:", err);
+                return null;
+            }
+
     
-    資料：
-    ${JSON.stringify(contentToTranslate)}
-    `;
+        if (result.error) {
+            console.error("Gemini 回傳錯誤：", result);
+            return null;
+        }
 
-    const response = await fetch(WORKER_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            model: "gemini-2.5-flash",
-            stream: false,              // 🔴 告訴 Worker：我要非串流 JSON
-            contents: [{ parts: [{ text: prompt }] }]
-        })
-    });
-
-    if (!response.ok) {
-        const text = await response.text();
-        console.error("Gemini 呼叫失敗：", text);
-        return null;
+        // 讀 candidates
+        try {
+            let text = result.candidates[0].content.parts[0].text || "";
+            text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            return JSON.parse(text);
+        } catch (e) {
+            console.error("AI 解析失敗:", e, result);
+            return null;
+        }
     }
 
-    let result;
-    try {
-        result = await response.json();
-        console.log("Gemini raw result:", result); // 除錯用，OK 後可刪
-    } catch (err) {
-        console.error("Gemini JSON 解析失敗:", err);
-        return null;
-    }
-
-    // 🔐 先檢查有沒有 error
-    if (result.error) {
-        console.error("Gemini 回傳錯誤：", result);
-        return null;
-    }
-
-    // ✅ 這裡才去讀 candidates
-    try {
-        let text = result.candidates[0].content.parts[0].text || "";
-        text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(text);
-    } catch (e) {
-        console.error("AI 解析失敗:", e, result);
-        return null;
-    }
-}
-
-// --- [修改版] 管理員更新全域關鍵字 (支援多關鍵字 + 翻譯 + 自動標記) ---
-window.updateGlobalKeyword = async function() {
-    const inputEl = document.getElementById('admin-news-keyword');
-    const countEl = document.getElementById('admin-news-count'); 
-    
-    // 1. 取得輸入設定
-    const rawKeywords = inputEl.value.trim();
-    const articlesPerTopic = countEl ? (parseInt(countEl.value) || 3) : 3;
+    // --- 管理員更新全域關鍵字  ---
+    window.updateGlobalKeyword = async function() {
+        const inputEl = document.getElementById('admin-news-keyword');
+        const countEl = document.getElementById('admin-news-count'); 
+        // 1. 取得輸入設定
+        const rawKeywords = inputEl.value.trim();
+        const articlesPerTopic = countEl ? (parseInt(countEl.value) || 3) : 3;
 
     if (!rawKeywords) return alert("請輸入關鍵字！");
 
-    // 2. 處理關鍵字 (限制 8 個)
+    // 2. 處理關鍵字 
     let keywordList = rawKeywords.split(/[,，]/).map(k => k.trim()).filter(k => k);
     if (keywordList.length > 8) {
         alert(`關鍵字過多，系統將自動取前 8 個：\n${keywordList.slice(0, 8).join(', ')}`);
@@ -1322,51 +1319,47 @@ window.updateGlobalKeyword = async function() {
     btn.disabled = true;
 
     try {
-        btn.innerText = `1/3 雙引擎啟動：搜尋 ${keywordList.length} 個主題...`;
+        btn.innerText = `1/3 啟動：搜尋 ${keywordList.length} 個主題...`;
         
         let aggregatedArticles = [];
 
         // 3. 定義雙引擎抓取函式
         const fetchTopic = async (key) => {
-            // [引擎 A] News API (透過你的 Proxy)
-            const apiPromise = fetch(`https://nodex-proxy.coreinformation30.workers.dev/news?q=${encodeURIComponent(key)}&sortBy=relevancy`)
-                .then(res => res.json())
-                .then(data => (data.status === "ok" ? data.articles : []))
-                .catch(() => []); // 失敗就回傳空陣列
+        // News API (透過你的 Proxy)
+        const apiPromise = fetch(`https://nodex-proxy.coreinformation30.workers.dev/news?q=${encodeURIComponent(key)}&sortBy=relevancy`)
+            .then(res => res.json())
+            .then(data => (data.status === "ok" ? data.articles : []))
+            .catch(() => []); // 失敗就回傳空陣列
 
-            // [引擎 B] Google News RSS (透過 rss2json 轉譯)
-            const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(key)}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant`;
-            const rssPromise = fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'ok' && data.items) {
-                        // 轉換 RSS 格式 -> News API 格式
-                        return data.items.map(item => ({
-                            title: item.title,
-                            description: item.description || item.content || "",
-                            url: item.link,
-                            urlToImage: item.enclosure?.link || item.thumbnail || null, // 嘗試抓圖
-                            publishedAt: item.pubDate,
-                            source: { name: "Google News (RSS)" }, // 標記來源
-                            _isRSS: true // 內部標記
-                        }));
-                    }
-                    return [];
-                })
-                .catch(() => []);
+        // [引擎 B] Google News RSS (透過 rss2json 轉譯)
+        const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(key)}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant`;
+        const rssPromise = fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`)
+            .then(res => res.json())
+            .then(data => {
+            if (data.status === 'ok' && data.items) {
+                // 轉換 RSS 格式 -> News API 格式
+                return data.items.map(item => ({
+                    title: item.title,
+                    description: item.description || item.content || "",
+                    url: item.link,
+                    urlToImage: item.enclosure?.link || item.thumbnail || null, // 嘗試抓圖
+                    publishedAt: item.pubDate,
+                    source: { name: "Google News (RSS)" }, // 標記來源
+                    _isRSS: true // 內部標記
+                }));
+            }
+                return [];
+            })
+
+            .catch(() => []);
 
             // 平行執行兩個請求
             const [apiArticles, rssArticles] = await Promise.all([apiPromise, rssPromise]);
 
-            // [混合邏輯]
-            // 1. 優先使用 API 新聞
+            // 優先使用 API 新聞
             let combined = [...apiArticles];
-
-            // 2. 如果 API 不夠 (例如少於目標數量)，用 RSS 補
-            // 或者你想要混和，可以直接 push 進去
-            // 這裡採用「去重複補強」策略：
             rssArticles.forEach(rssArt => {
-                // 檢查標題是否太相似 (簡單防重複)
+                // 檢查標題是否太相似 
                 const isDuplicate = combined.some(existing => 
                     existing.title.includes(rssArt.title) || rssArt.title.includes(existing.title)
                 );
@@ -1374,17 +1367,14 @@ window.updateGlobalKeyword = async function() {
                     combined.push(rssArt);
                 }
             });
-
-            // 3. 截取指定數量並標記 Tag
+            // 截取指定數量並標記 Tag
             return combined.slice(0, articlesPerTopic).map(art => ({
                 ...art,
                 _filterTag: key
             }));
         };
-
         // 4. 對所有關鍵字執行抓取
         const results = await Promise.all(keywordList.map(key => fetchTopic(key)));
-        
         // 合併結果
         results.forEach(articles => {
             aggregatedArticles = [...aggregatedArticles, ...articles];
@@ -1400,18 +1390,18 @@ window.updateGlobalKeyword = async function() {
         const translatedData = await translateWithGemini(aggregatedArticles);
 
         let finalArticles = aggregatedArticles;
-        if (translatedData) {
-            finalArticles = aggregatedArticles.map((art, index) => {
-                const trans = translatedData.find(t => t.id === index);
-                if (trans) {
-                    return { ...art, title: trans.title, description: trans.description };
-                }
-                return art;
-            });
-        }
+            if (translatedData) {
+                finalArticles = aggregatedArticles.map((art, index) => {
+                    const trans = translatedData.find(t => t.id === index);
+                    if (trans) {
+                        return { ...art, title: trans.title, description: trans.description };
+                    }
+                    return art;
+                });
+            }
 
         // 6. 寫入資料庫
-        btn.innerText = "3/3 同步至全球節點...";
+        btn.innerText = "3/3 同步...";
         
         await setDoc(doc(db, "system_settings", "public_news"), {
             keyword: keywordList.join(', '),
@@ -1421,17 +1411,17 @@ window.updateGlobalKeyword = async function() {
             updatedAt: new Date()
         });
 
-        alert(`✅ 混合模式完成！\n關鍵字：${keywordList.length} 個\n總新聞數：${finalArticles.length} 篇\n(含 API 與 RSS 來源)`);
+        alert(`完成！\n關鍵字：${keywordList.length} 個\n總新聞數：${finalArticles.length} 篇\n(含 API 與 RSS 來源)`);
 
-    } catch (e) {
-        console.error("Error:", e);
-        alert("❌ 執行失敗: " + e.message);
-    } finally {
-        btn.innerText = originalText;
-        btn.disabled = false;
-    }
+        } catch (e) {
+            console.error("Error:", e);
+            alert("❌ 執行失敗: " + e.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
 };
-       // --- [新增] 啟動新對話模式 ---
+       // --- 新對話模式 ---
        window.startNewChat = function() {
            currentChatId = null;
             // 1. 定義歡迎語清單
