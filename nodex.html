@@ -1898,8 +1898,19 @@
         // 發送訊息主函式
     async function handleSendMessage() {
         if (!window.currentUser) {
-            window.showLoginWarning(); 
-            return;
+            let guestUsage = localStorage.getItem('nx_guest_usage'); 
+            guestUsage = guestUsage ? parseInt(guestUsage) : 0;
+            const GUEST_LIMIT = 3;
+
+            if (guestUsage >= GUEST_LIMIT) {
+  
+                window.showLoginWarning(); 
+                return; 
+            } else {
+                // 如果還有額度，次數 +1 並存回去
+                localStorage.setItem('nx_guest_usage', guestUsage + 1);
+
+            }
         }
 
         const uid = window.currentUser.uid; // 取得 UID
@@ -2473,12 +2484,12 @@
         <div style="padding: 0 30px 30px 30px;">
             <h2 style="color: var(--nx-text); margin-bottom: 10px; font-size: 1.5em;">登入立即體驗</h2>
             <p style="color: var(--nx-text-muted); font-size: 0.95em; line-height: 1.6; margin-bottom: 25px;">
-                NodeX提供免費額度高階模型Gemini、ChatGPT、Llama，以及Qwen等。<br>請登入您的 Google 帳號以繼續使用。
+                NodeX提供免費額度高階模型<br>Gemini、ChatGPT、Llama，以及Qwen選擇。<br>請登入您的 Google 帳號以繼續使用。
             </p>
 
             <button onclick="handleLoginRequest()" class="nx-btn-new" 
                     style="width: 100%; justify-content: center; background: var(--nx-accent); color: #000; border: none; font-weight: bold; font-size: 1em; height: 45px;">
-                <svg class="nx-icon" style="stroke: #000;" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                <svg class="nx-icon" style="stroke: #000000;" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
                 立即登入 (Google)
             </button>
             
