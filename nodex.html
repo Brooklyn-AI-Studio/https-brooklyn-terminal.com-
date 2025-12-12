@@ -227,64 +227,31 @@
             height: 40px;        /* 固定高度 */
         }
 
-        /* --- NodeX 文字樣式 (深灰色) --- */
+       /* --- 1. 基礎狀態  --- */
         .nx-sidebar-logo-text {
+            /* 字體設定 */
             font-family: 'Orbitron', sans-serif;
             font-size: 1.2rem;
             font-weight: 700;
             color: #666666;          
             letter-spacing: 1px;
-            white-space: nowrap; 
-            display: block;         
-            opacity: 1;             
-            margin-left: 5px;      
-            
-            /* 轉場動畫，讓位置切換時滑順一點 */
+            white-space: nowrap;
+            display: block;          
+            opacity: 1;              
+            margin-left: 5px;        /* 與漢堡按鈕的間距 */
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
         }
 
-        /* --- 收合時的「飛出」效果 (保持您原本的邏輯) --- */
+        /* --- 2. 收合狀態 (.collapsed)：文字「飛」到側邊欄外側 --- */
         .nx-sidebar.collapsed .nx-sidebar-logo-text {
-            /* 這裡不需要改 display，因為基礎設定已經是 block 了 */
-            pointer-events: none; 
-
-            /* 脫離側邊欄，固定在螢幕上 */
+            pointer-events: none;
             position: fixed;
-            z-index: 100;
-            
-            /* 定位在側邊欄外側 */
-            left: 90px;   
-            top: 28px;    
+            z-index: 100;    
+            left: 90px;       
+            top: 28px;       
             color: #888888; 
         }
-
-        /* --- 修改原本的選單按鈕樣式 (配合 Header 微調) --- */
-        .nx-btn-menu {
-            /* 移除原本的 margin-bottom，因為改由容器控制 */
-            margin-bottom: 0 !important; 
-            width: 40px; 
-            height: 40px;
-            padding: 8px; /* 讓 icon 稍微縮小一點點，比較精緻 */
-            border: none; /* 移除邊框 */
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-        }
-
-        /* --- 關鍵：收合模式 (.collapsed) 的變化 --- */
-
-        /* 1. 收合時：隱藏 NodeX 文字 */
-        .nx-sidebar.collapsed .nx-sidebar-logo-text {
-            opacity: 0;
-            pointer-events: none;
-            display: none; /* 確保不佔空間 */
-        }
-
-        /* 2. 收合時：讓容器置中 (確保漢堡按鈕在正中間) */
-        .nx-sidebar.collapsed .nx-sidebar-top-header {
-            justify-content: center;
-            padding-left: 0;
-        }
+        
         /* --- 新增：選單切換按鈕樣式 --- */
         .nx-btn-menu {
             background: transparent;  /* 透明背景 */
