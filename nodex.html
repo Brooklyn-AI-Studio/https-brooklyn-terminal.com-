@@ -1065,12 +1065,27 @@
 
     <div id="view-dashboard" style="display: none; width: 100%; flex-direction: column; align-items: center;">
         <div class="nx-welcome">
-            <h1 id="txt-welcome">早安，<br><span>開始您製作一份分析報告？</span></h1>
+            <h1 id="txt-welcome">早安，<br><span>使用者</span></h1>
             <div class="nx-suggestion-grid">
-                <div class="nx-suggestion-card"><span id="txt-sug1">分析 NVDA 財報重點</span> <span class="nx-sug-arrow">↗</span></div>
-                <div class="nx-suggestion-card"><span id="txt-sug2">比特幣下週走勢預測</span> <span class="nx-sug-arrow">↗</span></div>
-                <div class="nx-suggestion-card"><span id="txt-sug3">制定台股當沖策略</span> <span class="nx-sug-arrow">↗</span></div>
-                <div class="nx-suggestion-card"><span id="txt-sug4">總體經濟數據解讀</span> <span class="nx-sug-arrow">↗</span></div>
+                <div class="nx-suggestion-card" onclick="triggerPresetAction('聊聊今日股市新聞與大盤走勢', 'gemini-2.5-flash-lite', true)">
+                <span>聊聊今日股市</span> 
+                <span class="nx-sug-arrow">↗</span>
+                </div>
+
+                <div class="nx-suggestion-card" onclick="triggerPresetAction('分析 NVDA 最近一季財報重點', 'gemini-2.5-pro', false)">
+                    <span>分析 NVDA 財報重點</span> 
+                    <span class="nx-sug-arrow">↗</span>
+                </div>
+
+                <div class="nx-suggestion-card" onclick="triggerPresetAction('幫我寫一個 Python 爬蟲範例', 'llama-3.3-70b-versatile', false)">
+                    <span>Python 爬蟲教學</span> 
+                    <span class="nx-sug-arrow">↗</span>
+                </div>
+
+                <div class="nx-suggestion-card" onclick="triggerPresetAction('比較 iPhone 16 與 Samsung S24 的最新評測', 'gemini-2.5-flash', true)">
+                    <span>iPhone vs Samsung</span> 
+                    <span class="nx-sug-arrow">↗</span>
+                </div>
             </div>
         </div>
     </div>
@@ -1239,7 +1254,28 @@
                 alert("登入失敗: " + error.message);
             });
     };
-    // --- 管理員更新全域關鍵字 ---
+    // --- 預設提示詞觸發函式 ---
+    window.triggerPresetAction = function(promptText, modelId, enableSearch) {
+        // 1. 切換模型 (如果目前模型不是指定的模型)
+        if (modelId && currentModel !== modelId) {
+            setModel(modelId);
+        }
+
+        // 2. 設定搜尋狀態 (強制開啟或關閉)
+        // 檢查全域變數 isSearchEnabled (在你的原始碼中已定義)
+        if (enableSearch && !isSearchEnabled) {
+            toggleSearch(); // 如果需要搜尋但目前沒開 -> 開啟
+        } else if (!enableSearch && isSearchEnabled) {
+            toggleSearch(); // 如果不需要搜尋但目前有開 -> 關閉
+        }
+
+        // 3. 填入文字並發送
+        const input = document.getElementById('nx-input');
+        input.value = promptText;
+        
+        // 4. 呼叫發送函式
+        handleSendMessage();
+    };
     // --- AI 翻譯輔助函式 ---
     async function translateWithGemini(articles) {
         const contentToTranslate = articles.map((art, index) => ({
