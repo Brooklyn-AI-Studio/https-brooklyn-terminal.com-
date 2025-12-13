@@ -1918,6 +1918,20 @@
         return {}; // 如果沒資料回傳空物件
     }
 
+
+    // ---  LaTeX 預處理函式 ---
+    function preprocessText(text) {
+        if (!text) return "";
+        return text
+            // 將 \[ 換成 $$
+            .replace(/\\\[/g, '$$$') 
+            // 將 \] 換成 $$
+            .replace(/\\\]/g, '$$$')
+            // 將 \( 換成 $
+            .replace(/\\\(/g, '$')
+            // 將 \) 換成 $
+            .replace(/\\\)/g, '$');
+    }
         // 發送訊息主函式
     async function handleSendMessage() {
         if (!window.currentUser) {
@@ -2056,7 +2070,7 @@
                                 const json = JSON.parse(line);
                                 if (json.message && json.message.content) {
                                     fullText += json.message.content;
-                                    aiMsgContent.innerHTML = marked.parse(fullText);
+                                    aiMsgContent.innerHTML = marked.parse(preprocessText(fullText));
                                     if (window.renderMathInElement) {
                                             renderMathInElement(aiMsgContent, {
                                                 delimiters: [
@@ -2125,7 +2139,7 @@
                             try {
                                 textPart = JSON.parse(`"${textPart}"`); 
                                 fullText += textPart;
-                                aiMsgContent.innerHTML = marked.parse(fullText);
+                                aiMsgContent.innerHTML = marked.parse(preprocessText(fullText));
                                 // ... LaTeX 渲染代碼 ...
                                 if (window.renderMathInElement) {
                                     renderMathInElement(aiMsgContent, {
@@ -2420,7 +2434,7 @@
                 } else {
                     // 這裡為了簡化，直接顯示 AI 訊息，不跑打字機動畫
                     const aiDiv = appendAiMessageStart(); 
-                    aiDiv.innerHTML = marked.parse(msg.content);
+                    aiDiv.innerHTML = marked.parse(preprocessText(msg.content));
                     // 如果有 LaTeX 記得在這裡也要 renderMathInElement
                     if (window.renderMathInElement) {
                         enderMathInElement(aiDiv, {
