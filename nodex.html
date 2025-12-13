@@ -1232,6 +1232,16 @@
                                 <img src="LLM-Pics/chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
                                 <span>GPT-oss-20b</span>
                             </div>
+
+                            <div class="nx-dropdown-item" onclick="setModel('server-gpt-oss-120b')">
+                                <img src="LLM-Pics/chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
+                                <span>GPT-oss-120b 無限版</span>
+                            </div>
+                        
+                            <div class="nx-dropdown-item" onclick="setModel('server-gpt-oss-20b')">
+                                <img src="LLM-Pics/chatGPT.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
+                                <span>GPT-oss-20b 無限版</span>
+                            </div>
                                 
                             <div class="nx-dropdown-item" onclick="setModel('qwen/qwen3-32b')">
                                 <img src="LLM-Pics/Qwen_logo.svg.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
@@ -1680,12 +1690,13 @@
             { name: "Gemini 2.0 Flash Exp", id: "gemini-2.0-flash-exp", limit: 10 },
             { name: "Llama 3.3 70B", id: "llama-3.3-70b-versatile", limit: 20},
             { name: "Llama 3.1 8B", id: "llama-3.1-8b-instant", limit: 20 },
-            { name: "Gpt-oss-120b", id: "openai/gpt-oss-120b", limit: 10 }, 
-            { name: "Gpt-oss-20b", id: "openai/gpt-oss-20b", limit: 10 },
+            { name: "GPT-oss-120b", id: "openai/gpt-oss-120b", limit: 10 }, 
+            { name: "GPT-oss-20b", id: "openai/gpt-oss-20b", limit: 10 },
             { name: "Qwen3-32b", id: "qwen/qwen3-32b", limit: 10 },
             { name: "Gemma3:1B", id: "server-gemma3-1b", limit: Infinity },
-            { name: "Deepseek-v3.1:671b ", id: "server-deepseek-671b", limit: Infinity }
-            
+            { name: "Deepseek-v3.1:671b ", id: "server-deepseek-671b", limit: Infinity },
+            { name: "GPT-oss-120b 無限版", id: "server-gpt-oss-120b", limit: Infinity }, 
+            { name: "GPT-oss-20b 無限版", id: "server-gpt-oss-20b", limit: Infinity }, 
         ];
 
     // ---開啟視窗函式 ---
@@ -2016,7 +2027,9 @@
             // --- 分流邏輯：判斷是本地模型還是雲端模型 ---
             const localModels = {
             'server-gemma3-1b': 'gemma3:1b',               
-            'server-deepseek-671b': 'deepseek-v3.1:671b-cloud' 
+            'server-deepseek-671b': 'deepseek-v3.1:671b-cloud' ,
+            'server-gpt-oss-120b': 'gpt-oss:120b-cloud',
+            'server-gpt-oss-20b': 'gpt-oss:20b-cloud'
             };
 
 
