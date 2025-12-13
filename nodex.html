@@ -382,6 +382,7 @@
             display: flex; 
             flex-direction: column;
             background: var(--nx-bg);
+            overflow: hidden;
         }
 
         /* 聊天顯示區 */
@@ -457,6 +458,7 @@
             position: absolute; 
             bottom: 30px;       /* 距離底部留一些空間 */
             left: 50%;          /* 設定左側位置在 50% */
+            top: auto;
             transform: translateX(-50%); /* 向左回推自身寬度的一半，達成完美置中 */
             padding: 0 20px;
             z-index: 50;        /* 層級調高，確保浮在文字上方 */
