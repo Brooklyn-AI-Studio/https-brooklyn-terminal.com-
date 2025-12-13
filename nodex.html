@@ -1238,9 +1238,11 @@
                                 <span>qwen3-32b</span>
                             </div>   
 
-                            <div class="nx-dropdown-item" onclick="setModel('gemini-3-pro')">
-                                <img src="LLM-Pics/Qwen_logo.svg.png" style="width:16px; height:16px; margin-right:8px;" alt="ChatGPT Icon">
-                                <span>Gemini-3-pro</span>
+                            <div class="nx-dropdown-item" onclick="setModel('local-gemma')">
+                                <svg class="nx-icon" style="width:16px; height:16px; margin-right:8px; color:#00ffcc;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path>
+                                </svg>
+                                <span> Gemma3 1b </span>
                             </div>  
 
                         </div>
@@ -1806,6 +1808,23 @@
                 btn.style.color = 'var(--nx-text-muted)';
             }
         };
+            // --- 本地模型設定 ---
+        window.saveNgrokUrl = function(url) {
+                if(!url) return;
+                // 自動移除結尾的斜線，避免路徑錯誤
+                url = url.replace(/\/$/, ""); 
+                localStorage.setItem('nx_ngrok_url', url);
+                alert("已儲存本地連結網址！");
+        };
+
+            // 初始化時，把儲存的網址填回輸入框 (放在 script 初始執行區)
+        setTimeout(() => {
+                const savedUrl = localStorage.getItem('nx_ngrok_url');
+                const inputEl = document.getElementById('setting-ngrok-url');
+                if(savedUrl && inputEl) inputEl.value = savedUrl;
+        }, 1000);
+
+
 
        window.setModel = function(modelName) {
             currentModel = modelName;
@@ -1982,75 +2001,130 @@
 
             // 呼叫 LLM
             loadingId = appendLoadingIndicator(); 
+            // --- [新增] 分流邏輯：判斷是本地模型還是雲端模型 ---
+            if (currentModel === 'local-gemma') {
+                // === 走本地 Ollama 路徑 ===
+                const ngrokUrl = localStorage.getItem('nx_ngrok_url');
                 
-            const response = await fetch(WORKER_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    model: currentModel,
-                    useSearch: isSearchEnabled,
-                    contents: [{ parts: [{ text: userText }] }] })
-            });
-
-            if (!response.ok) throw new Error("Worker Error: " + response.statusText);
-
-            const aiMsgContent = appendAiMessageStart();
-        
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let fullText = "";
-            let isFirstChunk = true;
-            let fullTextBuffer = "";
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                if (isFirstChunk && loadingId) {
+                if (!ngrokUrl) {
                     removeMessage(loadingId);
-                    isFirstChunk = false;
+                    appendSystemMessage("⚠️ 請先在「帳戶資料」中設定 Ngrok 網址");
+                    return;
                 }
 
-                const chunk = decoder.decode(value, { stream: true });
-                fullTextBuffer += chunk;
-                const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
-            
-            if (matches) {
-                matches.forEach(match => {
-                    let textPart = match.replace(/"text":\s*"/, "").replace(/"$/, "");
-                    try {
-                       
-                        textPart = JSON.parse(`"${textPart}"`); 
-                        fullText += textPart;
-                        // Markdown + LaTeX 渲染
-                        aiMsgContent.innerHTML = marked.parse(fullText);
-                        if (window.renderMathInElement) {
-                            renderMathInElement(aiMsgContent, {
-                                delimiters: [
-                                    {left: "$$", right: "$$", display: true},
-                                    {left: "$", right: "$", display: false},
-                                    {left: "\\(", right: "\\)", display: false},
-                                    {left: "\\[", right: "\\]", display: true}
-                                ],
-                                throwOnError: false
-                            });
-                        }
+                try {
+                    const response = await fetch(`${ngrokUrl}/api/chat`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ 
+                            model: "gemma3:1b",  // 這裡必須是你電腦裡實際安裝的模型名稱 (例如 gemma2:2b 或 gemma:7b)
+                            messages: [{ role: "user", content: userText }],
+                            stream: true 
+                        })
+                    });
 
-                        if (chatHistory) {
-                            chatHistory.scrollTop = chatHistory.scrollHeight;
+                    if (!response.ok) throw new Error("Ollama Error: " + response.statusText);
+
+                    // 處理 Ollama 的串流回應 (NDJSON 格式)
+                    const aiMsgContent = appendAiMessageStart();
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let fullText = "";
+                    let isFirstChunk = true;
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        if (isFirstChunk) { removeMessage(loadingId); isFirstChunk = false; }
+
+                        const chunk = decoder.decode(value, { stream: true });
+                        // Ollama 回傳的是多行 JSON 物件
+                        const lines = chunk.split('\n');
+                        
+                        for (const line of lines) {
+                            if (!line.trim()) continue;
+                            try {
+                                const json = JSON.parse(line);
+                                if (json.message && json.message.content) {
+                                    fullText += json.message.content;
+                                    aiMsgContent.innerHTML = marked.parse(fullText);
+                                }
+                                if (json.done) {
+                                    // 結束訊號
+                                }
+                            } catch (e) { console.error("JSON Parse Error", e); }
                         }
-                    } catch (e) {
-                        console.error(e) 
+                        
+                        if (chatHistory) chatHistory.scrollTop = chatHistory.scrollHeight;
                     }
+                    
+                    // 儲存到 Firebase
+                    if (window.currentUser && currentChatId) {
+                        await addDoc(collection(db, "chats", currentChatId, "messages"), {
+                            role: "model", content: fullText, timestamp: new Date()
+                        });
+                    }
+
+                } catch (error) {
+                    removeMessage(loadingId);
+                    appendSystemMessage(`無法連接本地 Ollama: ${error.message} <br> 請確認 Ngrok 是否開啟且網址正確。`);
+                }
+
+            } else {
+                // === 原有的雲端 Worker 路徑 (保持不變) ===
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        model: currentModel,
+                        useSearch: isSearchEnabled,
+                        contents: [{ parts: [{ text: userText }] }] })
                 });
-            }
-        }
-        
-        if (window.currentUser && currentChatId) {
-                await addDoc(collection(db, "chats", currentChatId, "messages"), {
-                    role: "model",
-                    content: fullText,
-                    timestamp: new Date()
-                });
+
+                if (!response.ok) throw new Error("Worker Error: " + response.statusText);
+
+                const aiMsgContent = appendAiMessageStart();
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = "";
+                let isFirstChunk = true;
+                let fullTextBuffer = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    if (isFirstChunk && loadingId) { removeMessage(loadingId); isFirstChunk = false; }
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    fullTextBuffer += chunk;
+                    const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
+                
+                    if (matches) {
+                        matches.forEach(match => {
+                            let textPart = match.replace(/"text":\s*"/, "").replace(/"$/, "");
+                            try {
+                                textPart = JSON.parse(`"${textPart}"`); 
+                                fullText += textPart;
+                                aiMsgContent.innerHTML = marked.parse(fullText);
+                                // ... LaTeX 渲染代碼 ...
+                                if (window.renderMathInElement) {
+                                    renderMathInElement(aiMsgContent, {
+                                        delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}, {left: "\\(", right: "\\)", display: false}, {left: "\\[", right: "\\]", display: true}],
+                                        throwOnError: false
+                                    });
+                                }
+                                if (chatHistory) chatHistory.scrollTop = chatHistory.scrollHeight;
+                            } catch (e) { console.error(e) }
+                        });
+                    }
+                }
+                
+                // 儲存雲端回覆
+                if (window.currentUser && currentChatId) {
+                    await addDoc(collection(db, "chats", currentChatId, "messages"), {
+                        role: "model", content: fullText, timestamp: new Date()
+                    });
+                }
             }
 
         // 4. 儲存 AI 回覆
@@ -2385,7 +2459,7 @@
     startNewChat();
            
     </script>
- 
+
 <div id="profile-modal" class="nx-modal-overlay">
     <div class="nx-modal-content" style="height: auto; max-height: 85vh; width: 450px;">
         
@@ -2411,6 +2485,17 @@
             </div>
 
             <hr style="border:0; border-top:1px solid var(--nx-border); margin-bottom:20px;">
+            
+                <hr style="border:0; border-top:1px solid var(--nx-border); margin-bottom:20px;">
+                <h4 style="color:var(--nx-text); margin-bottom:10px; font-size:0.95em; letter-spacing:1px;">
+                    🔌 本地連線 (Ollama / Ngrok)
+                </h4>
+                <div class="nx-input-wrapper" style="margin-bottom: 20px; padding: 8px;">
+                    <input type="text" id="setting-ngrok-url" class="nx-textarea" 
+                        placeholder="https://untriturated-verla-unmothered.ngrok-free.dev/" 
+                        style="height: 30px; font-size: 0.85em;" 
+                        onchange="saveNgrokUrl(this.value)">
+                </div>
 
             <h4 style="color:var(--nx-text); margin-bottom:15px; font-size:0.95em; text-transform:uppercase; letter-spacing:1px;">今日模型用量 (Daily Usage)</h4>
             
