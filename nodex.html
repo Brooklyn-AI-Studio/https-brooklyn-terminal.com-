@@ -1245,6 +1245,13 @@
                                 <span> Gemma3-1b (無限使用) </span>
                             </div>  
 
+                            <div class="nx-dropdown-item" onclick="setModel('server-deepseek-671b')">
+                                <svg class="nx-icon" style="width:16px; height:16px; margin-right:8px; color:#4d79ff;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                                </svg>
+                                <span> Deepseek v3.1 671B (無限使用)</span>
+                            </div>
+
                         </div>
                         </div>
                     </div>
@@ -1676,7 +1683,8 @@
             { name: "Gpt-oss-120b", id: "openai/gpt-oss-120b", limit: 10 }, 
             { name: "Gpt-oss-20b", id: "openai/gpt-oss-20b", limit: 10 },
             { name: "Qwen3-32b", id: "qwen/qwen3-32b", limit: 10 },
-            { name: "Gemma3:1B", id: "server-gemma3-1b", limit: Infinity }
+            { name: "Gemma3:1B", id: "server-gemma3-1b", limit: Infinity },
+            { name: "Deepseek-v3.1:671b ", id: "server-deepseek-671b", limit: Infinity }
             
         ];
 
@@ -1963,7 +1971,10 @@
         chatInput.value = '';
         chatInput.style.height = 'auto';
 
-        appendUserMessage(userText);
+        // appendUserMessage(userText);
+        const userMsgDiv = appendUserMessage(userText);
+        // 讓畫面平滑滾動到這個訊息的頂部 (block: 'start' 就是置頂的意思)
+        userMsgDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
         incrementModelUsage(currentModel);
 
         let loadingId;
@@ -2003,7 +2014,13 @@
             // 呼叫 LLM
             loadingId = appendLoadingIndicator(); 
             // --- 分流邏輯：判斷是本地模型還是雲端模型 ---
-            if (currentModel === 'server-gemma3-1b') {
+            const localModels = {
+            'server-gemma3-1b': 'gemma3:1b',               
+            'server-deepseek-671b': 'deepseek-v3.1:671b-cloud' 
+            };
+
+
+            if (localModels[currentModel]) {
                 // === 走本地 Ollama 路徑 ===
                 const ngrokUrl = "https://untriturated-verla-unmothered.ngrok-free.dev";
 
@@ -2012,7 +2029,7 @@
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ 
-                            model: "gemma3:1b", 
+                            model:localModels[currentModel], 
                             messages: [{ role: "user", content: userText }],
                             stream: true 
                         })
@@ -2050,7 +2067,7 @@
                             } catch (e) { console.error("JSON Parse Error", e); }
                         }
                         
-                        if (chatHistory) chatHistory.scrollTop = chatHistory.scrollHeight;
+                       // if (chatHistory) chatHistory.scrollTop = chatHistory.scrollHeight;
                     }
                     
                     // 儲存到 Firebase
@@ -2108,7 +2125,7 @@
                                         throwOnError: false
                                     });
                                 }
-                                if (chatHistory) chatHistory.scrollTop = chatHistory.scrollHeight;
+                               // if (chatHistory) chatHistory.scrollTop = chatHistory.scrollHeight;
                             } catch (e) { console.error(e) }
                         });
                     }
@@ -2153,7 +2170,8 @@
                     ${text.replace(/\n/g, '<br>')}
                 </div>
             `;
-            chatHistory.appendChild(div);
+            // chatHistory.appendChild(div);
+            return div;
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
 
