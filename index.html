@@ -2399,7 +2399,7 @@
             }
     }
 
-    // --- [新增] 載入特定對話內容 ---
+    // --- 載入特定對話內容 ---
     async function loadChatSession(chatId) {
         currentChatId = chatId; 
         // 清空畫面
@@ -2422,6 +2422,17 @@
                     const aiDiv = appendAiMessageStart(); 
                     aiDiv.innerHTML = marked.parse(msg.content);
                     // 如果有 LaTeX 記得在這裡也要 renderMathInElement
+                    if (window.renderMathInElement) {
+                        enderMathInElement(aiDiv, {
+                        delimiters: [
+                            {left: "$$", right: "$$", display: true},
+                            {left: "$", right: "$", display: false},
+                            {left: "\\(", right: "\\)", display: false},
+                            {left: "\\[", right: "\\]", display: true}
+                        ],
+                        throwOnError: false
+                        });
+                    }    
                 }
             });
     }
