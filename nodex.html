@@ -1238,11 +1238,11 @@
                                 <span>qwen3-32b</span>
                             </div>   
 
-                            <div class="nx-dropdown-item" onclick="setModel('local-gemma')">
+                            <div class="nx-dropdown-item" onclick="setModel('server-gemma3-1b')">
                                 <svg class="nx-icon" style="width:16px; height:16px; margin-right:8px; color:#00ffcc;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path>
                                 </svg>
-                                <span> Gemma3 1b </span>
+                                <span> Gemma3-1b (無限使用) </span>
                             </div>  
 
                         </div>
@@ -2001,23 +2001,17 @@
 
             // 呼叫 LLM
             loadingId = appendLoadingIndicator(); 
-            // --- [新增] 分流邏輯：判斷是本地模型還是雲端模型 ---
-            if (currentModel === 'local-gemma') {
+            // --- 分流邏輯：判斷是本地模型還是雲端模型 ---
+            if (currentModel === 'server-gemma3-1b') {
                 // === 走本地 Ollama 路徑 ===
-                const ngrokUrl = localStorage.getItem('nx_ngrok_url');
-                
-                if (!ngrokUrl) {
-                    removeMessage(loadingId);
-                    appendSystemMessage("⚠️ 請先在「帳戶資料」中設定 Ngrok 網址");
-                    return;
-                }
+                const ngrokUrl = "https://untriturated-verla-unmothered.ngrok-free.dev";
 
                 try {
                     const response = await fetch(`${ngrokUrl}/api/chat`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ 
-                            model: "gemma3:1b",  // 這裡必須是你電腦裡實際安裝的模型名稱 (例如 gemma2:2b 或 gemma:7b)
+                            model: "gemma3:1b", 
                             messages: [{ role: "user", content: userText }],
                             stream: true 
                         })
@@ -2126,14 +2120,6 @@
                     });
                 }
             }
-
-        // 4. 儲存 AI 回覆
-            await addDoc(collection(db, "chats", currentChatId, "messages"), {
-                role: "model",
-                content: fullText,
-                timestamp: new Date()
-            });
-
         } catch (error) {
             // 避免 loadingId 還沒設好就硬移除
             if (loadingId) {
@@ -2440,23 +2426,23 @@
             
             
         // 掛載到 window 以便 HTML onclick 呼叫
-    window.openAdminModal = function() {
-        const modal = document.getElementById('admin-modal');
-        modal.style.display = 'flex';
-        setTimeout(() => modal.classList.add('show'), 10);
-    };
+        window.openAdminModal = function() {
+            const modal = document.getElementById('admin-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        };
 
-    window.closeAdminModal = function() {
-        const modal = document.getElementById('admin-modal');
-        modal.classList.remove('show');
-        setTimeout(() => modal.style.display = 'none', 300);
-    };
-            
-    // 點擊遮罩關閉
-    document.getElementById('admin-modal').addEventListener('click', (e) => {
-                if (e.target.id === 'admin-modal') window.closeAdminModal();
-            });
-    startNewChat();
+        window.closeAdminModal = function() {
+            const modal = document.getElementById('admin-modal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
+        };
+                
+        // 點擊遮罩關閉
+        document.getElementById('admin-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'admin-modal') window.closeAdminModal();
+                });
+        startNewChat();
            
     </script>
 
@@ -2485,18 +2471,6 @@
             </div>
 
             <hr style="border:0; border-top:1px solid var(--nx-border); margin-bottom:20px;">
-            
-                <hr style="border:0; border-top:1px solid var(--nx-border); margin-bottom:20px;">
-                <h4 style="color:var(--nx-text); margin-bottom:10px; font-size:0.95em; letter-spacing:1px;">
-                    🔌 本地連線 (Ollama / Ngrok)
-                </h4>
-                <div class="nx-input-wrapper" style="margin-bottom: 20px; padding: 8px;">
-                    <input type="text" id="setting-ngrok-url" class="nx-textarea" 
-                        placeholder="https://untriturated-verla-unmothered.ngrok-free.dev/" 
-                        style="height: 30px; font-size: 0.85em;" 
-                        onchange="saveNgrokUrl(this.value)">
-                </div>
-
             <h4 style="color:var(--nx-text); margin-bottom:15px; font-size:0.95em; text-transform:uppercase; letter-spacing:1px;">今日模型用量 (Daily Usage)</h4>
             
             <div id="usage-stats-container" style="display:flex; flex-direction:column; gap:15px;">
