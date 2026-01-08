@@ -4,758 +4,444 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workspace</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2300ff9d%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5%22/></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = { 
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        bg: 'var(--bg-primary)',
-                        surface: 'var(--bg-secondary)',
-                        sidebar: 'var(--bg-sidebar)',
-                        text: 'var(--text-primary)',
-                        muted: 'var(--text-secondary)',
-                        accent: 'var(--accent-color)',
-                        border: 'var(--border-color)',
-                        grid: 'var(--grid-color)',
-                    },
-                    fontFamily: {
-                        mono: ['"JetBrains Mono"', 'monospace'],
-                        sans: ['"Inter"', '"Noto Sans TC"', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
-        
-        /* --- Markdown 內容樣式 (NodeX 風格) --- */
-.markdown-body {
-    line-height: 1.6;
-    font-size: 14px;
-}
-.markdown-body h1, .markdown-body h2, .markdown-body h3 {
-    font-weight: bold;
-    color: var(--accent-color); /* 使用你的強調色 */
-    margin-top: 1em;
-    margin-bottom: 0.5em;
-}
-.markdown-body h1 { font-size: 1.5em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.3em; }
-.markdown-body h2 { font-size: 1.3em; }
-.markdown-body h3 { font-size: 1.1em; }
-
-.markdown-body p { margin-bottom: 0.8em; }
-.markdown-body strong { color: #fff; font-weight: 700; }
-.markdown-body em { color: #aaa; font-style: italic; }
-
-/* 列表 */
-.markdown-body ul, .markdown-body ol { padding-left: 1.5em; margin-bottom: 0.8em; }
-.markdown-body ul { list-style-type: disc; }
-.markdown-body ol { list-style-type: decimal; }
-.markdown-body li { margin-bottom: 0.2em; }
-
-/* 程式碼區塊 */
-.markdown-body code {
-    background: rgba(255,255,255,0.1);
-    padding: 0.2em 0.4em;
-    border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9em;
-    color: #ff79c6; /* 程式碼粉色高亮 */
-}
-.markdown-body pre {
-    background: #1e1e1e;
-    padding: 1em;
-    border-radius: 8px;
-    overflow-x: auto;
-    margin-bottom: 1em;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-.markdown-body pre code {
-    background: transparent;
-    padding: 0;
-    color: #f8f8f2;
-    font-size: 0.85em;
-}
-
-/* 表格樣式 */
-.markdown-body table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1em;
-    font-size: 0.9em;
-}
-.markdown-body th, .markdown-body td {
-    border: 1px solid rgba(255,255,255,0.2);
-    padding: 8px 12px;
-    text-align: left;
-}
-.markdown-body th {
-    background-color: rgba(255,255,255,0.1);
-    font-weight: bold;
-    color: var(--accent-color);
-}
-.markdown-body tr:nth-child(even) {
-    background-color: rgba(255,255,255,0.03);
-}
-
-/* 引用 */
-.markdown-body blockquote {
-    border-left: 3px solid var(--accent-color);
-    padding-left: 1em;
-    color: var(--muted);
-    margin-left: 0;
-    margin-bottom: 1em;
-    font-style: italic;
-}
-      /* 加入 style 標籤內 */
-      /* 隱藏捲軸 */
-#canvas-scroll-container {
-    background-color: #000000; 
-    /* 讓操作區在畫面中留一點邊距，看起來像一張桌子上的圖紙 */
-    padding: 50px; 
-    
-    /* 隱藏捲軸 */
-    scrollbar-width: none; 
-    -ms-overflow-style: none;
-}
-#canvas-scroll-container::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
-}
-/* 2. 操作區 (綠色區域)：設定邊框與網格 */
-#canvas-sizer {
-    background-color: #0a100d;
-    border: 2px solid var(--accent-color);
-    box-shadow: 0 0 30px rgba(0, 255, 157, 0.15);
-    
-    margin: 0; /* 改成 0，取消水平置中 */
-    container-type: size;
-    background-image: 
-        linear-gradient(to right, rgba(0, 255, 157, 0.1) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 255, 157, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-}
-/* 3. 修正原本的 grid-canvas 背景，移除重複的網格設定 */
-#grid-canvas {
-    background: transparent !important; /* 讓它透明，顯示 canvas-sizer 的背景 */
-}
-
-        /* 定義主題變數 */
         :root {
-            /* 預設: 賽博龐克 (Cyberpunk) - 新增霓虹變數 */
-            --bg-primary: #050505;
-            --bg-secondary: #0a0a0a;
-            --bg-sidebar: #080808;
-            --text-primary: #e0e0e0;
-            --text-secondary: #6b7280;
-            --accent-color: #00ff9d; /* Neon Green */
-            --accent-secondary: #ff0055; /* Neon Pink */
-            --border-color: #1f1f1f;
-            --grid-color: rgba(0, 255, 157, 0.15);
-            --font-main: 'JetBrains Mono', monospace;
-            
-            /* 霓虹光暈變數 (僅在 Cyberpunk 模式下生效) */
-            --neon-text-shadow: 0 0 5px var(--accent-color), 0 0 10px var(--accent-color);
-            --neon-box-shadow: 0 0 5px var(--accent-color), inset 0 0 5px rgba(0, 255, 157, 0.1);
-        }
-
-        /* 主題: 高級商務 (Premium Business) */
-        [data-theme="business"] {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f1f5f9;
-            --bg-sidebar: #f8fafc;
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --accent-color: #0284c7;
-            --accent-secondary: #f59e0b; 
-            --border-color: #cbd5e1;
-            --grid-color: rgba(15, 23, 42, 0.08);
-            --font-main: 'Inter', 'Noto Sans TC', sans-serif;
-            --neon-text-shadow: none;
-            --neon-box-shadow: none;
-        }
-
-        /* 主題: 開發者 (Developer) */
-        [data-theme="developer"] {
-            --bg-primary: #1e1e1e;
-            --bg-secondary: #252526;
-            --bg-sidebar: #252526;
-            --text-primary: #d4d4d4;
-            --text-secondary: #a1a1a1;
+            --bg-color: #1e1e1e;
+            --grid-color: #2a2a2a;
+            --sidebar-bg: #252526;
+            --sidebar-border: #333;
+            --panel-bg: #2d2d2d;
+            --text-color: #cccccc;
             --accent-color: #007acc;
-            --accent-secondary: #ce9178;
-            --border-color: #3e3e42;
-            --grid-color: rgba(255, 255, 255, 0.05);
-            --font-main: 'JetBrains Mono', monospace;
-            --neon-text-shadow: none;
-            --neon-box-shadow: none;
+            --danger-color: #f14c4c;
+            
+            /* Note Colors */
+            --note-yellow: #fff9c4;
+            --note-green: #dcedc8;
+            --note-blue: #b3e5fc;
+            --note-pink: #f8bbd0;
+            --note-dark: #333333;
         }
 
-        /* 主題: 終端機 (Terminal) - 改為駭客綠 (Green Phosphor) */
-        [data-theme="terminal"] {
-            --bg-primary: #051105;      /* 極深綠黑 */
-            --bg-secondary: #0a1a0a;
-            --bg-sidebar: #000000;
-            --text-primary: #00ff33;    /* 經典螢光綠 */
-            --text-secondary: #00cc29;  /* 稍暗的綠色 */
-            --accent-color: #00ff33;
-            --accent-secondary: #00ff33;
-            --border-color: #003300;
-            --grid-color: rgba(0, 255, 51, 0.2);
-            --font-main: 'Courier New', 'JetBrains Mono', monospace;
-            --neon-text-shadow: none; /* 終端機風格保持銳利，不加暈光 */
-            --neon-box-shadow: none;
-        }
-
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: var(--font-main);
-            transition: background-color 0.3s, color 0.3s;
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
-        }
-
-        svg { color: var(--text-primary); }
-        .text-muted svg { color: currentColor; }
-        .text-accent svg { color: currentColor; }
-        .text-red-500 svg { color: currentColor; }
-
-        /* 網格背景特效 */
-        .grid-bg {
-            background-size: 40px 40px;
-            background-image:
-                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
-            mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
-        }
-
-        .dots-bg {
-            background-image: radial-gradient(var(--text-secondary) 1px, transparent 1px);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--grid-color) 1px, transparent 1px);
             background-size: 20px 20px;
-            opacity: 0.2;
+            font-family: 'Segoe UI', sans-serif;
+            color: var(--text-color);
         }
 
-        .sidebar-transition {
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* --- 左側工具欄 (Icon Bar) --- */
+        #sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 60px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 15px;
+            padding-bottom: 15px; /* 底部留白 */
+            z-index: 2000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            user-select: none;
         }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
-
-        .popover-enter { opacity: 0; transform: translateY(10px) scale(0.95); }
-        .popover-enter-active { opacity: 1; transform: translateY(0) scale(1); transition: opacity 0.2s, transform 0.2s; }
-        
-        .modal-enter { opacity: 0; transform: scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
-
-        .nav-item:hover { background-color: rgba(255,255,255, 0.05); color: var(--accent-color); }
-        
-        [data-theme="business"] .nav-item:hover { background-color: rgba(0,0,0, 0.08); }
-        [data-theme="business"] .nav-item:hover svg, [data-theme="business"] .nav-item:hover span { color: var(--accent-color); }
-        
-        .rotate-90 { transform: rotate(90deg); }
-        
-        .nav-active { color: var(--accent-color); background-color: rgba(255,255,255, 0.05); border-right: 2px solid var(--accent-color); }
-        [data-theme="business"] .nav-active { background-color: rgba(0,0,0, 0.05); }
-        [data-theme="terminal"] .nav-active { background-color: var(--text-primary); color: var(--bg-primary); border-right: none; }
-        [data-theme="terminal"] .nav-active svg { color: var(--bg-primary); }
-
-        /* --- 賽博龐克專屬霓虹特效 --- */
-        /* 當沒有 data-theme (預設) 或 data-theme="cyberpunk" 時生效 */
-        :not([data-theme="business"]):not([data-theme="developer"]):not([data-theme="terminal"]) .text-accent,
-        [data-theme="cyberpunk"] .text-accent {
-            text-shadow: var(--neon-text-shadow);
+        .tool-wrapper {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
         }
 
-              :not([data-theme="business"]):not([data-theme="developer"]):not([data-theme="terminal"]) .border-accent,
-              [data-theme="cyberpunk"] .border-accent {
-              border: 1px solid var(--accent-color);
-              box-shadow: var(--neon-box-shadow);
-            }
-        /* 確保記事本內的列表有樣式 */
-            .notepad-editor ul {
-                list-style-type: disc;
-                padding-left: 1.5em;
-                margin: 0.5em 0;
-            }
-            .notepad-editor li {
-                margin-bottom: 0.2em;
-            }
-            /* 讓粗體與斜體更明顯 */
-            .notepad-editor b, .notepad-editor strong {
-                font-weight: bold;
-                color: var(--accent-color); /* 使用強調色讓它更像 Cyberpunk 風格 */
-            }
-            .notepad-editor i, .notepad-editor em {
-                font-style: italic;
-                opacity: 0.8;
-            }
-        
-        /* 專案內容的節點動畫 */
-        .node-appear { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.5); }
-        @keyframes popIn { to { opacity: 1; transform: scale(1); } }
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: #858585;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+            position: relative; /* For badges or overflow */
+        }
 
-        /* --- 網格拖曳項目樣式 (仿 APP.txt) --- */
-        .grid-item { position: absolute; border: 1px solid rgba(255,255,255,0.3); box-sizing: border-box; display: flex; flex-direction: column; backdrop-filter: blur(5px); transition: box-shadow 0.2s, border-color 0.2s; border-radius: 4px; }
-        .grid-item:hover { box-shadow: 0 0 20px rgba(255,255,255,0.2); z-index: 100; border-color: var(--accent-color); }
-        .grid-item.collision { background-color: rgba(255, 0, 51, 0.2) !important; border-color: #ff0033 !important; box-shadow: 0 0 20px #ff0033; }
-        .grid-item.circle { border-radius: 50%; }
-        .grid-item.circle .content-container { display: flex; align-items: center; justify-content: center; }
-        
-        .item-label-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; text-align: center; pointer-events: none; z-index: 5; color: var(--text-primary); font-weight: bold; font-size: 1.2em; text-shadow: 0 0 5px rgba(0,0,0,0.8); word-wrap: break-word; }
-        
-        .item-resize { width: 15px; height: 15px; background: transparent; border-right: 2px solid var(--text-primary); border-bottom: 2px solid var(--text-primary); position: absolute; bottom: 2px; right: 2px; cursor: nwse-resize; z-index: 101; }
-        
-        .menu-trigger { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; cursor: pointer; z-index: 102; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-secondary); border-radius: 50%; background: rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.2s; }
-        .grid-item:hover .menu-trigger { opacity: 1; }
-        .menu-trigger:hover { background: var(--accent-color); color: #000; }
-        
-        .context-menu { position: absolute; top: 30px; right: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(0,0,0,0.8); border-radius: 4px; z-index: 9999; display: none; min-width: 140px; }
-        .context-menu.show { display: block; }
-        .context-menu-item { padding: 8px 12px; cursor: pointer; font-size: 12px; color: var(--text-primary); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .context-menu-item:hover { background: rgba(255,255,255,0.1); }
-        .context-menu-item.danger:hover { background: rgba(255,255,255,0.1); color: #ff0033; }
+        .tool-btn:hover, .tool-btn.active {
+            background-color: #383838;
+            color: #fff;
+        }
 
-        /* 連線 SVG */
-        #connections-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-        .connection-line { stroke: var(--accent-color); stroke-width: 2px; opacity: 0.6; transition: stroke 0.3s; pointer-events: auto; cursor: pointer; }
-        .connection-line:hover { stroke: #fff; opacity: 1; stroke-width: 4px; }
+        .tool-btn.active {
+            color: var(--accent-color);
+            border-left: 3px solid var(--accent-color);
+        }
 
-        /* 視窗化 Widget 樣式 */
-        .widget-header { cursor: move; }
+        .tool-btn svg { width: 24px; height: 24px; fill: currentColor; }
+
+        .divider { width: 30px; height: 1px; background-color: #444; margin: 10px 0; }
+
+        /* 顏色選單 */
+        .color-submenu {
+            position: absolute; left: 60px; top: 0;
+            background-color: var(--sidebar-bg);
+            border: 1px solid var(--sidebar-border);
+            border-radius: 0 8px 8px 0;
+            padding: 10px; display: flex; flex-direction: column; gap: 8px;
+            box-shadow: 4px 4px 15px rgba(0,0,0,0.4);
+            opacity: 0; visibility: hidden; transform: translateX(-10px);
+            transition: all 0.2s ease; z-index: 2100;
+        }
+
+        .tool-wrapper:hover .color-submenu, .color-submenu:hover {
+            opacity: 1; visibility: visible; transform: translateX(0);
+        }
+
+        .menu-color-option {
+            width: 30px; height: 30px; border-radius: 50%;
+            cursor: pointer; border: 2px solid transparent; transition: transform 0.2s;
+            position: relative;
+        }
+        .menu-color-option:hover { transform: scale(1.1); border-color: rgba(255,255,255,0.3); }
+        .menu-color-option.selected::after {
+            content: '✓'; color: #555; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); font-size: 16px; font-weight: bold;
+        }
+        .menu-color-option[data-color="dark"].selected::after { color: #fff; }
+        #colorBtnIndicator {
+            width: 12px; height: 12px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2); position: absolute; bottom: 12px; right: 12px; pointer-events: none;
+        }
+
+        /* --- Auth Section (New Design) --- */
+        #auth-section {
+            margin-top: auto; /* 推到底部 */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 使用者頭貼按鈕樣式 */
+        .auth-avatar-btn {
+            padding: 0;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+        .auth-avatar-btn:hover {
+            border-color: var(--accent-color);
+        }
+        .auth-avatar-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px; /* 稍微圓角，符合整體方正風格 */
+        }
+
+        /* 使用者選單 (懸浮面板) */
+        #user-menu {
+            position: absolute;
+            left: 60px; /* 側邊欄寬度 */
+            bottom: 0;  /* 對齊底部 */
+            background-color: var(--sidebar-bg);
+            border: 1px solid var(--sidebar-border);
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+            width: 240px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 4px 4px 15px rgba(0,0,0,0.5);
+            z-index: 2200;
+            
+            /* 動畫 */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-10px);
+            transition: all 0.2s ease;
+        }
+
+        #user-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .user-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #444;
+            margin-bottom: 5px;
+        }
+        
+        .user-profile-header img {
+            width: 40px; height: 40px; border-radius: 8px; background: #333;
+        }
+        
+        .user-info-text {
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        
+        .user-name { font-size: 14px; font-weight: bold; color: #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-email { font-size: 11px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .menu-action-btn {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; text-align: left; padding: 10px;
+            background: transparent; border: none; border-radius: 6px;
+            color: #ccc; font-size: 13px; cursor: pointer; transition: 0.2s;
+        }
+        .menu-action-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .menu-action-btn.logout { color: #ff6b6b; }
+        .menu-action-btn.logout:hover { background: rgba(255, 82, 82, 0.1); }
+
+        /* --- 專案列表面板 (Project Panel) --- */
+        #doc-panel {
+            position: fixed;
+            left: 60px;
+            top: 0;
+            bottom: 0;
+            width: 240px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid #444;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1900;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        }
+
+        #doc-panel.open { transform: translateX(0); }
+
+        .panel-header {
+            padding: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ddd;
+            border-bottom: 1px solid #444;
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-board-btn {
+            background: var(--accent-color); border: none; color: white;
+            border-radius: 4px; width: 24px; height: 24px; font-size: 18px;
+            line-height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .add-board-btn:hover { filter: brightness(1.1); }
+
+        #panel-content { flex-grow: 1; overflow-y: auto; padding: 10px 0; }
+
+        /* 畫布列表項目 */
+        .board-item {
+            padding: 8px 15px; cursor: pointer; color: #aaa; display: flex; flex-direction: column;
+            border-left: 3px solid transparent; transition: background 0.2s;
+        }
+        .board-item:hover { background-color: rgba(255,255,255,0.05); }
+        .board-item.active {
+            background-color: rgba(0, 0, 0, 0.2); border-left-color: var(--accent-color); color: #fff;
+        }
+        .board-header { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 500; }
+        
+        .board-delete-btn { opacity: 0; color: var(--danger-color); font-size: 16px; padding: 0 5px; transition: opacity 0.2s; }
+        .board-item:hover .board-delete-btn { opacity: 1; }
+
+        .note-sublist { margin-top: 5px; margin-left: 10px; border-left: 1px solid #444; display: none; }
+        .board-item.active .note-sublist { display: block; }
+
+        .note-item { padding: 5px 10px; font-size: 13px; color: #888; display: flex; align-items: center; transition: color 0.2s; }
+        .note-item:hover { color: var(--accent-color); }
+        .note-dot { width: 6px; height: 6px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
+
+        /* --- 畫布標題區塊 --- */
+        #top-bar {
+            position: absolute; top: 15px; left: 80px; right: 20px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            z-index: 50; pointer-events: none;
+        }
+
+        #board-title {
+            font-size: 24px; font-weight: 600; color: #666; margin: 0;
+            padding: 5px 10px; border-radius: 6px; cursor: text; pointer-events: auto;
+            border: 1px solid transparent;
+        }
+        #board-title:focus { outline: none; background-color: #2d2d2d; color: #eee; border-color: #444; }
+
+        /* 線上使用者 (Presence) */
+        #online-users {
+            display: flex; gap: -5px; pointer-events: auto;
+        }
+        .user-avatar-sm {
+            width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg-color);
+            margin-left: -8px; background: #333; overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5); transition: transform 0.2s;
+        }
+        .user-avatar-sm:first-child { margin-left: 0; }
+        .user-avatar-sm:hover { transform: translateY(-3px); z-index: 10; }
+        .user-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .mode-badge {
+            font-size: 10px; padding: 2px 6px; border-radius: 4px; 
+            margin-left: 10px; vertical-align: middle; font-weight: normal;
+            opacity: 0.7;
+        }
+        .badge-local { background: #444; color: #aaa; }
+        .badge-cloud { background: var(--accent-color); color: #000; font-weight: bold; }
+
+        /* --- 畫布與便條 --- */
+        .note {
+            position: absolute; width: 240px; min-height: 160px;
+            border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            display: flex; flex-direction: column; transition: box-shadow 0.2s, transform 0.2s;
+            resize: both; overflow: hidden; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from{transform:scale(0.5);opacity:0;} to{transform:scale(1);opacity:1;} }
+        @keyframes flashBorder { 0%,100%{box-shadow:0 0 0 2px var(--accent-color);} 50%{box-shadow:0 0 0 6px var(--accent-color);} }
+        .note.highlight { animation: flashBorder 0.6s ease-in-out; z-index: 9999 !important; }
+        .note:active { box-shadow: 0 12px 30px rgba(0,0,0,0.6); z-index: 1000 !important; }
+
+        .note-header { height: 32px; background: rgba(0,0,0,0.1); cursor: grab; display: flex; align-items: center; padding: 0 5px; gap: 5px; }
+        .note-header:active { cursor: grabbing; }
+        .note-title-input { flex-grow: 1; background: transparent; border: none; font-family: inherit; font-size: 13px; font-weight: bold; color: inherit; opacity: 0.8; padding: 2px 4px; }
+        .note-title-input:focus { outline: none; background: rgba(255,255,255,0.1); opacity: 1; }
+        .close-btn { opacity: 0.4; cursor: pointer; font-size: 18px; padding: 0 8px; }
+        .close-btn:hover { opacity: 1; color: var(--danger-color); }
+
+        .note-toolbar { display: flex; align-items: center; padding: 2px 5px; background: rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.05); gap: 2px; user-select: none; }
+        .note[data-dark="true"] .note-toolbar { background: rgba(255,255,255,0.1); }
+        .note-toolbar button { background: transparent; border: none; cursor: pointer; border-radius: 3px; padding: 2px 5px; font-size: 13px; color: inherit; opacity: 0.6; font-family: monospace; min-width: 24px; text-align: center; }
+        .note-toolbar button:hover { background: rgba(0,0,0,0.1); opacity: 1; }
+        .toolbar-sep { color: inherit; opacity: 0.3; margin: 0 2px; font-size: 12px; cursor: default; }
+
+        .note-content { flex-grow: 1; padding: 15px; outline: none; font-size: 15px; line-height: 1.6; color: #222; overflow-y: auto; }
+        .note-content[data-dark="true"] { color: #ddd; }
+
     </style>
 </head>
-<body class="h-screen w-screen flex overflow-hidden selection:bg-accent selection:text-bg">
+<body>
 
-    <div id="global-context-menu" class="fixed hidden bg-surface border border-border rounded shadow-xl z-50 p-1 w-32 backdrop-blur-md">
-        <button id="global-edit-btn" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded transition-colors flex items-center gap-2">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-            <span data-i18n="edit">Edit</span>
-        </button>
-    </div>
-
-    <div id="add-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
-        <div class="bg-surface border border-border p-6 rounded-lg w-96 shadow-2xl transform transition-all modal-enter border-accent" id="modal-content">
-            <h3 class="text-lg font-bold text-accent mb-4 tracking-wider" data-i18n="modal_title">NEW WORKSPACE NODE</h3>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs text-muted mb-1 uppercase font-bold" data-i18n="modal_name">Section Name</label>
-                    <input type="text" id="new-section-name" class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors" placeholder="e.g. Project Omega">
-                </div>
-                <div>
-                    <label class="block text-xs text-muted mb-1 uppercase font-bold" data-i18n="modal_desc">Description</label>
-                    <textarea id="new-section-desc" rows="3" class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors" placeholder="Brief description..."></textarea>
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeModal()" class="px-4 py-2 text-xs font-bold text-muted hover:text-text transition-colors" data-i18n="modal_cancel">CANCEL</button>
-                <button onclick="confirmAddSection()" class="px-4 py-2 text-xs font-bold bg-accent text-bg rounded hover:bg-opacity-90 transition-colors" data-i18n="modal_confirm">CONFIRM</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="edit-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
-        <div class="bg-surface border border-border p-6 rounded-lg w-[450px] shadow-2xl transform transition-all modal-enter border-accent" id="edit-modal-content">
-            <h3 class="text-lg font-bold text-accent mb-4 tracking-wider" data-i18n="edit_modal_title">EDIT WORKSPACE</h3>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs text-muted mb-1 uppercase font-bold" data-i18n="modal_name">Section Name</label>
-                    <input type="text" id="edit-section-name" class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors">
-                </div>
-                <div>
-                    <label class="block text-xs text-muted mb-1 uppercase font-bold" data-i18n="modal_desc">Description</label>
-                    <textarea id="edit-section-desc" rows="2" class="w-full bg-bg border border-border rounded px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors"></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-xs text-muted mb-2 uppercase font-bold" data-i18n="edit_members">Invite Members (Email)</label>
-                    <div class="flex gap-2 mb-2">
-                        <input type="email" id="new-member-input" class="flex-1 bg-bg border border-border rounded px-3 py-1.5 text-xs text-text focus:border-accent focus:outline-none" placeholder="friend@example.com" onkeypress="handleMemberInputKey(event)">
-                        <button onclick="addMember()" class="px-3 py-1.5 bg-white/5 border border-border rounded text-xs hover:text-accent hover:border-accent transition-colors">+</button>
-                    </div>
-                    <div id="members-list" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1">
-                        </div>
-                </div>
-            </div>
-
-            <div class="border-t border-border mt-6 pt-4 flex justify-between items-center">
-                <button onclick="deleteWorkspace()" class="px-3 py-2 text-xs font-bold text-red-500 border border-red-500/50 bg-red-500/10 rounded hover:bg-red-500 hover:text-white transition-all flex items-center gap-2 group">
-                    <svg class="w-3 h-3 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    <span data-i18n="delete_workspace">DELETE</span>
-                </button>
-
-                <div class="flex gap-3">
-                    <button onclick="closeEditModal()" class="px-4 py-2 text-xs font-bold text-muted hover:text-text transition-colors" data-i18n="modal_cancel">CANCEL</button>
-                    <button onclick="saveEditWorkspace()" class="px-4 py-2 text-xs font-bold bg-accent text-bg rounded hover:bg-opacity-90 transition-colors" data-i18n="modal_save">SAVE</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <aside id="sidebar" class="sidebar-transition h-full flex flex-col justify-between border-r border-border bg-sidebar z-20 w-64 relative group">
-        
-        <div class="flex flex-col">
-            <div class="h-16 flex items-center justify-between px-4 border-b border-border">
-                <div id="logo-container" class="flex items-center gap-3 overflow-hidden whitespace-nowrap">
-                    <svg class="w-8 h-8 text-accent min-w-[32px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path>
-                    </svg>
-                    <span class="font-bold tracking-wider text-lg transition-opacity duration-300 sidebar-text text-text">WORKSPACE</span>
-                </div>
-                <button id="toggle-sidebar" class="p-1 rounded hover:bg-white/10 text-muted hover:text-accent transition-colors">
-                    <svg id="toggle-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <nav class="flex-1 py-6 px-3 space-y-4 overflow-y-auto" id="sidebar-nav">
-                
-                <button onclick="openModal()" class="w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm border border-dashed border-border text-muted hover:text-accent hover:border-accent transition-all group">
-                    <svg class="w-5 h-5 min-w-[20px] text-muted group-hover:text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    <span class="sidebar-text whitespace-nowrap" data-i18n="add_tool_section">Add Tool Section</span>
-                </button>
-
-                <div>
-                    <button onclick="toggleWorkspace()" class="w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all group">
-                        <svg id="workspace-arrow" class="w-4 h-4 min-w-[16px] text-muted transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="sidebar-text whitespace-nowrap font-semibold tracking-wide" data-i18n="my_workspace">My Workspace</span>
-                    </button>
-                    <div id="workspace-list" class="hidden pl-4 mt-1 border-l border-border ml-4 space-y-1">
-                        <div class="px-3 py-2 text-xs text-muted italic" id="loading-text">Loading...</div>
-                    </div>
-                </div>
-                
-                <!-- 工具間 (Tool Room) -->
-                <div>
-                    <button onclick="toggleTools()" class="w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all group">
-                        <svg id="tools-arrow" class="w-4 h-4 min-w-[16px] text-muted transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="sidebar-text whitespace-nowrap font-semibold tracking-wide" data-i18n="tools_section">Tool Room</span>
-                    </button>
-                    <div id="tools-list" class="hidden pl-4 mt-1 border-l border-border ml-4 space-y-1">
-                        <!-- 新增的工具：空視窗 -->
-                        <div class="tool-item flex items-center gap-3 px-3 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all cursor-grab group border border-transparent hover:border-accent" draggable="true" id="tool-empty">
-                            <div class="w-5 h-5 flex items-center justify-center bg-white/10 rounded text-xs border border-muted group-hover:border-accent">□</div>
-                            <span class="sidebar-text whitespace-nowrap">Empty Window</span>
-                        </div>
-                        <div class="tool-item flex items-center gap-3 px-3 py-2 rounded-md text-sm text-text hover:bg-white/5 transition-all cursor-grab group border border-transparent hover:border-accent" draggable="true" id="tool-notepad">
-                            <div class="w-5 h-5 flex items-center justify-center bg-white/10 rounded text-xs border border-muted group-hover:border-accent">
-                                <svg class="w-3 h-3 text-muted group-hover:text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            </div>
-                            <span class="sidebar-text whitespace-nowrap">Notepad</span>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        </div>
-
-        <div class="p-3 border-t border-border bg-surface/50 relative">
-            
-            <div id="tool-row" class="flex gap-2 mb-3">
-                <div class="relative flex-1">
-                    <button id="lang-btn" class="w-full flex items-center justify-center gap-2 px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors" title="Language">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </button>
-                    <div id="lang-menu" class="hidden absolute bottom-full left-0 w-32 mb-2 bg-sidebar border border-border rounded-lg shadow-xl overflow-hidden z-50 p-1">
-                        <button onclick="setLanguage('en')" class="w-full text-left px-3 py-2 text-xs hover:bg-accent hover:text-bg rounded">English</button>
-                        <button onclick="setLanguage('zh')" class="w-full text-left px-3 py-2 text-xs hover:bg-accent hover:text-bg rounded">繁體中文</button>
-                    </div>
-                </div>
-
-                <div class="relative flex-1">
-                    <button id="theme-btn" class="w-full flex items-center justify-center gap-2 px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors" title="Appearance">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                    </button>
-                    <div id="theme-menu" class="hidden absolute bottom-full left-0 w-48 mb-2 bg-sidebar border border-border rounded-lg shadow-xl overflow-hidden z-50 p-1">
-                        <button onclick="setTheme('business')" id="opt-business" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded flex items-center gap-2">Business</button>
-                        <button onclick="setTheme('developer')" id="opt-developer" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded flex items-center gap-2">Developer</button>
-                        <button onclick="setTheme('terminal')" id="opt-terminal" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded flex items-center gap-2">Terminal</button>
-                        <button onclick="setTheme('cyberpunk')" id="opt-cyberpunk" class="w-full text-left px-3 py-2 text-xs text-text hover:bg-accent hover:text-bg rounded flex items-center gap-2">Cyberpunk</button>
-                    </div>
-                </div>
-
-<div class="relative flex-1">
-                    <button id="style-btn" class="w-full flex items-center justify-center gap-2 px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors" title="Canvas Style">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
-                    </button>
-                    
-                    <div id="style-menu" class="hidden absolute bottom-full left-0 w-48 mb-2 bg-sidebar border border-border rounded-lg shadow-xl overflow-hidden z-50 p-3 space-y-3">
-                        <div class="text-xs font-bold text-accent tracking-wider mb-1">CANVAS STYLE</div>
-                        
-                        <div class="flex items-center justify-between">
-                            <label class="text-xs text-muted">Workspace BG</label>
-                            <input type="color" id="input-bg-color" class="w-6 h-6 bg-transparent border-0 cursor-pointer" value="#000000">
-                        </div>
-
-                        <div class="flex items-center justify-between mt-2">
-                            <label class="text-xs text-muted">Canvas BG</label>
-                            <input type="color" id="input-canvas-color" class="w-6 h-6 bg-transparent border-0 cursor-pointer" value="#0a100d">
-                        </div>
-
-                        <div class="flex items-center justify-between">
-                            <label class="text-xs text-muted">Border</label>
-                            <input type="color" id="input-border-color" class="w-6 h-6 bg-transparent border-0 cursor-pointer" value="#00ff9d">
-                        </div>
-
-                        <hr class="border-white/10">
-
-                        <div class="flex items-center justify-between">
-                            <label class="text-xs text-muted">Grid Color</label>
-                            <input type="color" id="input-grid-color" class="w-6 h-6 bg-transparent border-0 cursor-pointer" value="#00ff9d">
-                        </div>
-
-                        <div class="space-y-1">
-                            <div class="flex justify-between text-xs text-muted">
-                                <span>Grid Opacity</span>
-                                <span id="grid-opacity-val">10%</span>
-                            </div>
-                            <input type="range" id="input-grid-opacity" min="0" max="100" value="10" class="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-accent">
-                        </div>
-                    </div>
-                </div>
-                <!-- Canvas Size 按鈕：只顯示 SVG 圖示，點擊呼叫 resizeCanvasPrompt() -->
-                <div class="relative flex-1">
-                    <button id="canvas-size-btn"
-                            onclick="resizeCanvasPrompt()"
-                            class="w-full flex items-center justify-center px-2 py-2 rounded-md hover:bg-white/5 text-muted hover:text-accent transition-colors"
-                            title="Canvas Size">
-                
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <div id="auth-container" class="pt-3 border-t border-border">
-                
-                <button id="btn-login" class="w-full flex items-center justify-center gap-2 bg-white text-black px-3 py-2 rounded-md hover:bg-gray-200 transition-colors font-bold text-sm shadow-lg shadow-white/10">
-                    <svg width="16" height="16" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17.64 9.2c0-.637-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"></path>
-                        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.715H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"></path>
-                        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"></path>
-                        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.159 6.656 3.58 9 3.58z" fill="#EA4335"></path>
-                    </svg>
-                    <span class="whitespace-nowrap">Sign in</span>
-                </button>
-
-                <div id="user-profile" class="hidden flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors group relative border border-transparent hover:border-border">
-                    <img id="user-avatar" src="" alt="User" class="w-8 h-8 rounded-full border border-border group-hover:border-accent transition-colors object-cover bg-surface">
-                    
-                    <div class="flex flex-col overflow-hidden sidebar-text flex-1">
-                        <span id="user-name" class="text-xs font-bold text-text truncate">User Name</span>
-                        <span id="user-email" class="text-[10px] text-muted truncate">email@example.com</span>
-                    </div>
-
-                    <div id="logout-menu" class="absolute bottom-full left-0 w-full mb-2 hidden pb-1 z-50">
-                        <button id="btn-logout" class="w-full bg-surface border border-border text-red-500 px-3 py-2 rounded shadow-xl text-xs font-bold hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                            Log Out
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </aside>
-
-    <main class="flex-1 relative flex flex-col h-full bg-bg">
-        <div class="absolute inset-0 dots-bg pointer-events-none z-0"></div>
-
-        <div class="h-12 border-b border-border flex items-center justify-between px-6 bg-surface/50 backdrop-blur z-10 shrink-0 border-accent">
-    
-    <div class="text-sm font-mono text-muted flex items-center">
-        <span class="text-accent mr-2">&gt;</span>
-        <span class="hover:text-text cursor-pointer transition-colors" onclick="resetBreadcrumb()">Workspace</span>
-        <span id="breadcrumb-separator" class="mx-2 hidden">/</span>
-        <span id="breadcrumb-current" class="text-text font-bold hidden ml-2 text-accent"></span>
-    </div>
-            
- <div class="text-sm font-mono text-muted flex items-center">
-        </div>
-
-    <div id="online-users-container" class="flex-1 flex justify-end items-center px-4 gap-2 hidden">
-        <span class="text-[10px] text-muted uppercase tracking-widest">Active:</span>
-        <div id="online-avatars" class="flex -space-x-2 overflow-hidden">
-            </div>
-    </div>           
-    <button onclick="resizeCanvasPrompt()" class="text-xs font-bold text-muted hover:text-accent border border-border hover:border-accent px-3 py-1 rounded transition-all flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-        <span class="hidden sm:inline">CANVAS SIZE</span>
-    </button>
-</div>
-        
-       <div id="canvas-scroll-container" class="flex-1 relative overflow-auto w-full h-full bg-bg cursor-default">
-    
-   <div id="canvas-sizer" class="relative border border-grid flex flex-col overflow-hidden resize" style="width: 1000px; height: 1000px;">
-        
-       <div id="grid-canvas" class="relative w-full h-full">
-    <svg id="connections-layer" class="w-full h-full"></svg>
-    </div>
-
-        <div id="empty-state-container" class="absolute top-0 left-0 w-full h-[calc(100vh-100px)] z-10 flex items-center justify-center pointer-events-none">
-    <div class="text-center space-y-4 pointer-events-auto">
-
-        <button onclick="handlePlusClick()" class="mx-auto border-2 border-accent rounded-full flex items-center justify-center relative group cursor-pointer hover:bg-accent/10 transition-all focus:outline-none" 
-                style="width: 8cqmin; height: 8cqmin; min-width: 60px; min-height: 60px;">
-            
-            <svg class="text-accent group-hover:scale-110 transition-transform" style="width: 40%; height: 40%;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            <div class="absolute inset-0 rounded-full border border-accent animate-ping opacity-20"></div>
-        </button>
-        
-        <h2 class="font-bold text-text text-accent" data-i18n="empty_state" 
-            style="font-size: 2.5cqmin; line-height: 1.2;">
-            
-        </h2>
-        
-        <p id="empty-desc-text" class="text-muted max-w-md mx-auto" data-i18n="empty_desc" 
-           style="font-size: 1.5cqmin;">
-           
-        </p>
-
-    </div>
-</div>
-
-       <div id="project-content-container"class="hidden absolute inset-0 z-10 p-6 overflow-hidden pointer-events-none"></div>
-    </main>
-       
-<div id="llm-chat-container" class="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
-    
-    <div id="llm-chat-window" 
-         class="hidden pointer-events-auto mb-4 bg-surface/90 backdrop-blur-xl border border-accent/30 rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-opacity duration-300 origin-bottom-right relative"
-         style="width: 380px; height: 550px; min-width: 320px; min-height: 400px;">
-        
-        <div id="llm-resize-handle" class="absolute top-0 left-0 w-8 h-8 cursor-nw-resize z-50 group flex items-start justify-start p-1.5 hover:bg-white/5 rounded-br-xl transition-colors">
-            <svg class="w-4 h-4 text-accent/40 group-hover:text-accent transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M16 4H4v12" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </div>
-
-       <div id="llm-chat-header" class="pl-10 pr-4 py-3 bg-white/5 border-b border-white/5 flex justify-between items-center cursor-move select-none backdrop-blur-md">
-            <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-accent shadow-[0_0_8px_rgba(0,255,157,0.8)] animate-pulse"></div>
-                <span class="font-mono font-bold text-sm text-text tracking-widest">
-                    NodeX 
-                    <span class="text-accent text-[10px] align-top">Alpha</span>
-                </span>
-                
-                <span id="daily-usage-counter" class="ml-2 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] text-muted font-mono">
-                    --/20
-                </span>
-            </div>
-            
-            <button onclick="window.closeLlmChat()" class="group p-1 rounded hover:bg-white/10 transition-colors">
-                <svg class="w-4 h-4 text-muted group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+    <!-- 左側工具欄 -->
+    <div id="sidebar">
+        <!-- 新增便條 -->
+        <div class="tool-wrapper">
+            <button class="tool-btn" onclick="createNote()" title="新增便條 (N)">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
             </button>
         </div>
 
-        <div id="chat-history" class="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent">
-            <div class="flex flex-col gap-2 items-start">
-                <div class="flex items-center gap-2 mb-1">
-                    <div class="w-6 h-6 rounded flex items-center justify-center bg-accent/10 border border-accent/20 text-accent">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path></svg>
-                    </div>
-                    <span class="text-sm font-bold text-muted tracking-wider uppercase">NodeX AI</span>
-                </div>
-                <div class="p-3 bg-white/5 border border-white/5 rounded-2xl rounded-tl-none text-sm text-text leading-relaxed shadow-sm">
-                    嗨你好，我是Nodex<br>
-                    <span class="text-muted text-xs">我是一個人工智慧助理，我能為你解決什麼問題嗎?</span>
-                </div>
+        <!-- 畫布/文件列表 -->
+        <div class="tool-wrapper">
+            <button class="tool-btn" id="listToggleBtn" onclick="toggleDocPanel()" title="畫布列表 (L)">
+                <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>
+            </button>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 顏色選單 -->
+        <div class="tool-wrapper">
+            <button class="tool-btn" id="colorBtn">
+                <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                <div id="colorBtnIndicator" style="background-color: var(--note-yellow);"></div>
+            </button>
+            <div class="color-submenu">
+                <div class="menu-color-option selected" data-color="yellow" style="background:var(--note-yellow)" onclick="selectColor('yellow', this)"></div>
+                <div class="menu-color-option" data-color="green" style="background:var(--note-green)" onclick="selectColor('green', this)"></div>
+                <div class="menu-color-option" data-color="blue" style="background:var(--note-blue)" onclick="selectColor('blue', this)"></div>
+                <div class="menu-color-option" data-color="pink" style="background:var(--note-pink)" onclick="selectColor('pink', this)"></div>
+                <div class="menu-color-option" data-color="dark" style="background:var(--note-dark)" onclick="selectColor('dark', this)"></div>
             </div>
         </div>
 
-        <div class="p-4 bg-bg/40 backdrop-blur-md border-t border-white/5">
+        <div class="divider"></div>
+
+        <!-- 清除畫布 -->
+        <div class="tool-wrapper">
+            <button class="tool-btn" onclick="clearCurrentBoard()" title="清空當前畫布">
+                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            </button>
+        </div>
+
+        <!-- Auth Section (Stylish Integration) -->
+        <div id="auth-section">
+            <div class="divider"></div>
             
-            <div class="relative bg-[#18181b] border border-[#27272a] focus-within:border-accent/40 rounded-2xl transition-colors shadow-lg flex flex-col gap-2 p-3">
-                
-                <textarea 
-                    id="chat-input"
-                    placeholder="把你不懂的都丟上來問一遍!" 
-                    class="w-full bg-transparent border-none text-sm text-gray-200 placeholder-gray-500 px-1 py-1 focus:ring-0 resize-none h-10 min-h-[40px] max-h-32 scrollbar-none leading-relaxed"
-                ></textarea>
-
-                <div class="flex justify-between items-center mt-1">
-                    
-                    <div class="flex items-center gap-2">
-                        <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#27272a] hover:bg-[#3f3f46] transition-colors group">
-                            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9h.01"></path>
-                            </svg>
-                            <span class="text-[11px] font-medium text-gray-400 group-hover:text-gray-200 tracking-wide">搜尋</span>
-                        </button>
-
-                        <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#27272a] hover:bg-[#3f3f46] transition-colors group">
-                            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
-                            </svg>
-                            <span class="text-[11px] font-medium text-gray-400 group-hover:text-gray-200 tracking-wide">深度思考 (R1)</span>
-                        </button>
-                    </div>
-
-                    <div class="flex items-center gap-3 pr-1">
-                        <button class="text-gray-400 hover:text-gray-200 transition-colors" title="上傳檔案">
-                            <svg class="w-5 h-5 transform -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                            </svg>
-                        </button>
-                        
-                        <button class="text-gray-400 hover:text-gray-200 transition-colors" title="語音輸入">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                            </svg>
-                        </button>
-
-                        <button id="chat-send-btn" class="flex items-center justify-center w-8 h-8 bg-[#00ff9d] rounded-lg hover:bg-[#00cc7d] hover:shadow-[0_0_10px_rgba(0,255,157,0.3)] transition-all transform hover:scale-105 active:scale-95 text-black">
-                            <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+            <!-- Login Button (Not Logged In) -->
+            <div class="tool-wrapper" id="login-wrapper">
+                <button class="tool-btn" id="login-btn" title="Google 登入 (Sign In)">
+                    <!-- 使用通用使用者圖示，更符合介面風格 -->
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                </button>
             </div>
-            
-            <div class="text-[10px] text-gray-500 text-center mt-3 opacity-70 font-sans tracking-wide">
-                NodeX AI can make mistakes. Please verify important financial information.
+
+            <!-- User Avatar (Logged In) -->
+            <div class="tool-wrapper" id="user-wrapper" style="display:none;">
+                <button class="tool-btn auth-avatar-btn" id="user-avatar-btn" title="使用者選單">
+                    <img id="user-avatar-img" src="" alt="User">
+                </button>
+                
+                <!-- Stylized User Menu -->
+                <div id="user-menu">
+                    <div class="user-profile-header">
+                        <img id="menu-user-img" src="" alt="">
+                        <div class="user-info-text">
+                            <span id="user-name-disp" class="user-name">User</span>
+                            <span id="user-email-disp" class="user-email">email</span>
+                        </div>
+                    </div>
+                    <button class="menu-action-btn logout" id="logout-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                        登出 (Sign Out)
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-   <button id="llm-chat-toggle" class="pointer-events-auto w-16 h-16 rounded-full bg-bg border border-accent/50 text-accent shadow-[0_0_20px_rgba(0,255,157,0.2)] hover:shadow-[0_0_30px_rgba(0,255,157,0.4)] hover:bg-accent hover:text-bg transition-all duration-300 flex items-center justify-center group relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-        
-        <svg class="w-8 h-8 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 6L18 18" stroke-linecap="square" class="group-hover:rotate-90 transition-transform duration-500 origin-center" />
-            <path d="M18 6L6 18" stroke-linecap="square" class="group-hover:-rotate-90 transition-transform duration-500 origin-center" />
-        </svg>
-    </button>
-</div>
+    <!-- 專案/畫布管理面板 -->
+    <div id="doc-panel">
+        <div class="panel-header">
+            <span>文件清單</span>
+            <button class="add-board-btn" onclick="addNewBoard()" title="新增畫布">+</button>
+        </div>
+        <div id="panel-content">
+            <!-- JS 動態生成 -->
+        </div>
+    </div>
+
+    <!-- 頂部資訊列 (標題 + 線上人員) -->
+    <div id="top-bar">
+        <h1 id="board-title" contenteditable="true" spellcheck="false">載入中...</h1>
+        <div id="online-users">
+            <!-- 線上使用者頭貼 -->
+        </div>
+    </div>
+
+    <!-- 畫布區域 -->
+    <div id="board"></div>
+
     <script type="module">
+        // --- Firebase Integration ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, orderBy, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, setDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 1. Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
             authDomain: "brooklyn-terminal.firebaseapp.com",
@@ -766,2017 +452,622 @@
             measurementId: "G-G0GMW0XHG1"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
-        
-        const appId = 'brooklyn-terminal-v1';
 
-        const loginBtn = document.getElementById('btn-login');
-        const userProfile = document.getElementById('user-profile');
-        const logoutMenu = document.getElementById('logout-menu');
-        const userAvatar = document.getElementById('user-avatar');
-        const userName = document.getElementById('user-name');
-        const userEmail = document.getElementById('user-email');
-        const logoutBtn = document.getElementById('btn-logout');
-        const emptyDescText = document.getElementById('empty-desc-text');
+        const APP_COLLECTION = 'pi_canvas_boards';
+        const APP_ID = 'pi-canvas-v1';
 
-        let currentUser = null;
-        let unsubscribeProjects = null;
+        // UI Elements
+        const loginBtn = document.getElementById('login-btn');
+        const loginWrapper = document.getElementById('login-wrapper');
+        const userWrapper = document.getElementById('user-wrapper');
+        const userAvatarBtn = document.getElementById('user-avatar-btn');
+        const userMenu = document.getElementById('user-menu');
+        const userNameDisp = document.getElementById('user-name-disp');
+        const userEmailDisp = document.getElementById('user-email-disp');
+        const userAvatarImg = document.getElementById('user-avatar-img');
+        const menuUserImg = document.getElementById('menu-user-img');
+        const logoutBtn = document.getElementById('logout-btn');
+        const boardTitle = document.getElementById('board-title');
 
-        loginBtn.addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch((error) => alert("Login Error: " + error.message));
-        });
-
-        logoutBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            signOut(auth);
-        });
-
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            window.currentUser = user;
-            if (user) {
-                loginBtn.classList.add('hidden');
-                userProfile.classList.remove('hidden');
-                userProfile.classList.add('flex');
-                userAvatar.src = user.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid;
-                userName.textContent = user.displayName || 'User';
-                userEmail.textContent = user.email;
-                
-                emptyDescText.textContent = "";
-                
-                initWorkspaceListener(user);
-            } else {
-                loginBtn.classList.remove('hidden');
-                userProfile.classList.add('hidden');
-                userProfile.classList.remove('flex');
-                
-                emptyDescText.textContent = "Please sign in to access or create workspaces.";
-                
-              if (unsubscribeProjects) unsubscribeProjects();
-              if (window.updateProjectsList) window.updateProjectsList([]);
-              if (window.resetBreadcrumb) window.resetBreadcrumb();;
-            }
-        });
-
-        function initWorkspaceListener(user) {
-    const q = query(
-        collection(db, 'artifacts', appId, 'public', 'data', 'workspaces'),
-        where('members', 'array-contains', user.email)
-    );
-
-    unsubscribeProjects = onSnapshot(q, (snapshot) => {
-        const projects = [];
-        snapshot.forEach((doc) => {
-            projects.push({ id: doc.id, ...doc.data() });
-        });
-        if (window.updateProjectsList) {
-            window.updateProjectsList(projects);
-        }
-    }, (error) => {
-        console.error("Data fetch error:", error);
-
-        // ★ 把 Loading 改成錯誤提示
-        const loadingText = document.getElementById('loading-text');
-        if (loadingText) {
-            loadingText.textContent = '讀取失敗: ' + (error.code || error.message);
-            loadingText.classList.remove('italic');
-        }
-    });
-}
-        
-        window.dbCreateProject = async (name, desc, nodes) => {
-            if (!currentUser) return alert("Please login first!");
-            try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'workspaces'), {
-                    name: name,
-                    desc: desc,
-                    ownerId: currentUser.uid,
-                    ownerEmail: currentUser.email,
-                    members: [currentUser.email], 
-                    nodes: nodes,
-                    createdAt: new Date().toISOString()
-                });
-            } catch (e) {
-                console.error("Error adding doc: ", e);
-                alert("Error creating workspace: " + e.message);
-            }
-        };
-        
-
-        window.dbUpdateProject = async (projectId, data) => {
-            if (!currentUser) return;
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId);
-            try {
-                await updateDoc(docRef, data);
-            } catch (e) {
-                console.error("Error updating doc: ", e);
-            }
-        };
-        // 將畫面上的物件同步回資料庫
-      
-        window.dbDeleteProject = async (projectId) => {
-            if (!currentUser) return;
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', projectId);
-            try {
-                await deleteDoc(docRef);
-            } catch (e) {
-                console.error("Error deleting doc: ", e);
-            }
-        };
-        
-        window.isUserLoggedIn = () => {
-            return !!currentUser;
-        }
-        // 給前端用：訂閱單一 workspace 文件
-// 回傳值是 unsubscribe function
-window.subscribeWorkspace = (workspaceId, onChange) => {
-    const docRef = doc(
-        db,
-        'artifacts',
-        appId,
-        'public',
-        'data',
-        'workspaces',
-        workspaceId
-    );
-
-    return onSnapshot(docRef, (snap) => {
-        if (!snap.exists()) return;
-        const data = snap.data();
-        // 把 id 一起回傳，前端比較好用
-        window.isRemoteUpdate = true;
-        onChange({ id: snap.id, ...data });
-        window.isRemoteUpdate = false;
-    }, (err) => {
-        console.error('workspace snapshot error:', err);
-    });
-};
-       
-    </script>
-    <script>
         // State
-        const state = {
-            sidebarOpen: true,
-            theme: 'developer',
-            lang: 'en',
-            currentProjectId: null,
-            editingProjectId: null,
-            tempMembers: [],
-            projects: [] 
-        };
-
-        const translations = {
-            en: {
-                add_tool_section: 'Add Tool Section',
-                my_workspace: 'My Workspace',
-                tools_section: 'Tool Room', 
-                language: 'Language',
-                appearance: 'Appearance',
-                select_theme: 'SELECT THEME',
-                theme_business: 'Premium Business',
-                theme_dev: 'Developer',
-                theme_terminal: 'Terminal',
-                theme_cyber: 'Cyberpunk',
-                empty_state: '',
-                empty_desc: '',
-                modal_title: 'NEW WORKSPACE NODE',
-                modal_name: 'SECTION NAME',
-                modal_desc: 'DESCRIPTION',
-                modal_cancel: 'CANCEL',
-                modal_confirm: 'CONFIRM',
-                edit_modal_title: 'EDIT WORKSPACE',
-                edit_members: 'MEMBERS (EMAIL)',
-                delete_workspace: 'DELETE WORKSPACE',
-                modal_save: 'SAVE',
-                edit: 'Edit'
-            },
-            zh: {
-                add_tool_section: '新增工具區間',
-                my_workspace: '我的工作區間',
-                tools_section: '工具間',    
-                language: '語言設定',
-                appearance: '外觀風格',
-                select_theme: '選擇主題',
-                theme_business: '商務人士',
-                theme_dev: '開發者',
-                theme_terminal: '終端機',
-                theme_cyber: '賽博龐克',
-                empty_state: '',
-                empty_desc: '',
-                modal_title: '建立新工作區間',
-                modal_name: '區間名稱',
-                modal_desc: '描述',
-                modal_cancel: '取消',
-                modal_confirm: '確認新增',
-                edit_modal_title: '編輯工作區間',
-                edit_members: '成員名單 (Email)',
-                delete_workspace: '刪除工作區',
-                modal_save: '儲存',
-                edit: '編輯'
-            }
-        };
-
-        const sidebar = document.getElementById('sidebar');
-        const toggleBtn = document.getElementById('toggle-sidebar');
-        const toggleIcon = document.getElementById('toggle-icon');
-        const textElements = document.querySelectorAll('.sidebar-text');
-        const langBtn = document.getElementById('lang-btn');
-        const langMenu = document.getElementById('lang-menu');
-        const themeBtn = document.getElementById('theme-btn');
-        const themeMenu = document.getElementById('theme-menu');
-        const styleBtn = document.getElementById('style-btn');
-        const styleMenu = document.getElementById('style-menu');
-        const inputBgColor = document.getElementById('input-bg-color');
-        const inputBorderColor = document.getElementById('input-border-color');
-        const inputGridColor = document.getElementById('input-grid-color');
-        const inputGridOpacity = document.getElementById('input-grid-opacity');
-        const gridOpacityVal = document.getElementById('grid-opacity-val');
-        const canvasSizer = document.getElementById('canvas-sizer');
-        const modal = document.getElementById('add-modal');
-        const modalContent = document.getElementById('modal-content');
-        const nameInput = document.getElementById('new-section-name');
-        const descInput = document.getElementById('new-section-desc');
-        const editModal = document.getElementById('edit-modal');
-        const editModalContent = document.getElementById('edit-modal-content');
-        const editNameInput = document.getElementById('edit-section-name');
-        const editDescInput = document.getElementById('edit-section-desc');
-        const membersList = document.getElementById('members-list');
-        const newMemberInput = document.getElementById('new-member-input');
-        const breadcrumbSep = document.getElementById('breadcrumb-separator');
-        const breadcrumbCurrent = document.getElementById('breadcrumb-current');
-        const emptyState = document.getElementById('empty-state-container');
-        const projectContent = document.getElementById('project-content-container');
-        const workspaceList = document.getElementById('workspace-list');
-        const workspaceArrow = document.getElementById('workspace-arrow');
-        const globalContextMenu = document.getElementById('global-context-menu');
-        const globalEditBtn = document.getElementById('global-edit-btn');
-        
-        const userProfile = document.getElementById('user-profile');
-        const logoutMenu = document.getElementById('logout-menu');
-        
-        // 拖曳相關全域變數
-        const gridCanvas = document.getElementById('grid-canvas');
-        const CELL_SIZE = 20, MIN_W = CELL_SIZE * 4, MIN_H = CELL_SIZE * 4;
-        let items = []; // 存儲畫面上的物件
-        let activeColor = '#00ff9d'; // 預設強調色
-
-        let activeContextProjectId = null;
-        let unsubscribeCurrentProject = null; // 新增：用來取消舊專案的即時監聽
-        window.isRemoteUpdate = false;  
-        let isRemoteUpdate = false; // 新增：防止同步迴圈 (接收資料時不觸發儲存)
-        // --- 新增：Presence 相關變數 ---
+        window.currentUser = null;
+        let unsubscribeBoards = null;
+        let unsubscribeCurrentBoard = null;
         let unsubscribePresence = null;
         let presenceInterval = null;
+        let isRemoteUpdate = false;
 
-        // --- Data Sync ---
-        window.updateProjectsList = (projects) => {
-            state.projects = projects;
-            renderWorkspaceList();
-            
-            if (state.currentProjectId && !projects.find(p => p.id === state.currentProjectId)) {
-                resetBreadcrumb();
-            } else if (state.currentProjectId) {
-                const current = projects.find(p => p.id === state.currentProjectId);
-                renderProjectGrid(current);
-            }
-        };
-
-        // --- UI Logic ---
-
-        window.handlePlusClick = () => {
-            if (window.isUserLoggedIn && window.isUserLoggedIn()) {
-                openModal();
-            } else {
-                alert("Please Sign In first using the button in the sidebar.");
-            }
-        };
-
-        window.openModal = () => { modal.classList.remove('hidden'); setTimeout(() => modalContent.classList.add('modal-enter-active'), 10); nameInput.focus(); };
-        window.closeModal = () => { modalContent.classList.remove('modal-enter-active'); setTimeout(() => { modal.classList.add('hidden'); nameInput.value = ''; descInput.value = ''; }, 200); };
-        
-        window.confirmAddSection = () => {
-            const name = nameInput.value.trim();
-            const desc = descInput.value.trim();
-            if (name) {
-                if(window.dbCreateProject) {
-                   window.dbCreateProject(name, desc, []);
-                }
-                closeModal();
-            } else {
-                nameInput.classList.add('border-red-500'); setTimeout(() => nameInput.classList.remove('border-red-500'), 1000);
-            }
-        };
-
-        userProfile.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            if (logoutMenu.classList.contains('hidden')) {
-                langMenu.classList.add('hidden');
-                themeMenu.classList.add('hidden');
-                globalContextMenu.classList.add('hidden');
-                
-                logoutMenu.classList.remove('hidden');
-                logoutMenu.classList.add('popover-enter-active'); 
-            } else {
-                logoutMenu.classList.add('hidden');
-                logoutMenu.classList.remove('popover-enter-active');
-            }
-        });
-        
-        function renderWorkspaceList() {
-            workspaceList.innerHTML = '';
-            if (state.projects.length === 0) {
-                workspaceList.innerHTML = '<div class="px-3 py-2 text-xs text-muted italic opacity-50">No workspaces found.</div>';
-                return;
-            }
-
-            state.projects.forEach(proj => {
-                const container = document.createElement('div');
-                container.className = "group relative flex items-center w-full rounded hover:bg-white/5 transition-colors pr-1 mb-1 border-accent";
-                if(proj.id === state.currentProjectId) {
-                     container.classList.add('bg-white/5', 'border-r-2');
-                     if(state.theme === 'terminal') { container.classList.remove('border-r-2', 'border-accent'); container.classList.add('bg-text', 'text-bg'); }
-                }
-
-                const btn = document.createElement('button');
-                btn.className = "flex-1 text-left block px-3 py-2 text-xs text-muted hover:text-accent transition-colors sidebar-text truncate";
-                btn.textContent = proj.name;
-                if(state.theme === 'terminal' && proj.id === state.currentProjectId) { btn.classList.remove('text-muted', 'hover:text-accent'); btn.classList.add('text-bg'); }
-                btn.onclick = function() { selectWorkspaceItem(proj.id); };
-
-                const menuBtn = document.createElement('button');
-                menuBtn.className = "p-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-accent shrink-0 focus:outline-none";
-                menuBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>`;
-                menuBtn.onclick = function(e) { e.stopPropagation(); showGlobalContextMenu(e, proj.id); };
-
-                container.appendChild(btn);
-                container.appendChild(menuBtn);
-                workspaceList.appendChild(container);
-            });
-            
-            if (workspaceList.classList.contains('hidden') && state.projects.length > 0) {
-                workspaceList.classList.remove('hidden');
-                workspaceArrow.classList.add('rotate-90');
-            }
-        }
-        // 切換目前選中的 workspace，並訂閱該 workspace 的即時變化（UI 版本）
-window.selectWorkspaceItem = (projectId) => {
-    // 如果本來就選這個，就不用再做
-    if (state.currentProjectId === projectId) return;
-
-    // 先取消上一個 workspace 的訂閱
-    if (unsubscribeCurrentProject) {
-        unsubscribeCurrentProject();
-        unsubscribeCurrentProject = null;
-    }
-
-    state.currentProjectId = projectId;
-
-    // 更新 breadcrumb
-    const proj = state.projects.find(p => p.id === projectId);
-    breadcrumbSep.classList.remove('hidden');
-    breadcrumbCurrent.classList.remove('hidden');
-    breadcrumbCurrent.textContent = proj ? proj.name : '';
-
-    // 顯示工作區內容、隱藏空狀態
-    emptyState.classList.add('hidden');
-    projectContent.classList.remove('hidden');
-
-    // 清掉目前畫面上的 nodes
-    items.forEach(i => i.el.remove());
-    items = [];
-
-    // 重新畫 header（OWNER / MEMBERS / DESC 那行）
-    if (proj) {
-        renderProjectGrid(proj);
-    }
-
-    // 開始訂閱這個 workspace 文件（重點：這裡啟用多使用者同步）
-    if (window.subscribeWorkspace) {
-        unsubscribeCurrentProject = window.subscribeWorkspace(projectId, (projectData) => {
-            // 這裡會在任何人更新 nodes 時被呼叫（包含自己）
-            isRemoteUpdate = true;
-
-            // 更新 header
-            renderProjectGrid(projectData);
-
-            // 先清掉舊的 nodes
-            items.forEach(i => i.el.remove());
-            items = [];
-
-            const nodes = projectData.nodes || [];
-            nodes.forEach(n => {
-                // 注意：把 savedItem 傳進去，createItem 裡就不會再呼叫 saveProjectState()
-                createItem(
-                    n.x,
-                    n.y,
-                    n.w,
-                    n.h,
-                    n.color || activeColor,
-                    n.type || 'empty-window',
-                    n            // savedItem
-                );
-            });
-
-            isRemoteUpdate = false;
-        });
-    }
-    startPresenceSystem(projectId);
-};
-
-        function showGlobalContextMenu(e, projectId) {
-            activeContextProjectId = projectId;
-            const rect = e.currentTarget.getBoundingClientRect();
-            globalEditBtn.onclick = () => { openEditProjectModal(activeContextProjectId); globalContextMenu.classList.add('hidden'); };
-            globalContextMenu.style.top = `${rect.bottom}px`;
-            globalContextMenu.style.left = `${rect.right - 10}px`;
-            globalContextMenu.classList.remove('hidden');
-        }
-
-        window.openEditProjectModal = (projectId) => {
-            const project = state.projects.find(p => p.id === projectId);
-            if(!project) return;
-            state.editingProjectId = projectId;
-            state.tempMembers = project.members ? [...project.members] : [];
-            editNameInput.value = project.name;
-            editDescInput.value = project.desc || '';
-            renderEditMembers();
-            editModal.classList.remove('hidden');
-            setTimeout(() => editModalContent.classList.add('modal-enter-active'), 10);
-        };
-
-        window.closeEditModal = () => {
-            editModalContent.classList.remove('modal-enter-active');
-            setTimeout(() => { editModal.classList.add('hidden'); state.editingProjectId = null; state.tempMembers = []; }, 200);
-        };
-
-        function renderEditMembers() {
-            membersList.innerHTML = '';
-            state.tempMembers.forEach((member, index) => {
-                const chip = document.createElement('div');
-                chip.className = "flex items-center gap-1 px-2 py-1 bg-white/5 border border-border rounded text-xs text-text border-accent";
-                chip.innerHTML = `<span class="text-accent">${member}</span><button onclick="removeMember(${index})" class="text-muted hover:text-red-500 ml-1">×</button>`;
-                membersList.appendChild(chip);
-            });
-        }
-
-        window.addMember = () => { 
-            const email = newMemberInput.value.trim(); 
-            if(email && email.includes('@')) { 
-                if(!state.tempMembers.includes(email)) {
-                    state.tempMembers.push(email); 
-                }
-                newMemberInput.value = ''; 
-                renderEditMembers(); 
-            } else {
-                alert("Please enter a valid email.");
-            }
-        };
-        window.removeMember = (index) => { state.tempMembers.splice(index, 1); renderEditMembers(); };
-        window.handleMemberInputKey = (e) => {if (e.key === 'Enter') window.addMember();};
-
-        window.saveEditWorkspace = () => {
-    if(!state.editingProjectId) return;
-    if(window.dbUpdateProject) {
-        const members = [...state.tempMembers];
-        // 確保 owner 一定在 members 裡（currentUser 可從 module 丟到 window，例如 window.currentUser）
-        if (window.currentUser && !members.includes(window.currentUser.email)) {
-            members.push(window.currentUser.email);
-        }
-
-        window.dbUpdateProject(state.editingProjectId, {
-            name: editNameInput.value.trim(),
-            desc: editDescInput.value.trim(),
-            members
-        });
-    }
-    closeEditModal();
-};
-
-        window.deleteWorkspace = () => {
-            if(!state.editingProjectId) return;
-            if(confirm('Are you sure you want to delete this workspace? All members will lose access.')) {
-                if(window.dbDeleteProject) {
-                    window.dbDeleteProject(state.editingProjectId);
-                }
-                closeEditModal();
-            }
-        };
-
-        function updateThemeMenuHighlight() {
-            ['business', 'developer', 'terminal', 'cyberpunk'].forEach(t => {
-                const btn = document.getElementById(`opt-${t}`);
-                if(btn) { btn.classList.remove('text-accent', 'font-bold'); btn.classList.add('text-text'); }
-            });
-            const activeBtn = document.getElementById(`opt-${state.theme}`);
-            if(activeBtn) { activeBtn.classList.remove('text-text'); activeBtn.classList.add('text-accent', 'font-bold'); }
-        }
-
-        function generateRandomNodes() {
-            const count = Math.floor(Math.random() * 5) + 3; 
-            const nodes = [];
-            for (let i = 0; i < count; i++) { nodes.push({ top: Math.floor(Math.random() * 80) + '%', left: Math.floor(Math.random() * 80) + '%', type: Math.random() > 0.5 ? 'data' : 'process' }); }
-            return nodes;
-        }
-
-    
-        function renderProjectGrid(project) {
-            projectContent.innerHTML = '';
-        }
-
-        window.resetBreadcrumb = () => {
-            stopPresenceSystem();
-            state.currentProjectId = null;
-            // 取消目前 workspace 的訂閱
-            if (unsubscribeCurrentProject) {
-            unsubscribeCurrentProject();
-            unsubscribeCurrentProject = null;
-           } 
-
-    // 清空畫面上的 nodes
-    items.forEach(i => i.el.remove());
-    items = [];
-
-    breadcrumbSep.classList.add('hidden');
-    breadcrumbCurrent.classList.add('hidden');
-    renderWorkspaceList();
-    emptyState.classList.remove('hidden');
-    projectContent.classList.add('hidden');
-};
-window.toggleWorkspace = () => {
-    if (!state.sidebarOpen) toggleBtn.click(); 
-
-    const list = document.getElementById('workspace-list');
-    const arrow = document.getElementById('workspace-arrow');
-
-    list.classList.toggle('hidden');
-    arrow.classList.toggle('rotate-90');
-};
-   
-        window.toggleTools = () => {
-            if (!state.sidebarOpen) toggleBtn.click();
-            const list = document.getElementById('tools-list');
-            const arrow = document.getElementById('tools-arrow');
-            list.classList.toggle('hidden');
-            arrow.classList.toggle('rotate-90');
-        };
-
-        const toolRow = document.getElementById('tool-row');
-
-        toggleBtn.addEventListener('click', () => {
-            state.sidebarOpen = !state.sidebarOpen;
-            
-            if (!state.sidebarOpen) {
-                sidebar.classList.remove('w-64'); 
-                sidebar.classList.add('w-16');
-                textElements.forEach(el => el.classList.add('opacity-0', 'pointer-events-none', 'hidden'));
-                toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>';
-                workspaceList.classList.add('hidden'); 
-                workspaceArrow.classList.remove('rotate-90');
-                const toolsList = document.getElementById('tools-list');
-                const toolsArrow = document.getElementById('tools-arrow');
-                if(toolsList) toolsList.classList.add('hidden');
-                if(toolsArrow) toolsArrow.classList.remove('rotate-90');
-                if(toolRow) {
-                    toolRow.classList.remove('flex-row');
-                    toolRow.classList.add('flex-col');
-                }
-            } else {
-                sidebar.classList.remove('w-16'); 
-                sidebar.classList.add('w-64');
-                setTimeout(() => textElements.forEach(el => el.classList.remove('opacity-0', 'pointer-events-none', 'hidden')), 100);
-                toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>';
-                if(toolRow) {
-                    toolRow.classList.remove('flex-col');
-                    toolRow.classList.add('flex-row');
-                }
-            }
+        // --- Auth Functions ---
+        loginBtn.addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(error => alert("Login Error: " + error.message));
         });
 
-        function toggleMenu(menu) {
-    const menus = [langMenu, themeMenu, styleMenu, globalContextMenu];
-
-    // 先把所有 menu 關掉
-    menus.forEach(m => {
-        if (!m) return;
-        if (m !== menu) {
-            m.classList.add('hidden');
-            m.classList.remove('popover-enter-active');
-        }
-    });
-
-    // 再決定要不要切換目前這一個
-    const isHidden = menu.classList.contains('hidden');
-    if (isHidden) {
-        menu.classList.remove('hidden');
-        menu.classList.add('popover-enter-active');
-    } else {
-        menu.classList.add('hidden');
-        menu.classList.remove('popover-enter-active');
-    }
-}
-
-        langBtn.addEventListener('click', (e) => { e.stopPropagation(); if(!state.sidebarOpen) toggleBtn.click(); toggleMenu(langMenu); });
-        
-        themeBtn.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            if(!state.sidebarOpen) toggleBtn.click(); 
-            toggleMenu(themeMenu); 
-            updateThemeMenuHighlight(); 
-        });
-        styleBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (!state.sidebarOpen) toggleBtn.click(); // 若側邊欄縮起來，順便打開
-    toggleMenu(styleMenu);
-});
-        // --- 新增：樣式調整邏輯 ---
-        // 宣告新變數
-        const inputCanvasColor = document.getElementById('input-canvas-color'); // ★ 新增抓取 Canvas 顏色 input
-
-        // 1. 外部操作區背景 (Workspace BG)
-        // 改為控制 canvas-scroll-container
-        inputBgColor.addEventListener('input', (e) => {
-            document.getElementById('canvas-scroll-container').style.backgroundColor = e.target.value;
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+            userMenu.classList.remove('show');
         });
 
-        // 2. 中間畫布背景 (Canvas BG) 
-        // 改為控制 canvas-sizer
-        if (inputCanvasColor) {
-            inputCanvasColor.addEventListener('input', (e) => {
-                canvasSizer.style.backgroundColor = e.target.value;
-            });
-        }
-
-        // 2. 外框顏色
-        inputBorderColor.addEventListener('input', (e) => {
-            canvasSizer.style.borderColor = e.target.value;
+        userAvatarBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenu.classList.toggle('show');
         });
 
-        // 3. 網格更新函數 (合併顏色與透明度)
-        function updateGridStyle() {
-            const colorHex = inputGridColor.value;
-            const opacity = inputGridOpacity.value / 100;
-            gridOpacityVal.textContent = inputGridOpacity.value + '%';
-
-            // 將 Hex 轉為 RGB
-            const r = parseInt(colorHex.substr(1,2), 16);
-            const g = parseInt(colorHex.substr(3,2), 16);
-            const b = parseInt(colorHex.substr(5,2), 16);
-            
-            const rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-
-            // 更新 canvas-sizer 的背景圖 (網格)
-            canvasSizer.style.backgroundImage = `
-                linear-gradient(to right, ${rgba} 1px, transparent 1px),
-                linear-gradient(to bottom, ${rgba} 1px, transparent 1px)
-            `;
-        }
-
-        // 監聽網格顏色與透明度
-        inputGridColor.addEventListener('input', updateGridStyle);
-        inputGridOpacity.addEventListener('input', updateGridStyle);
         document.addEventListener('click', (e) => {
-    // 點在 Style menu 裡就不要關掉
-    if (styleMenu.contains(e.target)) return;
-
-    // 點畫面其他地方 → 全部 menu 關閉
-    [langMenu, themeMenu, styleMenu, globalContextMenu].forEach(m => {
-        if (!m) return;
-        m.classList.add('hidden');
-        m.classList.remove('popover-enter-active');
-    });
-
-    if (userProfile && !userProfile.contains(e.target)) {
-        if (logoutMenu) logoutMenu.classList.add('hidden');
-    }
-
-    if (e.target === modal) closeModal();
-    if (e.target === editModal) closeEditModal();
-});
-
-        window.setLanguage = (lang) => {
-            state.lang = lang; const t = translations[lang];
-            document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (t[key]) el.textContent = t[key]; });
-            if(lang === 'zh') { document.getElementById('new-section-name').placeholder = '例如: 專案 Omega'; document.getElementById('new-section-desc').placeholder = '簡短描述...'; } else { document.getElementById('new-section-name').placeholder = 'e.g. Project Omega'; document.getElementById('new-section-desc').placeholder = 'Brief description...'; }
-        };
-
-        window.setTheme = (themeName) => {
-            state.theme = themeName;
-            if (themeName === 'cyberpunk') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', themeName);
-            updateThemeMenuHighlight();
-        };
-        // 將畫面上的物件同步回資料庫（UI 版本）
-// 直接呼叫 module 那邊提供的 dbUpdateProject
-window.saveProjectState = async () => {
-    // 沒有選 workspace，或目前是遠端同步中，就不用寫回 DB
-    if (!state.currentProjectId || window.isRemoteUpdate) return;
-    const nodesData = items.map(i => ({
-        id: i.id,
-        x: i.x,
-        y: i.y,
-        w: i.w,
-        h: i.h,
-        type: i.type,
-        color: i.el.style.borderColor,
-        label: i.label || '',
-        content: i.content || ''
-    }));
-
-    if (!window.dbUpdateProject) return;
-
-    try {
-        await window.dbUpdateProject(state.currentProjectId, { nodes: nodesData });
-        console.log('State synced to DB');
-    } catch (e) {
-        console.error('Sync error:', e);
-    }
-};
-
-
-
-
-        
-
-        // --- Drag and Drop Logic (新增部分) ---
-        
-        // Helper Functions
-        function snap(v) { return Math.round(v / CELL_SIZE) * CELL_SIZE; }
-        function checkCollision(target, ignoreId) { 
-            return items.some(i => { 
-                if (i.id === ignoreId) return false; 
-                return (target.x < i.x + i.w && target.x + target.w > i.x && target.y < i.y + i.h && target.y + target.h > i.y); 
-            }); 
-        }
-        function hexToRgb(hex) { const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 }; }
-
-        // Setup Drag Listeners
-        const toolEmpty = document.getElementById('tool-empty');
-        if (toolEmpty) {
-            toolEmpty.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('type', 'empty-window');
-            });
-        }
-        const toolNotepad = document.getElementById('tool-notepad'); //記事本
-        if (toolNotepad) {
-            toolNotepad.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('type', 'notepad');
-            });
-        }
-        // VVVV 新增 LLM NodeX 的拖曳邏輯 VVVV
-            const toolLlmChatbot = document.getElementById('tool-llm-chatbot');
-            if (toolLlmChatbot) {
-                toolLlmChatbot.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('type', 'llm-chatbot');
-                });
+            if (!userMenu.contains(e.target) && e.target !== userAvatarBtn) {
+                userMenu.classList.remove('show');
             }
+        });
 
-        // Drop Listener
-        gridCanvas.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
-        gridCanvas.addEventListener('drop', (e) => {
-            e.preventDefault();
-            
-            // 只有在 grid-canvas 顯示時才允許放下 (雖然 main 隱藏時也拖不進來)
-            if (gridCanvas.offsetParent === null) return;
-
-           const type = e.dataTransfer.getData('type');
-    const rect = gridCanvas.getBoundingClientRect();
-
-    // 計算相對位置，並考慮捲軸
-    const scrollTop = document.getElementById('canvas-scroll-container').scrollTop || 0; // 使用 scrollContainer 的捲動
-    const scrollLeft = document.getElementById('canvas-scroll-container').scrollLeft || 0; 
-
-    // 預設位置為放置點，並吸附網格
-    let x = snap(e.clientX - rect.left + scrollLeft); // 修正為 client + scroll - rect.left
-    let y = snap(e.clientY - rect.top + scrollTop);   // 修正為 client + scroll - rect.top
-
-    // 新增 LLM 對話框的尺寸
-    const CHAT_W = 350;
-    const CHAT_H = 450;
-
-    if (type === 'empty-window') {
-        if(!checkCollision({x, y, w: 300, h: 200})) {
-            createItem(x, y, 300, 200, '#ffffff', 'empty-window'); // 沿用原本的尺寸
-        }
-    } else if (type === 'llm-chatbot') { 
-       
-        const sizer = document.getElementById('canvas-sizer');
-        const containerW = parseInt(sizer.style.width); 
-        const containerH = parseInt(sizer.style.height);
-
-        // 計算右下角位置 (考慮畫布捲動)
-        // x = 畫布寬度 - 節點寬度 - 邊距
-        // y = 畫布高度 - 節點高度 - 邊距
-
-        x = snap(containerW - CHAT_W - 50); 
-        y = snap(containerH - CHAT_H - 50);
-
-        // 確保位置不超出目前畫布範圍 (如果不希望它在畫布外)
-        if (x < 0) x = 50; 
-        if (y < 0) y = 50;
-
-        if(!checkCollision({x, y, w: CHAT_W, h: CHAT_H})) {
-            // 使用 LLM 節點，並設定為強調色 (Neon Green)
-            createItem(x, y, CHAT_W, CHAT_H, '#00ff9d', 'llm-chatbot'); 
-
-            // 為了讓使用者看到它，可以將視窗捲動到該位置
-            document.getElementById('canvas-scroll-container').scrollLeft = x - 50;
-            document.getElementById('canvas-scroll-container').scrollTop = y - 50;
-        } else {
-            alert("該位置已有節點，請調整畫布大小或清空空間！");
-        }
-    }else if (type === 'notepad') {
-            if(!checkCollision({x, y, w: 250, h: 300})) {
-                createItem(x, y, 250, 300, '#f59e0b', 'notepad'); 
-            }
-        }     
-});
-
-        function createItem(x, y, w, h, color, type, savedItem = null) {
-            // const id = 'item_' + Date.now() + Math.random().toString(36).substr(2, 5);
-            const id = savedItem ? savedItem.id : ('item_' + Date.now() + Math.random().toString(36).substr(2, 5));
-            const labelContent = savedItem ? (savedItem.label || '') : '';
-            const el = document.createElement('div'); 
-            el.className = 'grid-item'; 
-            
-            el.id = id; 
-            el.style.left = x + 'px'; 
-            el.style.top = y + 'px';
-            el.style.width = w + 'px'; 
-            el.style.height = h + 'px';
-            
-            const rgb = hexToRgb(color); 
-            el.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
-            el.style.borderColor = color;
-
-            el.innerHTML = `
-                <div class="content-container" style="width:100%; height:100%;"></div>
-                <div class="item-label-container" id="lbl-${id}"></div>
-                <div class="menu-trigger">⋮</div>
-                <div class="context-menu">
-                    <div class="context-menu-item" onclick="editLabel('${id}')">編輯名稱 (Name)</div>
-                    <div class="context-menu-item danger" onclick="deleteItem('${id}')">移除 (Remove)</div>
-                </div>
-                <div class="item-resize"></div>`;
-            
-            const menu = el.querySelector('.context-menu');
-            const trigger = el.querySelector('.menu-trigger');
-
-            trigger.onclick = (e) => { 
-                e.stopPropagation(); 
-                document.querySelectorAll('.context-menu').forEach(m => { if(m!==menu) m.classList.remove('show'); }); 
-                menu.classList.toggle('show'); 
-            };
-
-            gridCanvas.appendChild(el);
-            const itemObj = { id, x, y, w, h, el, type, label: labelContent, content: savedItem ? (savedItem.content || '') : '' };
-           // const itemObj = { id, x, y, w, h, el, type, label: '' };
-            items.push(itemObj);
-            // 如果有 saved label，顯示在畫面上
-            if(labelContent) {
-                setTimeout(() => { document.getElementById(`lbl-${id}`).innerText = labelContent; }, 0);
-            }
-            // --- 新增這段：當有物件建立時，隱藏初始化按鈕 ---
-            const emptyState = document.getElementById('empty-state-container');
-            if (emptyState && !emptyState.classList.contains('hidden')) {
-                emptyState.classList.add('hidden');
-                emptyState.style.display = 'none'; // 雙重確保隱藏
-              }
-
-            // Render Content
-            if (type === 'empty-window') renderEmptyWindowContent(itemObj);
-            else if (type === 'llm-chatbot') renderLLMChatbotContent(itemObj);
-            else if (type === 'notepad') renderNotepadContent(itemObj);
-
-            if (!savedItem && !isRemoteUpdate) {
-                saveProjectState();
-            }
-            setupInteractions(itemObj); 
-            document.addEventListener('click', () => menu.classList.remove('show')); 
-            
-            return { el, obj: itemObj };
-        }
-
-        // Render Functions
-        function renderEmptyWindowContent(item) {
-            const container = item.el.querySelector('.content-container');
-            if (container.querySelector('.empty-window-layout')) return;
-
-            container.innerHTML = `
-                <div class="empty-window-layout flex flex-col w-full h-full bg-surface/50 backdrop-blur-sm overflow-hidden rounded">
-                    <div class="widget-header p-2 bg-bg border-b border-border flex justify-between items-center cursor-move select-none">
-                        <span class="font-bold text-xs tracking-wider text-text">WINDOW</span>
-                        <span class="text-[10px] text-muted opacity-50 uppercase tracking-widest">EMPTY</span>
-                    </div>
-                    <div class="flex-1 p-4 overflow-auto text-muted text-sm relative">
-                        <div class="absolute inset-2 border-2 border-dashed border-border rounded flex items-center justify-center opacity-30 pointer-events-none">
-                            <span class="text-xs uppercase tracking-widest">Content Area</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-       function renderNotepadContent(item) {
-    const container = item.el.querySelector('.content-container');
-    // 如果已經渲染過，就不要重複渲染
-    if (container.querySelector('.notepad-layout')) return;
-
-    // 讀取舊內容 (支援 HTML)
-    const savedContent = item.content || ''; 
-
-    // 建立 HTML 結構：包含工具列與編輯區
-    container.innerHTML = `
-        <div class="notepad-layout flex flex-col w-full h-full bg-surface/90 backdrop-blur-md overflow-hidden rounded border-l-4 border-accent-secondary">
-            
-            <div class="widget-header p-2 bg-white/5 border-b border-white/10 flex justify-between items-center cursor-move select-none">
-                <span class="font-bold text-xs tracking-wider text-accent-secondary">NOTEPAD</span>
-                <div class="flex gap-1" onmousedown="event.stopPropagation();">
-                    <button class="btn-bold p-1 rounded hover:bg-white/10 text-muted hover:text-white transition-colors" title="Bold">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"></path></svg>
-                    </button>
-                    <button class="btn-italic p-1 rounded hover:bg-white/10 text-muted hover:text-white transition-colors" title="Italic">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l4-14"></path></svg>
-                    </button>
-                    <button class="btn-list p-1 rounded hover:bg-white/10 text-muted hover:text-white transition-colors" title="Bullet List">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h.01M4 12h.01M4 18h.01"></path></svg>
-                    </button>
-                </div>
-            </div>
-
-            <div 
-                class="notepad-editor flex-1 p-3 text-sm text-text overflow-auto focus:outline-none leading-relaxed font-sans"
-                contenteditable="true"
-                style="outline: none;" 
-            >${savedContent}</div>
-        </div>
-    `;
-
-    const editor = container.querySelector('.notepad-editor');
-
-    // --- 綁定工具列功能 ---
-    // 使用 execCommand 來執行瀏覽器原生的編輯功能
-    const exec = (command) => {
-        document.execCommand(command, false, null);
-        editor.focus(); // 執行後將焦點放回編輯區
-    };
-
-    container.querySelector('.btn-bold').onclick = () => exec('bold');
-    container.querySelector('.btn-italic').onclick = () => exec('italic');
-    container.querySelector('.btn-list').onclick = () => exec('insertUnorderedList');
-
-    // --- 防止拖曳干擾 ---
-    // 當使用者在編輯區點擊或選取文字時，不要觸發視窗拖曳
-    editor.addEventListener('mousedown', (e) => {
-        e.stopPropagation(); 
-    });
-
-    // --- 資料儲存邏輯 ---
-    // 監聽輸入事件，更新 item 物件
-    editor.addEventListener('input', () => {
-        // 儲存 innerHTML 以保留 <b>, <i>, <ul> 等標籤
-        item.content = editor.innerHTML;
-    });
-
-    // 失去焦點時，寫入資料庫 (與原始碼 saveProjectState 連動 )
-    editor.addEventListener('blur', () => {
-        item.content = editor.innerHTML;
-        saveProjectState();
-    });
-}
-        
-function renderLLMChatbotContent(item) {
-    const container = item.el.querySelector('.content-container');
-    if (container.querySelector('.llm-chatbot-layout')) return;
-
-    container.innerHTML = `
-        <div class="llm-chatbot-layout flex flex-col w-full h-full bg-surface/80 backdrop-blur-md overflow-hidden rounded">
-            <div class="widget-header p-2 bg-accent/20 border-b border-accent flex justify-between items-center cursor-move select-none">
-                <span class="font-bold text-xs tracking-wider text-accent">LLM NodeX</span>
-                <span class="text-[10px] text-muted opacity-50 uppercase tracking-widest">Chatbot</span>
-            </div>
-            <div class="flex-1 flex flex-col p-2 overflow-auto text-muted text-sm relative">
-                <div class="flex-1 overflow-y-auto mb-2 text-xs">
-                    <div class="text-accent/80 p-1 rounded">Agent: Hello! How can I help?</div>
-                </div>
-                <input type="text" placeholder="Ask NodeX..." 
-                       class="w-full bg-bg border border-border rounded px-2 py-1 text-xs text-text focus:border-accent focus:outline-none">
-            </div>
-        </div>
-    `;
-}
-
-
-        
-        // Interaction Setup (Drag & Resize)
-        function setupInteractions(item) {
-            const { el } = item, resizeHandle = el.querySelector('.item-resize'), menu = el.querySelector('.context-menu'), trigger = el.querySelector('.menu-trigger');
-            el.addEventListener('mousedown', handleStart);
-            el.addEventListener('touchstart', handleStart, {passive: false});
-
-            function handleStart(e) {
-                if(e.target === resizeHandle || e.target === trigger || menu.contains(e.target)) return; 
-                if (['INPUT', 'BUTTON', 'SELECT', 'OPTION', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return; 
+        // --- Auth State Observer ---
+        onAuthStateChanged(auth, (user) => {
+            window.currentUser = user;
+            if (user) {
+                // UI Switch
+                loginWrapper.style.display = 'none';
+                userWrapper.style.display = 'flex';
                 
-                // ★ 限制只能拖曳 Header 的工具類型 ★
-                // 這裡加入了 'empty-window'，確保使用者必須按住標題列才能拖動視窗
-                if (['empty-window'].includes(item.type) && !e.target.closest('.widget-header')) return;
+                // Set User Info
+                const photo = user.photoURL || 'https://www.gstatic.com/images/branding/product/1x/avatar_square_grey_512dp.png';
+                userAvatarImg.src = photo;
+                menuUserImg.src = photo;
+                userNameDisp.textContent = user.displayName;
+                userEmailDisp.textContent = user.email;
                 
-                if(e.type === 'touchstart') e.preventDefault();
-
-                const startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-                const startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
-                const startLeft = item.x;
-                const startTop = item.y; 
-                el.style.zIndex = 999;
-
-                function onMove(ev) { 
-                    const clientX = ev.type === 'mousemove' ? ev.clientX : ev.touches[0].clientX;
-                    const clientY = ev.type === 'mousemove' ? ev.clientY : ev.touches[0].clientY;
-                    const dx = clientX - startX;
-                    const dy = clientY - startY; 
-                    let rawX = startLeft + dx;
-                    let rawY = startTop + dy; 
-
-                    const containerW = canvasSizer.offsetWidth;
-                    const containerH = canvasSizer.offsetHeight;
-                    
-                    // 左側限制
-                    if(rawX < 0) rawX = 0; 
-                    // 上方限制
-                    if(rawY < 0) rawY = 0;
-                    const maxX = containerW - item.w;
-                    const maxY = containerH - item.h;
-
-                    if (rawX > maxX) rawX = maxX;
-                    if (rawY > maxY) rawY = maxY;
-
-                    // --- 修改結束 ---
-
-                    el.style.left = rawX + 'px'; 
-                    el.style.top = rawY + 'px';
-                    
-                    // 更新數據與連線
-                    item.x = rawX;
-                    item.y = rawY;
-                    if (typeof updateLines === 'function') updateLines(); // 確保連線跟隨
-
-                    const snapX = snap(rawX);
-                    const snapY = snap(rawY);
-                    if (checkCollision({ ...item, x: snapX, y: snapY }, item.id)) el.classList.add('collision'); 
-                    else el.classList.remove('collision');
-                }
-
-                function onUp(ev) { 
-                    document.removeEventListener('mousemove', onMove); 
-                    document.removeEventListener('mouseup', onUp);
-                    document.removeEventListener('touchmove', onMove); 
-                    document.removeEventListener('touchend', onUp); 
-                    el.style.zIndex = ''; 
-                    const finalX = snap(parseInt(el.style.left)); 
-                    const finalY = snap(parseInt(el.style.top));
-                    if (checkCollision({ ...item, x: finalX, y: finalY }, item.id)) { 
-                        // 如果碰撞，彈回原位 (或者你要允許重疊也可以移除這段)
-                        el.style.left = item.x + 'px'; 
-                        el.style.top = item.y + 'px';
-                    } else { 
-                        item.x = finalX; 
-                        item.y = finalY; 
-                        el.style.left = finalX + 'px'; 
-                        el.style.top = finalY + 'px';
-                    } 
-                    el.classList.remove('collision'); 
-                    saveProjectState();
-                }
-
-                if (e.type === 'mousedown') {
-                    document.addEventListener('mousemove', onMove); 
-                    document.addEventListener('mouseup', onUp);
-                } else {
-                    document.addEventListener('touchmove', onMove, {passive: false}); 
-                    document.addEventListener('touchend', onUp);
-                }
-            }
-
-            // Resize Logic
-            resizeHandle.addEventListener('mousedown', handleResizeStart);
-            resizeHandle.addEventListener('touchstart', handleResizeStart, {passive: false});
-
-            function handleResizeStart(e) {
-                e.stopPropagation(); 
-                if(e.type === 'touchstart') e.preventDefault();
-
-                const startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-                const startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
-                const startW = item.w; 
-                const startH = item.h;
-
-                function onResize(ev) { 
-                    const clientX = ev.type === 'mousemove' ? ev.clientX : ev.touches[0].clientX;
-                    const clientY = ev.type === 'mousemove' ? ev.clientY : ev.touches[0].clientY;
-                    const dx = clientX - startX; 
-                    const dy = clientY - startY; 
-                    let nw = snap(Math.max(MIN_W, startW + dx)); 
-                    let nh = snap(Math.max(MIN_H, startH + dy)); 
-                    
-                    if (checkCollision({ ...item, w: nw, h: nh }, item.id)) el.classList.add('collision'); 
-                    else { 
-                        el.classList.remove('collision'); 
-                        el.style.width = nw + 'px'; 
-                        el.style.height = nh + 'px'; 
-                        item.w = nw;
-                        item.h = nh;
-                    } 
-                }
-
-                function onResizeUp() { 
-                    document.removeEventListener('mousemove', onResize); 
-                    document.removeEventListener('mouseup', onResizeUp);
-                    document.removeEventListener('touchmove', onResize); 
-                    document.removeEventListener('touchend', onResizeUp); 
-                    el.classList.remove('collision'); 
-                    saveProjectState();
-                }
-
-                if(e.type === 'mousedown') {
-                    document.addEventListener('mousemove', onResize); 
-                    document.addEventListener('mouseup', onResizeUp);
-                } else {
-                    document.addEventListener('touchmove', onResize, {passive: false}); 
-                    document.addEventListener('touchend', onResizeUp);
-                }
-            }
-        }
-
-        // Global functions for context menu
-        window.editLabel = function(id) {
-            const item = items.find(i => i.id === id);
-            if(!item) return;
-            item.el.querySelector('.context-menu').classList.remove('show');
-            const text = prompt("請輸入名稱 (Enter Name):", item.label || "");
-            if (text !== null) {
-                item.label = text;
-                saveProjectState();
-                document.getElementById(`lbl-${id}`).innerText = text;
-            }
-        }
-
-        window.deleteItem = function(id) {
-            const idx = items.findIndex(i => i.id === id);
-            if (idx > -1) { 
-                items[idx].el.remove(); 
-                items.splice(idx, 1); 
-                saveProjectState();
-            // --- 新增：如果畫面清空了，顯示初始化按鈕 ---
-            if (items.length === 0) {
-                const emptyState = document.getElementById('empty-state-container');
-                if (emptyState) {
-                    emptyState.classList.remove('hidden');
-                    emptyState.style.display = 'flex';
-               }
-            }
-            // ------------------------------------------
-            }
-        }
-        
-// --- Middle Mouse Pan Logic (優化整合版) ---
-const scrollContainer = document.getElementById('canvas-scroll-container');
-
-let isPanning = false;
-let startX, startY, startScrollLeft, startScrollTop;
-
-scrollContainer.addEventListener('mousedown', (e) => {
-    // e.button === 1 代表滑鼠中鍵 (滾輪點擊)
-    if (e.button === 1) {
-        e.preventDefault(); // 防止瀏覽器預設的自動捲動圖示出現
-        isPanning = true;
-        
-        // 改變游標樣式 (直接設定 style，不依賴外部 CSS class)
-        scrollContainer.style.cursor = 'grabbing';
-        
-        // 記錄初始位置與目前的捲軸位置
-        startX = e.pageX - scrollContainer.offsetLeft;
-        startY = e.pageY - scrollContainer.offsetTop;
-        startScrollLeft = scrollContainer.scrollLeft;
-        startScrollTop = scrollContainer.scrollTop;
-    }
-});
-
-scrollContainer.addEventListener('mouseleave', () => {
-    isPanning = false;
-    scrollContainer.style.cursor = 'default'; // 恢復游標
-});
-
-scrollContainer.addEventListener('mouseup', () => {
-    isPanning = false;
-    scrollContainer.style.cursor = 'default'; // 恢復游標
-});
-
-scrollContainer.addEventListener('mousemove', (e) => {
-    if (!isPanning) return;
-    e.preventDefault();
-    
-    // 計算滑鼠移動的距離
-    const x = e.pageX - scrollContainer.offsetLeft;
-    const y = e.pageY - scrollContainer.offsetTop;
-    
-    // 計算位移量
-    const walkX = (x - startX); 
-    const walkY = (y - startY);
-    
-    // 更新捲軸位置 (反向移動實現拖曳效果)
-    scrollContainer.scrollLeft = startScrollLeft - walkX;
-    scrollContainer.scrollTop = startScrollTop - walkY;
-});
-// --- Wheel: Shift + wheel = horizontal (with guard) ---
-scrollContainer.addEventListener('wheel', (e) => {
-  if (e.shiftKey) {
-    // ⭐ 沒有水平空間就不要攔截，也不要亂改 scrollLeft
-    if (!canScrollX()) return;
-
-    e.preventDefault();
-    const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-    scrollContainer.scrollLeft += delta;
-  }
-}, { passive: false });
-
-        // --- 新增：動態調整畫布大小 ---
-window.resizeCanvasPrompt = function () {
-    const sizer = document.getElementById('canvas-sizer');
-    if (!sizer) return;
-
-    // 1) Grid constants (use existing workspace constants if present)
-    const cell = (typeof CELL_SIZE === 'number' && CELL_SIZE > 0) ? CELL_SIZE : 20;
-    const minW = (typeof MIN_W === 'number' && MIN_W > 0) ? MIN_W : cell * 4;
-    const minH = (typeof MIN_H === 'number' && MIN_H > 0) ? MIN_H : cell * 4;
-
-    // 2) Read current size safely
-    const readPx = (v, fallback) => {
-        const n = parseInt(v, 10);
-        return Number.isFinite(n) && n > 0 ? n : fallback;
-    };
-
-    const currentW = readPx(sizer.style.width, sizer.offsetWidth || 1000);
-    const currentH = readPx(sizer.style.height, sizer.offsetHeight || 1000);
-
-    // 3) i18n prompts
-    const isZh = (typeof state !== 'undefined' && state && state.lang === 'zh');
-    const t = isZh
-        ? {
-            wPrompt: `請輸入畫布寬度（px）\n※ 最小：${minW}px\n※ 會自動對齊 ${cell}px 網格`,
-            hPrompt: `請輸入畫布高度（px）\n※ 最小：${minH}px\n※ 會自動對齊 ${cell}px 網格`,
-            invalid: "請輸入有效的數字！",
-            cancelled: "已取消畫布調整。",
-            applied: (w, h, note) => `畫布已更新為 ${w} × ${h}px${note ? `\n${note}` : ""}`
-        }
-        : {
-            wPrompt: `Enter canvas width (px)\n* Min: ${minW}px\n* Will snap to ${cell}px grid`,
-            hPrompt: `Enter canvas height (px)\n* Min: ${minH}px\n* Will snap to ${cell}px grid`,
-            invalid: "Please enter valid numbers!",
-            cancelled: "Canvas resize cancelled.",
-            applied: (w, h, note) => `Canvas updated to ${w} × ${h}px${note ? `\n${note}` : ""}`
-        };
-
-    // 4) Prompt input
-    const rawW = prompt(t.wPrompt, String(currentW));
-    if (rawW === null) return; // user cancelled width
-    const rawH = prompt(t.hPrompt, String(currentH));
-    if (rawH === null) return; // user cancelled height
-
-    const inputW = parseInt(rawW, 10);
-    const inputH = parseInt(rawH, 10);
-    if (!Number.isFinite(inputW) || !Number.isFinite(inputH)) {
-        alert(t.invalid);
-        return;
-    }
-
-    // 5) Snap + min enforcement
-    const snap = (n) => Math.round(n / cell) * cell;
-
-    let newW = snap(inputW);
-    let newH = snap(inputH);
-
-    const notes = [];
-
-    if (newW < minW) {
-        newW = snap(minW);
-        notes.push(isZh ? `寬度已套用最小值 ${minW}px` : `Width clamped to min ${minW}px`);
-    }
-    if (newH < minH) {
-        newH = snap(minH);
-        notes.push(isZh ? `高度已套用最小值 ${minH}px` : `Height clamped to min ${minH}px`);
-    }
-
-    if (newW !== inputW) {
-        notes.push(isZh ? `寬度已對齊網格 → ${newW}px` : `Width snapped → ${newW}px`);
-    }
-    if (newH !== inputH) {
-        notes.push(isZh ? `高度已對齊網格 → ${newH}px` : `Height snapped → ${newH}px`);
-    }
-
-    // 6) Apply DOM size
-    sizer.style.width = `${newW}px`;
-    sizer.style.height = `${newH}px`;
-
-    // 7) Update in-memory state (soft contract)
-    try {
-        if (typeof state !== 'undefined' && state) {
-            state.canvasW = newW;
-            state.canvasH = newH;
-        }
-    } catch (_) {}
-
-    // 8) LocalStorage backup
-    try {
-        const key = (typeof state !== 'undefined' && state && state.currentProjectId)
-            ? `bt_canvas_${state.currentProjectId}`
-            : `bt_canvas_default`;
-        localStorage.setItem(key, JSON.stringify({
-            w: newW, h: newH, cell, ts: Date.now()
-        }));
-    } catch (_) {}
-
-    // 9) DB hook (if your module supports updating project fields)
-    try {
-        if (typeof state !== 'undefined'
-            && state
-            && state.currentProjectId
-            && typeof window.dbUpdateProject === 'function'
-        ) {
-            // Keep it minimal & non-breaking:
-            window.dbUpdateProject(state.currentProjectId, {
-                canvasW: newW,
-                canvasH: newH
-            });
-        }
-    } catch (e) {
-        console.warn("Canvas size DB update skipped:", e);
-    }
-
-    // 10) Existing sync pipeline hook (nodes-only right now)
-    try {
-        if (typeof window.saveProjectState === 'function') {
-            window.saveProjectState();
-        }
-    } catch (_) {}
-
-    // 11) Optional event hook for any future listeners
-    try {
-        window.dispatchEvent(new CustomEvent('canvas:resized', {
-            detail: { width: newW, height: newH, cell, source: 'prompt' }
-        }));
-    } catch (_) {}
-
-    // 12) User feedback
-    const noteText = notes.length ? notes.join(isZh ? " / " : " / ") : "";
-    alert(t.applied(newW, newH, noteText));
-};
-// 1. 啟動 Presence 系統 (進入專案時呼叫)
-        async function startPresenceSystem(workspaceId) {
-            if (!currentUser) return;
-
-            // 定義：回報自己「在線」的函數
-            const reportAlive = async () => {
-                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', workspaceId, 'presence', currentUser.uid);
-                try {
-                    await setDoc(userRef, {
-                        email: currentUser.email,
-                        photoURL: currentUser.photoURL,
-                        displayName: currentUser.displayName,
-                        lastSeen: serverTimestamp() // 伺服器時間
-                    }, { merge: true });
-                } catch (e) { console.error("Presence error", e); }
-            };
-
-            // 立即回報一次
-            reportAlive();
-
-            // 每 60 秒回報一次 (心跳機制)
-            presenceInterval = setInterval(reportAlive, 60000);
-
-            // 監聽該專案的 presence 子集合
-            const presenceCol = collection(db, 'artifacts', appId, 'public', 'data', 'workspaces', workspaceId, 'presence');
-            unsubscribePresence = onSnapshot(presenceCol, (snapshot) => {
-                const onlineUsers = [];
-                const now = Date.now();
+                updateModeBadge(true);
+                initCloudApp();
+            } else {
+                // UI Switch
+                loginWrapper.style.display = 'flex';
+                userWrapper.style.display = 'none';
                 
+                updateModeBadge(false);
+                stopCloudSync();
+                window.initLocalApp();
+            }
+        });
+
+        function updateModeBadge(isCloud) {
+            const badges = document.querySelectorAll('.mode-badge');
+            badges.forEach(b => b.remove());
+
+            const badge = document.createElement('span');
+            badge.className = `mode-badge ${isCloud ? 'badge-cloud' : 'badge-local'}`;
+            badge.textContent = isCloud ? 'CLOUD' : 'LOCAL';
+            boardTitle.parentNode.insertBefore(badge, boardTitle.nextSibling);
+        }
+
+        // --- Cloud Logic ---
+
+        async function initCloudApp() {
+            const q = query(
+                collection(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION),
+                where('members', 'array-contains', window.currentUser.email)
+            );
+
+            unsubscribeBoards = onSnapshot(q, (snapshot) => {
+                const cloudBoards = [];
                 snapshot.forEach(doc => {
-                    const data = doc.data();
-                    // 過濾：如果 lastSeen 超過 2 分鐘，視為離線 (處理不正常關閉)
-                    // 注意：serverTimestamp 在本地剛寫入時可能是 null (pending)，要視為有效
-                    if (data.lastSeen) {
-                        const lastSeenTime = data.lastSeen.toMillis ? data.lastSeen.toMillis() : now;
-                        if (now - lastSeenTime < 120000) { // 2分鐘內活躍
-                            onlineUsers.push(data);
-                        }
-                    } else {
-                        onlineUsers.push(data); // 本地剛寫入，算在線
+                    cloudBoards.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (cloudBoards.length === 0 && !window.creatingDefault) {
+                    window.creatingDefault = true;
+                    createCloudBoard('My First Board').then(() => window.creatingDefault = false);
+                } else {
+                    window.updateAppData(cloudBoards);
+                }
+            });
+        }
+
+        function stopCloudSync() {
+            if (unsubscribeBoards) unsubscribeBoards();
+            if (unsubscribeCurrentBoard) unsubscribeCurrentBoard();
+            stopPresenceSystem();
+            window.appData.boards = [];
+            window.appData.currentBoardId = null;
+        }
+
+        async function createCloudBoard(title) {
+            if (!window.currentUser) return;
+            try {
+                const docRef = await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION), {
+                    title: title,
+                    ownerId: window.currentUser.uid,
+                    members: [window.currentUser.email],
+                    nodes: [],
+                    createdAt: serverTimestamp()
+                });
+                return docRef.id;
+            } catch (e) {
+                console.error("Error creating board:", e);
+            }
+        }
+
+        window.cloudAddNewBoard = () => {
+            const title = '新畫布 ' + (new Date().toLocaleTimeString());
+            createCloudBoard(title);
+        };
+
+        window.cloudDeleteBoard = async (boardId) => {
+            if (confirm("確定刪除此雲端畫布？(無法復原)")) {
+                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId));
+            }
+        };
+
+        window.cloudSwitchBoard = (boardId) => {
+            if (unsubscribeCurrentBoard) unsubscribeCurrentBoard();
+            stopPresenceSystem();
+
+            document.getElementById('board').innerHTML = '';
+
+            const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId);
+            
+            unsubscribeCurrentBoard = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('board-title').innerText = data.title;
+                    document.title = data.title;
+
+                    isRemoteUpdate = true;
+                    window.renderNodesFromCloud(data.nodes || []);
+                    isRemoteUpdate = false;
+                } else {
+                    window.appData.currentBoardId = null;
+                    document.getElementById('board').innerHTML = '';
+                    document.getElementById('board-title').innerText = "畫布已刪除";
+                }
+            });
+
+            startPresenceSystem(boardId);
+        };
+
+        window.cloudSaveNodes = async (boardId, nodes) => {
+            if (isRemoteUpdate) return;
+            const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId);
+            await updateDoc(docRef, { nodes: nodes });
+        };
+
+        window.cloudUpdateTitle = async (boardId, newTitle) => {
+            const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId);
+            await updateDoc(docRef, { title: newTitle });
+        };
+
+        // --- Presence System ---
+        async function startPresenceSystem(boardId) {
+            if (!window.currentUser) return;
+            
+            const report = async () => {
+                const presenceRef = doc(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId, 'presence', window.currentUser.uid);
+                await setDoc(presenceRef, {
+                    uid: window.currentUser.uid,
+                    displayName: window.currentUser.displayName,
+                    photoURL: window.currentUser.photoURL,
+                    lastSeen: serverTimestamp()
+                }, { merge: true });
+            };
+            report();
+            presenceInterval = setInterval(report, 60000);
+
+            const presenceCol = collection(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId, 'presence');
+            unsubscribePresence = onSnapshot(presenceCol, (snapshot) => {
+                const onlineDiv = document.getElementById('online-users');
+                onlineDiv.innerHTML = '';
+                const now = Date.now();
+
+                snapshot.forEach(d => {
+                    const u = d.data();
+                    const lastSeen = u.lastSeen ? (u.lastSeen.toMillis ? u.lastSeen.toMillis() : now) : now;
+                    if (now - lastSeen < 120000) {
+                        const img = document.createElement('div');
+                        img.className = 'user-avatar-sm';
+                        img.title = u.displayName;
+                        img.innerHTML = `<img src="${u.photoURL}" alt="${u.displayName}">`;
+                        onlineDiv.appendChild(img);
                     }
                 });
-                renderOnlineAvatars(onlineUsers);
             });
         }
 
-        // 2. 停止 Presence 系統 (離開專案時呼叫)
         async function stopPresenceSystem() {
             if (presenceInterval) clearInterval(presenceInterval);
             if (unsubscribePresence) unsubscribePresence();
-            
-            // 嘗試刪除自己的在線紀錄 (正常離開)
-            if (state.currentProjectId && currentUser) {
-                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'workspaces', state.currentProjectId, 'presence', currentUser.uid);
-                await deleteDoc(userRef).catch(()=>{});
+            document.getElementById('online-users').innerHTML = '';
+        }
+
+    </script>
+
+    <script>
+        // --- Vanilla JS Logic ---
+        
+        const board = document.getElementById('board');
+        const boardTitle = document.getElementById('board-title');
+        const docPanel = document.getElementById('doc-panel');
+        const panelContent = document.getElementById('panel-content');
+        
+        let zIndexCounter = 100;
+        
+        window.appData = {
+            boards: [],
+            currentBoardId: null
+        };
+
+        let currentColor = { bg: 'var(--note-yellow)', text: '#222', isDark: false };
+        const colors = {
+            yellow: { bg: 'var(--note-yellow)', text: '#222', isDark: false },
+            green: { bg: 'var(--note-green)', text: '#222', isDark: false },
+            blue: { bg: 'var(--note-blue)', text: '#222', isDark: false },
+            pink: { bg: 'var(--note-pink)', text: '#222', isDark: false },
+            dark: { bg: 'var(--note-dark)', text: '#ddd', isDark: true }
+        };
+
+        // --- Init Logic ---
+        window.initLocalApp = function() {
+            const meta = localStorage.getItem('piCanvas_v3_meta');
+            if (meta) {
+                window.appData = JSON.parse(meta);
+            } else {
+                const defaultBoardId = 'local_' + Date.now();
+                window.appData.boards = [{ id: defaultBoardId, title: '本地草稿' }];
+                window.appData.currentBoardId = defaultBoardId;
+                saveLocalMeta();
             }
-            
-            document.getElementById('online-users-container').classList.add('hidden');
-        }
 
-        // 3. 渲染頭貼
-        function renderOnlineAvatars(users) {
-            const container = document.getElementById('online-avatars');
-            container.innerHTML = '';
-            
-            users.forEach(u => {
-                const img = document.createElement('img');
-                img.src = u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.email}`;
-                img.className = "inline-block h-6 w-6 rounded-full ring-2 ring-bg bg-surface object-cover";
-                img.title = u.displayName || u.email;
-                container.appendChild(img);
-            });
-            
-            // 顯示容器
-            document.getElementById('online-users-container').classList.remove('hidden');
-        }
-        
-        // 確保關閉視窗時也能移除狀態
-        window.addEventListener('beforeunload', () => {
-            stopPresenceSystem();
-        });
-
-function onDragMove(e) {
-    if (!isDragging) return;
-    
-    const dx = e.clientX - dragStartX;
-    const dy = e.clientY - dragStartY;
-    
-    // 因為是用 right/bottom 定位，所以 move 是反向的
-    let newRight = containerStartX - dx;
-    let newBottom = containerStartY - dy;
-
-    // 限制移動範圍，確保視窗不跑出 viewport
-    const viewportW = window.innerWidth;
-    const viewportH = window.innerHeight;
-    const chatW = chatWindow.offsetWidth || 320;
-    const chatH = chatWindow.offsetHeight || 450;
-    
-    // 邊距限制 (例如至少距離邊緣 10px)
-    const padding = 10;
-    
-    // right 限制：最小值 10px (右邊界)，最大值 (viewportW - chatW - 10px) (左邊界)
-    if (newRight < padding) newRight = padding;
-    if (newRight > viewportW - chatW - padding) newRight = viewportW - chatW - padding;
-
-    // bottom 限制：最小值 10px (底部邊界)，最大值 (viewportH - chatH - 10px) (頂部邊界)
-    if (newBottom < padding) newBottom = padding;
-    if (newBottom > viewportH - chatH - padding) newBottom = viewportH - chatH - padding;
-
-    chatContainer.style.right = newRight + 'px';
-    chatContainer.style.bottom = newBottom + 'px';
-}
-
-function onDragEnd() {
-    isDragging = false;
-    chatHeader.style.cursor = 'move';
-    document.removeEventListener('mousemove', onDragMove);
-    document.removeEventListener('mouseup', onDragEnd);
-}
-// --- LLM Chat Widget Logic (Enhanced) ---
-const chatToggleBtn = document.getElementById('llm-chat-toggle');
-const chatWindow = document.getElementById('llm-chat-window');
-const chatHeader = document.getElementById('llm-chat-header');
-const chatContainer = document.getElementById('llm-chat-container');
-const resizeHandle = document.getElementById('llm-resize-handle');
-const chatInput = document.querySelector('#llm-chat-window textarea');
-
-// 1. Toggle Logic
-chatToggleBtn.addEventListener('click', () => {
-    chatWindow.classList.remove('hidden');
-    // 使用 setTimeout 確保 transition 動畫生效
-    setTimeout(() => chatWindow.classList.add('opacity-100'), 10); 
-    chatToggleBtn.classList.add('hidden');
-});
-
-window.closeLlmChat = () => {
-    // 1. 先執行動畫讓視窗淡出
-    chatWindow.classList.remove('opacity-100');
-    
-    setTimeout(() => {
-        // 2. 隱藏視窗，顯示按鈕
-        chatWindow.classList.add('hidden');
-        chatToggleBtn.classList.remove('hidden');
-        
-        // 清除 inline styles，讓它自動歸位到 CSS 設定的右下角 (bottom-6 right-6)
-        chatContainer.style.right = '';
-        chatContainer.style.bottom = '';
-        
-        // 選擇性：也可以重置視窗大小回預設值，如果希望下次打開是預設大小的話，可取消註解下一行
-        // chatWindow.style.width = '380px'; chatWindow.style.height = '550px';
-    }, 300);
-}
-
-// 2. Input Auto-Resize
-if (chatInput) {
-    chatInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-        if(this.value === '') this.style.height = '48px';
-    });
-}
-
-// 3. Resize Logic (Top-Left Handle)
-let isResizing = false;
-let resizeStartX, resizeStartY, startWidth, startHeight;
-
-if (resizeHandle) {
-    resizeHandle.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // 防止觸發 Drag
-        isResizing = true;
-        
-        // 紀錄初始滑鼠位置
-        resizeStartX = e.clientX;
-        resizeStartY = e.clientY;
-        
-        // 紀錄初始視窗大小 (使用 getComputedStyle 確保抓到當前實際像素)
-        const style = window.getComputedStyle(chatWindow);
-        startWidth = parseInt(style.width);
-        startHeight = parseInt(style.height);
-        
-        document.addEventListener('mousemove', onResizeMove);
-        document.addEventListener('mouseup', onResizeEnd);
-    });
-}
-
-function onResizeMove(e) {
-    if (!isResizing) return;
-    
-    // 計算滑鼠移動距離
-    // 因為手把在左上角，往左移(X變小) = 寬度變大
-    // 往上移(Y變小) = 高度變大
-    const dx = resizeStartX - e.clientX; 
-    const dy = resizeStartY - e.clientY;
-    
-    let newWidth = startWidth + dx;
-    let newHeight = startHeight + dy;
-    
-    // 限制最小尺寸
-    if (newWidth < 320) newWidth = 320;
-    if (newHeight < 400) newHeight = 400;
-    
-    // 限制最大尺寸 (不超過視窗)
-    if (newWidth > window.innerWidth - 50) newWidth = window.innerWidth - 50;
-    if (newHeight > window.innerHeight - 50) newHeight = window.innerHeight - 50;
-    
-    chatWindow.style.width = newWidth + 'px';
-    chatWindow.style.height = newHeight + 'px';
-}
-
-function onResizeEnd() {
-    isResizing = false;
-    document.removeEventListener('mousemove', onResizeMove);
-    document.removeEventListener('mouseup', onResizeEnd);
-}
-
-// 4. Drag Logic (保留原本的移動邏輯)
-// 注意：移動改變的是 Container 的 right/bottom，這與 Resize 改變 width/height 不衝突
-let isDragging = false;
-let dragStartX, dragStartY, containerStartRight, containerStartBottom;
-
-if (chatHeader) {
-    chatHeader.addEventListener('mousedown', (e) => {
-        if(e.target.closest('button')) return; // 忽略關閉按鈕
-        e.preventDefault();
-        isDragging = true;
-        dragStartX = e.clientX;
-        dragStartY = e.clientY;
-        
-        const style = window.getComputedStyle(chatContainer);
-        containerStartRight = parseInt(style.right);
-        containerStartBottom = parseInt(style.bottom);
-        
-        chatHeader.style.cursor = 'grabbing';
-        document.addEventListener('mousemove', onDragMove);
-        document.addEventListener('mouseup', onDragEnd);
-    });
-}
-
-function onDragMove(e) {
-    if (!isDragging) return;
-    
-    // 往右移(X變大) -> right 變小
-    const dx = e.clientX - dragStartX;
-    const dy = e.clientY - dragStartY;
-    
-    let newRight = containerStartRight - dx;
-    let newBottom = containerStartBottom - dy;
-    
-    // 簡單邊界檢查
-    if (newRight < 10) newRight = 10;
-    if (newBottom < 10) newBottom = 10;
-    
-    chatContainer.style.right = newRight + 'px';
-    chatContainer.style.bottom = newBottom + 'px';
-}
-
-function onDragEnd() {
-    isDragging = false;
-    if (chatHeader) chatHeader.style.cursor = 'move';
-    document.removeEventListener('mousemove', onDragMove);
-    document.removeEventListener('mouseup', onDragEnd);
-}
-
-// ==========================================
-// ★ NodeX Proxy 整合 (含用量限制與帳號顯示) ★
-// ==========================================
-
-const WORKER_URL = "https://nodex-proxy.coreinformation30.workers.dev"; 
-
-// 設定每日限制
-const DAILY_LIMIT = 20;
-
-// 取得 UI 元素
-const chatHistoryJs = document.getElementById('chat-history');
-const chatInputJs = document.getElementById('chat-input'); 
-const sendBtnJs = document.getElementById('chat-send-btn');
-const usageCounter = document.getElementById('daily-usage-counter');
-
-// --- 1. 用量管理系統 ---
-function getDailyUsage() {
-    const today = new Date().toDateString(); // 例如 "Mon Dec 01 2025"
-    const record = JSON.parse(localStorage.getItem('nodex_daily_usage') || '{}');
-    
-    // 如果日期不同，代表是新的一天，重置計數
-    if (record.date !== today) {
-        return { count: 0, date: today };
-    }
-    return record;
-}
-
-function incrementUsage() {
-    const usage = getDailyUsage();
-    usage.count += 1;
-    localStorage.setItem('nodex_daily_usage', JSON.stringify(usage));
-    updateUsageUI();
-}
-
-function updateUsageUI() {
-    const usage = getDailyUsage();
-    const remaining = Math.max(0, DAILY_LIMIT - usage.count);
-    
-    if (usageCounter) {
-        // 顯示格式：今日用量 (5/20)
-        usageCounter.textContent = `${usage.count}/${DAILY_LIMIT}`;
-        
-        // 樣式變化：快用完時變紅色
-        if (usage.count >= DAILY_LIMIT) {
-            usageCounter.className = "ml-2 px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/50 text-[10px] text-red-400 font-mono";
-            // 鎖定輸入框
-            if(chatInputJs) {
-                chatInputJs.disabled = true;
-                chatInputJs.placeholder = "已達今日訊息上限 (20/20)";
-            }
-        } else {
-            usageCounter.className = "ml-2 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] text-muted font-mono";
-            if(chatInputJs) {
-                chatInputJs.disabled = false;
-                chatInputJs.placeholder = "把你不懂的都丟上來問一遍!";
-            }
-        }
-    }
-}
-
-// 初始化時更新一次 UI
-window.addEventListener('load', updateUsageUI);
-// 每次打開聊天室也檢查一次
-document.getElementById('llm-chat-toggle').addEventListener('click', updateUsageUI);
-
-
-// --- 2. 核心發送邏輯 ---
-async function handleSendMessage() {
-    // ★ 1. 權限檢查：是否已登入 ★
-    // window.currentUser 是由 Firebase auth 狀態變更時設定的
-    if (!window.currentUser) {
-        appendSystemMessage("ACCESS DENIED: 請先透過左側邊欄登入 Google 帳號以使用 NodeX。");
-        // 也可以順便把輸入框清空，讓體驗更好
-        chatInputJs.value = ''; 
-        chatInputJs.style.height = '48px';
-        return; // 直接結束，不執行後面的程式碼
-    }
-
-    // --- 以下為原本的邏輯 ---
-
-    // 2. 檢查每日用量
-    const usage = getDailyUsage();
-    if (usage.count >= DAILY_LIMIT) {
-        appendSystemMessage("QUOTA EXCEEDED: 今日訊息額度已用完 (20/20)。請明天再來！");
-        return;
-    }
-
-    const userText = chatInputJs.value.trim();
-    if (!userText) return;
-
-    // 重置輸入框
-    chatInputJs.value = '';
-    chatInputJs.style.height = '48px'; 
-
-    // 取得使用者資訊 (因為已經檢查過 currentUser，這裡一定有值)
-    const userName = window.currentUser.displayName || "User";
-    const userPhoto = window.currentUser.photoURL || null;
-
-    appendUserMessage(userText, userName, userPhoto);
-    
-    // 扣除額度
-    incrementUsage();
-
-    const loadingId = appendLoadingIndicator();
-
-    try {
-        const response = await fetch(WORKER_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: userText }] }] 
-            })
-        });
-
-        if (!response.ok) throw new Error("Worker Error: " + response.statusText);
-
-        removeMessage(loadingId);
-        const aiMsgContent = appendAiMessageStart();
-        
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullText = "";
-
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value, { stream: true });
-            const matches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
-            
-            if (matches) {
-                matches.forEach(match => {
-                    let textPart = match.replace(/"text":\s*"/, "").replace(/"$/, "");
-                    try {
-                        textPart = JSON.parse(`"${textPart}"`); 
-                        fullText += textPart;
-
-                        // ★★★ 修改點：使用 marked.parse 渲染 Markdown ★★★
-                        // 1. 給容器加個 class 讓 CSS 生效 (如果還沒加過)
-                        if (!aiMsgContent.classList.contains('markdown-body')) {
-                            aiMsgContent.classList.add('markdown-body');
-                        }
-                        
-                        // 2. 將 Markdown 轉換為 HTML 並放入容器
-                        // 注意：這裡是 innerHTML，不是 innerText
-                        aiMsgContent.innerHTML = marked.parse(fullText);
-
-                        scrollToBottom();
-                    } catch (e) { console.error("Parse error", e); }
-                });
-            }
-        }
-
-    } catch (error) {
-        removeMessage(loadingId);
-        appendAiMessageStart().innerHTML = `<span class="text-red-500">System Error: ${error.message}</span>`;
-        console.error(error);
-    }
-}
-
-// --- 3. UI 輔助函式 (修改版) ---
-
-// ★ 修改點：接收 name 和 photo 參數
-function appendUserMessage(text, name = "YOU", photo = null) {
-    const div = document.createElement('div');
-    div.className = "flex flex-col items-end gap-1 animate-pulse-once";
-    
-    // 如果有大頭貼，可以考慮顯示，這裡先顯示名字
-    div.innerHTML = `
-        <div class="flex items-center gap-2 mb-1">
-            <span class="text-[10px] font-bold text-muted tracking-wider uppercase">${name}</span>
-        </div>
-        <div class="p-3 bg-accent/10 border border-accent/20 rounded-2xl rounded-tr-none text-sm text-text leading-relaxed shadow-sm max-w-[85%]">
-            ${text}
-        </div>
-    `;
-    if(chatHistoryJs) {
-        chatHistoryJs.appendChild(div);
-        scrollToBottom();
-    }
-}
-  // ★ 新增：顯示紅色的系統警告 ★
-function appendSystemMessage(text) {
-    const div = document.createElement('div');
-    div.className = "flex flex-col gap-2 items-center opacity-90 my-2 animate-pulse-once";
-    div.innerHTML = `
-        <div class="px-4 py-2 bg-red-500/10 border border-red-500/40 rounded text-xs text-red-400 font-mono tracking-wide flex items-center gap-2">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-            ${text}
-        </div>
-    `;
-    if(chatHistoryJs) {
-        chatHistoryJs.appendChild(div);
-        scrollToBottom();
-    }
-}     
-
-function appendAiMessageStart() {
-    const div = document.createElement('div');
-    div.className = "flex flex-col gap-2 items-start fade-in";
-    div.innerHTML = `
-        <div class="flex items-center gap-2 mb-1">
-            <div class="w-6 h-6 rounded flex items-center justify-center bg-accent/10 border border-accent/20 text-accent">
-                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path></svg>
-            </div>
-           <span class="text-sm font-bold text-accent tracking-wider">NodeX AI</span>
-        </div>
-        <div class="ai-content p-3 bg-white/5 border border-white/5 rounded-2xl rounded-tl-none text-sm text-text leading-relaxed shadow-sm w-full font-mono"></div>
-    `;
-    if(chatHistoryJs) chatHistoryJs.appendChild(div);
-    return div.querySelector('.ai-content');
-}
-
-// 其餘函式保持不變
-function appendLoadingIndicator() {
-    const id = 'loading-' + Date.now();
-    const div = document.createElement('div');
-    div.id = id;
-    div.className = "flex flex-col gap-2 items-start opacity-50";
-    div.innerHTML = `
-        <div class="flex items-center gap-2 mb-1">
-            <div class="w-6 h-6 rounded flex items-center justify-center bg-white/5 border border-white/10">
-               <div class="w-1 h-1 bg-accent rounded-full animate-ping"></div>
-            </div>
-            <span class="text-[10px] text-muted">THINKING...</span>
-        </div>
-    `;
-    if(chatHistoryJs) {
-        chatHistoryJs.appendChild(div);
-        scrollToBottom();
-    }
-    return id;
-}
-
-function removeMessage(id) {
-    const el = document.getElementById(id);
-    if(el) el.remove();
-}
-
-function scrollToBottom() {
-    if(chatHistoryJs) chatHistoryJs.scrollTop = chatHistoryJs.scrollHeight;
-}
-
-// 綁定按鈕事件
-if(sendBtnJs && chatInputJs) {
-    sendBtnJs.addEventListener('click', handleSendMessage);
-    chatInputJs.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
-        }
-    });
-}
-
-        // --- Global Nav Logic ---
-        const globalNavToggle = document.getElementById('global-nav-toggle');
-        const globalNavMenu = document.getElementById('global-nav-menu');
-        const globalNavContainer = document.getElementById('global-nav-container');
-        const globalLogoutBtn = document.getElementById('global-logout-btn');
-
-        // 1. 切換選單顯示/隱藏
-        if(globalNavToggle) {
-            globalNavToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                globalNavMenu.classList.toggle('hidden');
-            });
-        }
-
-        // 2. 點擊外部關閉選單
-        document.addEventListener('click', (e) => {
-            if (globalNavMenu && !globalNavMenu.classList.contains('hidden') && !globalNavContainer.contains(e.target)) {
-                globalNavMenu.classList.add('hidden');
-            }
-        });
-
-        // 3. 處理全域登出 (使用原本 Firebase 的 auth)
-        if(globalLogoutBtn) {
-            globalLogoutBtn.addEventListener('click', async () => {
-                try {
-                    await signOut(auth);
-                    // 登出後重新整理或導向首頁
-                    window.location.href = 'index.html';
-                } catch (error) {
-                    console.error("Logout Error:", error);
-                    alert("登出失敗");
+            if (window.appData.boards.length > 0) {
+                if (!window.appData.boards.find(b => b.id === window.appData.currentBoardId)) {
+                    window.appData.currentBoardId = window.appData.boards[0].id;
                 }
-            });
+                switchBoard(window.appData.currentBoardId);
+            } else {
+                addNewBoard();
+            }
+            updatePanelList();
         }
-        // 將原本分散的程式碼整合到這裡
-        window.onload = () => { 
-            // 1. 初始化主題與語言
-            setTheme('developer'); 
-            setLanguage('zh');
-            
-            // 2. 初始化每日用量 UI (如果有定義的話)
-            if (typeof updateUsageUI === 'function') updateUsageUI();
 
-            // 3. 右上角全域導航選單邏輯 (放在這裡保證抓得到按鈕)
-            const globalNavToggle = document.getElementById('global-nav-toggle');
-            const globalNavMenu = document.getElementById('global-nav-menu');
-            const globalLogoutBtn = document.getElementById('global-logout-btn');
-            const globalNavContainer = document.getElementById('global-nav-container');
-
-            if (globalNavToggle && globalNavMenu) {
-                // 切換選單
-                globalNavToggle.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    globalNavMenu.classList.toggle('hidden');
-                });
-
-                // 點擊外部關閉
-                document.addEventListener('click', (e) => {
-                    if (!globalNavMenu.classList.contains('hidden') && 
-                        !globalNavToggle.contains(e.target) && 
-                        !globalNavMenu.contains(e.target)) {
-                        globalNavMenu.classList.add('hidden');
-                    }
-                });
-
-                // 登出按鈕
-                if (globalLogoutBtn) {
-                    globalLogoutBtn.addEventListener('click', async () => {
-                        try {
-                            if (typeof signOut === 'function' && typeof auth !== 'undefined') {
-                                await signOut(auth);
-                                window.location.href = 'index.html';
-                            } else {
-                                console.error("Firebase auth not ready");
-                            }
-                        } catch (error) {
-                            console.error("Logout failed:", error);
-                            alert("登出失敗");
-                        }
-                    });
+        // --- Unified Data Handling ---
+        window.updateAppData = function(cloudBoards) {
+            window.appData.boards = cloudBoards;
+            if (cloudBoards.length > 0) {
+                if (!window.appData.currentBoardId || !cloudBoards.find(b => b.id === window.appData.currentBoardId)) {
+                    switchBoard(cloudBoards[0].id);
+                } else {
+                    updatePanelList();
                 }
             } else {
-                console.warn("Global Nav elements not found. Check HTML.");
+                board.innerHTML = '';
+                boardTitle.innerText = "無專案";
+                updatePanelList();
             }
-        };
-       
-    </script>
-        <div id="global-nav-container" class="fixed top-6 right-6 z-[1000] flex flex-col items-end pointer-events-none font-sans">
-    
-    <button id="global-nav-toggle" class="pointer-events-auto w-10 h-10 rounded-full bg-surface/80 backdrop-blur-md border border-accent/50 text-accent shadow-[0_0_15px_rgba(0,255,157,0.3)] flex items-center justify-center hover:bg-accent hover:text-bg transition-all duration-300 group cursor-pointer">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-        </svg>
-    </button>
-    
-    <div id="global-nav-menu" class="hidden pointer-events-auto mt-3 w-48 bg-[#0a0a0a]/95 backdrop-blur-xl border border-accent/20 rounded-xl shadow-2xl overflow-hidden flex flex-col origin-top-right transition-all transform animate-in fade-in slide-in-from-top-2">
+        }
+
+        // --- Board Management ---
+        window.addNewBoard = function() {
+            if (window.currentUser) {
+                window.cloudAddNewBoard();
+            } else {
+                const newId = 'local_' + Date.now();
+                const newTitle = '新畫布 ' + (window.appData.boards.length + 1);
+                window.appData.boards.push({ id: newId, title: newTitle });
+                saveLocalMeta();
+                switchBoard(newId);
+            }
+        }
+
+        window.switchBoard = function(boardId) {
+            const target = window.appData.boards.find(b => b.id === boardId);
+            if (!target) return;
+            
+            window.appData.currentBoardId = boardId;
+            updatePanelList();
+
+            if (window.currentUser) {
+                window.cloudSwitchBoard(boardId);
+            } else {
+                saveLocalMeta();
+                loadLocalBoard(boardId);
+            }
+        }
+
+        window.deleteBoard = function(e, boardId) {
+            e.stopPropagation();
+            if (confirm("確定刪除此畫布？")) {
+                if (window.currentUser) {
+                    window.cloudDeleteBoard(boardId);
+                } else {
+                    if (window.appData.boards.length <= 1) return alert("至少保留一個！");
+                    window.appData.boards = window.appData.boards.filter(b => b.id !== boardId);
+                    localStorage.removeItem('piCanvas_v3_content_' + boardId);
+                    
+                    if (window.appData.currentBoardId === boardId) {
+                        switchBoard(window.appData.boards[0].id);
+                    } else {
+                        saveLocalMeta();
+                        updatePanelList();
+                    }
+                }
+            }
+        }
+
+        // --- Local Storage Helpers ---
+        function saveLocalMeta() {
+            localStorage.setItem('piCanvas_v3_meta', JSON.stringify(window.appData));
+        }
         
-        <a href="index.html" class="px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/5 hover:text-accent border-b border-white/5 flex items-center gap-3 transition-colors">
-            <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-            Home
-        </a>
+        function loadLocalBoard(boardId) {
+            board.innerHTML = '';
+            const target = window.appData.boards.find(b => b.id === boardId);
+            boardTitle.innerText = target ? target.title : '';
+            document.title = target ? target.title : 'Pi-Canvas';
 
-        <a href="app.html" class="px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/5 hover:text-accent border-b border-white/5 flex items-center gap-3 transition-colors">
-            <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-            Workspace (舊版)
-        </a>
+            const contentJson = localStorage.getItem('piCanvas_v3_content_' + boardId);
+            if (contentJson) {
+                const nodes = JSON.parse(contentJson);
+                nodes.forEach(n => createNoteDOM(n));
+            }
+            updatePanelList();
+        }
 
-        <a href="PulseStreet.html" class="px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/5 hover:text-accent border-b border-white/5 flex items-center gap-3 transition-colors">
-            <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-            PulseStreet
-        </a>
+        function saveLocalNodes() {
+            if (!window.appData.currentBoardId) return;
+            const nodes = getNodesFromDOM();
+            localStorage.setItem('piCanvas_v3_content_' + window.appData.currentBoardId, JSON.stringify(nodes));
+        }
 
-        <a href="nodex.html" class="px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/5 hover:text-accent border-b border-white/5 flex items-center gap-3 transition-colors">
-            <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-            NodeX
-        </a>
+        // --- DOM & Logic ---
+        function getNodesFromDOM() {
+            const nodes = [];
+            document.querySelectorAll('.note').forEach(note => {
+                nodes.push({
+                    id: note.id,
+                    x: parseFloat(note.style.left),
+                    y: parseFloat(note.style.top),
+                    w: note.style.width,
+                    h: note.style.height,
+                    content: note.querySelector('.note-content').innerHTML,
+                    title: note.querySelector('.note-title-input').value,
+                    color: {
+                        bg: note.dataset.bg,
+                        text: note.dataset.text,
+                        isDark: note.dataset.isDark === 'true'
+                    }
+                });
+            });
+            return nodes;
+        }
 
-        <button id="global-logout-btn" class="px-4 py-3 text-xs font-bold text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-3 text-left transition-colors w-full cursor-pointer">
-            <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-            登出
-        </button>
-    </div>
-</div>
+        window.renderNodesFromCloud = function(cloudNodes) {
+            board.innerHTML = ''; 
+            cloudNodes.forEach(n => createNoteDOM(n));
+            updatePanelList();
+        }
+
+        boardTitle.addEventListener('input', () => {
+            const newTitle = boardTitle.innerText;
+            if (window.currentUser && window.appData.currentBoardId) {
+                window.cloudUpdateTitle(window.appData.currentBoardId, newTitle);
+            } else {
+                const b = window.appData.boards.find(b => b.id === window.appData.currentBoardId);
+                if (b) {
+                    b.title = newTitle;
+                    saveLocalMeta();
+                    updatePanelList();
+                }
+            }
+        });
+
+        // --- Note Logic ---
+        function createNoteDOM(data) {
+            const note = document.createElement('div');
+            note.classList.add('note');
+            note.id = data.id || ('note_' + Date.now() + Math.random().toString(36).substr(2,9));
+            
+            const useColor = data.color || currentColor;
+
+            note.style.left = (data.x || (100 + Math.random()*100)) + 'px';
+            note.style.top = (data.y || (100 + Math.random()*100)) + 'px';
+            note.style.width = data.w || '240px';
+            note.style.height = data.h || '180px';
+            note.style.backgroundColor = useColor.bg;
+            note.style.color = useColor.text;
+            note.style.zIndex = zIndexCounter++;
+            note.dataset.dark = useColor.isDark;
+
+            note.dataset.bg = useColor.bg;
+            note.dataset.text = useColor.text;
+            note.dataset.isDark = useColor.isDark;
+
+            note.innerHTML = `
+                <div class="note-header">
+                    <span class="drag-handle">⣿</span>
+                    <input type="text" class="note-title-input" value="${data.title || ''}" placeholder="未命名">
+                    <span class="close-btn" onclick="deleteNote(this)">×</span>
+                </div>
+                <div class="note-toolbar">
+                    <button onmousedown="event.preventDefault(); formatDoc('bold')" title="粗體"><b>B</b></button>
+                    <button onmousedown="event.preventDefault(); formatDoc('italic')" title="斜體"><i>I</i></button>
+                    <button onmousedown="event.preventDefault(); formatDoc('underline')" title="底線"><u>U</u></button>
+                    <span class="toolbar-sep">|</span>
+                    <button onmousedown="event.preventDefault(); formatDoc('fontSize', '5')" title="字體加大">A+</button>
+                    <button onmousedown="event.preventDefault(); formatDoc('fontSize', '3')" title="恢復">A</button>
+                    <span class="toolbar-sep">|</span>
+                    <button onmousedown="event.preventDefault(); formatDoc('insertUnorderedList')" title="清單">≣</button>
+                </div>
+                <div class="note-content" contenteditable="true" spellcheck="false">${data.content || ''}</div>
+            `;
+
+            makeDraggable(note);
+            note.onmousedown = () => { note.style.zIndex = zIndexCounter++; };
+            
+            const contentDiv = note.querySelector('.note-content');
+            const titleInput = note.querySelector('.note-title-input');
+
+            const triggerSave = () => {
+                if (window.currentUser) {
+                     const nodes = getNodesFromDOM();
+                     window.cloudSaveNodes(window.appData.currentBoardId, nodes);
+                } else {
+                    saveLocalNodes();
+                }
+            };
+
+            contentDiv.oninput = triggerSave;
+            titleInput.oninput = () => { triggerSave(); updatePanelList(); };
+            titleInput.onmousedown = (e) => e.stopPropagation();
+
+            new ResizeObserver(() => {
+                triggerSave(); 
+            }).observe(note);
+
+            board.appendChild(note);
+        }
+
+        window.createNote = function() {
+            createNoteDOM({ content: '', title: '' });
+            if(window.currentUser) window.cloudSaveNodes(window.appData.currentBoardId, getNodesFromDOM());
+            else saveLocalNodes();
+            updatePanelList();
+        }
+
+        window.deleteNote = function(btn) {
+            btn.closest('.note').remove();
+            if(window.currentUser) window.cloudSaveNodes(window.appData.currentBoardId, getNodesFromDOM());
+            else saveLocalNodes();
+            updatePanelList();
+        }
+
+        window.clearCurrentBoard = function() {
+            if(confirm('清空畫布？')) {
+                board.innerHTML = '';
+                if(window.currentUser) window.cloudSaveNodes(window.appData.currentBoardId, []);
+                else saveLocalNodes();
+                updatePanelList();
+            }
+        }
+
+        function highlightNote(note) {
+            note.style.zIndex = ++zIndexCounter;
+            note.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            note.classList.remove('highlight');
+            void note.offsetWidth;
+            note.classList.add('highlight');
+        }
+
+        function formatDoc(cmd, value) {
+            document.execCommand(cmd, false, value);
+        }
+
+        function updatePanelList() {
+            panelContent.innerHTML = '';
+            window.appData.boards.forEach(b => {
+                const isActive = b.id === window.appData.currentBoardId;
+                const item = document.createElement('div');
+                item.className = 'board-item' + (isActive ? ' active' : '');
+                item.onclick = () => { if (!isActive) switchBoard(b.id); };
+
+                const header = document.createElement('div');
+                header.className = 'board-header';
+                header.innerHTML = `<span>${b.title}</span><span class="board-delete-btn" onclick="deleteBoard(event, '${b.id}')">×</span>`;
+                item.appendChild(header);
+
+                if (isActive) {
+                    const sublist = document.createElement('div');
+                    sublist.className = 'note-sublist';
+                    const notes = document.querySelectorAll('.note');
+                    
+                    if (notes.length === 0) {
+                        sublist.innerHTML = '<div style="padding:5px 10px; font-size:12px; color:#555;">(無便條)</div>';
+                    } else {
+                        notes.forEach((note, idx) => {
+                            const titleInput = note.querySelector('.note-title-input');
+                            const noteTitle = titleInput ? titleInput.value : '';
+                            const displayTitle = noteTitle || `便條 ${idx+1}`;
+                            const bg = note.style.backgroundColor;
+                            
+                            const noteEl = document.createElement('div');
+                            noteEl.className = 'note-item';
+                            noteEl.innerHTML = `<div class="note-dot" style="background:${bg}"></div><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayTitle}</span>`;
+                            noteEl.onclick = (e) => {
+                                e.stopPropagation();
+                                highlightNote(note);
+                            };
+                            sublist.appendChild(noteEl);
+                        });
+                    }
+                    item.appendChild(sublist);
+                }
+
+                panelContent.appendChild(item);
+            });
+        }
+
+        function selectColor(colorName, el) {
+            currentColor = colors[colorName];
+            document.querySelectorAll('.menu-color-option').forEach(dot => dot.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('colorBtnIndicator').style.backgroundColor = currentColor.bg;
+        }
+
+        function toggleDocPanel() {
+            docPanel.classList.toggle('open');
+            document.getElementById('listToggleBtn').classList.toggle('active');
+        }
+        
+        function makeDraggable(el) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            const header = el.querySelector('.note-header');
+            
+            header.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                if(e.target.tagName === 'INPUT' || e.target.classList.contains('close-btn')) return;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+                el.style.opacity = "0.9";
+            }
+
+            function elementDrag(e) {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                
+                let newTop = el.offsetTop - pos2;
+                let newLeft = el.offsetLeft - pos1;
+                
+                const sidebarWidth = 60;
+                if (newLeft < sidebarWidth) newLeft = sidebarWidth;
+                if (newTop < 0) newTop = 0;
+
+                el.style.top = newTop + "px";
+                el.style.left = newLeft + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                el.style.opacity = "1";
+                if(window.currentUser) window.cloudSaveNodes(window.appData.currentBoardId, getNodesFromDOM());
+                else saveLocalNodes();
+            }
+        }
+        
+        window.selectColor = selectColor;
+        window.toggleDocPanel = toggleDocPanel;
+        window.formatDoc = formatDoc;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Delete') clearCurrentBoard();
+            if (e.key.toLowerCase() === 'l' && !e.target.isContentEditable && e.target.tagName !== 'INPUT') toggleDocPanel();
+        });
+
+    </script>
 </body>
 </html>
-
-
-
-
-
