@@ -49,7 +49,6 @@
             flex-direction: column;
             align-items: center;
             padding-top: 15px;
-            padding-bottom: 15px; /* 底部留白 */
             z-index: 2000;
             box-shadow: 2px 0 10px rgba(0,0,0,0.3);
             user-select: none;
@@ -75,7 +74,6 @@
             justify-content: center;
             align-items: center;
             transition: all 0.2s;
-            position: relative; /* For badges or overflow */
         }
 
         .tool-btn:hover, .tool-btn.active {
@@ -124,90 +122,6 @@
             border: 2px solid rgba(255,255,255,0.2); position: absolute; bottom: 12px; right: 12px; pointer-events: none;
         }
 
-        /* --- Auth Section (New Design) --- */
-        #auth-section {
-            margin-top: auto; /* 推到底部 */
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* 使用者頭貼按鈕樣式 */
-        .auth-avatar-btn {
-            padding: 0;
-            overflow: hidden;
-            border: 2px solid transparent;
-        }
-        .auth-avatar-btn:hover {
-            border-color: var(--accent-color);
-        }
-        .auth-avatar-btn img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 6px; /* 稍微圓角，符合整體方正風格 */
-        }
-
-        /* 使用者選單 (懸浮面板) */
-        #user-menu {
-            position: absolute;
-            left: 60px; /* 側邊欄寬度 */
-            bottom: 0;  /* 對齊底部 */
-            background-color: var(--sidebar-bg);
-            border: 1px solid var(--sidebar-border);
-            border-radius: 0 8px 8px 0;
-            padding: 15px;
-            width: 240px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            box-shadow: 4px 4px 15px rgba(0,0,0,0.5);
-            z-index: 2200;
-            
-            /* 動畫 */
-            opacity: 0;
-            visibility: hidden;
-            transform: translateX(-10px);
-            transition: all 0.2s ease;
-        }
-
-        #user-menu.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(0);
-        }
-
-        .user-profile-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #444;
-            margin-bottom: 5px;
-        }
-        
-        .user-profile-header img {
-            width: 40px; height: 40px; border-radius: 8px; background: #333;
-        }
-        
-        .user-info-text {
-            display: flex; flex-direction: column; overflow: hidden;
-        }
-        
-        .user-name { font-size: 14px; font-weight: bold; color: #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .user-email { font-size: 11px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .menu-action-btn {
-            display: flex; align-items: center; gap: 10px;
-            width: 100%; text-align: left; padding: 10px;
-            background: transparent; border: none; border-radius: 6px;
-            color: #ccc; font-size: 13px; cursor: pointer; transition: 0.2s;
-        }
-        .menu-action-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
-        .menu-action-btn.logout { color: #ff6b6b; }
-        .menu-action-btn.logout:hover { background: rgba(255, 82, 82, 0.1); }
-
         /* --- 專案列表面板 (Project Panel) --- */
         #doc-panel {
             position: fixed;
@@ -240,94 +154,169 @@
         }
 
         .add-board-btn {
-            background: var(--accent-color); border: none; color: white;
-            border-radius: 4px; width: 24px; height: 24px; font-size: 18px;
-            line-height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            font-size: 18px;
+            line-height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .add-board-btn:hover { filter: brightness(1.1); }
 
-        #panel-content { flex-grow: 1; overflow-y: auto; padding: 10px 0; }
+        #panel-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
 
         /* 畫布列表項目 */
         .board-item {
-            padding: 8px 15px; cursor: pointer; color: #aaa; display: flex; flex-direction: column;
-            border-left: 3px solid transparent; transition: background 0.2s;
+            padding: 8px 15px;
+            cursor: pointer;
+            color: #aaa;
+            display: flex;
+            flex-direction: column;
+            border-left: 3px solid transparent;
+            transition: background 0.2s;
         }
+
         .board-item:hover { background-color: rgba(255,255,255,0.05); }
-        .board-item.active {
-            background-color: rgba(0, 0, 0, 0.2); border-left-color: var(--accent-color); color: #fff;
-        }
-        .board-header { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 500; }
         
-        .board-delete-btn { opacity: 0; color: var(--danger-color); font-size: 16px; padding: 0 5px; transition: opacity 0.2s; }
+        .board-item.active {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-left-color: var(--accent-color);
+            color: #fff;
+        }
+
+        .board-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .board-delete-btn {
+            opacity: 0;
+            color: var(--danger-color);
+            font-size: 16px;
+            padding: 0 5px;
+            transition: opacity 0.2s;
+        }
         .board-item:hover .board-delete-btn { opacity: 1; }
 
-        .note-sublist { margin-top: 5px; margin-left: 10px; border-left: 1px solid #444; display: none; }
+        .note-sublist {
+            margin-top: 5px;
+            margin-left: 10px;
+            border-left: 1px solid #444;
+            display: none;
+        }
         .board-item.active .note-sublist { display: block; }
 
-        .note-item { padding: 5px 10px; font-size: 13px; color: #888; display: flex; align-items: center; transition: color 0.2s; }
+        .note-item {
+            padding: 5px 10px;
+            font-size: 13px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
         .note-item:hover { color: var(--accent-color); }
         .note-dot { width: 6px; height: 6px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
 
-        /* --- 畫布標題區塊 --- */
-        #top-bar {
-            position: absolute; top: 15px; left: 80px; right: 20px;
-            display: flex; justify-content: space-between; align-items: flex-start;
-            z-index: 50; pointer-events: none;
-        }
-
+        /* --- 畫布標題 --- */
         #board-title {
+            position: absolute; top: 15px; left: 80px; 
             font-size: 24px; font-weight: 600; color: #666; margin: 0;
-            padding: 5px 10px; border-radius: 6px; cursor: text; pointer-events: auto;
-            border: 1px solid transparent;
+            padding: 5px 10px; border-radius: 6px; z-index: 50; cursor: text;
         }
-        #board-title:focus { outline: none; background-color: #2d2d2d; color: #eee; border-color: #444; }
-
-        /* 線上使用者 (Presence) */
-        #online-users {
-            display: flex; gap: -5px; pointer-events: auto;
-        }
-        .user-avatar-sm {
-            width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg-color);
-            margin-left: -8px; background: #333; overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5); transition: transform 0.2s;
-        }
-        .user-avatar-sm:first-child { margin-left: 0; }
-        .user-avatar-sm:hover { transform: translateY(-3px); z-index: 10; }
-        .user-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .mode-badge {
-            font-size: 10px; padding: 2px 6px; border-radius: 4px; 
-            margin-left: 10px; vertical-align: middle; font-weight: normal;
-            opacity: 0.7;
-        }
-        .badge-local { background: #444; color: #aaa; }
-        .badge-cloud { background: var(--accent-color); color: #000; font-weight: bold; }
+        #board-title:focus { outline: none; background-color: #2d2d2d; color: #eee; }
 
         /* --- 畫布與便條 --- */
         .note {
-            position: absolute; width: 240px; min-height: 160px;
-            border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            display: flex; flex-direction: column; transition: box-shadow 0.2s, transform 0.2s;
-            resize: both; overflow: hidden; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: absolute;
+            width: 240px; min-height: 160px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            display: flex; flex-direction: column;
+            transition: box-shadow 0.2s, transform 0.2s;
+            resize: both; overflow: hidden;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        @keyframes popIn { from{transform:scale(0.5);opacity:0;} to{transform:scale(1);opacity:1;} }
-        @keyframes flashBorder { 0%,100%{box-shadow:0 0 0 2px var(--accent-color);} 50%{box-shadow:0 0 0 6px var(--accent-color);} }
+        
+        @keyframes flashBorder {
+            0% { box-shadow: 0 0 0 2px var(--accent-color); transform: scale(1.02); }
+            50% { box-shadow: 0 0 0 6px var(--accent-color); transform: scale(1.05); }
+            100% { box-shadow: 0 0 0 2px var(--accent-color); transform: scale(1.02); }
+        }
         .note.highlight { animation: flashBorder 0.6s ease-in-out; z-index: 9999 !important; }
         .note:active { box-shadow: 0 12px 30px rgba(0,0,0,0.6); z-index: 1000 !important; }
 
-        .note-header { height: 32px; background: rgba(0,0,0,0.1); cursor: grab; display: flex; align-items: center; padding: 0 5px; gap: 5px; }
+        .note-header {
+            height: 32px; background: rgba(0,0,0,0.1);
+            cursor: grab; display: flex; align-items: center; padding: 0 5px; gap: 5px;
+        }
         .note-header:active { cursor: grabbing; }
-        .note-title-input { flex-grow: 1; background: transparent; border: none; font-family: inherit; font-size: 13px; font-weight: bold; color: inherit; opacity: 0.8; padding: 2px 4px; }
+
+        .note-title-input {
+            flex-grow: 1; background: transparent; border: none;
+            font-family: inherit; font-size: 13px; font-weight: bold; color: inherit;
+            opacity: 0.8; padding: 2px 4px;
+        }
         .note-title-input:focus { outline: none; background: rgba(255,255,255,0.1); opacity: 1; }
+
         .close-btn { opacity: 0.4; cursor: pointer; font-size: 18px; padding: 0 8px; }
         .close-btn:hover { opacity: 1; color: var(--danger-color); }
 
-        .note-toolbar { display: flex; align-items: center; padding: 2px 5px; background: rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.05); gap: 2px; user-select: none; }
-        .note[data-dark="true"] .note-toolbar { background: rgba(255,255,255,0.1); }
-        .note-toolbar button { background: transparent; border: none; cursor: pointer; border-radius: 3px; padding: 2px 5px; font-size: 13px; color: inherit; opacity: 0.6; font-family: monospace; min-width: 24px; text-align: center; }
-        .note-toolbar button:hover { background: rgba(0,0,0,0.1); opacity: 1; }
-        .toolbar-sep { color: inherit; opacity: 0.3; margin: 0 2px; font-size: 12px; cursor: default; }
+        /* --- 新增：便條工具列 --- */
+        .note-toolbar {
+            display: flex;
+            align-items: center;
+            padding: 2px 5px;
+            background: rgba(0,0,0,0.05);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            gap: 2px;
+            user-select: none;
+        }
+        /* 暗色模式下的工具列 */
+        .note[data-dark="true"] .note-toolbar {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .note-toolbar button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-radius: 3px;
+            padding: 2px 5px;
+            font-size: 13px;
+            color: inherit;
+            opacity: 0.6;
+            font-family: monospace;
+            min-width: 24px;
+            text-align: center;
+        }
+        .note-toolbar button:hover {
+            background: rgba(0,0,0,0.1);
+            opacity: 1;
+        }
+        .note[data-dark="true"] .note-toolbar button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .toolbar-sep {
+            color: inherit;
+            opacity: 0.3;
+            margin: 0 2px;
+            font-size: 12px;
+            cursor: default;
+        }
 
         .note-content { flex-grow: 1; padding: 15px; outline: none; font-size: 15px; line-height: 1.6; color: #222; overflow-y: auto; }
         .note-content[data-dark="true"] { color: #ddd; }
@@ -390,265 +379,14 @@
         </div>
     </div>
 
-    <!-- 頂部資訊列 (標題 + 線上人員) -->
-    <div id="top-bar">
-        <h1 id="board-title" contenteditable="true" spellcheck="false">載入中...</h1>
-        <div id="online-users">
-            <!-- 線上使用者頭貼 -->
-        </div>
-    </div>
+    <!-- 畫布標題 -->
+    <h1 id="board-title" contenteditable="true" spellcheck="false">載入中...</h1>
 
     <!-- 畫布區域 -->
     <div id="board"></div>
 
-    <script type="module">
-        // --- Firebase Integration ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, setDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAIwisA_UnOiNRVwYE6tJV47Sp3_1i19IM",
-            authDomain: "brooklyn-terminal.firebaseapp.com",
-            projectId: "brooklyn-terminal",
-            storageBucket: "brooklyn-terminal.firebasestorage.app",
-            messagingSenderId: "438411734316",
-            appId: "1:438411734316:web:649051890cf381eb0fd089",
-            measurementId: "G-G0GMW0XHG1"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-
-        const APP_COLLECTION = 'pi_canvas_boards';
-        const APP_ID = 'pi-canvas-v1';
-
-        // UI Elements
-        const loginBtn = document.getElementById('login-btn');
-        const loginWrapper = document.getElementById('login-wrapper');
-        const userWrapper = document.getElementById('user-wrapper');
-        const userAvatarBtn = document.getElementById('user-avatar-btn');
-        const userMenu = document.getElementById('user-menu');
-        const userNameDisp = document.getElementById('user-name-disp');
-        const userEmailDisp = document.getElementById('user-email-disp');
-        const userAvatarImg = document.getElementById('user-avatar-img');
-        const menuUserImg = document.getElementById('menu-user-img');
-        const logoutBtn = document.getElementById('logout-btn');
-        const boardTitle = document.getElementById('board-title');
-
-        // State
-        window.currentUser = null;
-        let unsubscribeBoards = null;
-        let unsubscribeCurrentBoard = null;
-        let unsubscribePresence = null;
-        let presenceInterval = null;
-        let isRemoteUpdate = false;
-
-        // --- Auth Functions ---
-        loginBtn.addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch(error => alert("Login Error: " + error.message));
-        });
-
-        logoutBtn.addEventListener('click', () => {
-            signOut(auth);
-            userMenu.classList.remove('show');
-        });
-
-        userAvatarBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            userMenu.classList.toggle('show');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!userMenu.contains(e.target) && e.target !== userAvatarBtn) {
-                userMenu.classList.remove('show');
-            }
-        });
-
-        // --- Auth State Observer ---
-        onAuthStateChanged(auth, (user) => {
-            window.currentUser = user;
-            if (user) {
-                // UI Switch
-                loginWrapper.style.display = 'none';
-                userWrapper.style.display = 'flex';
-                
-                // Set User Info
-                const photo = user.photoURL || 'https://www.gstatic.com/images/branding/product/1x/avatar_square_grey_512dp.png';
-                userAvatarImg.src = photo;
-                menuUserImg.src = photo;
-                userNameDisp.textContent = user.displayName;
-                userEmailDisp.textContent = user.email;
-                
-                updateModeBadge(true);
-                initCloudApp();
-            } else {
-                // UI Switch
-                loginWrapper.style.display = 'flex';
-                userWrapper.style.display = 'none';
-                
-                updateModeBadge(false);
-                stopCloudSync();
-                window.initLocalApp();
-            }
-        });
-
-        function updateModeBadge(isCloud) {
-            const badges = document.querySelectorAll('.mode-badge');
-            badges.forEach(b => b.remove());
-
-            const badge = document.createElement('span');
-            badge.className = `mode-badge ${isCloud ? 'badge-cloud' : 'badge-local'}`;
-            badge.textContent = isCloud ? 'CLOUD' : 'LOCAL';
-            boardTitle.parentNode.insertBefore(badge, boardTitle.nextSibling);
-        }
-
-        // --- Cloud Logic ---
-
-        async function initCloudApp() {
-            const q = query(
-                collection(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION),
-                where('members', 'array-contains', window.currentUser.email)
-            );
-
-            unsubscribeBoards = onSnapshot(q, (snapshot) => {
-                const cloudBoards = [];
-                snapshot.forEach(doc => {
-                    cloudBoards.push({ id: doc.id, ...doc.data() });
-                });
-
-                if (cloudBoards.length === 0 && !window.creatingDefault) {
-                    window.creatingDefault = true;
-                    createCloudBoard('My First Board').then(() => window.creatingDefault = false);
-                } else {
-                    window.updateAppData(cloudBoards);
-                }
-            });
-        }
-
-        function stopCloudSync() {
-            if (unsubscribeBoards) unsubscribeBoards();
-            if (unsubscribeCurrentBoard) unsubscribeCurrentBoard();
-            stopPresenceSystem();
-            window.appData.boards = [];
-            window.appData.currentBoardId = null;
-        }
-
-        async function createCloudBoard(title) {
-            if (!window.currentUser) return;
-            try {
-                const docRef = await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION), {
-                    title: title,
-                    ownerId: window.currentUser.uid,
-                    members: [window.currentUser.email],
-                    nodes: [],
-                    createdAt: serverTimestamp()
-                });
-                return docRef.id;
-            } catch (e) {
-                console.error("Error creating board:", e);
-            }
-        }
-
-        window.cloudAddNewBoard = () => {
-            const title = '新畫布 ' + (new Date().toLocaleTimeString());
-            createCloudBoard(title);
-        };
-
-        window.cloudDeleteBoard = async (boardId) => {
-            if (confirm("確定刪除此雲端畫布？(無法復原)")) {
-                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId));
-            }
-        };
-
-        window.cloudSwitchBoard = (boardId) => {
-            if (unsubscribeCurrentBoard) unsubscribeCurrentBoard();
-            stopPresenceSystem();
-
-            document.getElementById('board').innerHTML = '';
-
-            const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId);
-            
-            unsubscribeCurrentBoard = onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('board-title').innerText = data.title;
-                    document.title = data.title;
-
-                    isRemoteUpdate = true;
-                    window.renderNodesFromCloud(data.nodes || []);
-                    isRemoteUpdate = false;
-                } else {
-                    window.appData.currentBoardId = null;
-                    document.getElementById('board').innerHTML = '';
-                    document.getElementById('board-title').innerText = "畫布已刪除";
-                }
-            });
-
-            startPresenceSystem(boardId);
-        };
-
-        window.cloudSaveNodes = async (boardId, nodes) => {
-            if (isRemoteUpdate) return;
-            const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId);
-            await updateDoc(docRef, { nodes: nodes });
-        };
-
-        window.cloudUpdateTitle = async (boardId, newTitle) => {
-            const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId);
-            await updateDoc(docRef, { title: newTitle });
-        };
-
-        // --- Presence System ---
-        async function startPresenceSystem(boardId) {
-            if (!window.currentUser) return;
-            
-            const report = async () => {
-                const presenceRef = doc(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId, 'presence', window.currentUser.uid);
-                await setDoc(presenceRef, {
-                    uid: window.currentUser.uid,
-                    displayName: window.currentUser.displayName,
-                    photoURL: window.currentUser.photoURL,
-                    lastSeen: serverTimestamp()
-                }, { merge: true });
-            };
-            report();
-            presenceInterval = setInterval(report, 60000);
-
-            const presenceCol = collection(db, 'artifacts', APP_ID, 'public', 'data', APP_COLLECTION, boardId, 'presence');
-            unsubscribePresence = onSnapshot(presenceCol, (snapshot) => {
-                const onlineDiv = document.getElementById('online-users');
-                onlineDiv.innerHTML = '';
-                const now = Date.now();
-
-                snapshot.forEach(d => {
-                    const u = d.data();
-                    const lastSeen = u.lastSeen ? (u.lastSeen.toMillis ? u.lastSeen.toMillis() : now) : now;
-                    if (now - lastSeen < 120000) {
-                        const img = document.createElement('div');
-                        img.className = 'user-avatar-sm';
-                        img.title = u.displayName;
-                        img.innerHTML = `<img src="${u.photoURL}" alt="${u.displayName}">`;
-                        onlineDiv.appendChild(img);
-                    }
-                });
-            });
-        }
-
-        async function stopPresenceSystem() {
-            if (presenceInterval) clearInterval(presenceInterval);
-            if (unsubscribePresence) unsubscribePresence();
-            document.getElementById('online-users').innerHTML = '';
-        }
-
-    </script>
-
     <script>
-        // --- Vanilla JS Logic ---
-        
+        // --- 變數與設定 ---
         const board = document.getElementById('board');
         const boardTitle = document.getElementById('board-title');
         const docPanel = document.getElementById('doc-panel');
@@ -656,7 +394,7 @@
         
         let zIndexCounter = 100;
         
-        window.appData = {
+        let appData = {
             boards: [],
             currentBoardId: null
         };
@@ -670,265 +408,116 @@
             dark: { bg: 'var(--note-dark)', text: '#ddd', isDark: true }
         };
 
-        // --- Init Logic ---
-        window.initLocalApp = function() {
+        // --- 初始化 ---
+        window.onload = () => {
+            initApp();
+        };
+
+        // 格式化功能函式 (Rich Text)
+        function formatDoc(cmd, value) {
+            document.execCommand(cmd, false, value);
+            // 由於 onmousedown 已阻止預設行為，焦點應仍在輸入框內，
+            // 這裡無需特別 refocus，確保 cursor 位置正確。
+        }
+
+        function initApp() {
             const meta = localStorage.getItem('piCanvas_v3_meta');
-            if (meta) {
-                window.appData = JSON.parse(meta);
-            } else {
-                const defaultBoardId = 'local_' + Date.now();
-                window.appData.boards = [{ id: defaultBoardId, title: '本地草稿' }];
-                window.appData.currentBoardId = defaultBoardId;
-                saveLocalMeta();
-            }
-
-            if (window.appData.boards.length > 0) {
-                if (!window.appData.boards.find(b => b.id === window.appData.currentBoardId)) {
-                    window.appData.currentBoardId = window.appData.boards[0].id;
-                }
-                switchBoard(window.appData.currentBoardId);
-            } else {
-                addNewBoard();
-            }
-            updatePanelList();
-        }
-
-        // --- Unified Data Handling ---
-        window.updateAppData = function(cloudBoards) {
-            window.appData.boards = cloudBoards;
-            if (cloudBoards.length > 0) {
-                if (!window.appData.currentBoardId || !cloudBoards.find(b => b.id === window.appData.currentBoardId)) {
-                    switchBoard(cloudBoards[0].id);
-                } else {
-                    updatePanelList();
-                }
-            } else {
-                board.innerHTML = '';
-                boardTitle.innerText = "無專案";
-                updatePanelList();
-            }
-        }
-
-        // --- Board Management ---
-        window.addNewBoard = function() {
-            if (window.currentUser) {
-                window.cloudAddNewBoard();
-            } else {
-                const newId = 'local_' + Date.now();
-                const newTitle = '新畫布 ' + (window.appData.boards.length + 1);
-                window.appData.boards.push({ id: newId, title: newTitle });
-                saveLocalMeta();
-                switchBoard(newId);
-            }
-        }
-
-        window.switchBoard = function(boardId) {
-            const target = window.appData.boards.find(b => b.id === boardId);
-            if (!target) return;
             
-            window.appData.currentBoardId = boardId;
-            updatePanelList();
-
-            if (window.currentUser) {
-                window.cloudSwitchBoard(boardId);
+            if (meta) {
+                appData = JSON.parse(meta);
             } else {
-                saveLocalMeta();
-                loadLocalBoard(boardId);
-            }
-        }
+                const v2Notes = localStorage.getItem('piCanvasNotes_v2');
+                const v1Notes = localStorage.getItem('piCanvasNotes');
+                const oldTitle = localStorage.getItem('piCanvasTitle') || '預設專案';
+                
+                const defaultBoardId = 'board_' + Date.now();
+                appData.boards.push({ id: defaultBoardId, title: oldTitle });
+                appData.currentBoardId = defaultBoardId;
 
-        window.deleteBoard = function(e, boardId) {
-            e.stopPropagation();
-            if (confirm("確定刪除此畫布？")) {
-                if (window.currentUser) {
-                    window.cloudDeleteBoard(boardId);
-                } else {
-                    if (window.appData.boards.length <= 1) return alert("至少保留一個！");
-                    window.appData.boards = window.appData.boards.filter(b => b.id !== boardId);
-                    localStorage.removeItem('piCanvas_v3_content_' + boardId);
-                    
-                    if (window.appData.currentBoardId === boardId) {
-                        switchBoard(window.appData.boards[0].id);
-                    } else {
-                        saveLocalMeta();
-                        updatePanelList();
-                    }
+                if (v2Notes) {
+                    localStorage.setItem('piCanvas_v3_content_' + defaultBoardId, v2Notes);
+                } else if (v1Notes) {
+                    const v1Data = JSON.parse(v1Notes);
+                    const converted = v1Data.map(n => ({...n, title: '', color: {bg: 'var(--note-yellow)', text:'#222', isDark:false}}));
+                    localStorage.setItem('piCanvas_v3_content_' + defaultBoardId, JSON.stringify(converted));
                 }
+
+                saveMeta();
             }
+            
+            if (appData.boards.length === 0) {
+                addNewBoard();
+            } else {
+                switchBoard(appData.currentBoardId);
+            }
+            
+            updatePanelList();
         }
 
-        // --- Local Storage Helpers ---
-        function saveLocalMeta() {
-            localStorage.setItem('piCanvas_v3_meta', JSON.stringify(window.appData));
+        // --- 畫布(Board)管理 ---
+        function addNewBoard() {
+            const newId = 'board_' + Date.now();
+            const newTitle = '新畫布 ' + (appData.boards.length + 1);
+            appData.boards.push({ id: newId, title: newTitle });
+            saveMeta();
+            switchBoard(newId);
         }
-        
-        function loadLocalBoard(boardId) {
+
+        function switchBoard(boardId) {
+            const targetBoard = appData.boards.find(b => b.id === boardId);
+            if (!targetBoard) return;
+
+            appData.currentBoardId = boardId;
+            saveMeta();
+
             board.innerHTML = '';
-            const target = window.appData.boards.find(b => b.id === boardId);
-            boardTitle.innerText = target ? target.title : '';
-            document.title = target ? target.title : 'Pi-Canvas';
+            boardTitle.innerText = targetBoard.title;
+            document.title = targetBoard.title;
 
             const contentJson = localStorage.getItem('piCanvas_v3_content_' + boardId);
             if (contentJson) {
-                const nodes = JSON.parse(contentJson);
-                nodes.forEach(n => createNoteDOM(n));
+                const notes = JSON.parse(contentJson);
+                notes.forEach(n => {
+                    createNoteDOM(n.x, n.y, n.content, n.w, n.h, n.color, n.title);
+                });
             }
             updatePanelList();
         }
 
-        function saveLocalNodes() {
-            if (!window.appData.currentBoardId) return;
-            const nodes = getNodesFromDOM();
-            localStorage.setItem('piCanvas_v3_content_' + window.appData.currentBoardId, JSON.stringify(nodes));
-        }
+        function deleteBoard(e, boardId) {
+            e.stopPropagation();
+            if (appData.boards.length <= 1) {
+                alert("至少需要保留一個畫布！");
+                return;
+            }
+            if (confirm("確定刪除此畫布及其所有便條紙？")) {
+                appData.boards = appData.boards.filter(b => b.id !== boardId);
+                localStorage.removeItem('piCanvas_v3_content_' + boardId);
 
-        // --- DOM & Logic ---
-        function getNodesFromDOM() {
-            const nodes = [];
-            document.querySelectorAll('.note').forEach(note => {
-                nodes.push({
-                    id: note.id,
-                    x: parseFloat(note.style.left),
-                    y: parseFloat(note.style.top),
-                    w: note.style.width,
-                    h: note.style.height,
-                    content: note.querySelector('.note-content').innerHTML,
-                    title: note.querySelector('.note-title-input').value,
-                    color: {
-                        bg: note.dataset.bg,
-                        text: note.dataset.text,
-                        isDark: note.dataset.isDark === 'true'
-                    }
-                });
-            });
-            return nodes;
-        }
-
-        window.renderNodesFromCloud = function(cloudNodes) {
-            board.innerHTML = ''; 
-            cloudNodes.forEach(n => createNoteDOM(n));
-            updatePanelList();
-        }
-
-        boardTitle.addEventListener('input', () => {
-            const newTitle = boardTitle.innerText;
-            if (window.currentUser && window.appData.currentBoardId) {
-                window.cloudUpdateTitle(window.appData.currentBoardId, newTitle);
-            } else {
-                const b = window.appData.boards.find(b => b.id === window.appData.currentBoardId);
-                if (b) {
-                    b.title = newTitle;
-                    saveLocalMeta();
+                if (appData.currentBoardId === boardId) {
+                    appData.currentBoardId = appData.boards[0].id;
+                    switchBoard(appData.currentBoardId);
+                } else {
+                    saveMeta();
                     updatePanelList();
                 }
             }
-        });
-
-        // --- Note Logic ---
-        function createNoteDOM(data) {
-            const note = document.createElement('div');
-            note.classList.add('note');
-            note.id = data.id || ('note_' + Date.now() + Math.random().toString(36).substr(2,9));
-            
-            const useColor = data.color || currentColor;
-
-            note.style.left = (data.x || (100 + Math.random()*100)) + 'px';
-            note.style.top = (data.y || (100 + Math.random()*100)) + 'px';
-            note.style.width = data.w || '240px';
-            note.style.height = data.h || '180px';
-            note.style.backgroundColor = useColor.bg;
-            note.style.color = useColor.text;
-            note.style.zIndex = zIndexCounter++;
-            note.dataset.dark = useColor.isDark;
-
-            note.dataset.bg = useColor.bg;
-            note.dataset.text = useColor.text;
-            note.dataset.isDark = useColor.isDark;
-
-            note.innerHTML = `
-                <div class="note-header">
-                    <span class="drag-handle">⣿</span>
-                    <input type="text" class="note-title-input" value="${data.title || ''}" placeholder="未命名">
-                    <span class="close-btn" onclick="deleteNote(this)">×</span>
-                </div>
-                <div class="note-toolbar">
-                    <button onmousedown="event.preventDefault(); formatDoc('bold')" title="粗體"><b>B</b></button>
-                    <button onmousedown="event.preventDefault(); formatDoc('italic')" title="斜體"><i>I</i></button>
-                    <button onmousedown="event.preventDefault(); formatDoc('underline')" title="底線"><u>U</u></button>
-                    <span class="toolbar-sep">|</span>
-                    <button onmousedown="event.preventDefault(); formatDoc('fontSize', '5')" title="字體加大">A+</button>
-                    <button onmousedown="event.preventDefault(); formatDoc('fontSize', '3')" title="恢復">A</button>
-                    <span class="toolbar-sep">|</span>
-                    <button onmousedown="event.preventDefault(); formatDoc('insertUnorderedList')" title="清單">≣</button>
-                </div>
-                <div class="note-content" contenteditable="true" spellcheck="false">${data.content || ''}</div>
-            `;
-
-            makeDraggable(note);
-            note.onmousedown = () => { note.style.zIndex = zIndexCounter++; };
-            
-            const contentDiv = note.querySelector('.note-content');
-            const titleInput = note.querySelector('.note-title-input');
-
-            const triggerSave = () => {
-                if (window.currentUser) {
-                     const nodes = getNodesFromDOM();
-                     window.cloudSaveNodes(window.appData.currentBoardId, nodes);
-                } else {
-                    saveLocalNodes();
-                }
-            };
-
-            contentDiv.oninput = triggerSave;
-            titleInput.oninput = () => { triggerSave(); updatePanelList(); };
-            titleInput.onmousedown = (e) => e.stopPropagation();
-
-            new ResizeObserver(() => {
-                triggerSave(); 
-            }).observe(note);
-
-            board.appendChild(note);
         }
 
-        window.createNote = function() {
-            createNoteDOM({ content: '', title: '' });
-            if(window.currentUser) window.cloudSaveNodes(window.appData.currentBoardId, getNodesFromDOM());
-            else saveLocalNodes();
-            updatePanelList();
-        }
-
-        window.deleteNote = function(btn) {
-            btn.closest('.note').remove();
-            if(window.currentUser) window.cloudSaveNodes(window.appData.currentBoardId, getNodesFromDOM());
-            else saveLocalNodes();
-            updatePanelList();
-        }
-
-        window.clearCurrentBoard = function() {
-            if(confirm('清空畫布？')) {
-                board.innerHTML = '';
-                if(window.currentUser) window.cloudSaveNodes(window.appData.currentBoardId, []);
-                else saveLocalNodes();
+        function updateBoardTitleInMeta(newTitle) {
+            const b = appData.boards.find(b => b.id === appData.currentBoardId);
+            if (b) {
+                b.title = newTitle;
+                saveMeta();
                 updatePanelList();
             }
         }
 
-        function highlightNote(note) {
-            note.style.zIndex = ++zIndexCounter;
-            note.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            note.classList.remove('highlight');
-            void note.offsetWidth;
-            note.classList.add('highlight');
-        }
-
-        function formatDoc(cmd, value) {
-            document.execCommand(cmd, false, value);
-        }
-
+        // --- 側邊面板 ---
         function updatePanelList() {
             panelContent.innerHTML = '';
-            window.appData.boards.forEach(b => {
-                const isActive = b.id === window.appData.currentBoardId;
+            appData.boards.forEach(b => {
+                const isActive = b.id === appData.currentBoardId;
                 const item = document.createElement('div');
                 item.className = 'board-item' + (isActive ? ' active' : '');
                 item.onclick = () => { if (!isActive) switchBoard(b.id); };
@@ -942,45 +531,113 @@
                     const sublist = document.createElement('div');
                     sublist.className = 'note-sublist';
                     const notes = document.querySelectorAll('.note');
-                    
                     if (notes.length === 0) {
                         sublist.innerHTML = '<div style="padding:5px 10px; font-size:12px; color:#555;">(無便條)</div>';
                     } else {
                         notes.forEach((note, idx) => {
-                            const titleInput = note.querySelector('.note-title-input');
-                            const noteTitle = titleInput ? titleInput.value : '';
-                            const displayTitle = noteTitle || `便條 ${idx+1}`;
+                            const noteTitle = note.querySelector('.note-title-input').value || `便條 ${idx+1}`;
                             const bg = note.style.backgroundColor;
-                            
                             const noteEl = document.createElement('div');
                             noteEl.className = 'note-item';
-                            noteEl.innerHTML = `<div class="note-dot" style="background:${bg}"></div><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayTitle}</span>`;
-                            noteEl.onclick = (e) => {
-                                e.stopPropagation();
-                                highlightNote(note);
-                            };
+                            noteEl.innerHTML = `<div class="note-dot" style="background:${bg}"></div><span>${noteTitle}</span>`;
+                            noteEl.onclick = (e) => { e.stopPropagation(); highlightNote(note); };
                             sublist.appendChild(noteEl);
                         });
                     }
                     item.appendChild(sublist);
                 }
-
                 panelContent.appendChild(item);
             });
         }
 
-        function selectColor(colorName, el) {
-            currentColor = colors[colorName];
-            document.querySelectorAll('.menu-color-option').forEach(dot => dot.classList.remove('selected'));
-            el.classList.add('selected');
-            document.getElementById('colorBtnIndicator').style.backgroundColor = currentColor.bg;
+        function highlightNote(note) {
+            note.style.zIndex = ++zIndexCounter;
+            note.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            note.classList.remove('highlight');
+            void note.offsetWidth;
+            note.classList.add('highlight');
         }
 
-        function toggleDocPanel() {
-            docPanel.classList.toggle('open');
-            document.getElementById('listToggleBtn').classList.toggle('active');
+        // --- 便條紙邏輯 (DOM + Toolbar) ---
+        function createNoteDOM(left, top, content, width, height, colorData, title) {
+            const note = document.createElement('div');
+            note.classList.add('note');
+            
+            const useColor = colorData || currentColor;
+            const displayTitle = title || '';
+
+            note.style.left = (left || (100 + Math.random()*100)) + 'px';
+            note.style.top = (top || (100 + Math.random()*100)) + 'px';
+            note.style.width = width || '240px';
+            note.style.height = height || '180px'; // 稍微加高以容納工具列
+            note.style.backgroundColor = useColor.bg;
+            note.style.color = useColor.text;
+            note.style.zIndex = zIndexCounter++;
+            note.dataset.dark = useColor.isDark;
+
+            // 儲存顏色
+            note.dataset.bg = useColor.bg;
+            note.dataset.text = useColor.text;
+            note.dataset.isDark = useColor.isDark;
+
+            // 建立 HTML (包含工具列)
+            note.innerHTML = `
+                <div class="note-header">
+                    <span class="drag-handle">⣿</span>
+                    <input type="text" class="note-title-input" value="${displayTitle}" placeholder="未命名">
+                    <span class="close-btn" onclick="deleteNote(this)">×</span>
+                </div>
+                <div class="note-toolbar">
+                    <button onmousedown="event.preventDefault(); formatDoc('bold')" title="粗體 (Bold)"><b>B</b></button>
+                    <button onmousedown="event.preventDefault(); formatDoc('italic')" title="斜體 (Italic)"><i>I</i></button>
+                    <button onmousedown="event.preventDefault(); formatDoc('underline')" title="底線 (Underline)"><u>U</u></button>
+                    <span class="toolbar-sep">|</span>
+                    <button onmousedown="event.preventDefault(); formatDoc('fontSize', '5')" title="字體加大 (Large)">A+</button>
+                    <button onmousedown="event.preventDefault(); formatDoc('fontSize', '3')" title="恢復大小 (Normal)">A</button>
+                    <span class="toolbar-sep">|</span>
+                    <button onmousedown="event.preventDefault(); formatDoc('insertUnorderedList')" title="清單 (List)">≣</button>
+                </div>
+                <div class="note-content" contenteditable="true" data-dark="${useColor.isDark}" spellcheck="false">${content}</div>
+            `;
+
+            makeDraggable(note);
+            note.onmousedown = () => { note.style.zIndex = zIndexCounter++; };
+            
+            const contentDiv = note.querySelector('.note-content');
+            const titleInput = note.querySelector('.note-title-input');
+
+            contentDiv.oninput = saveCurrentNotes;
+            titleInput.oninput = () => {
+                saveCurrentNotes();
+                updatePanelList();
+            };
+            titleInput.onmousedown = (e) => e.stopPropagation();
+
+            new ResizeObserver(saveCurrentNotes).observe(note);
+            board.appendChild(note);
         }
-        
+
+        function createNote() {
+            createNoteDOM(null, null, '', null, null, null, '');
+            saveCurrentNotes();
+            updatePanelList();
+        }
+
+        function deleteNote(btn) {
+            btn.closest('.note').remove();
+            saveCurrentNotes();
+            updatePanelList();
+        }
+
+        function clearCurrentBoard() {
+            if(confirm('確定清空當前畫布的所有便條？')) {
+                board.innerHTML = '';
+                saveCurrentNotes();
+                updatePanelList();
+            }
+        }
+
+        // --- 拖曳功能 ---
         function makeDraggable(el) {
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             const header = el.querySelector('.note-header');
@@ -1019,14 +676,53 @@
                 document.onmouseup = null;
                 document.onmousemove = null;
                 el.style.opacity = "1";
-                if(window.currentUser) window.cloudSaveNodes(window.appData.currentBoardId, getNodesFromDOM());
-                else saveLocalNodes();
+                saveCurrentNotes();
             }
         }
+
+        // --- 存檔系統 ---
+        function saveMeta() {
+            localStorage.setItem('piCanvas_v3_meta', JSON.stringify(appData));
+        }
+
+        function saveCurrentNotes() {
+            if (!appData.currentBoardId) return;
+
+            const notes = [];
+            document.querySelectorAll('.note').forEach(note => {
+                notes.push({
+                    x: parseFloat(note.style.left),
+                    y: parseFloat(note.style.top),
+                    w: note.style.width,
+                    h: note.style.height,
+                    content: note.querySelector('.note-content').innerHTML,
+                    title: note.querySelector('.note-title-input').value,
+                    color: {
+                        bg: note.dataset.bg,
+                        text: note.dataset.text,
+                        isDark: note.dataset.isDark === 'true'
+                    }
+                });
+            });
+            localStorage.setItem('piCanvas_v3_content_' + appData.currentBoardId, JSON.stringify(notes));
+        }
+
+        boardTitle.addEventListener('input', () => {
+            updateBoardTitleInMeta(boardTitle.innerText);
+            document.title = boardTitle.innerText;
+        });
+
+        function selectColor(colorName, el) {
+            currentColor = colors[colorName];
+            document.querySelectorAll('.menu-color-option').forEach(dot => dot.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('colorBtnIndicator').style.backgroundColor = currentColor.bg;
+        }
         
-        window.selectColor = selectColor;
-        window.toggleDocPanel = toggleDocPanel;
-        window.formatDoc = formatDoc;
+        function toggleDocPanel() {
+            docPanel.classList.toggle('open');
+            document.getElementById('listToggleBtn').classList.toggle('active');
+        }
 
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'Delete') clearCurrentBoard();
