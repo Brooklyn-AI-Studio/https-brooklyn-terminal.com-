@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 圖片生成分析儀</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定義滾動條與平滑過渡效果 */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        .transition-all-ease { transition: all 0.3s ease-in-out; }
+        .loader {
+            border-top-color: #3b82f6;
+            -webkit-animation: spinner 1.5s linear infinite;
+            animation: spinner 1.5s linear infinite;
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* 隱藏預設滾動條 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
+
+    <main class="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden transition-all-ease">
+        <!-- 標頭區塊 -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white text-center">
+            <h1 class="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline><polyline points="7.5 19.79 7.5 14.6 3 12"></polyline><polyline points="21 12 16.5 14.6 16.5 19.79"></polyline><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                AI 圖片生成檢測儀
+            </h1>
+            <p class="mt-2 text-blue-100 text-sm sm:text-base">上傳圖片，使用先進的 AI 模型分析是否為人工智慧生成。</p>
+        </div>
+
+        <div class="p-6 sm:p-8">
+            <!-- 狀態: 1. 上傳區 -->
+            <div id="upload-section" class="block">
+                <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[250px]">
+                    <svg class="text-gray-400 mb-4" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <h3 class="text-lg font-medium text-gray-700 mb-1">點擊或拖曳圖片至此上傳</h3>
+                    <p class="text-sm text-gray-500">支援 JPG, PNG, WEBP (最大建議 5MB)</p>
+                    <input type="file" id="file-input" class="hidden" accept="image/jpeg, image/png, image/webp">
+                </div>
+            </div>
+
+            <!-- 狀態: 2. 圖片預覽區 -->
+            <div id="preview-section" class="hidden">
+                <div class="relative rounded-xl overflow-hidden bg-gray-100 mb-6 flex justify-center items-center h-64 sm:h-80 shadow-inner">
+                    <img id="image-preview" src="" alt="圖片預覽" class="max-w-full max-h-full object-contain">
+                    <button id="btn-reselect" class="absolute top-3 right-3 bg-white/90 text-gray-700 hover:bg-white px-3 py-1.5 rounded-lg text-sm font-medium shadow transition-colors flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                        移除
+                    </button>
+                </div>
+                <button id="btn-analyze" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transition-colors flex justify-center items-center gap-2 text-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                    開始分析圖片
+                </button>
+            </div>
+
+            <!-- 狀態: 3. 載入中 -->
+            <div id="loading-section" class="hidden py-12 flex flex-col items-center justify-center">
+                <div class="loader border-4 border-gray-200 rounded-full w-14 h-14 mb-4"></div>
+                <h3 class="text-xl font-medium text-gray-800 mb-2">正在分析圖片特徵...</h3>
+                <p class="text-gray-500 text-center max-w-sm">
+                    我們的 AI 模型正在檢查光影邏輯、紋理一致性以及邊緣瑕疵。這可能需要幾秒鐘的時間。
+                </p>
+            </div>
+
+            <!-- 狀態: 4. 分析結果區 -->
+            <div id="result-section" class="hidden">
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-100 mb-6 shadow-sm">
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">AI 生成機率</span>
+                        <span id="score-text" class="text-4xl font-extrabold text-gray-800">0%</span>
+                    </div>
+                    
+                    <!-- 進度條 -->
+                    <div class="w-full bg-gray-200 rounded-full h-4 mb-2 overflow-hidden shadow-inner">
+                        <div id="score-bar" class="bg-blue-600 h-4 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                    </div>
+                    
+                    <div class="flex justify-between text-xs text-gray-400 font-medium">
+                        <span>真實圖片</span>
+                        <span>無法確定</span>
+                        <span>AI 生成</span>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        詳細分析報告
+                    </h4>
+                    <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-5">
+                        <div class="mb-3 flex items-center gap-2">
+                            <span class="px-3 py-1 bg-white border rounded-full text-sm font-bold shadow-sm" id="verdict-badge">判斷中</span>
+                        </div>
+                        <p id="reasoning-text" class="text-gray-700 leading-relaxed text-sm sm:text-base">
+                            正在載入分析結果...
+                        </p>
+                    </div>
+                </div>
+
+                <button id="btn-reset" class="w-full bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-colors">
+                    分析另一張圖片
+                </button>
+            </div>
+
+            <!-- 錯誤訊息容器 -->
+            <div id="error-message" class="hidden mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 text-red-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    </div>
+                    <div class="ml-3">
+                        <p id="error-text" class="text-sm text-red-700">發生錯誤，請稍後再試。</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="mt-8 text-center text-gray-400 text-sm">
+        <p>免責聲明：本工具的分析結果僅供參考，目前的 AI 檢測技術仍可能存在誤差。</p>
+    </footer>
+
+    <script>
+        // API 設定 (Gemini API 金鑰將在執行環境中自動提供)
+        const apiKey = "";
+        
+        // DOM 元素
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const uploadSection = document.getElementById('upload-section');
+        const previewSection = document.getElementById('preview-section');
+        const loadingSection = document.getElementById('loading-section');
+        const resultSection = document.getElementById('result-section');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        
+        const imagePreview = document.getElementById('image-preview');
+        const btnAnalyze = document.getElementById('btn-analyze');
+        const btnReselect = document.getElementById('btn-reselect');
+        const btnReset = document.getElementById('btn-reset');
+
+        const scoreText = document.getElementById('score-text');
+        const scoreBar = document.getElementById('score-bar');
+        const verdictBadge = document.getElementById('verdict-badge');
+        const reasoningText = document.getElementById('reasoning-text');
+
+        let currentImageBase64 = null;
+        let currentMimeType = null;
+
+        // 拖曳與上傳事件綁定
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-blue-500', 'bg-blue-50');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        btnReselect.addEventListener('click', resetUI);
+        btnReset.addEventListener('click', resetUI);
+
+        btnAnalyze.addEventListener('click', async () => {
+            if (!currentImageBase64) return;
+            
+            showSection('loading');
+            hideError();
+
+            try {
+                const analysisResult = await analyzeWithGemini(currentImageBase64, currentMimeType);
+                displayResult(analysisResult);
+            } catch (error) {
+                console.error("API Error:", error);
+                showError("分析過程中發生錯誤或連線逾時。請檢查圖片格式後再試一次。");
+                showSection('preview');
+            }
+        });
+
+        // 處理檔案與預覽
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('請上傳有效的圖片檔案 (JPG, PNG, WEBP)。');
+                return;
+            }
+
+            hideError();
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const dataUrl = e.target.result;
+                
+                // 壓縮圖片以確保不超出 API 負載限制
+                const compressedDataUrl = await compressImage(dataUrl, 1024, 1024);
+                
+                // 解析 base64 與 mime type
+                const match = compressedDataUrl.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
+                if (match) {
+                    currentMimeType = match[1];
+                    currentImageBase64 = match[2];
+                    
+                    imagePreview.src = compressedDataUrl;
+                    showSection('preview');
+                } else {
+                    showError('圖片解析失敗。');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 圖片壓縮函數 (確保大型圖片也能順利分析)
+        function compressImage(dataUrl, maxWidth, maxHeight) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width = Math.floor(width * ratio);
+                        height = Math.floor(height * ratio);
+                    }
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.8)); // 轉為較小的 JPEG
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        // 呼叫 Gemini API (包含指數退避重試機制)
+        async function analyzeWithGemini(base64Data, mimeType, retries = 5) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const prompt = `你是一個專業且嚴格的 AI 圖片檢測系統。請仔細觀察這張圖片的光影邏輯、紋理細節、背景元素、人物特徵（如手指、瞳孔、牙齒、毛髮等邊緣），判斷這張圖片是否由 AI 生成。
+請回傳嚴格的 JSON 格式：
+{
+  "ai_probability": 0到100的整數數字 (代表 AI 生成的機率分數),
+  "reasoning": "繁體中文的詳細分析理由，列出具體的觀察點，指出哪些地方像是真實攝影，哪些地方有 AI 生成的瑕疵或典型特徵。",
+  "verdict": "真實圖片" 或 "極可能是 AI 生成" 或 "無法確定"
+}`;
+
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [
+                        { text: prompt },
+                        { inlineData: { mimeType: mimeType, data: base64Data } }
+                    ]
+                }],
+                generationConfig: {
+                    responseMimeType: "application/json"
+                }
+            };
+
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            
+            for (let i = 0; i <= retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (!text) throw new Error("無效的 API 回應結構");
+                    
+                    return JSON.parse(text);
+                } catch (error) {
+                    if (i === retries) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delays[i]));
+                }
+            }
+        }
+
+        // 顯示分析結果
+        function displayResult(data) {
+            const score = parseInt(data.ai_probability) || 0;
+            const verdict = data.verdict || "未知";
+            const reasoning = data.reasoning || "無法提供詳細理由。";
+
+            scoreText.textContent = `${score}%`;
+            
+            // 重置寬度以觸發動畫
+            scoreBar.style.width = '0%';
+            
+            // 延遲一點點設置寬度，讓動畫效果出來
+            setTimeout(() => {
+                scoreBar.style.width = `${score}%`;
+            }, 50);
+
+            // 根據分數設定顏色
+            scoreBar.className = 'h-4 rounded-full transition-all duration-1000 ease-out ';
+            let badgeClasses = 'px-3 py-1 border rounded-full text-sm font-bold shadow-sm ';
+            
+            if (score <= 35) {
+                scoreBar.classList.add('bg-green-500');
+                badgeClasses += 'bg-green-100 text-green-700 border-green-200';
+            } else if (score <= 65) {
+                scoreBar.classList.add('bg-yellow-500');
+                badgeClasses += 'bg-yellow-100 text-yellow-700 border-yellow-200';
+            } else {
+                scoreBar.classList.add('bg-red-500');
+                badgeClasses += 'bg-red-100 text-red-700 border-red-200';
+            }
+
+            verdictBadge.textContent = verdict;
+            verdictBadge.className = badgeClasses;
+            reasoningText.textContent = reasoning;
+
+            showSection('result');
+        }
+
+        // 介面狀態管理
+        function showSection(section) {
+            uploadSection.classList.add('hidden');
+            previewSection.classList.add('hidden');
+            loadingSection.classList.add('hidden');
+            resultSection.classList.add('hidden');
+
+            switch(section) {
+                case 'upload': uploadSection.classList.remove('hidden'); break;
+                case 'preview': previewSection.classList.remove('hidden'); break;
+                case 'loading': loadingSection.classList.remove('hidden'); break;
+                case 'result': resultSection.classList.remove('hidden'); break;
+            }
+        }
+
+        function resetUI() {
+            fileInput.value = '';
+            currentImageBase64 = null;
+            currentMimeType = null;
+            imagePreview.src = '';
+            hideError();
+            showSection('upload');
+            scoreBar.style.width = '0%';
+        }
+
+        function showError(msg) {
+            errorText.textContent = msg;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+
+    </script>
+</body>
+</html>
