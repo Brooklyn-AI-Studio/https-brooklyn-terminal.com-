@@ -1,1 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebOS 虛擬終端機</title>
+    <style>
+        /* 基礎重置與背景設定 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #300a24; /* Ubuntu 終端機深紫背景 */
+            color: #eeeeee; /* Ubuntu 亮白文字 */
+            font-family: 'Ubuntu Mono', 'Courier New', Courier, monospace;
+            overflow: hidden; /* 防止整個頁面滾動，我們只讓終端機區域滾動 */
+        }
 
+        /* 終端機主體容器 */
+        #terminal-container {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 自訂滾動條 */
+        #terminal-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        #terminal-container::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+        #terminal-container::-webkit-scrollbar-thumb {
+            background: #444;
+        }
+
+        /* 輸出歷史區塊 */
+        .output-line {
+            margin-bottom: 5px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        /* 錯誤訊息顏色 */
+        .error { color: #ff5555; }
+        /* 系統訊息顏色 */
+        .system { color: #88ccff; }
+        /* 目錄顏色 */
+        .dir-color { color: #729fcf; font-weight: bold; } /* Ubuntu 藍色目錄 */
+        /* 檔案顏色 */
+        .file-color { color: #eeeeee; }
+
+        /* 輸入行區塊 */
+        #input-line {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        /* 提示字元 (例如 user@webos:~$ ) */
+        #prompt {
+            white-space: nowrap;
+            margin-right: 8px;
+            color: #eeeeee;
+        }
+        .prompt-user { color: #8ae234; font-weight: bold; } /* Ubuntu 綠色使用者 */
+        .prompt-host { color: #8ae234; font-weight: bold; } /* Ubuntu 綠色主機 */
+        .prompt-path { color: #729fcf; font-weight: bold; } /* Ubuntu 藍色路徑 */
+
+        /* 隱藏預設的輸入框樣式，使其融入背景 */
+        #cmd-input {
+            background: transparent;
+            border: none;
+            color: #eeeeee;
+            font-family: inherit;
+            font-size: 16px;
+            flex-grow: 1;
+            outline: none;
+            padding: 0;
+            caret-color: transparent; /* 隱藏原生游標，我們自製一個 */
+        }
+
+        /* 自製閃爍游標 */
+        #cursor {
+            display: inline-block;
+            width: 10px;
+            height: 18px;
+            background-color: #eeeeee;
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+            margin-left: 1px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* 當輸入框失去焦點時，游標停止閃爍變成空心 */
+        #cmd-input:not(:focus) + #cursor {
+            background-color: transparent;
+            border: 1px solid #eeeeee;
+            animation: none;
+            width: 8px;
+            height: 16px;
+        }
+        
+        /* 歡迎標題 ASCII Art */
+        pre { margin: 0 0 10px 0; color: #eeeeee; }
+
+        /* Nano 編輯器樣式 */
+        #nano-container {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #300a24;
+            color: #eeeeee;
+            display: none; /* 預設隱藏 */
+            flex-direction: column;
+            font-family: 'Ubuntu Mono', 'Courier New', Courier, monospace;
+            z-index: 100;
+        }
+        #nano-header {
+            background-color: #eeeeee;
+            color: #300a24;
+            padding: 2px 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        #nano-textarea {
+            flex-grow: 1;
+            background-color: #300a24;
+            color: #eeeeee;
+            border: none;
+            outline: none;
+            padding: 10px;
+            resize: none;
+            font-family: inherit;
+            font-size: 16px;
+        }
+        #nano-message {
+            padding: 2px 10px;
+            min-height: 1.5em;
+            background-color: #300a24;
+            color: #eeeeee;
+        }
+        #nano-footer {
+            background-color: #eeeeee;
+            color: #300a24;
+            padding: 2px 10px;
+            display: flex;
+            gap: 20px;
+        }
+        .nano-shortcut { font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="terminal-container">
+        <div id="output"></div>
+        <div id="input-line">
+            <span id="prompt"></span>
+            <!-- 實際接收輸入的元素 -->
+            <input type="text" id="cmd-input" autocomplete="off" spellcheck="false" autofocus>
+            <span id="cursor"></span>
+        </div>
+    </div>
+
+    <!-- Nano 編輯器介面 -->
+    <div id="nano-container">
+        <div id="nano-header">
+            <span>GNU nano 6.2</span>
+            <span id="nano-filename">New Buffer</span>
+            <span></span>
+        </div>
+        <textarea id="nano-textarea" spellcheck="false"></textarea>
+        <div id="nano-message"></div>
+        <div id="nano-footer">
+            <span><span class="nano-shortcut">^O</span> 寫入</span>
+            <span><span class="nano-shortcut">^X</span> 離開</span>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 虛擬檔案系統 (VFS) 實作
+         */
+        class Node {
+            constructor(name, type, parent = null) {
+                this.name = name;
+                this.type = type; // 'dir' 或 'file'
+                this.parent = parent;
+                this.created = new Date();
+            }
+        }
+
+        class Directory extends Node {
+            constructor(name, parent = null) {
+                super(name, 'dir', parent);
+                this.children = {};
+            }
+        }
+
+        class File extends Node {
+            constructor(name, content = '', parent = null) {
+                super(name, 'file', parent);
+                this.content = content;
+            }
+        }
+
+        // 初始化根目錄與預設環境
+        const rootDir = new Directory('');
+        const homeDir = new Directory('home', rootDir);
+        rootDir.children['home'] = homeDir;
+        
+        const userDir = new Directory('guest', homeDir);
+        homeDir.children['guest'] = userDir;
+
+        // 建立預設檔案
+        const readme = new File('readme.txt', '歡迎使用 brooklyn-terminal！\n這是一個使用 HTML/JS/CSS 打造的模擬環境。\n您可以嘗試輸入 help 來查看可用指令。\n支援 nano 編輯器！輸入 nano readme.txt 來體驗。\n支援 grep, history, cp, mv 等新指令。', userDir);
+        userDir.children['readme.txt'] = readme;
+
+        /**
+         * 系統狀態變數
+         */
+        let currentDir = userDir;
+        let username = 'guest';
+        let hostname = 'brooklyn-terminal';
+        let commandHistory = [];
+        let historyIndex = -1;
+
+        // Nano 編輯器狀態
+        let isNanoOpen = false;
+        let nanoState = 'EDITING'; // 'EDITING' 或 'PROMPT_SAVE'
+        let currentNanoFile = null;
+        let currentNanoFilename = '';
+        let originalNanoContent = '';
+
+        // DOM 元素參考
+        const terminalContainer = document.getElementById('terminal-container');
+        const outputDiv = document.getElementById('output');
+        const cmdInput = document.getElementById('cmd-input');
+        const promptSpan = document.getElementById('prompt');
+        const nanoContainer = document.getElementById('nano-container');
+        const nanoTextarea = document.getElementById('nano-textarea');
+        const nanoMessage = document.getElementById('nano-message');
+        const nanoFilenameDisplay = document.getElementById('nano-filename');
+
+        /**
+         * 初始化與事件監聽
+         */
+        function init() {
+            updatePrompt();
+            printWelcome();
+            
+            // 點擊空白處自動對焦輸入框
+            terminalContainer.addEventListener('click', () => {
+                if (!isNanoOpen) cmdInput.focus();
+            });
+
+            // 處理鍵盤輸入事件 (Enter 執行, 上下鍵歷史紀錄)
+            cmdInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const cmdText = this.value.trim();
+                    if (cmdText) {
+                        commandHistory.push(cmdText);
+                    }
+                    historyIndex = commandHistory.length;
+                    
+                    // 印出剛才輸入的指令 (包含提示字元)
+                    printOutput(`<span class="prompt-user">${username}</span>@<span class="prompt-host">${hostname}</span>:<span class="prompt-path">${getPwd()}</span>$ ${escapeHtml(cmdText)}`);
+                    
+                    this.value = ''; // 清空輸入框
+                    executeCommand(cmdText);
+                    scrollToBottom();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (historyIndex > 0) {
+                        historyIndex--;
+                        this.value = commandHistory[historyIndex];
+                    }
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (historyIndex < commandHistory.length - 1) {
+                        historyIndex++;
+                        this.value = commandHistory[historyIndex];
+                    } else {
+                        historyIndex = commandHistory.length;
+                        this.value = '';
+                    }
+                }
+            });
+
+            // Nano 編輯器快捷鍵監聽
+            nanoTextarea.addEventListener('keydown', handleNanoInput);
+        }
+
+        // 更新提示字元 UI
+        function updatePrompt() {
+            const path = getPwd();
+            // 如果是在家目錄下，將 /home/guest 替換為 ~
+            let displayPath = path;
+            if (path.startsWith('/home/' + username)) {
+                displayPath = '~' + path.substring(('/home/' + username).length);
+            }
+            promptSpan.innerHTML = `<span class="prompt-user">${username}</span>@<span class="prompt-host">${hostname}</span>:<span class="prompt-path">${displayPath}</span>$`;
+        }
+
+        // 印出輸出內容
+        function printOutput(htmlContent, className = '') {
+            const div = document.createElement('div');
+            div.className = 'output-line ' + className;
+            div.innerHTML = htmlContent;
+            outputDiv.appendChild(div);
+        }
+
+        // 滾動到最底部
+        function scrollToBottom() {
+            terminalContainer.scrollTop = terminalContainer.scrollHeight;
+        }
+
+        // 取得目前絕對路徑 (字串)
+        function getPwd() {
+            let path = [];
+            let curr = currentDir;
+            while (curr !== rootDir) {
+                path.unshift(curr.name);
+                curr = curr.parent;
+            }
+            return '/' + path.join('/');
+        }
+
+        // 解析路徑字串，回傳目標 Node 物件 (找不到回傳 null)
+        function resolvePath(pathStr) {
+            if (!pathStr || pathStr === '.') return currentDir;
+            
+            let currNode = pathStr.startsWith('/') ? rootDir : currentDir;
+            let parts = pathStr.split('/').filter(p => p !== '');
+
+            for (let part of parts) {
+                if (part === '.') continue;
+                if (part === '..') {
+                    currNode = currNode.parent || rootDir;
+                } else {
+                    if (currNode.type !== 'dir' || !currNode.children[part]) {
+                        return null; // 路徑不存在
+                    }
+                    currNode = currNode.children[part];
+                }
+            }
+            return currNode;
+        }
+
+        // 安全地轉義 HTML 以防止 XSS (雖然是本地虛擬的)
+        function escapeHtml(unsafe) {
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
+        /**
+         * Nano 編輯器相關邏輯
+         */
+        function openNano(filename, fileNode) {
+            currentNanoFilename = filename;
+            currentNanoFile = fileNode;
+            originalNanoContent = fileNode ? fileNode.content : '';
+            
+            nanoFilenameDisplay.textContent = filename;
+            nanoTextarea.value = originalNanoContent;
+            nanoMessage.textContent = '';
+            
+            // 切換畫面
+            terminalContainer.style.display = 'none';
+            nanoContainer.style.display = 'flex';
+            
+            isNanoOpen = true;
+            nanoState = 'EDITING';
+            nanoTextarea.focus();
+        }
+
+        function closeNano() {
+            nanoContainer.style.display = 'none';
+            terminalContainer.style.display = 'flex';
+            isNanoOpen = false;
+            cmdInput.focus();
+            scrollToBottom();
+        }
+
+        function saveNanoContent() {
+            let content = nanoTextarea.value;
+            if (currentNanoFile) {
+                currentNanoFile.content = content;
+            } else {
+                let newFile = new File(currentNanoFilename, content, currentDir);
+                currentDir.children[currentNanoFilename] = newFile;
+                currentNanoFile = newFile;
+            }
+            originalNanoContent = content;
+            let lines = content.split('\n').length;
+            nanoMessage.textContent = `[ 已寫入 ${lines} 行 ]`;
+        }
+
+        function handleNanoInput(e) {
+            // 如果正在等待使用者確認是否儲存
+            if (nanoState === 'PROMPT_SAVE') {
+                e.preventDefault();
+                let key = e.key.toLowerCase();
+                if (key === 'y') {
+                    saveNanoContent();
+                    closeNano();
+                } else if (key === 'n') {
+                    closeNano();
+                } else if (e.ctrlKey && key === 'c') {
+                    nanoState = 'EDITING';
+                    nanoMessage.textContent = '已取消';
+                }
+                return;
+            }
+
+            // 攔截 Ctrl+X (離開) 和 Ctrl+O (儲存)
+            if (e.ctrlKey && e.key.toLowerCase() === 'x') {
+                e.preventDefault();
+                // 檢查是否有修改過
+                if (this.value !== originalNanoContent) {
+                    nanoState = 'PROMPT_SAVE';
+                    nanoMessage.textContent = '儲存修改的緩衝區？ (Y)es / (N)o / ^C 取消';
+                } else {
+                    closeNano();
+                }
+            } else if (e.ctrlKey && e.key.toLowerCase() === 'o') {
+                e.preventDefault();
+                saveNanoContent();
+            }
+        }
+
+        /**
+         * 核心指令解析與執行邏輯
+         */
+        function executeCommand(cmdString) {
+            if (!cmdString) return;
+
+            // 簡易的指令分割 (處理引號內的空格)
+            // 例如: echo "hello world" > a.txt
+            const args = [];
+            const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
+            let match;
+            while (match = regex.exec(cmdString)) {
+                args.push(match[1] || match[2] || match[0]);
+            }
+
+            const cmd = args[0].toLowerCase();
+            const params = args.slice(1);
+
+            switch (cmd) {
+                case 'help':
+                    printOutput('可用指令清單:', 'system');
+                    printOutput('  help      - 顯示此幫助訊息');
+                    printOutput('  clear     - 清除終端機畫面');
+                    printOutput('  pwd       - 顯示目前工作目錄');
+                    printOutput('  ls        - 列出目錄內容');
+                    printOutput('  cd [dir]  - 切換目錄');
+                    printOutput('  mkdir [d] - 建立新目錄');
+                    printOutput('  touch [f] - 建立新空檔案');
+                    printOutput('  rm [name] - 刪除檔案或空目錄');
+                    printOutput('  cat [file]- 顯示檔案內容');
+                    printOutput('  echo [str]- 印出字串 (支援 > 寫入檔案)');
+                    printOutput('  nano [file]- 啟動文字編輯器 (新功能)');
+                    printOutput('  grep [str] [file] - 在檔案中搜尋字串');
+                    printOutput('  history   - 顯示指令歷史紀錄');
+                    printOutput('  cp [s] [d]- 複製檔案');
+                    printOutput('  mv [s] [d]- 移動/重新命名檔案');
+                    printOutput('  whoami    - 顯示目前使用者名稱');
+                    printOutput('  date      - 顯示系統時間');
+                    break;
+
+                case 'clear':
+                    outputDiv.innerHTML = '';
+                    break;
+
+                case 'pwd':
+                    printOutput(getPwd());
+                    break;
+
+                case 'ls':
+                    let targetDir = currentDir;
+                    if (params.length > 0) {
+                        targetDir = resolvePath(params[0]);
+                        if (!targetDir) {
+                            printOutput(`ls: 無法存取 '${params[0]}': 沒有此一檔案或目錄`, 'error');
+                            break;
+                        }
+                        if (targetDir.type !== 'dir') {
+                            printOutput(targetDir.name);
+                            break;
+                        }
+                    }
+
+                    let lsOutput = '';
+                    for (const [name, node] of Object.entries(targetDir.children)) {
+                        if (node.type === 'dir') {
+                            lsOutput += `<span class="dir-color">${name}/</span>  `;
+                        } else {
+                            lsOutput += `<span class="file-color">${name}</span>  `;
+                        }
+                    }
+                    if (lsOutput) printOutput(lsOutput);
+                    break;
+
+                case 'cd':
+                    if (params.length === 0) {
+                        currentDir = userDir; // 預設回到 home
+                    } else {
+                        const nextDir = resolvePath(params[0]);
+                        if (!nextDir) {
+                            printOutput(`cd: ${params[0]}: 沒有此一檔案或目錄`, 'error');
+                        } else if (nextDir.type !== 'dir') {
+                            printOutput(`cd: ${params[0]}: 不是一個目錄`, 'error');
+                        } else {
+                            currentDir = nextDir;
+                        }
+                    }
+                    updatePrompt();
+                    break;
+
+                case 'mkdir':
+                    if (params.length === 0) {
+                        printOutput('mkdir: 缺少運算元', 'error');
+                        break;
+                    }
+                    // 這裡簡化處理，只支援在當前目錄下建立 (暫不處理 mkdir /a/b/c 這種複雜路徑)
+                    let newDirName = params[0];
+                    if (currentDir.children[newDirName]) {
+                        printOutput(`mkdir: 無法建立目錄 '${newDirName}': 檔案已存在`, 'error');
+                    } else {
+                        currentDir.children[newDirName] = new Directory(newDirName, currentDir);
+                    }
+                    break;
+
+                case 'touch':
+                    if (params.length === 0) {
+                        printOutput('touch: 缺少檔案運算元', 'error');
+                        break;
+                    }
+                    let newFileName = params[0];
+                    if (!currentDir.children[newFileName]) {
+                        currentDir.children[newFileName] = new File(newFileName, '', currentDir);
+                    } else {
+                        // 如果存在就更新時間 (touch 的真實行為)
+                        currentDir.children[newFileName].created = new Date();
+                    }
+                    break;
+
+                case 'cat':
+                    if (params.length === 0) {
+                        printOutput('cat: 缺少檔案運算元', 'error');
+                        break;
+                    }
+                    const fileNode = resolvePath(params[0]);
+                    if (!fileNode) {
+                        printOutput(`cat: ${params[0]}: 沒有此一檔案或目錄`, 'error');
+                    } else if (fileNode.type === 'dir') {
+                        printOutput(`cat: ${params[0]}: 是一個目錄`, 'error');
+                    } else {
+                        // 將換行符號替換為 <br> 以便在 HTML 中顯示，並轉義 HTML 以防 XSS
+                        printOutput(escapeHtml(fileNode.content).replace(/\n/g, '<br>'));
+                    }
+                    break;
+
+                case 'rm':
+                    if (params.length === 0) {
+                        printOutput('rm: 缺少運算元', 'error');
+                        break;
+                    }
+                    const rmTargetName = params[0];
+                    if (currentDir.children[rmTargetName]) {
+                        const targetNode = currentDir.children[rmTargetName];
+                        if (targetNode.type === 'dir' && Object.keys(targetNode.children).length > 0) {
+                             printOutput(`rm: 無法移除 '${rmTargetName}': 目錄不是空的`, 'error');
+                        } else {
+                            delete currentDir.children[rmTargetName];
+                        }
+                    } else {
+                        printOutput(`rm: 無法移除 '${rmTargetName}': 沒有此一檔案或目錄`, 'error');
+                    }
+                    break;
+
+                case 'nano':
+                    if (params.length === 0) {
+                        printOutput('nano: 請指定檔案名稱', 'error');
+                        break;
+                    }
+                    let targetNanoName = params[0];
+                    let targetNanoNode = resolvePath(targetNanoName);
+                    
+                    if (targetNanoNode && targetNanoNode.type === 'dir') {
+                        printOutput(`nano: ${targetNanoName} 是一個目錄`, 'error');
+                        break;
+                    }
+                    openNano(targetNanoName, targetNanoNode);
+                    break;
+
+                case 'history':
+                    let histOutput = '';
+                    commandHistory.forEach((h, i) => {
+                        histOutput += `  ${i + 1}  ${escapeHtml(h)}<br>`;
+                    });
+                    printOutput(histOutput);
+                    break;
+
+                case 'grep':
+                    if (params.length < 2) {
+                        printOutput('grep: 語法錯誤，用法: grep [搜尋字串] [檔案]', 'error');
+                        break;
+                    }
+                    const searchStr = params[0];
+                    const grepTargetNode = resolvePath(params[1]);
+                    
+                    if (!grepTargetNode) {
+                        printOutput(`grep: ${params[1]}: 沒有此一檔案或目錄`, 'error');
+                    } else if (grepTargetNode.type === 'dir') {
+                        printOutput(`grep: ${params[1]}: 是一個目錄`, 'error');
+                    } else {
+                        const lines = grepTargetNode.content.split('\n');
+                        const matchedLines = lines.filter(line => line.includes(searchStr));
+                        if (matchedLines.length > 0) {
+                            printOutput(escapeHtml(matchedLines.join('\n')).replace(/\n/g, '<br>'));
+                        }
+                    }
+                    break;
+
+                case 'cp':
+                    if (params.length < 2) {
+                        printOutput('cp: 缺少檔案運算元', 'error');
+                        break;
+                    }
+                    const srcCpNode = resolvePath(params[0]);
+                    const destCpName = params[1];
+                    if (!srcCpNode) {
+                        printOutput(`cp: 無法獲取 '${params[0]}' 的狀態: 沒有此一檔案或目錄`, 'error');
+                    } else if (srcCpNode.type === 'dir') {
+                        printOutput(`cp: 暫不支援複製目錄`, 'error');
+                    } else {
+                        currentDir.children[destCpName] = new File(destCpName, srcCpNode.content, currentDir);
+                    }
+                    break;
+
+                case 'mv':
+                    if (params.length < 2) {
+                        printOutput('mv: 缺少檔案運算元', 'error');
+                        break;
+                    }
+                    const srcMvNode = resolvePath(params[0]);
+                    const destMvName = params[1];
+                    if (!srcMvNode) {
+                        printOutput(`mv: 無法獲取 '${params[0]}' 的狀態: 沒有此一檔案或目錄`, 'error');
+                    } else {
+                        // 從原父目錄刪除並加入到當前目錄
+                        delete srcMvNode.parent.children[srcMvNode.name];
+                        srcMvNode.name = destMvName;
+                        srcMvNode.parent = currentDir;
+                        currentDir.children[destMvName] = srcMvNode;
+                    }
+                    break;
+
+                case 'echo':
+                    // 檢查是否有重定向符號 '>'
+                    const redirIndex = params.indexOf('>');
+                    if (redirIndex !== -1) {
+                        // 寫入檔案邏輯
+                        const textContent = params.slice(0, redirIndex).join(' ');
+                        const targetFileName = params[redirIndex + 1];
+                        
+                        if (!targetFileName) {
+                            printOutput('語法錯誤: 預期有重新導向目標', 'error');
+                            break;
+                        }
+                        
+                        let targetFileNode = resolvePath(targetFileName);
+                        if (!targetFileNode) {
+                            // 建立新檔案
+                            targetFileNode = new File(targetFileName, textContent, currentDir);
+                            currentDir.children[targetFileName] = targetFileNode;
+                        } else if (targetFileNode.type === 'file') {
+                            // 覆寫現有檔案
+                            targetFileNode.content = textContent;
+                        } else {
+                            printOutput(`bash: ${targetFileName}: 是一個目錄`, 'error');
+                        }
+                    } else {
+                        // 一般輸出邏輯
+                        printOutput(escapeHtml(params.join(' ')));
+                    }
+                    break;
+
+                case 'whoami':
+                    printOutput(username);
+                    break;
+
+                case 'date':
+                    printOutput(new Date().toString());
+                    break;
+
+                default:
+                    printOutput(`bash: ${cmd}: 找不到指令`, 'error');
+                    break;
+            }
+        }
+
+        // 開機歡迎畫面
+        function printWelcome() {
+            const asciiArt = `
+  _                     _    _                  
+ | |__  _ __ ___   ___ | | _| |_   _ _ __       
+ | '_ \\| '__/ _ \\ / _ \\| |/ / | | | | '_ \\      
+ | |_) | | | (_) | (_) |   <| | |_| | | | |     
+ |_.__/|_|  \\___/ \\___/|_|\\_\\_|\\__, |_| |_|     
+                               |___/            
+`;
+            printOutput(`<pre>${asciiArt}</pre>`);
+            printOutput('brooklyn-terminal v2.0.0 (Ubuntu Theme Edition)', 'system');
+            printOutput('系統已開機完成。輸入 <b>help</b> 查看可用指令。', 'system');
+            printOutput('----------------------------------------------------', 'system');
+        }
+
+        // 啟動終端機
+        window.onload = init;
+
+    </script>
+</body>
+</html>
