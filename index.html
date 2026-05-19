@@ -1,737 +1,369 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebOS 虛擬終端機</title>
+    <title>brooklyn-terminal</title>
+    <link rel="icon" type="image/png" href="./assets/logo.png">
+    <link rel="apple-touch-icon" href="./assets/logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6', 
+                            600: '#0d9488',
+                            900: '#134e4a',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
     <style>
-        /* 基礎重置與背景設定 */
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #300a24; /* Ubuntu 終端機深紫背景 */
-            color: #eeeeee; /* Ubuntu 亮白文字 */
-            font-family: 'Ubuntu Mono', 'Courier New', Courier, monospace;
-            overflow: hidden; /* 防止整個頁面滾動，我們只讓終端機區域滾動 */
-        }
 
-        /* 終端機主體容器 */
-        #terminal-container {
-            width: 100%;
-            height: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* 自訂滾動條 */
-        #terminal-container::-webkit-scrollbar {
+        ::-webkit-scrollbar {
             width: 8px;
         }
-        #terminal-container::-webkit-scrollbar-track {
-            background: #1e1e1e;
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
         }
-        #terminal-container::-webkit-scrollbar-thumb {
-            background: #444;
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
         }
-
-        /* 輸出歷史區塊 */
-        .output-line {
-            margin-bottom: 5px;
-            word-wrap: break-word;
-            line-height: 1.4;
-        }
-
-        /* 錯誤訊息顏色 */
-        .error { color: #ff5555; }
-        /* 系統訊息顏色 */
-        .system { color: #88ccff; }
-        /* 目錄顏色 */
-        .dir-color { color: #729fcf; font-weight: bold; } /* Ubuntu 藍色目錄 */
-        /* 檔案顏色 */
-        .file-color { color: #eeeeee; }
-
-        /* 輸入行區塊 */
-        #input-line {
-            display: flex;
-            align-items: center;
-            margin-top: 5px;
-        }
-
-        /* 提示字元 (例如 user@webos:~$ ) */
-        #prompt {
-            white-space: nowrap;
-            margin-right: 8px;
-            color: #eeeeee;
-        }
-        .prompt-user { color: #8ae234; font-weight: bold; } /* Ubuntu 綠色使用者 */
-        .prompt-host { color: #8ae234; font-weight: bold; } /* Ubuntu 綠色主機 */
-        .prompt-path { color: #729fcf; font-weight: bold; } /* Ubuntu 藍色路徑 */
-
-        /* 隱藏預設的輸入框樣式，使其融入背景 */
-        #cmd-input {
-            background: transparent;
-            border: none;
-            color: #eeeeee;
-            font-family: inherit;
-            font-size: 16px;
-            flex-grow: 1;
-            outline: none;
-            padding: 0;
-            caret-color: transparent; /* 隱藏原生游標，我們自製一個 */
-        }
-
-        /* 自製閃爍游標 */
-        #cursor {
-            display: inline-block;
-            width: 10px;
-            height: 18px;
-            background-color: #eeeeee;
-            animation: blink 1s step-end infinite;
-            vertical-align: text-bottom;
-            margin-left: 1px;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-        /* 當輸入框失去焦點時，游標停止閃爍變成空心 */
-        #cmd-input:not(:focus) + #cursor {
-            background-color: transparent;
-            border: 1px solid #eeeeee;
-            animation: none;
-            width: 8px;
-            height: 16px;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
         }
         
-        /* 歡迎標題 ASCII Art */
-        pre { margin: 0 0 10px 0; color: #eeeeee; }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
 
-        /* Nano 編輯器樣式 */
-        #nano-container {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #300a24;
-            color: #eeeeee;
-            display: none; /* 預設隱藏 */
-            flex-direction: column;
-            font-family: 'Ubuntu Mono', 'Courier New', Courier, monospace;
-            z-index: 100;
+
+        .bg-dots {
+            background-image: radial-gradient(rgba(13, 148, 136, 0.15) 1.5px, transparent 1.5px);
+            background-size: 32px 32px;
         }
-        #nano-header {
-            background-color: #eeeeee;
-            color: #300a24;
-            padding: 2px 10px;
-            display: flex;
-            justify-content: space-between;
+
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(3deg); }
         }
-        #nano-textarea {
-            flex-grow: 1;
-            background-color: #300a24;
-            color: #eeeeee;
-            border: none;
-            outline: none;
-            padding: 10px;
-            resize: none;
-            font-family: inherit;
-            font-size: 16px;
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
         }
-        #nano-message {
-            padding: 2px 10px;
-            min-height: 1.5em;
-            background-color: #300a24;
-            color: #eeeeee;
+        .animate-float-delayed {
+            animation: float 7s ease-in-out 3s infinite;
         }
-        #nano-footer {
-            background-color: #eeeeee;
-            color: #300a24;
-            padding: 2px 10px;
-            display: flex;
-            gap: 20px;
+        .animate-float-slow {
+            animation: float 9s ease-in-out 1s infinite;
         }
-        .nano-shortcut { font-weight: bold; }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col relative">
 
-    <div id="terminal-container">
-        <div id="output"></div>
-        <div id="input-line">
-            <span id="prompt"></span>
-            <!-- 實際接收輸入的元素 -->
-            <input type="text" id="cmd-input" autocomplete="off" spellcheck="false" autofocus>
-            <span id="cursor"></span>
-        </div>
+    <div id="terminal-bg" class="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-gray-50 opacity-20">
+        <div id="terminal-content" class="text-brand-600 font-mono text-sm sm:text-base p-4 whitespace-pre-wrap leading-relaxed select-none"></div>
     </div>
 
-    <!-- Nano 編輯器介面 -->
-    <div id="nano-container">
-        <div id="nano-header">
-            <span>GNU nano 6.2</span>
-            <span id="nano-filename">New Buffer</span>
-            <span></span>
-        </div>
-        <textarea id="nano-textarea" spellcheck="false"></textarea>
-        <div id="nano-message"></div>
-        <div id="nano-footer">
-            <span><span class="nano-shortcut">^O</span> 寫入</span>
-            <span><span class="nano-shortcut">^X</span> 離開</span>
-        </div>
-    </div>
+    <!-- 頂部導航列 -->
+    <header class="fixed w-full top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300" id="navbar">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+               <a href="index.html" class="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                <img 
+                    src="./assets/logo.png" 
+                    alt="brooklyn-terminal logo"
+                    class="w-8 h-8 rounded-lg object-cover"
+                >
+                <span>brooklyn-terminal</span>
+                </a>
+                
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#home" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">首頁</a>
+                    <a href="#sections" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">探索</a>
+                </nav>
 
+                <div class="md:hidden flex items-center">
+                    <button class="text-gray-600 hover:text-brand-600 focus:outline-none">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+    <main class="flex-grow pt-16">
+        <section id="home" class="relative overflow-hidden bg-white/40 min-h-[75vh] flex items-center">
+            <div class="absolute inset-0 z-0 bg-dots opacity-80 pointer-events-none"></div>
+            <div class="absolute inset-0 z-0 opacity-40 pointer-events-none">
+                <div class="absolute top-10 left-10 w-72 h-72 bg-brand-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob"></div>
+                <div class="absolute top-10 right-20 w-72 h-72 bg-purple-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob animation-delay-2000"></div>
+                <div class="absolute -bottom-8 left-1/3 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob animation-delay-4000"></div>
+            </div>
+
+            <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                <!-- 左上角 -->
+                <div class="absolute top-24 left-[10%] md:left-[15%] text-brand-300/50 animate-float">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                </div>
+                <!-- Code 符號 -->
+                <div class="absolute top-32 right-[15%] text-blue-300/40 animate-float-delayed">
+                    <i data-lucide="code" class="w-10 h-10"></i>
+                </div>
+                <!-- 圓圈 -->
+                <div class="absolute bottom-20 left-[20%] text-brand-400/40 animate-float-slow">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/></svg>
+                </div>
+                <!-- 終端機符號 -->
+                <div class="absolute bottom-32 right-[10%] md:right-[20%] text-purple-300/40 animate-float">
+                    <i data-lucide="terminal-square" class="w-12 h-12"></i>
+                </div>
+            </div>
+
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-12 md:py-20 lg:py-24">
+                <div class="text-center max-w-3xl mx-auto bg-white/60 backdrop-blur-sm p-8 rounded-3xl shadow-sm border border-white/50">
+                    <p class="text-brand-600 font-semibold tracking-wide uppercase text-sm mb-3 opacity-0 animate-fade-in-up"> Salut,</p>
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 mb-6 leading-tight opacity-0 animate-fade-in-up delay-100">
+                    Brooklyn Chen<br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-blue-600">
+                        資訊備份的地方
+                    </span>
+                </h1>
+
+                <p class="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto mb-8 opacity-0 animate-fade-in-up delay-200">
+                    你之所以還活著是因為你死掉了時候不會變好吃。<br> —瑞克和莫蒂S7E4 
+                </p>
+
+                <div class="opacity-0 animate-fade-in-up delay-300">
+                    <a href="#sections" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-brand-600 hover:bg-brand-700 md:text-lg shadow-lg shadow-brand-500/30 transition-all hover:-translate-y-1">
+                        探索
+                        <i data-lucide="arrow-down" class="ml-2 w-5 h-5"></i>
+                    </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 探索內容 -->
+        <section id="sections" class="py-20 bg-gray-50 relative z-10 border-t border-gray-100">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-bold text-gray-900">探索內容</h2>
+                    <div class="w-16 h-1 bg-brand-500 mx-auto mt-4 rounded-full"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+    
+                    <!-- 作品集 -->
+                    
+                <a href="works.html" class="group bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-xl hover:border-brand-200 transition-all duration-300 flex flex-col items-center text-center transform hover:-translate-y-2 relative overflow-hidden h-full min-h-[292px]">
+                    <!-- 裝飾背景 -->
+                    <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-gradient-to-br from-brand-100 to-transparent rounded-full z-0 opacity-50 transition-transform group-hover:scale-150"></div>
+                    
+                    <div class="relative z-10 h-full flex flex-col items-center">
+                        <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-brand-600 group-hover:text-white transition-colors duration-300">
+                            <i data-lucide="briefcase" class="w-8 h-8"></i>
+                        </div>
+
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">作品集</h3>
+
+                        <p class="text-gray-500 mb-6 min-h-[56px] leading-relaxed">
+                            瀏覽我過去的專案和那些讓人髮際線愈來愈高的東西。
+                        </p>
+
+                        <span class="mt-auto inline-flex items-center text-brand-600 font-medium gap-1 group-hover:gap-2 transition-all">
+                            觀看作品 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </span>
+                    </div>
+                </a>
+
+                <!-- 關於我 -->
+                <a href="aboutme.html" class="group bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-xl hover:border-blue-200 transition-all duration-300 flex flex-col items-center text-center transform hover:-translate-y-2 relative overflow-hidden h-full min-h-[292px]">
+                    <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-gradient-to-br from-blue-100 to-transparent rounded-full z-0 opacity-50 transition-transform group-hover:scale-150"></div>
+                    
+                    <div class="relative z-10 h-full flex flex-col items-center">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                            <i data-lucide="user" class="w-8 h-8"></i>
+                        </div>
+
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">關於我</h3>
+
+                        <p class="text-gray-500 mb-6 min-h-[56px] leading-relaxed">
+                            如果你想知道我的背景......
+                        </p>
+
+                        <span class="mt-auto inline-flex items-center text-blue-600 font-medium gap-1 group-hover:gap-2 transition-all">
+                            了解更多 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </span>
+                    </div>
+                </a>
+
+                <!-- 資源下載 -->
+                <a href="resource.html" class="group bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-xl hover:border-purple-200 transition-all duration-300 flex flex-col items-center text-center transform hover:-translate-y-2 relative overflow-hidden h-full min-h-[292px]">
+                    <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-gradient-to-br from-purple-100 to-transparent rounded-full z-0 opacity-50 transition-transform group-hover:scale-150"></div>
+                    
+                    <div class="relative z-10 h-full flex flex-col items-center">
+                        <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                            <i data-lucide="download-cloud" class="w-8 h-8"></i>
+                        </div>
+
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">資源下載</h3>
+
+                        <p class="text-gray-500 mb-6 min-h-[56px] leading-relaxed">
+                            分享一些我整理的筆記、開源套件或實用的素材。
+                        </p>
+
+                        <span class="mt-auto inline-flex items-center text-purple-600 font-medium gap-1 group-hover:gap-2 transition-all">
+                            前往下載 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </span>
+                    </div>
+                </a>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="bg-white border-t border-gray-200 py-8 mt-auto relative z-10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-500 text-sm">
+                &copy; <span id="currentYear"></span> brooklyn-terminal. All rights reserved.
+            </p>
+            <div class="mt-4 flex justify-center space-x-6">
+                <a href="https://www.instagram.com/ukuddz/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-pink-600 transition-colors">
+                    <span class="sr-only">Instagram</span>
+                    <i data-lucide="instagram" class="w-6 h-6"></i>
+                </a>
+                <a href="https://www.reddit.com/user/ukuleleddz/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-orange-600 transition-colors">
+                    <span class="sr-only">Reddit</span>
+                    <i data-lucide="message-circle" class="w-6 h-6"></i>
+                </a>
+                <a href="mailto:coreinformation30@gmail.com" class="text-gray-400 hover:text-blue-600 transition-colors">
+                    <span class="sr-only">Email</span>
+                    <i data-lucide="mail" class="w-6 h-6"></i>
+                </a>
+            </div>
+            <!-- 顯示 Email 文字 -->
+            <p class="mt-4 text-gray-500 text-sm">
+                聯絡我：<a href="mailto:coreinformation30@gmail.com" class="hover:text-brand-600 hover:underline">coreinformation30@gmail.com</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- 圖示與腳本 -->
     <script>
-        /**
-         * 虛擬檔案系統 (VFS) 實作
-         */
-        class Node {
-            constructor(name, type, parent = null) {
-                this.name = name;
-                this.type = type; // 'dir' 或 'file'
-                this.parent = parent;
-                this.created = new Date();
-            }
-        }
-
-        class Directory extends Node {
-            constructor(name, parent = null) {
-                super(name, 'dir', parent);
-                this.children = {};
-            }
-        }
-
-        class File extends Node {
-            constructor(name, content = '', parent = null) {
-                super(name, 'file', parent);
-                this.content = content;
-            }
-        }
-
-        // 初始化根目錄與預設環境
-        const rootDir = new Directory('');
-        const homeDir = new Directory('home', rootDir);
-        rootDir.children['home'] = homeDir;
-        
-        const userDir = new Directory('guest', homeDir);
-        homeDir.children['guest'] = userDir;
-
-        // 建立預設檔案
-        const readme = new File('readme.txt', '歡迎使用 brooklyn-terminal！\n這是一個使用 HTML/JS/CSS 打造的模擬環境。\n您可以嘗試輸入 help 來查看可用指令。\n支援 nano 編輯器！輸入 nano readme.txt 來體驗。\n支援 grep, history, cp, mv 等新指令。', userDir);
-        userDir.children['readme.txt'] = readme;
-
-        /**
-         * 系統狀態變數
-         */
-        let currentDir = userDir;
-        let username = 'guest';
-        let hostname = 'brooklyn-terminal';
-        let commandHistory = [];
-        let historyIndex = -1;
-
-        // Nano 編輯器狀態
-        let isNanoOpen = false;
-        let nanoState = 'EDITING'; // 'EDITING' 或 'PROMPT_SAVE'
-        let currentNanoFile = null;
-        let currentNanoFilename = '';
-        let originalNanoContent = '';
-
-        // DOM 元素參考
-        const terminalContainer = document.getElementById('terminal-container');
-        const outputDiv = document.getElementById('output');
-        const cmdInput = document.getElementById('cmd-input');
-        const promptSpan = document.getElementById('prompt');
-        const nanoContainer = document.getElementById('nano-container');
-        const nanoTextarea = document.getElementById('nano-textarea');
-        const nanoMessage = document.getElementById('nano-message');
-        const nanoFilenameDisplay = document.getElementById('nano-filename');
-
-        /**
-         * 初始化與事件監聽
-         */
-        function init() {
-            updatePrompt();
-            printWelcome();
-            
-            // 點擊空白處自動對焦輸入框
-            terminalContainer.addEventListener('click', () => {
-                if (!isNanoOpen) cmdInput.focus();
-            });
-
-            // 處理鍵盤輸入事件 (Enter 執行, 上下鍵歷史紀錄)
-            cmdInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    const cmdText = this.value.trim();
-                    if (cmdText) {
-                        commandHistory.push(cmdText);
-                    }
-                    historyIndex = commandHistory.length;
-                    
-                    // 印出剛才輸入的指令 (包含提示字元)
-                    printOutput(`<span class="prompt-user">${username}</span>@<span class="prompt-host">${hostname}</span>:<span class="prompt-path">${getPwd()}</span>$ ${escapeHtml(cmdText)}`);
-                    
-                    this.value = ''; // 清空輸入框
-                    executeCommand(cmdText);
-                    scrollToBottom();
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    if (historyIndex > 0) {
-                        historyIndex--;
-                        this.value = commandHistory[historyIndex];
-                    }
-                } else if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    if (historyIndex < commandHistory.length - 1) {
-                        historyIndex++;
-                        this.value = commandHistory[historyIndex];
-                    } else {
-                        historyIndex = commandHistory.length;
-                        this.value = '';
-                    }
-                }
-            });
-
-            // Nano 編輯器快捷鍵監聽
-            nanoTextarea.addEventListener('keydown', handleNanoInput);
-        }
-
-        // 更新提示字元 UI
-        function updatePrompt() {
-            const path = getPwd();
-            // 如果是在家目錄下，將 /home/guest 替換為 ~
-            let displayPath = path;
-            if (path.startsWith('/home/' + username)) {
-                displayPath = '~' + path.substring(('/home/' + username).length);
-            }
-            promptSpan.innerHTML = `<span class="prompt-user">${username}</span>@<span class="prompt-host">${hostname}</span>:<span class="prompt-path">${displayPath}</span>$`;
-        }
-
-        // 印出輸出內容
-        function printOutput(htmlContent, className = '') {
-            const div = document.createElement('div');
-            div.className = 'output-line ' + className;
-            div.innerHTML = htmlContent;
-            outputDiv.appendChild(div);
-        }
-
-        // 滾動到最底部
-        function scrollToBottom() {
-            terminalContainer.scrollTop = terminalContainer.scrollHeight;
-        }
-
-        // 取得目前絕對路徑 (字串)
-        function getPwd() {
-            let path = [];
-            let curr = currentDir;
-            while (curr !== rootDir) {
-                path.unshift(curr.name);
-                curr = curr.parent;
-            }
-            return '/' + path.join('/');
-        }
-
-        // 解析路徑字串，回傳目標 Node 物件 (找不到回傳 null)
-        function resolvePath(pathStr) {
-            if (!pathStr || pathStr === '.') return currentDir;
-            
-            let currNode = pathStr.startsWith('/') ? rootDir : currentDir;
-            let parts = pathStr.split('/').filter(p => p !== '');
-
-            for (let part of parts) {
-                if (part === '.') continue;
-                if (part === '..') {
-                    currNode = currNode.parent || rootDir;
-                } else {
-                    if (currNode.type !== 'dir' || !currNode.children[part]) {
-                        return null; // 路徑不存在
-                    }
-                    currNode = currNode.children[part];
-                }
-            }
-            return currNode;
-        }
-
-        // 安全地轉義 HTML 以防止 XSS (雖然是本地虛擬的)
-        function escapeHtml(unsafe) {
-            return unsafe
-                 .replace(/&/g, "&amp;")
-                 .replace(/</g, "&lt;")
-                 .replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quot;")
-                 .replace(/'/g, "&#039;");
-        }
-
-        /**
-         * Nano 編輯器相關邏輯
-         */
-        function openNano(filename, fileNode) {
-            currentNanoFilename = filename;
-            currentNanoFile = fileNode;
-            originalNanoContent = fileNode ? fileNode.content : '';
-            
-            nanoFilenameDisplay.textContent = filename;
-            nanoTextarea.value = originalNanoContent;
-            nanoMessage.textContent = '';
-            
-            // 切換畫面
-            terminalContainer.style.display = 'none';
-            nanoContainer.style.display = 'flex';
-            
-            isNanoOpen = true;
-            nanoState = 'EDITING';
-            nanoTextarea.focus();
-        }
-
-        function closeNano() {
-            nanoContainer.style.display = 'none';
-            terminalContainer.style.display = 'flex';
-            isNanoOpen = false;
-            cmdInput.focus();
-            scrollToBottom();
-        }
-
-        function saveNanoContent() {
-            let content = nanoTextarea.value;
-            if (currentNanoFile) {
-                currentNanoFile.content = content;
+       
+        lucide.createIcons();
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 10) {
+                navbar.classList.add('shadow-md');
+                navbar.classList.remove('shadow-sm');
             } else {
-                let newFile = new File(currentNanoFilename, content, currentDir);
-                currentDir.children[currentNanoFilename] = newFile;
-                currentNanoFile = newFile;
+                navbar.classList.remove('shadow-md');
+                navbar.classList.add('shadow-sm');
             }
-            originalNanoContent = content;
-            let lines = content.split('\n').length;
-            nanoMessage.textContent = `[ 已寫入 ${lines} 行 ]`;
-        }
+        });
+        const terminalContent = document.getElementById('terminal-content');
+        const terminalLines = [
+                "Launching CoreInformation Lab...",
+                "Loading Data Science workspace...",
+                "Parsing datasets...",
+                "[OK] Correlation found. Causation still hiding.",
+                "Building feature matrix...",
+                "Training predictive model...",
+                "Reducing model precision to INT8...",
+                "Generating hardware-friendly inference graph...",
+                "Compiling Verilog design...",
+                "Synthesizing accelerator architecture...",
+                "Allocating LUTs, BRAMs, and DSP slices...",
+                "[OK] Silicon pipeline initialized.",
+                "Checking setup and hold timing...",
+                "[WARN] Hold time is holding a grudge.",
+                "Optimizing datapath latency...",
+                "Power estimate: acceptable. Fan: emotionally prepared.",
+                "Preparing FPGA deployment package...",
+                "Connecting AI model to chip design flow...",
+                "Brooklyn's Data x Silicon console is ready.",
+                "Waiting for next command...",
+                ">_ "
+        ];
 
-        function handleNanoInput(e) {
-            // 如果正在等待使用者確認是否儲存
-            if (nanoState === 'PROMPT_SAVE') {
-                e.preventDefault();
-                let key = e.key.toLowerCase();
-                if (key === 'y') {
-                    saveNanoContent();
-                    closeNano();
-                } else if (key === 'n') {
-                    closeNano();
-                } else if (e.ctrlKey && key === 'c') {
-                    nanoState = 'EDITING';
-                    nanoMessage.textContent = '已取消';
+        let currentLineIndex = 0;
+        let currentCharIndex = 0;
+        let isTyping = true;
+        let typingDelay = 30; // 延遲 
+        let lineDelay = 500;  // 等待時間 
+
+        function typeTerminal() {
+            if (currentLineIndex < terminalLines.length) {
+                const currentLine = terminalLines[currentLineIndex];
+                
+                if (currentCharIndex === 0 && currentLineIndex > 0) {
+                    terminalContent.innerHTML += "<br/>";
                 }
-                return;
-            }
 
-            // 攔截 Ctrl+X (離開) 和 Ctrl+O (儲存)
-            if (e.ctrlKey && e.key.toLowerCase() === 'x') {
-                e.preventDefault();
-                // 檢查是否有修改過
-                if (this.value !== originalNanoContent) {
-                    nanoState = 'PROMPT_SAVE';
-                    nanoMessage.textContent = '儲存修改的緩衝區？ (Y)es / (N)o / ^C 取消';
+                if (currentCharIndex < currentLine.length) {
+                    terminalContent.innerHTML += currentLine.charAt(currentCharIndex);
+                    currentCharIndex++;
+                    setTimeout(typeTerminal, typingDelay + (Math.random() * 20)); // 加上微小亂數讓打字更真實
                 } else {
-                    closeNano();
+                    currentCharIndex = 0;
+                    currentLineIndex++;
+                    setTimeout(typeTerminal, lineDelay);
                 }
-            } else if (e.ctrlKey && e.key.toLowerCase() === 'o') {
-                e.preventDefault();
-                saveNanoContent();
+
+            } else {
+                blinkCursor();
             }
         }
 
-        /**
-         * 核心指令解析與執行邏輯
-         */
-        function executeCommand(cmdString) {
-            if (!cmdString) return;
-
-            // 簡易的指令分割 (處理引號內的空格)
-            // 例如: echo "hello world" > a.txt
-            const args = [];
-            const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
-            let match;
-            while (match = regex.exec(cmdString)) {
-                args.push(match[1] || match[2] || match[0]);
-            }
-
-            const cmd = args[0].toLowerCase();
-            const params = args.slice(1);
-
-            switch (cmd) {
-                case 'help':
-                    printOutput('可用指令清單:', 'system');
-                    printOutput('  help      - 顯示此幫助訊息');
-                    printOutput('  clear     - 清除終端機畫面');
-                    printOutput('  pwd       - 顯示目前工作目錄');
-                    printOutput('  ls        - 列出目錄內容');
-                    printOutput('  cd [dir]  - 切換目錄');
-                    printOutput('  mkdir [d] - 建立新目錄');
-                    printOutput('  touch [f] - 建立新空檔案');
-                    printOutput('  rm [name] - 刪除檔案或空目錄');
-                    printOutput('  cat [file]- 顯示檔案內容');
-                    printOutput('  echo [str]- 印出字串 (支援 > 寫入檔案)');
-                    printOutput('  nano [file]- 啟動文字編輯器 (新功能)');
-                    printOutput('  grep [str] [file] - 在檔案中搜尋字串');
-                    printOutput('  history   - 顯示指令歷史紀錄');
-                    printOutput('  cp [s] [d]- 複製檔案');
-                    printOutput('  mv [s] [d]- 移動/重新命名檔案');
-                    printOutput('  whoami    - 顯示目前使用者名稱');
-                    printOutput('  date      - 顯示系統時間');
-                    break;
-
-                case 'clear':
-                    outputDiv.innerHTML = '';
-                    break;
-
-                case 'pwd':
-                    printOutput(getPwd());
-                    break;
-
-                case 'ls':
-                    let targetDir = currentDir;
-                    if (params.length > 0) {
-                        targetDir = resolvePath(params[0]);
-                        if (!targetDir) {
-                            printOutput(`ls: 無法存取 '${params[0]}': 沒有此一檔案或目錄`, 'error');
-                            break;
-                        }
-                        if (targetDir.type !== 'dir') {
-                            printOutput(targetDir.name);
-                            break;
-                        }
-                    }
-
-                    let lsOutput = '';
-                    for (const [name, node] of Object.entries(targetDir.children)) {
-                        if (node.type === 'dir') {
-                            lsOutput += `<span class="dir-color">${name}/</span>  `;
-                        } else {
-                            lsOutput += `<span class="file-color">${name}</span>  `;
-                        }
-                    }
-                    if (lsOutput) printOutput(lsOutput);
-                    break;
-
-                case 'cd':
-                    if (params.length === 0) {
-                        currentDir = userDir; // 預設回到 home
-                    } else {
-                        const nextDir = resolvePath(params[0]);
-                        if (!nextDir) {
-                            printOutput(`cd: ${params[0]}: 沒有此一檔案或目錄`, 'error');
-                        } else if (nextDir.type !== 'dir') {
-                            printOutput(`cd: ${params[0]}: 不是一個目錄`, 'error');
-                        } else {
-                            currentDir = nextDir;
-                        }
-                    }
-                    updatePrompt();
-                    break;
-
-                case 'mkdir':
-                    if (params.length === 0) {
-                        printOutput('mkdir: 缺少運算元', 'error');
-                        break;
-                    }
-                    // 這裡簡化處理，只支援在當前目錄下建立 (暫不處理 mkdir /a/b/c 這種複雜路徑)
-                    let newDirName = params[0];
-                    if (currentDir.children[newDirName]) {
-                        printOutput(`mkdir: 無法建立目錄 '${newDirName}': 檔案已存在`, 'error');
-                    } else {
-                        currentDir.children[newDirName] = new Directory(newDirName, currentDir);
-                    }
-                    break;
-
-                case 'touch':
-                    if (params.length === 0) {
-                        printOutput('touch: 缺少檔案運算元', 'error');
-                        break;
-                    }
-                    let newFileName = params[0];
-                    if (!currentDir.children[newFileName]) {
-                        currentDir.children[newFileName] = new File(newFileName, '', currentDir);
-                    } else {
-                        // 如果存在就更新時間 (touch 的真實行為)
-                        currentDir.children[newFileName].created = new Date();
-                    }
-                    break;
-
-                case 'cat':
-                    if (params.length === 0) {
-                        printOutput('cat: 缺少檔案運算元', 'error');
-                        break;
-                    }
-                    const fileNode = resolvePath(params[0]);
-                    if (!fileNode) {
-                        printOutput(`cat: ${params[0]}: 沒有此一檔案或目錄`, 'error');
-                    } else if (fileNode.type === 'dir') {
-                        printOutput(`cat: ${params[0]}: 是一個目錄`, 'error');
-                    } else {
-                        // 將換行符號替換為 <br> 以便在 HTML 中顯示，並轉義 HTML 以防 XSS
-                        printOutput(escapeHtml(fileNode.content).replace(/\n/g, '<br>'));
-                    }
-                    break;
-
-                case 'rm':
-                    if (params.length === 0) {
-                        printOutput('rm: 缺少運算元', 'error');
-                        break;
-                    }
-                    const rmTargetName = params[0];
-                    if (currentDir.children[rmTargetName]) {
-                        const targetNode = currentDir.children[rmTargetName];
-                        if (targetNode.type === 'dir' && Object.keys(targetNode.children).length > 0) {
-                             printOutput(`rm: 無法移除 '${rmTargetName}': 目錄不是空的`, 'error');
-                        } else {
-                            delete currentDir.children[rmTargetName];
-                        }
-                    } else {
-                        printOutput(`rm: 無法移除 '${rmTargetName}': 沒有此一檔案或目錄`, 'error');
-                    }
-                    break;
-
-                case 'nano':
-                    if (params.length === 0) {
-                        printOutput('nano: 請指定檔案名稱', 'error');
-                        break;
-                    }
-                    let targetNanoName = params[0];
-                    let targetNanoNode = resolvePath(targetNanoName);
-                    
-                    if (targetNanoNode && targetNanoNode.type === 'dir') {
-                        printOutput(`nano: ${targetNanoName} 是一個目錄`, 'error');
-                        break;
-                    }
-                    openNano(targetNanoName, targetNanoNode);
-                    break;
-
-                case 'history':
-                    let histOutput = '';
-                    commandHistory.forEach((h, i) => {
-                        histOutput += `  ${i + 1}  ${escapeHtml(h)}<br>`;
-                    });
-                    printOutput(histOutput);
-                    break;
-
-                case 'grep':
-                    if (params.length < 2) {
-                        printOutput('grep: 語法錯誤，用法: grep [搜尋字串] [檔案]', 'error');
-                        break;
-                    }
-                    const searchStr = params[0];
-                    const grepTargetNode = resolvePath(params[1]);
-                    
-                    if (!grepTargetNode) {
-                        printOutput(`grep: ${params[1]}: 沒有此一檔案或目錄`, 'error');
-                    } else if (grepTargetNode.type === 'dir') {
-                        printOutput(`grep: ${params[1]}: 是一個目錄`, 'error');
-                    } else {
-                        const lines = grepTargetNode.content.split('\n');
-                        const matchedLines = lines.filter(line => line.includes(searchStr));
-                        if (matchedLines.length > 0) {
-                            printOutput(escapeHtml(matchedLines.join('\n')).replace(/\n/g, '<br>'));
-                        }
-                    }
-                    break;
-
-                case 'cp':
-                    if (params.length < 2) {
-                        printOutput('cp: 缺少檔案運算元', 'error');
-                        break;
-                    }
-                    const srcCpNode = resolvePath(params[0]);
-                    const destCpName = params[1];
-                    if (!srcCpNode) {
-                        printOutput(`cp: 無法獲取 '${params[0]}' 的狀態: 沒有此一檔案或目錄`, 'error');
-                    } else if (srcCpNode.type === 'dir') {
-                        printOutput(`cp: 暫不支援複製目錄`, 'error');
-                    } else {
-                        currentDir.children[destCpName] = new File(destCpName, srcCpNode.content, currentDir);
-                    }
-                    break;
-
-                case 'mv':
-                    if (params.length < 2) {
-                        printOutput('mv: 缺少檔案運算元', 'error');
-                        break;
-                    }
-                    const srcMvNode = resolvePath(params[0]);
-                    const destMvName = params[1];
-                    if (!srcMvNode) {
-                        printOutput(`mv: 無法獲取 '${params[0]}' 的狀態: 沒有此一檔案或目錄`, 'error');
-                    } else {
-                        // 從原父目錄刪除並加入到當前目錄
-                        delete srcMvNode.parent.children[srcMvNode.name];
-                        srcMvNode.name = destMvName;
-                        srcMvNode.parent = currentDir;
-                        currentDir.children[destMvName] = srcMvNode;
-                    }
-                    break;
-
-                case 'echo':
-                    // 檢查是否有重定向符號 '>'
-                    const redirIndex = params.indexOf('>');
-                    if (redirIndex !== -1) {
-                        // 寫入檔案邏輯
-                        const textContent = params.slice(0, redirIndex).join(' ');
-                        const targetFileName = params[redirIndex + 1];
-                        
-                        if (!targetFileName) {
-                            printOutput('語法錯誤: 預期有重新導向目標', 'error');
-                            break;
-                        }
-                        
-                        let targetFileNode = resolvePath(targetFileName);
-                        if (!targetFileNode) {
-                            // 建立新檔案
-                            targetFileNode = new File(targetFileName, textContent, currentDir);
-                            currentDir.children[targetFileName] = targetFileNode;
-                        } else if (targetFileNode.type === 'file') {
-                            // 覆寫現有檔案
-                            targetFileNode.content = textContent;
-                        } else {
-                            printOutput(`bash: ${targetFileName}: 是一個目錄`, 'error');
-                        }
-                    } else {
-                        // 一般輸出邏輯
-                        printOutput(escapeHtml(params.join(' ')));
-                    }
-                    break;
-
-                case 'whoami':
-                    printOutput(username);
-                    break;
-
-                case 'date':
-                    printOutput(new Date().toString());
-                    break;
-
-                default:
-                    printOutput(`bash: ${cmd}: 找不到指令`, 'error');
-                    break;
-            }
+        function blinkCursor() {
+            let cursorVisible = true;
+            setInterval(() => {
+                if (cursorVisible) {
+                    terminalContent.innerHTML = terminalContent.innerHTML.replace("█", "");
+                } else {
+                    terminalContent.innerHTML += "█";
+                }
+                cursorVisible = !cursorVisible;
+            }, 500);
         }
 
-        // 開機歡迎畫面
-        function printWelcome() {
-            const asciiArt = `
-  _                     _    _                  
- | |__  _ __ ___   ___ | | _| |_   _ _ __       
- | '_ \\| '__/ _ \\ / _ \\| |/ / | | | | '_ \\      
- | |_) | | | (_) | (_) |   <| | |_| | | | |     
- |_.__/|_|  \\___/ \\___/|_|\\_\\_|\\__, |_| |_|     
-                               |___/            
-`;
-            printOutput(`<pre>${asciiArt}</pre>`);
-            printOutput('brooklyn-terminal v2.0.0 (Ubuntu Theme Edition)', 'system');
-            printOutput('系統已開機完成。輸入 <b>help</b> 查看可用指令。', 'system');
-            printOutput('----------------------------------------------------', 'system');
-        }
 
-        // 啟動終端機
-        window.onload = init;
+        setTimeout(typeTerminal, 1000); 
 
     </script>
 </body>
