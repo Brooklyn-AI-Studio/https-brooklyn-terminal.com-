@@ -1,1 +1,802 @@
-...
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>關於我</title>
+    <link rel="icon" type="image/png" href="./assets/logo.png">
+    <link rel="apple-touch-icon" href="./assets/logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Script to prevent Dark Mode flash on load -->
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#3B82F6', // Blue-500
+                        secondary: '#1E293B', // Slate-800
+                        accent: '#F59E0B', // Amber-500
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            /* Slate-50 */
+            color: #334155;
+            /* Slate-700 */
+        }
+
+        .dark body {
+            background-color: #0f172a;
+            /* Slate-900 */
+            color: #cbd5e1;
+            /* Slate-300 */
+        }
+
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        /* Fade-in animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Typewriter cursor blink */
+        .cursor-blink {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="antialiased transition-colors duration-300">
+
+    <!-- Navigation Bar -->
+    <nav
+        class="fixed w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo/Name -->
+                <div class="flex-shrink-0 font-bold text-xl text-primary cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <img src="./assets/logo.png" alt="brooklyn-terminal logo" class="w-8 h-8 rounded-lg object-cover">
+                    brooklyn-terminal
+                </div>
+
+                <!-- Desktop Menu & Theme Toggle -->
+                <div class="hidden md:flex items-center space-x-2">
+                    <div class="flex items-baseline space-x-4 mr-4">
+                        <a href="#about"
+                            class="hover:text-primary dark:hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">關於我</a>
+                        <a href="#experience"
+                            class="hover:text-primary dark:hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">學經歷</a>
+                        <a href="#skills"
+                            class="hover:text-primary dark:hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">專業技能</a>
+                        <a href="#portfolio"
+                            class="hover:text-primary dark:hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">作品集</a>
+                    </div>
+
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" type="button"
+                        class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5 transition-colors">
+                        <i id="theme-toggle-dark-icon" class="hidden fas fa-moon text-lg"></i>
+                        <i id="theme-toggle-light-icon" class="hidden fas fa-sun text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Mobile menu button & Theme Toggle -->
+                <div class="flex md:hidden items-center space-x-2">
+                    <button id="theme-toggle-mobile" type="button"
+                        class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2 transition-colors">
+                        <i id="theme-toggle-dark-icon-mobile" class="hidden fas fa-moon text-lg"></i>
+                        <i id="theme-toggle-light-icon-mobile" class="hidden fas fa-sun text-lg"></i>
+                    </button>
+                    <button type="button"
+                        class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-colors"
+                        aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-gray-800 transition-colors duration-300"
+            id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-center">
+                <a href="#about"
+                    class="mobile-link block px-3 py-2 rounded-md text-base font-medium hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">關於我</a>
+                <a href="#experience"
+                    class="mobile-link block px-3 py-2 rounded-md text-base font-medium hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">學經歷</a>
+                <a href="#skills"
+                    class="mobile-link block px-3 py-2 rounded-md text-base font-medium hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">專業技能</a>
+                <a href="#portfolio"
+                    class="mobile-link block px-3 py-2 rounded-md text-base font-medium hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">作品集</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero"
+        class="min-h-screen flex items-center justify-center pt-16 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 transition-colors duration-300 relative overflow-hidden">
+        <!-- Decorative background elements -->
+        <div class="absolute top-20 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl"></div>
+
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center fade-in relative z-10">
+            <div class="mb-8 relative inline-block group">
+                <img src="https://placehold.co/150x150/3B82F6/ffffff?text=BC" alt="Profile Picture"
+                    class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white dark:border-slate-800 shadow-xl object-cover mx-auto transition-transform duration-300 group-hover:scale-105">
+                <span
+                    class="absolute bottom-1 right-1 md:bottom-3 md:right-3 block h-5 w-5 md:h-6 md:w-6 rounded-full bg-green-400 ring-4 ring-white dark:ring-slate-800 shadow-sm"
+                    title="Available for work"></span>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-bold mb-4 text-slate-900 dark:text-white tracking-tight">
+                Salut ! Moi c’est <span class="text-primary">Brooklyn Chen</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto h-8 md:h-10">
+                我是一位<span class="font-semibold text-slate-800 dark:text-slate-200 ml-2" id="typewriter"></span><span
+                    class="cursor-blink font-bold text-primary">|</span>
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#portfolio"
+                    class="px-8 py-3 bg-primary text-white rounded-full font-medium shadow-md shadow-primary/30 hover:bg-blue-600 hover:shadow-lg transition-all transform hover:-translate-y-1">觀看作品集</a>
+                <a href="#about"
+                    class="px-8 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 rounded-full font-medium shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-all transform hover:-translate-y-1">了解更多</a>
+            </div>
+            <div class="mt-12 flex justify-center space-x-6 text-slate-500 dark:text-slate-400">
+                <a href="#"
+                    class="hover:text-primary dark:hover:text-primary transition-all hover:scale-110 text-2xl"><i
+                        class="fab fa-github"></i></a>
+                <a href="#"
+                    class="hover:text-primary dark:hover:text-primary transition-all hover:scale-110 text-2xl"><i
+                        class="fab fa-linkedin"></i></a>
+                <a href="#"
+                    class="hover:text-primary dark:hover:text-primary transition-all hover:scale-110 text-2xl"><i
+                        class="fab fa-twitter"></i></a>
+            </div>
+
+            <!-- Scroll indicator -->
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+                <a href="#about" class="text-slate-400 hover:text-primary transition-colors p-2">
+                    <i class="fas fa-chevron-down text-xl"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-24 bg-white dark:bg-slate-900 transition-colors duration-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">關於我</h2>
+                <div class="w-16 h-1 bg-primary mx-auto rounded-full"></div>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center gap-12 fade-in">
+                <div class="w-full md:w-1/2 relative group">
+                    <div
+                        class="absolute inset-0 bg-primary/20 rounded-xl transform translate-x-3 translate-y-3 transition-transform group-hover:translate-x-4 group-hover:translate-y-4">
+                    </div>
+                    <img src="https://placehold.co/600x450/e2e8f0/64748b?text=Workspace+Vibe" alt="Working on laptop"
+                        class="relative rounded-xl shadow-lg w-full object-cover z-10 transition-transform duration-500 group-hover:-translate-y-1 group-hover:-translate-x-1">
+                </div>
+                <div class="w-full md:w-1/2">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">追求卓越的前端開發者</h3>
+                    <p class="text-lg leading-relaxed text-slate-600 dark:text-slate-400 mb-6">
+                        出生於2002年，新竹。<br>
+                        癡迷機率與統計學，精熟世界金融史，一位偏執的英超曼城球迷。
+                        目前本業是將演算法與資訊安全投入在大語言模型工作上。研究所主要研究晶片設計和高速推論。
+                        西洋棋能力偏弱，但喜歡在instagram製作迷因影片。
+                    </p>
+                    <p class="text-lg leading-relaxed text-slate-600 dark:text-slate-400 mb-8">
+                        工作之餘，對次文化與電影產業樂此不疲，但骨子裡還是鍾愛80年代。
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div
+                            class="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-800">
+                            <div
+                                class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary shrink-0">
+                                <i class="fas fa-map-marker-alt text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">出沒於</p>
+                                <p class="font-bold text-slate-800 dark:text-slate-200">新竹,高雄, 台灣</p>
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-800">
+                            <div
+                                class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary shrink-0">
+                                <i class="fas fa-envelope text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Gmail</p>
+                                <a href="coreinformation30@gmail.com"
+                                    class="font-bold text-slate-800 dark:text-slate-200 hover:text-primary dark:hover:text-primary transition-colors">coreinformation30</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience & Education Section -->
+    <section id="experience" class="py-24 bg-slate-50 dark:bg-slate-800/40 transition-colors duration-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">學歷與工作經驗</h2>
+                <div class="w-16 h-1 bg-primary mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
+
+                <!-- Experience Timeline -->
+                <div class="fade-in">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-8 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        工作經驗
+                    </h3>
+
+                    <div class="relative border-l-2 border-primary/30 ml-5 md:ml-5 space-y-10">
+
+                        <!-- Job 1 -->
+                        <div class="relative pl-8 group">
+                            <div
+                                class="absolute w-4 h-4 bg-primary rounded-full -left-[9px] top-1.5 border-4 border-slate-50 dark:border-slate-800 transition-transform group-hover:scale-125 group-hover:bg-blue-400">
+                            </div>
+                            <div
+                                class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+                                <div class="flex flex-wrap justify-between items-start mb-2 gap-2">
+                                    <h4 class="text-lg font-bold text-slate-900 dark:text-white">雲端AI測試工程師</h4>
+                                    <span
+                                        class="text-sm text-primary font-bold bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full whitespace-nowrap">2025.8
+                                        - now</span>
+                                </div>
+                                <p class="text-slate-500 dark:text-slate-400 font-medium mb-4 flex items-center gap-2">
+                                    <i class="far fa-building"></i> HeartBot .Inc
+                                </p>
+                                <ul
+                                    class="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-2 text-sm md:text-base">
+                                    <li>網頁自動化測試開發，Agent與MCP應用。</li>
+                                    <li>Web資安，提示詞注入、越獄，以及預防資料外洩。</li>
+                                    <li>SaaS 軟體法規與規格文件。</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Job 2 -->
+                        <div class="relative pl-8 group">
+                            <div
+                                class="absolute w-4 h-4 bg-gray-300 dark:bg-slate-600 rounded-full -left-[9px] top-1.5 border-4 border-slate-50 dark:border-slate-800 transition-transform group-hover:scale-125 group-hover:bg-primary">
+                            </div>
+                            <div
+                                class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-lg transition-all duration-300">
+                                <div class="flex flex-wrap justify-between items-start mb-2 gap-2">
+                                    <h4 class="text-lg font-bold text-slate-900 dark:text-white">自由工作者</h4>
+                                    <span
+                                        class="text-sm text-slate-500 dark:text-slate-400 font-medium bg-gray-100 dark:bg-slate-800 px-3 py-1 rounded-full whitespace-nowrap">2020
+                                        - 2023</span>
+                                </div>
+                                <p class="text-slate-500 dark:text-slate-400 font-medium mb-4 flex items-center gap-2">
+                                    <i class="far fa-building"></i> 其他資訊科技公司
+                                </p>
+                                <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
+                                    科技產品撰稿、UI/UX 使用者體驗。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Education Timeline -->
+                <div class="fade-in" style="transition-delay: 150ms;">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-8 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        教育背景
+                    </h3>
+
+                    <div class="relative border-l-2 border-primary/30 ml-5 md:ml-5 space-y-10">
+
+                        <!-- Edu 1 -->
+                        <div class="relative pl-8 group">
+                            <div
+                                class="absolute w-4 h-4 bg-primary rounded-full -left-[9px] top-1.5 border-4 border-slate-50 dark:border-slate-800 transition-transform group-hover:scale-125 group-hover:bg-blue-400">
+                            </div>
+                            <div
+                                class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+                                <div class="flex flex-wrap justify-between items-start mb-2 gap-2">
+                                    <h4 class="text-lg font-bold text-slate-900 dark:text-white">電子工程研究所</h4>
+                                    <span
+                                        class="text-sm text-primary font-bold bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full whitespace-nowrap">2026
+                                        - now</span>
+                                </div>
+                                <p class="text-slate-500 dark:text-slate-400 font-medium mb-4 flex items-center gap-2">
+                                    <i class="fas fa-university"></i> 國立高雄科技大學
+                                </p>
+                                <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
+                                    loading...
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Edu 2 -->
+                        <div class="relative pl-8 group">
+                            <div
+                                class="absolute w-4 h-4 bg-gray-300 dark:bg-slate-600 rounded-full -left-[9px] top-1.5 border-4 border-slate-50 dark:border-slate-800 transition-transform group-hover:scale-125 group-hover:bg-primary">
+                            </div>
+                            <div
+                                class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-lg transition-all duration-300">
+                                <div class="flex flex-wrap justify-between items-start mb-2 gap-2">
+                                    <h4 class="text-lg font-bold text-slate-900 dark:text-white">電子工程系 資訊組</h4>
+                                    <span
+                                        class="text-sm text-slate-500 dark:text-slate-400 font-medium bg-gray-100 dark:bg-slate-800 px-3 py-1 rounded-full whitespace-nowrap">2020
+                                        - 2024</span>
+                                </div>
+                                <p class="text-slate-500 dark:text-slate-400 font-medium mb-4 flex items-center gap-2">
+                                    <i class="fas fa-university"></i> 國立高雄科技大學
+                                </p>
+                                <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
+                                    熟悉數位晶片設計、微處理器、電腦視覺、機器學習，以及演算法應用。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="py-24 bg-white dark:bg-slate-900 transition-colors duration-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">專業技能</h2>
+                <div class="w-16 h-1 bg-primary mx-auto rounded-full"></div>
+                <p class="mt-6 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-lg">
+                    不到特別精熟，但有些開發經驗...
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                <!-- Skill Category 1 -->
+                <div
+                    class="bg-slate-50 dark:bg-slate-800 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 fade-in text-center border border-gray-100 dark:border-slate-700 group transform hover:-translate-y-1">
+                    <div
+                        class="w-20 h-20 mx-auto bg-blue-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 transform transition-transform group-hover:rotate-12 group-hover:bg-primary">
+                        <i class="fas fa-code text-4xl text-primary group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">晶片與系統設計</h3>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">Vivado-FPGA</span>
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">Linux</span>
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">arm64
+                        </span>
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">MCU</span>
+                    </div>
+                </div>
+
+                <!-- Skill Category 2 -->
+                <div class="bg-slate-50 dark:bg-slate-800 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 fade-in text-center border border-gray-100 dark:border-slate-700 group transform hover:-translate-y-1"
+                    style="transition-delay: 150ms;">
+                    <div
+                        class="w-20 h-20 mx-auto bg-blue-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 transform transition-transform group-hover:rotate-12 group-hover:bg-primary">
+                        <i class="fab fa-react text-4xl text-primary group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">資料科學</h3>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">PyTorch</span>
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">TensorFlow</span>
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">XGBoost</span>
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">Seaborn
+                        </span>
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">Matplotlib</span>
+                    </div>
+                </div>
+
+                <!-- Skill Category 3 -->
+                <div class="bg-slate-50 dark:bg-slate-800 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 fade-in text-center border border-gray-100 dark:border-slate-700 group transform hover:-translate-y-1"
+                    style="transition-delay: 300ms;">
+                    <div
+                        class="w-20 h-20 mx-auto bg-blue-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 transform transition-transform group-hover:rotate-12 group-hover:bg-primary">
+                        <i class="fas fa-tools text-4xl text-primary group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">機器學習</h3>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">ONNX
+                            Runtime
+                        </span>
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">OpenCV
+                            ML
+                            / Vite</span>
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">Deep
+                            Learning
+                            (UI/UX)</span>
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">LIBSVM</span>
+                        <span
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">Other+
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="py-24 bg-slate-50 dark:bg-slate-800/40 transition-colors duration-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">近期作品集</h2>
+                <div class="w-16 h-1 bg-primary mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+                <!-- Project 1 -->
+                <div
+                    class="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 fade-in group border border-gray-100 dark:border-slate-700 flex flex-col">
+                    <div class="relative overflow-hidden h-52">
+                        <img src="https://placehold.co/600x400/3B82F6/ffffff?text=E-Commerce+App" alt="Project 1"
+                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+                            <div
+                                class="flex gap-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg"
+                                    title="Live Preview"><i class="fas fa-external-link-alt"></i></a>
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 transition-colors shadow-lg"
+                                    title="View Source"><i class="fab fa-github text-xl"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3
+                            class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-primary transition-colors">
+                            資料連結中</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm mb-6 flex-grow leading-relaxed">資料連結中</p>
+                        <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-slate-800">
+                            <span
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中</span>
+                            <span
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中</span>
+                            <span
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 fade-in group border border-gray-100 dark:border-slate-700 flex flex-col"
+                    style="transition-delay: 150ms;">
+                    <div class="relative overflow-hidden h-52">
+                        <img src="https://placehold.co/600x400/10B981/ffffff?text=Task+Manager" alt="Project 2"
+                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+                            <div
+                                class="flex gap-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg"
+                                    title="Live Preview"><i class="fas fa-external-link-alt"></i></a>
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 transition-colors shadow-lg"
+                                    title="View Source"><i class="fab fa-github text-xl"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3
+                            class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-primary transition-colors">
+                            資料連結中</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm mb-6 flex-grow leading-relaxed">資料連結中</p>
+                        <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-slate-800">
+                            <span
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中</span>
+                            <span
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中</span>
+                            <span
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 3 -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 fade-in group border border-gray-100 dark:border-slate-700 flex flex-col"
+                    style="transition-delay: 300ms;">
+                    <div class="relative overflow-hidden h-52">
+                        <img src="https://placehold.co/600x400/F59E0B/ffffff?text=Weather+Dashboard" alt="Project 3"
+                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+                            <div
+                                class="flex gap-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg"
+                                    title="Live Preview"><i class="fas fa-external-link-alt"></i></a>
+                                <a href="#"
+                                    class="w-12 h-12 rounded-full bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 transition-colors shadow-lg"
+                                    title="View Source"><i class="fab fa-github text-xl"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3
+                            class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-primary transition-colors">
+                            資料連結中</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm mb-6 flex-grow leading-relaxed">
+                            資料連結中</p>
+                        <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-slate-800">
+                            <span
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中</span>
+                            <span
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中</span>
+                            <span
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-16 text-center fade-in">
+                <a href="#"
+                    class="inline-flex items-center gap-3 px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-primary dark:hover:bg-primary hover:text-white dark:hover:text-white rounded-full font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    在 GitHub 查看更多專案 <i class="fab fa-github text-lg"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-12 text-center border-t border-slate-800">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-center space-x-6 mb-8">
+                <a href="#"
+                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all transform hover:scale-110"><i
+                        class="fab fa-github text-lg"></i></a>
+                <a href="#"
+                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all transform hover:scale-110"><i
+                        class="fab fa-linkedin text-lg"></i></a>
+                <a href="#"
+                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all transform hover:scale-110"><i
+                        class="fab fa-twitter text-lg"></i></a>
+                <a href="#"
+                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all transform hover:scale-110"><i
+                        class="fab fa-instagram text-lg"></i></a>
+            </div>
+            <p class="text-sm font-medium">
+                &copy; <span id="year"></span> brooklyn-termianl. All rights reserved.
+            </p>
+            <p class="text-xs mt-3 text-slate-500">
+                - <i class="fas fa-heart text-red-500 mx-1 animate-pulse"></i> -
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            /* --- Dark Mode Logic --- */
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleBtnMobile = document.getElementById('theme-toggle-mobile');
+            const themeToggleDarkIcons = document.querySelectorAll('#theme-toggle-dark-icon, #theme-toggle-dark-icon-mobile');
+            const themeToggleLightIcons = document.querySelectorAll('#theme-toggle-light-icon, #theme-toggle-light-icon-mobile');
+
+            // Set initial icon based on applied theme
+            if (document.documentElement.classList.contains('dark')) {
+                themeToggleLightIcons.forEach(icon => icon.classList.remove('hidden'));
+            } else {
+                themeToggleDarkIcons.forEach(icon => icon.classList.remove('hidden'));
+            }
+
+            function toggleTheme() {
+                // Toggle icons
+                themeToggleDarkIcons.forEach(icon => icon.classList.toggle('hidden'));
+                themeToggleLightIcons.forEach(icon => icon.classList.toggle('hidden'));
+
+                // Toggle logic
+                if (localStorage.getItem('color-theme')) {
+                    if (localStorage.getItem('color-theme') === 'light') {
+                        document.documentElement.classList.add('dark');
+                        localStorage.setItem('color-theme', 'dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                        localStorage.setItem('color-theme', 'light');
+                    }
+                } else {
+                    if (document.documentElement.classList.contains('dark')) {
+                        document.documentElement.classList.remove('dark');
+                        localStorage.setItem('color-theme', 'light');
+                    } else {
+                        document.documentElement.classList.add('dark');
+                        localStorage.setItem('color-theme', 'dark');
+                    }
+                }
+            }
+
+            themeToggleBtn.addEventListener('click', toggleTheme);
+            themeToggleBtnMobile.addEventListener('click', toggleTheme);
+
+            /* --- Typewriter Effect Logic --- */
+            const titles = ["統計學愛好者", "西洋棋佈道者", "開源貢獻玩家", "人工智慧測試者"];
+            let titleIndex = 0;
+            let charIndex = 0;
+            let isDeleting = false;
+            const typewriterElement = document.getElementById("typewriter");
+
+            function type() {
+                const currentTitle = titles[titleIndex];
+
+                if (isDeleting) {
+                    typewriterElement.textContent = currentTitle.substring(0, charIndex - 1);
+                    charIndex--;
+                } else {
+                    typewriterElement.textContent = currentTitle.substring(0, charIndex + 1);
+                    charIndex++;
+                }
+
+                let typingSpeed = isDeleting ? 50 : 150;
+
+                if (!isDeleting && charIndex === currentTitle.length) {
+                    typingSpeed = 2000; // Pause at end of word
+                    isDeleting = true;
+                } else if (isDeleting && charIndex === 0) {
+                    isDeleting = false;
+                    titleIndex = (titleIndex + 1) % titles.length;
+                    typingSpeed = 500; // Pause before typing next word
+                }
+
+                setTimeout(type, typingSpeed);
+            }
+            // Start typewriter
+            setTimeout(type, 1000);
+
+
+            /* --- Utility Logic --- */
+            // Set current year in footer
+            document.getElementById('year').textContent = new Date().getFullYear();
+
+            // Mobile menu toggle
+            const btn = document.querySelector('.mobile-menu-button');
+            const menu = document.getElementById('mobile-menu');
+            const mobileLinks = document.querySelectorAll('.mobile-link');
+
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+                const icon = btn.querySelector('i');
+                if (menu.classList.contains('hidden')) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                } else {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                }
+            });
+
+            // Close mobile menu when a link is clicked
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    menu.classList.add('hidden');
+                    const icon = btn.querySelector('i');
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                });
+            });
+
+            // Scroll Animation (Intersection Observer)
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach(el => observer.observe(el));
+
+            // Navbar background effect on scroll
+            const navbar = document.querySelector('nav');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 10) {
+                    navbar.classList.add('shadow-md');
+                } else {
+                    navbar.classList.remove('shadow-md');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
