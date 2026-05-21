@@ -10,14 +10,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Script to prevent Dark Mode flash on load -->
-    <script>
-        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark')
-        }
-    </script>
+
+        <script>
+            if (localStorage.getItem('color-theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        </script>
 
     <script>
         tailwind.config = {
@@ -117,19 +117,18 @@
         class="fixed w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo/Name -->
-                <div class="flex-shrink-0 font-bold text-xl text-primary cursor-pointer" onclick="window.scrollTo(0,0)">
+                <!-- Logo -->
+                <div class=" flex items-center gap-2 flex-shrink-0 font-bold text-xl text-primary cursor-pointer" onclick="window.scrollTo(0,0)">
                     <img src="./assets/logo.png" alt="brooklyn-terminal logo" class="w-8 h-8 rounded-lg object-cover">
-                    brooklyn-terminal
+                    <span>brooklyn-terminal</span>
                 </div>
-
                 <!-- Desktop Menu & Theme Toggle -->
                 <div class="hidden md:flex items-center space-x-2">
                     <div class="flex items-baseline space-x-4 mr-4">
                         <a href="#about"
                             class="hover:text-primary dark:hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">關於我</a>
                         <a href="#experience"
-                            class="hover:text-primary dark:hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">學經歷</a>
+                            class="hover:text-primary dark:hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">經歷</a>
                         <a href="#skills"
                             class="hover:text-primary dark:hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">專業技能</a>
                         <a href="#portfolio"
@@ -186,14 +185,17 @@
 
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center fade-in relative z-10">
             <div class="mb-8 relative inline-block group">
-                <img src="https://placehold.co/150x150/3B82F6/ffffff?text=BC" alt="Profile Picture"
+                <img src="/assets/me-pic/brooklyn.png" alt="Profile Picture"
                     class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white dark:border-slate-800 shadow-xl object-cover mx-auto transition-transform duration-300 group-hover:scale-105">
                 <span
                     class="absolute bottom-1 right-1 md:bottom-3 md:right-3 block h-5 w-5 md:h-6 md:w-6 rounded-full bg-green-400 ring-4 ring-white dark:ring-slate-800 shadow-sm"
-                    title="Available for work"></span>
+                    title="online"></span>
             </div>
-            <h1 class="text-4xl md:text-6xl font-bold mb-4 text-slate-900 dark:text-white tracking-tight">
-                Salut ! Moi c’est <span class="text-primary">Brooklyn Chen</span>
+            <h1 class="font-bold mb-4 text-slate-900 dark:text-white tracking-tight">
+                <span class="block text-xl md:text-2xl font-medium text-slate-500 dark:text-slate-400 mb-1">
+                    Salut ! Moi c’est
+                </span>
+                <span class="text-4xl md:text-6xl text-primary">Brooklyn Chen</span>
             </h1>
             <p class="text-xl md:text-2xl text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto h-8 md:h-10">
                 我是一位<span class="font-semibold text-slate-800 dark:text-slate-200 ml-2" id="typewriter"></span><span
@@ -203,18 +205,21 @@
                 <a href="#portfolio"
                     class="px-8 py-3 bg-primary text-white rounded-full font-medium shadow-md shadow-primary/30 hover:bg-blue-600 hover:shadow-lg transition-all transform hover:-translate-y-1">觀看作品集</a>
                 <a href="#about"
-                    class="px-8 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 rounded-full font-medium shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-all transform hover:-translate-y-1">了解更多</a>
+                    class="px-8 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 rounded-full font-medium shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-all transform hover:-translate-y-1">關於我</a>
             </div>
             <div class="mt-12 flex justify-center space-x-6 text-slate-500 dark:text-slate-400">
-                <a href="#"
-                    class="hover:text-primary dark:hover:text-primary transition-all hover:scale-110 text-2xl"><i
-                        class="fab fa-github"></i></a>
-                <a href="#"
-                    class="hover:text-primary dark:hover:text-primary transition-all hover:scale-110 text-2xl"><i
-                        class="fab fa-linkedin"></i></a>
-                <a href="#"
-                    class="hover:text-primary dark:hover:text-primary transition-all hover:scale-110 text-2xl"><i
-                        class="fab fa-twitter"></i></a>
+                <a href="https://github.com/Brooklyn-AI-Studio" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="hover:text-primary dark:hover:text-primary transition-all hover:scale-110 text-2xl">
+                        <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/brooklyn-chen-985506203/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="hover:text-primary dark:hover:text-primary transition-all hover:scale-110 text-2xl">
+                        <i class="fab fa-linkedin"></i>
+                </a>
             </div>
 
             <!-- Scroll indicator -->
@@ -239,19 +244,21 @@
                     <div
                         class="absolute inset-0 bg-primary/20 rounded-xl transform translate-x-3 translate-y-3 transition-transform group-hover:translate-x-4 group-hover:translate-y-4">
                     </div>
-                    <img src="https://placehold.co/600x450/e2e8f0/64748b?text=Workspace+Vibe" alt="Working on laptop"
+                    <img src="/assets/me-pic/brooklyn.png" alt="brooklyn"
                         class="relative rounded-xl shadow-lg w-full object-cover z-10 transition-transform duration-500 group-hover:-translate-y-1 group-hover:-translate-x-1">
                 </div>
                 <div class="w-full md:w-1/2">
-                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">追求卓越的前端開發者</h3>
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">偶爾來一點精釀啤酒</h3>
                     <p class="text-lg leading-relaxed text-slate-600 dark:text-slate-400 mb-6">
                         出生於2002年，新竹。<br>
-                        癡迷機率與統計學，精熟世界金融史，一位偏執的英超曼城球迷。
-                        目前本業是將演算法與資訊安全投入在大語言模型工作上。研究所主要研究晶片設計和高速推論。
-                        西洋棋能力偏弱，但喜歡在instagram製作迷因影片。
+                        熱愛機率論，精熟世界金融史，一位偏執的英超曼城球迷。<br>
+                        會一點法文，即便這對我生活上沒有太大的用處。
+                        目前本業是投入在雲端LLM開發測試工作上。<br>
+                        研究所主要研究晶片設計和高速推論。
+                        西洋棋能力偏弱，但喜歡在社群媒體製作迷因影片。
                     </p>
                     <p class="text-lg leading-relaxed text-slate-600 dark:text-slate-400 mb-8">
-                        工作之餘，對次文化與電影產業樂此不疲，但骨子裡還是鍾愛80年代。
+                        工作之餘，對電玩與電影產業樂此不疲，骨子裡鍾愛80年代。
                     </p>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -381,7 +388,7 @@
                                     <i class="fas fa-university"></i> 國立高雄科技大學
                                 </p>
                                 <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
-                                    loading...
+                                    高速介面控制器、RISC-V 處理器設計。
                                 </p>
                             </div>
                         </div>
@@ -403,7 +410,7 @@
                                     <i class="fas fa-university"></i> 國立高雄科技大學
                                 </p>
                                 <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
-                                    熟悉數位晶片設計、微處理器、電腦視覺、機器學習，以及演算法應用。</p>
+                                    數位晶片設計、微處理器、電腦視覺、演算法應用。</p>
                             </div>
                         </div>
                     </div>
@@ -420,7 +427,7 @@
                 <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">專業技能</h2>
                 <div class="w-16 h-1 bg-primary mx-auto rounded-full"></div>
                 <p class="mt-6 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-lg">
-                    不到特別精熟，但有些開發經驗...
+                    專案與一些開發經驗
                 </p>
             </div>
 
@@ -429,9 +436,8 @@
                 <!-- Skill Category 1 -->
                 <div
                     class="bg-slate-50 dark:bg-slate-800 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 fade-in text-center border border-gray-100 dark:border-slate-700 group transform hover:-translate-y-1">
-                    <div
-                        class="w-20 h-20 mx-auto bg-blue-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 transform transition-transform group-hover:rotate-12 group-hover:bg-primary">
-                        <i class="fas fa-code text-4xl text-primary group-hover:text-white transition-colors"></i>
+                    <div class="w-20 h-20 mx-auto bg-blue-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 transform transition-transform group-hover:rotate-12 group-hover:bg-primary">
+                        <i class="fas fa-microchip text-4xl text-primary group-hover:text-white transition-colors"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">晶片與系統設計</h3>
                     <div class="flex flex-wrap justify-center gap-3">
@@ -440,7 +446,7 @@
                         <span
                             class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">Linux</span>
                         <span
-                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">arm64
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">Arm64
                         </span>
                         <span
                             class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">MCU</span>
@@ -450,9 +456,8 @@
                 <!-- Skill Category 2 -->
                 <div class="bg-slate-50 dark:bg-slate-800 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 fade-in text-center border border-gray-100 dark:border-slate-700 group transform hover:-translate-y-1"
                     style="transition-delay: 150ms;">
-                    <div
-                        class="w-20 h-20 mx-auto bg-blue-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 transform transition-transform group-hover:rotate-12 group-hover:bg-primary">
-                        <i class="fab fa-react text-4xl text-primary group-hover:text-white transition-colors"></i>
+                    <div class="w-20 h-20 mx-auto bg-blue-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 transform transition-transform group-hover:rotate-12 group-hover:bg-primary">
+                        <i class="fas fa-database text-4xl text-primary group-hover:text-white transition-colors"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">資料科學</h3>
                     <div class="flex flex-wrap justify-center gap-3">
@@ -473,24 +478,23 @@
                 <!-- Skill Category 3 -->
                 <div class="bg-slate-50 dark:bg-slate-800 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 fade-in text-center border border-gray-100 dark:border-slate-700 group transform hover:-translate-y-1"
                     style="transition-delay: 300ms;">
-                    <div
-                        class="w-20 h-20 mx-auto bg-blue-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 transform transition-transform group-hover:rotate-12 group-hover:bg-primary">
-                        <i class="fas fa-tools text-4xl text-primary group-hover:text-white transition-colors"></i>
+                    <div class="w-20 h-20 mx-auto bg-blue-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-6 transform transition-transform group-hover:rotate-12 group-hover:bg-primary">
+                        <i class="fas fa-network-wired text-4xl text-primary group-hover:text-white transition-colors"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">機器學習</h3>
                     <div class="flex flex-wrap justify-center gap-3">
                         <span
-                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">ONNX
-                            Runtime
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">
+                            Deep Learning
                         </span>
                         <span
-                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">OpenCV
-                            ML
-                            / Vite</span>
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">
+                            OpenCV ML
+                            </span>
                         <span
-                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">Deep
-                            Learning
-                            (UI/UX)</span>
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">
+                           ONNX Runtime
+                            </span>
                         <span
                             class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">LIBSVM</span>
                         <span
@@ -622,9 +626,11 @@
             </div>
 
             <div class="mt-16 text-center fade-in">
-                <a href="#"
+                <a href="https://github.com/Brooklyn-AI-Studio" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
                     class="inline-flex items-center gap-3 px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-primary dark:hover:bg-primary hover:text-white dark:hover:text-white rounded-full font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                    在 GitHub 查看更多專案 <i class="fab fa-github text-lg"></i>
+                        在 GitHub 查看更多專案 <i class="fab fa-github text-lg"></i>
                 </a>
             </div>
         </div>
@@ -634,18 +640,26 @@
     <footer class="bg-slate-900 text-slate-400 py-12 text-center border-t border-slate-800">
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex justify-center space-x-6 mb-8">
-                <a href="#"
-                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all transform hover:scale-110"><i
-                        class="fab fa-github text-lg"></i></a>
-                <a href="#"
-                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all transform hover:scale-110"><i
-                        class="fab fa-linkedin text-lg"></i></a>
-                <a href="#"
-                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all transform hover:scale-110"><i
-                        class="fab fa-twitter text-lg"></i></a>
-                <a href="#"
-                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all transform hover:scale-110"><i
-                        class="fab fa-instagram text-lg"></i></a>
+                <a href="https://github.com/Brooklyn-AI-Studio" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all transform hover:scale-110">
+                    <i class="fab fa-github text-lg"></i>
+                </a>
+
+                <a href="https://www.linkedin.com/in/brooklyn-chen-985506203/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all transform hover:scale-110">
+                    <i class="fab fa-linkedin text-lg"></i>
+                </a>
+
+                <a href="https://www.instagram.com/br00klyn_weirdo" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all transform hover:scale-110">
+                    <i class="fab fa-instagram text-lg"></i>
+                </a>
             </div>
             <p class="text-sm font-medium">
                 &copy; <span id="year"></span> brooklyn-termianl. All rights reserved.
@@ -702,7 +716,7 @@
             themeToggleBtnMobile.addEventListener('click', toggleTheme);
 
             /* --- Typewriter Effect Logic --- */
-            const titles = ["統計學愛好者", "西洋棋佈道者", "開源貢獻玩家", "人工智慧測試者"];
+            const titles = ["開源貢獻者", "西洋棋佈道者", "足球迷", "人工智慧測試者"];
             let titleIndex = 0;
             let charIndex = 0;
             let isDeleting = false;
