@@ -1,1 +1,422 @@
-...
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品集</title>
+    <link rel="icon" type="image/png" href="./assets/logo.png">
+    <link rel="apple-touch-icon" href="./assets/logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Theme Initialization Script -->
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#3B82F6', // Blue-500
+                        secondary: '#1E293B', // Slate-800
+                        accent: '#F59E0B', // Amber-500
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS (Scrollbars and Transitions) -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+
+        .dark body {
+            background-color: #0f172a;
+            color: #cbd5e1;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px; /* For horizontal scrollbar */
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        /* Hide scrollbar for sidebar on mobile to make it clean */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body class="antialiased transition-colors duration-300 flex flex-col min-h-screen">
+
+    <!-- Navigation Bar (Reused from your original design) -->
+    <nav class="fixed w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center gap-2 flex-shrink-0 font-bold text-xl text-primary cursor-pointer transition-transform hover:scale-105">
+                    <img src="./assets/logo.png" alt="logo" class="w-8 h-8 rounded-lg object-cover shadow-sm">
+                    <span>brooklyn-terminal</span>
+                </a>
+                
+                <!-- Desktop Menu & Theme Toggle -->
+                <div class="flex items-center space-x-2">
+                    <div class="hidden md:flex items-baseline space-x-4 mr-4">
+                        <a href="index.html" class="hover:text-primary dark:hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">首頁</a>
+                        <a href="#" class="text-primary dark:text-primary transition-colors px-3 py-2 rounded-md text-sm font-bold bg-blue-50 dark:bg-blue-900/20">作品集展示</a>
+                    </div>
+
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5 transition-colors">
+                        <i id="theme-toggle-dark-icon" class="hidden fas fa-moon text-lg"></i>
+                        <i id="theme-toggle-light-icon" class="hidden fas fa-sun text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="flex-grow pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full flex flex-col md:flex-row gap-8">
+        
+        <!-- Left Sidebar (Project Directory) -->
+        <aside class="w-full md:w-72 flex-shrink-0 relative">
+            <div class="md:sticky md:top-24 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 transition-colors duration-300">
+                <h2 class="text-lg font-bold mb-4 text-slate-800 dark:text-white flex items-center gap-2 px-2">
+                    <i class="fas fa-folder-open text-primary"></i> 專案目錄
+                </h2>
+                
+                <!-- Project List  -->
+                <div class="flex flex-col gap-1" id="project-list">
+                    <!-- JavaScript will populate this area -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Content Area (Project Details & PDF Viewer) -->
+        <main class="flex-grow flex flex-col gap-6 min-w-0 fade-in" id="project-content">
+            
+            <!-- Project Header -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8 transition-colors duration-300 relative overflow-hidden">
+                <!-- Decorative element -->
+                <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -z-0"></div>
+                
+                <div class="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span id="project-badge" class="px-2.5 py-1 text-xs font-bold rounded-md bg-blue-100 text-primary dark:bg-blue-900/30">AI Development</span>
+                            <span class="text-sm text-slate-500 dark:text-slate-400" id="project-date">2025.08</span>
+                        </div>
+                        <h1 id="project-title" class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3">載入中...</h1>
+                        <p id="project-desc" class="text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
+                            載入專案中，請稍候...
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 mt-2 sm:mt-0">
+                        <a id="project-github" href="#" target="_blank" rel="noopener noreferrer" 
+                           class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-primary dark:hover:bg-primary hover:text-white dark:hover:text-white rounded-lg font-bold transition-all shadow-md transform hover:-translate-y-0.5 whitespace-nowrap">
+                            <i class="fab fa-github text-lg"></i> 查看 GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF Viewer Container -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col flex-grow min-h-[600px] transition-colors duration-300 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <i class="fas fa-file-pdf text-red-500"></i> 文件預覽
+                    </h3>
+                    <a id="project-pdf-download" href="#" target="_blank" class="text-sm text-primary hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center gap-1 transition-colors">
+                        <i class="fas fa-external-link-alt"></i> 另開視窗
+                    </a>
+                </div>
+                
+                <!-- Iframe for PDF rendering -->
+                <div class="flex-grow w-full h-full relative bg-slate-100 dark:bg-slate-900">
+                    <!-- Loading overlay -->
+                    <div id="pdf-loading" class="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-900 z-10 transition-opacity duration-300">
+                        <div class="flex flex-col items-center text-slate-400 dark:text-slate-500">
+                            <i class="fas fa-circle-notch fa-spin text-4xl text-primary mb-4"></i>
+                            <p>載入文件中...</p>
+                        </div>
+                    </div>
+                    <iframe id="pdf-viewer" src="" class="w-full h-full absolute inset-0 border-0" title="PDF Viewer" onload="document.getElementById('pdf-loading').style.opacity='0'; setTimeout(()=>document.getElementById('pdf-loading').style.display='none',300)"></iframe>
+                </div>
+            </div>
+            
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Theme Logic ---
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+            if (document.documentElement.classList.contains('dark')) {
+                themeToggleLightIcon.classList.remove('hidden');
+            } else {
+                themeToggleDarkIcon.classList.remove('hidden');
+            }
+
+            themeToggleBtn.addEventListener('click', function() {
+                themeToggleDarkIcon.classList.toggle('hidden');
+                themeToggleLightIcon.classList.toggle('hidden');
+
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                }
+            });
+
+            // --- Project Data ---
+            const portfolioData = [
+                {
+                    categoryTitle: 'FPGA',
+                    icon: 'fa-layer-group',
+                    isOpen: false,
+                    subCategories: [
+                        {
+                            categoryTitle: 'Artix 7 FPGA 專案',
+                            icon: 'fa-microchip',
+                            isOpen: false,
+                            projects: [
+                                {
+                                    id: 'fpga-img-processing',
+                                    title: '影像邊緣運算加速',
+                                    badge: 'Verilog / HLS',
+                                    date: '2024.05',
+                                    description: '在 Artix-7 平台上實作 Sobel Edge Detection 演算法的硬體加速。相較於純軟體實作，效能提升約 40 倍。包含 AXI4-Stream 介面設計與 Testbench 驗證。',
+                                    github: 'https://github.com/Brooklyn-AI-Studio',
+                                    pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
+                                },
+                                {
+                                    id: 'fpga-uart',
+                                    title: 'UART 通訊控制器',
+                                    badge: 'Verilog',
+                                    date: '2023.11',
+                                    description: '使用 Verilog 從零打造 UART (Universal Asynchronous Receiver-Transmitter) 模組，支援可調 Baud Rate，並於 FPGA 開發板上與 PC 完成非同步串列通訊測試。',
+                                    github: 'https://github.com/Brooklyn-AI-Studio',
+                                    pdfUrl: 'https://www.orimi.com/pdf-test.pdf'
+                                },
+                                {
+                                    id: 'fpga-vga',
+                                    title: 'VGA 顯示控制器',
+                                    badge: 'FPGA',
+                                    date: '2023.08',
+                                    description: '開發 VGA 顯示控制器，透過 FPGA 直接驅動螢幕顯示特定圖案與動態畫面，深入理解時序控制 (Timing Control) 與螢幕更新率的硬體實作細節。',
+                                    github: 'https://github.com/Brooklyn-AI-Studio',
+                                    pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    categoryTitle: '資料科學',
+                    icon: 'fa-layer-group',
+                    isOpen: false,
+                    subCategories: []
+                },
+                {
+                    categoryTitle: '機器學習',
+                    icon: 'fa-layer-group',
+                    isOpen: false,
+                    subCategories: []
+                }
+            ];
+
+            // --- DOM Elements ---
+            const projectListEl = document.getElementById('project-list');
+            const titleEl = document.getElementById('project-title');
+            const descEl = document.getElementById('project-desc');
+            const badgeEl = document.getElementById('project-badge');
+            const dateEl = document.getElementById('project-date');
+            const githubEl = document.getElementById('project-github');
+            const pdfViewerEl = document.getElementById('pdf-viewer');
+            const pdfDownloadEl = document.getElementById('project-pdf-download');
+            const loadingEl = document.getElementById('pdf-loading');
+            const contentEl = document.getElementById('project-content');
+
+            // --- Render Logic ---
+            let activeCategoryIndex = 0;
+            let activeSubCategoryIndex = 0;
+            let activeProjectIndex = 0;
+
+            function renderSidebar() {
+                projectListEl.innerHTML = '';
+
+                portfolioData.forEach((category, cIndex) => {
+
+                    const catBtn = document.createElement('button');
+                    catBtn.className = 'w-full text-left px-3 py-3 rounded-xl transition-all duration-200 flex justify-between items-center font-bold text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 mt-2 first:mt-0';
+                    catBtn.innerHTML = `
+                        <span class="flex items-center gap-2 text-sm sm:text-base">
+                            <i class="fas ${category.icon} text-primary w-5 text-center"></i>
+                            ${category.categoryTitle}
+                        </span>
+                        <i class="fas fa-chevron-${category.isOpen ? 'up' : 'down'} text-sm text-slate-400 transition-transform duration-300"></i>
+                    `;
+
+                    catBtn.addEventListener('click', () => {
+                        category.isOpen = !category.isOpen;
+                        renderSidebar();
+                    });
+
+                    projectListEl.appendChild(catBtn);
+
+                    if (!category.isOpen) return;
+
+                    const categoryContainer = document.createElement('div');
+                    categoryContainer.className = 'flex flex-col gap-1.5 pl-4 pr-1 mb-2 border-l-2 border-gray-100 dark:border-slate-700 ml-5 fade-in';
+
+                    category.subCategories.forEach((subCategory, sIndex) => {
+
+                        const subCatBtn = document.createElement('button');
+                        subCatBtn.className = 'w-full text-left px-3 py-2.5 rounded-lg transition-all duration-200 flex justify-between items-center font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80';
+                        subCatBtn.innerHTML = `
+                            <span class="flex items-center gap-2 text-sm">
+                                <i class="fas ${subCategory.icon} text-primary/80 w-4 text-center"></i>
+                                ${subCategory.categoryTitle}
+                            </span>
+                            <i class="fas fa-chevron-${subCategory.isOpen ? 'up' : 'down'} text-xs text-slate-400 transition-transform duration-300"></i>
+                        `;
+
+                        subCatBtn.addEventListener('click', () => {
+                            subCategory.isOpen = !subCategory.isOpen;
+                            renderSidebar();
+                        });
+
+                        categoryContainer.appendChild(subCatBtn);
+
+                        if (!subCategory.isOpen) return;
+
+
+                        const projectContainer = document.createElement('div');
+                        projectContainer.className = 'flex flex-col gap-1 pl-4 ml-3 border-l border-gray-100 dark:border-slate-700';
+
+                        subCategory.projects.forEach((proj, pIndex) => {
+                            const projBtn = document.createElement('button');
+                            const isActive = (
+                                cIndex === activeCategoryIndex &&
+                                sIndex === activeSubCategoryIndex &&
+                                pIndex === activeProjectIndex
+                            );
+
+                            projBtn.className = 'w-full text-left px-4 py-2.5 rounded-lg transition-all duration-200 flex flex-col whitespace-normal border border-transparent relative overflow-hidden group';
+
+                            if (isActive) {
+                                projBtn.classList.add('bg-primary/10', 'dark:bg-blue-900/30', 'border-primary/20');
+                                projBtn.innerHTML = `
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+                                    <span class="text-sm font-bold text-primary dark:text-blue-400">${proj.title}</span>
+                                `;
+                            } else {
+                                projBtn.classList.add('hover:bg-slate-50', 'dark:hover:bg-slate-800/80');
+                                projBtn.innerHTML = `
+                                    <span class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary dark:group-hover:text-primary transition-colors">${proj.title}</span>
+                                `;
+                            }
+
+                            projBtn.addEventListener('click', () => loadProject(cIndex, sIndex, pIndex));
+                            projectContainer.appendChild(projBtn);
+                        });
+
+                        categoryContainer.appendChild(projectContainer);
+                    });
+
+                    projectListEl.appendChild(categoryContainer);
+                });
+            }
+
+            function loadProject(cIndex, sIndex, pIndex) {
+
+                if (
+                    cIndex === activeCategoryIndex &&
+                    sIndex === activeSubCategoryIndex &&
+                    pIndex === activeProjectIndex &&
+                    pdfViewerEl.src !== ''
+                ) return;
+
+                activeCategoryIndex = cIndex;
+                activeSubCategoryIndex = sIndex;
+                activeProjectIndex = pIndex;
+
+                const proj = portfolioData[cIndex].subCategories[sIndex].projects[pIndex];
+
+                contentEl.classList.remove('fade-in');
+                void contentEl.offsetWidth; 
+                contentEl.classList.add('fade-in');
+        
+                titleEl.textContent = proj.title;
+                descEl.textContent = proj.description;
+                badgeEl.textContent = proj.badge;
+                dateEl.textContent = proj.date;
+
+                githubEl.href = proj.github;
+                pdfDownloadEl.href = proj.pdfUrl;
+                loadingEl.style.display = 'flex';
+                loadingEl.style.opacity = '1';
+
+                pdfViewerEl.src = proj.pdfUrl + "#toolbar=1&navpanes=0&view=FitH";
+                renderSidebar();
+            }
+
+            renderSidebar();
+            loadProject(0, 0, 0);
+        });
+    </script>
+</body>
+</html>
