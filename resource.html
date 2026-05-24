@@ -1,1 +1,502 @@
-...
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資源下載</title>
+    <link rel="icon" type="image/png" href="./assets/logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Theme Initialization Script -->
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#3B82F6', // Blue-500
+                        secondary: '#1E293B', // Slate-800
+                        accent: '#F59E0B', // Amber-500
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS (Scrollbars and Transitions) -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+
+        .dark body {
+            background-color: #0f172a;
+            color: #cbd5e1;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body class="antialiased transition-colors duration-300 flex flex-col min-h-screen">
+
+    <!-- Navigation Bar -->
+    <nav class="fixed w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-2 flex-shrink-0 font-bold text-xl text-primary cursor-pointer transition-transform hover:scale-105">
+                    <img src="./assets/logo.png" alt="brooklyn-terminal logo" class="w-8 h-8 rounded-lg object-cover">
+                    <span>brooklyn-termimal</span>
+                </a>
+                
+                <!-- Desktop Menu & Theme Toggle -->
+                <div class="flex items-center space-x-2">
+                    <div class="hidden md:flex items-baseline space-x-4 mr-4">
+                        <a href="#" class="hover:text-primary dark:hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">首頁</a>
+                        <a href="#" class="text-primary dark:text-primary transition-colors px-3 py-2 rounded-md text-sm font-bold bg-blue-50 dark:bg-blue-900/20">資源下載區</a>
+                    </div>
+
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5 transition-colors">
+                        <i id="theme-toggle-dark-icon" class="hidden fas fa-moon text-lg"></i>
+                        <i id="theme-toggle-light-icon" class="hidden fas fa-sun text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="flex-grow pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full flex flex-col md:flex-row gap-8">
+        
+        <!-- Left Sidebar (Resource Directory) -->
+        <aside class="w-full md:w-72 flex-shrink-0 relative">
+            <div class="md:sticky md:top-24 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 transition-colors duration-300">
+                <h2 class="text-lg font-bold mb-4 text-slate-800 dark:text-white flex items-center gap-2 px-2">
+                    <i class="fas fa-folder-tree text-primary"></i> 資源目錄
+                </h2>
+                
+                <!-- Resource List  -->
+                <div class="flex flex-col gap-1" id="resource-list">
+                    <!-- JavaScript will populate this area -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Content Area (Resource Details & Download Panel) -->
+        <main class="flex-grow flex flex-col gap-6 min-w-0 fade-in" id="resource-content">
+            
+            <!-- Resource Header -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8 transition-colors duration-300 relative overflow-hidden">
+                <!-- Decorative element -->
+                <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -z-0"></div>
+                
+                <div class="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span id="resource-badge" class="px-2.5 py-1 text-xs font-bold rounded-md bg-blue-100 text-primary dark:bg-blue-900/30">
+                                載入中...
+                            </span>
+                            <span class="text-sm text-slate-500 dark:text-slate-400" id="resource-date">
+                                0000.00
+                            </span>
+                        </div>
+                        <h1 id="resource-title" class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3">載入中...</h1>
+                        <p id="resource-desc" class="text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
+                            載入資源中，請稍候...
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Panel -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col flex-grow transition-colors duration-300 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <i class="fas fa-download text-primary"></i> 資源下載
+                    </h3>
+                </div>
+                
+                <!-- Center Content -->
+                <div class="flex-grow w-full flex flex-col items-center justify-center p-8 sm:p-12 relative bg-slate-50/30 dark:bg-slate-900/30">
+                    
+                    <!-- Large Icon for File Type -->
+                    <div id="file-icon-container" class="w-24 h-24 mb-6 rounded-2xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center text-5xl text-primary border border-gray-100 dark:border-gray-700 transform transition-transform hover:scale-105">
+                        <i id="file-icon" class="fas fa-file-archive"></i>
+                    </div>
+
+                    <h2 id="file-name" class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white mb-2 text-center break-all">
+                        filename.zip
+                    </h2>
+                    
+                    <div class="flex flex-wrap items-center justify-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400 mb-8">
+                        <span class="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 rounded-full shadow-sm border border-gray-100 dark:border-gray-700">
+                            <i class="fas fa-weight-hanging"></i> <span id="file-size">10 MB</span>
+                        </span>
+                        <span class="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 rounded-full shadow-sm border border-gray-100 dark:border-gray-700">
+                            <i class="fas fa-code-branch"></i> <span id="file-version">v1.0.0</span>
+                        </span>
+                    </div>
+
+                    <!-- Download Button -->
+                    <a id="main-download-btn" href="#" target="_blank" class="group relative inline-flex items-center justify-center gap-3 px-8 py-4 font-bold text-white transition-all duration-200 bg-primary rounded-xl hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg hover:shadow-xl hover:-translate-y-1 w-full sm:w-auto">
+                        <i class="fas fa-cloud-download-alt text-xl group-hover:animate-bounce"></i>
+                        <span class="text-lg">下載檔案</span>
+                    </a>
+                    
+                    <p class="mt-4 text-xs text-slate-400 dark:text-slate-500 text-center">
+                        點擊下載即表示您同意本站的 <a href="#" class="underline hover:text-primary">資源使用條款</a>
+                    </p>
+
+                    <!-- Instructions / Details Block -->
+                    <div class="mt-12 w-full max-w-3xl bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 text-left">
+                        <h4 class="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-2">
+                            <i class="fas fa-info-circle text-primary"></i> 資源說明與使用指南
+                        </h4>
+                        <div id="resource-instructions" class="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed space-y-3 whitespace-pre-line">
+                            載入說明中...
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Theme Logic ---
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+            if (document.documentElement.classList.contains('dark')) {
+                themeToggleLightIcon.classList.remove('hidden');
+            } else {
+                themeToggleDarkIcon.classList.remove('hidden');
+            }
+
+            themeToggleBtn.addEventListener('click', function() {
+                themeToggleDarkIcon.classList.toggle('hidden');
+                themeToggleLightIcon.classList.toggle('hidden');
+
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                }
+            });
+
+            // --- Resource Data Structure ---
+            const resourceData = [
+                {
+                    categoryTitle: '開發工具',
+                    icon: 'fa-toolbox',
+                    isOpen: true,
+                    subCategories: [
+                        {
+                            categoryTitle: 'FPGA 開發相關',
+                            icon: 'fa-microchip',
+                            isOpen: true,
+                            resources: [
+                                {
+                                    id: 'fpga-board-files',
+                                    title: 'Xilinx Board Files 擴充包',
+                                    badge: 'ZIP 壓縮檔',
+                                    date: '2024.01',
+                                    description: '包含多款常用 PYNQ 及 Artix-7 開發板的 Vivado Board Files，讓你在建立新專案時可以直接選擇對應的板子，自動載入 DDR、腳位等預設設定。',
+                                    fileName: 'xilinx-board-files-v2.zip',
+                                    fileSize: '15.4 MB',
+                                    version: 'v2.1.0',
+                                    iconClass: 'fa-file-archive text-amber-500', // Custom color for icon
+                                    downloadUrl: '#',
+                                    instructions: `**安裝步驟：**\n1. 下載並解壓縮本檔案。\n2. 找到你的 Vivado 安裝路徑，例如：\`C:\\Xilinx\\Vivado\\2023.1\\data\\boards\\board_files\`。\n3. 將解壓縮出的資料夾全部複製到上述路徑中。\n4. 重新啟動 Vivado，建立新專案時即可在 Boards 頁籤看到新增的開發板。`
+                                },
+                                {
+                                    id: 'uart-ip-core',
+                                    title: '自訂 UART 通訊 IP Core',
+                                    badge: 'Verilog / IP',
+                                    date: '2023.11',
+                                    description: '已經打包好的 UART AXI4-Lite IP Core，可直接匯入 Vivado Block Design 中使用，支援中斷(Interrupt)與自訂 Baud Rate。',
+                                    fileName: 'axi_uart_lite_custom_v1_0.zip',
+                                    fileSize: '1.2 MB',
+                                    version: 'v1.0',
+                                    iconClass: 'fa-file-code text-blue-500',
+                                    downloadUrl: '#',
+                                    instructions: `**使用方法：**\n1. 在 Vivado 中開啟 IP Catalog。\n2. 點擊右鍵選擇 "Add Repository"。\n3. 指向解壓縮後的資料夾路徑。\n4. 在 Block Design 中搜尋 "Custom UART" 即可加入設計。`
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    categoryTitle: '學習文件',
+                    icon: 'fa-book',
+                    isOpen: false,
+                    subCategories: [
+                        {
+                            categoryTitle: '深度學習',
+                            icon: 'fa-brain',
+                            isOpen: false,
+                            resources: [
+                                {
+                                    id: 'dl-cheatsheet',
+                                    title: 'PyTorch 常用語法備忘錄',
+                                    badge: 'PDF 文件',
+                                    date: '2024.03',
+                                    description: '整理了 PyTorch 在建立神經網路、資料前處理、模型訓練迴圈以及儲存/載入模型時最常用的程式碼片段。',
+                                    fileName: 'PyTorch_CheatSheet_2024.pdf',
+                                    fileSize: '4.5 MB',
+                                    version: 'v1.5',
+                                    iconClass: 'fa-file-pdf text-red-500',
+                                    downloadUrl: '#',
+                                    instructions: `本文件為高解析度 PDF，適合列印成 A4 大小放在桌邊隨時參考。內容涵蓋：\n- Tensor 基本操作\n- Dataset & DataLoader 實作\n- 常見 Loss Function 與 Optimizer\n- GPU (CUDA) 記憶體管理技巧`
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    categoryTitle: '素材',
+                    icon: 'fa-palette',
+                    isOpen: false,
+                    subCategories: [
+                        {
+                            categoryTitle: 'UI/UX 模板',
+                            icon: 'fa-pen-nib',
+                            isOpen: false,
+                            resources: [
+                                {
+                                    id: 'dashboard-figma',
+                                    title: '後台管理系統 Figma 模板',
+                                    badge: 'Figma 源檔',
+                                    date: '2023.09',
+                                    description: '一套現代化、支援響應式設計的後台管理介面 Figma UI Kit，包含超過 50 個基礎元件與深淺色模式。',
+                                    fileName: 'Admin_Dashboard_UI_Kit.fig',
+                                    fileSize: '45.8 MB',
+                                    version: 'v3.0',
+                                    iconClass: 'fa-figma text-purple-500',
+                                    downloadUrl: '#',
+                                    instructions: `**匯入 Figma：**\n1. 開啟 Figma 桌面版或網頁版。\n2. 進入首頁的 Drafts。\n3. 點擊右上角的 "Import file" 按鈕。\n4. 選擇下載的 \`.fig\` 檔案即可開始編輯。`
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ];
+
+            // --- DOM Elements ---
+            const resourceListEl = document.getElementById('resource-list');
+            const titleEl = document.getElementById('resource-title');
+            const descEl = document.getElementById('resource-desc');
+            const badgeEl = document.getElementById('resource-badge');
+            const dateEl = document.getElementById('resource-date');
+            
+            const fileNameEl = document.getElementById('file-name');
+            const fileSizeEl = document.getElementById('file-size');
+            const fileVersionEl = document.getElementById('file-version');
+            const fileIconEl = document.getElementById('file-icon');
+            const mainDownloadBtn = document.getElementById('main-download-btn');
+            const instructionsEl = document.getElementById('resource-instructions');
+            
+            const contentEl = document.getElementById('resource-content');
+
+            // --- Render Logic ---
+            let activeCategoryIndex = 0;
+            let activeSubCategoryIndex = 0;
+            let activeResourceIndex = 0;
+
+            function renderSidebar() {
+                resourceListEl.innerHTML = '';
+
+                resourceData.forEach((category, cIndex) => {
+
+                    const catBtn = document.createElement('button');
+                    catBtn.className = 'w-full text-left px-3 py-3 rounded-xl transition-all duration-200 flex justify-between items-center font-bold text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 mt-2 first:mt-0';
+                    catBtn.innerHTML = `
+                        <span class="flex items-center gap-2 text-sm sm:text-base">
+                            <i class="fas ${category.icon} text-primary w-5 text-center"></i>
+                            ${category.categoryTitle}
+                        </span>
+                        <i class="fas fa-chevron-${category.isOpen ? 'up' : 'down'} text-sm text-slate-400 transition-transform duration-300"></i>
+                    `;
+
+                    catBtn.addEventListener('click', () => {
+                        category.isOpen = !category.isOpen;
+                        renderSidebar();
+                    });
+
+                    resourceListEl.appendChild(catBtn);
+
+                    if (!category.isOpen) return;
+
+                    const categoryContainer = document.createElement('div');
+                    categoryContainer.className = 'flex flex-col gap-1.5 pl-4 pr-1 mb-2 border-l-2 border-gray-100 dark:border-slate-700 ml-5 fade-in';
+
+                    category.subCategories.forEach((subCategory, sIndex) => {
+
+                        const subCatBtn = document.createElement('button');
+                        subCatBtn.className = 'w-full text-left px-3 py-2.5 rounded-lg transition-all duration-200 flex justify-between items-center font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80';
+                        subCatBtn.innerHTML = `
+                            <span class="flex items-center gap-2 text-sm">
+                                <i class="fas ${subCategory.icon} text-primary/80 w-4 text-center"></i>
+                                ${subCategory.categoryTitle}
+                            </span>
+                            <i class="fas fa-chevron-${subCategory.isOpen ? 'up' : 'down'} text-xs text-slate-400 transition-transform duration-300"></i>
+                        `;
+
+                        subCatBtn.addEventListener('click', () => {
+                            subCategory.isOpen = !subCategory.isOpen;
+                            renderSidebar();
+                        });
+
+                        categoryContainer.appendChild(subCatBtn);
+
+                        if (!subCategory.isOpen) return;
+
+                        const itemContainer = document.createElement('div');
+                        itemContainer.className = 'flex flex-col gap-1 pl-4 ml-3 border-l border-gray-100 dark:border-slate-700';
+
+                        subCategory.resources.forEach((res, rIndex) => {
+                            const resBtn = document.createElement('button');
+                            const isActive = (
+                                cIndex === activeCategoryIndex &&
+                                sIndex === activeSubCategoryIndex &&
+                                rIndex === activeResourceIndex
+                            );
+
+                            resBtn.className = 'w-full text-left px-4 py-2.5 rounded-lg transition-all duration-200 flex flex-col whitespace-normal border border-transparent relative overflow-hidden group';
+
+                            if (isActive) {
+                                resBtn.classList.add('bg-primary/10', 'dark:bg-blue-900/30', 'border-primary/20');
+                                resBtn.innerHTML = `
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+                                    <span class="text-sm font-bold text-primary dark:text-blue-400">${res.title}</span>
+                                `;
+                            } else {
+                                resBtn.classList.add('hover:bg-slate-50', 'dark:hover:bg-slate-800/80');
+                                resBtn.innerHTML = `
+                                    <span class="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary dark:group-hover:text-primary transition-colors">${res.title}</span>
+                                `;
+                            }
+
+                            resBtn.addEventListener('click', () => loadResource(cIndex, sIndex, rIndex));
+                            itemContainer.appendChild(resBtn);
+                        });
+
+                        categoryContainer.appendChild(itemContainer);
+                    });
+
+                    resourceListEl.appendChild(categoryContainer);
+                });
+            }
+
+            function loadResource(cIndex, sIndex, rIndex) {
+                // Prevent reloading the same item
+                if (
+                    cIndex === activeCategoryIndex &&
+                    sIndex === activeSubCategoryIndex &&
+                    rIndex === activeResourceIndex &&
+                    titleEl.textContent !== '載入中...'
+                ) return;
+
+                activeCategoryIndex = cIndex;
+                activeSubCategoryIndex = sIndex;
+                activeResourceIndex = rIndex;
+
+                const res = resourceData[cIndex].subCategories[sIndex].resources[rIndex];
+
+                // Trigger reflow for animation
+                contentEl.classList.remove('fade-in');
+                void contentEl.offsetWidth; 
+                contentEl.classList.add('fade-in');
+        
+                // Update Header Details
+                titleEl.textContent = res.title;
+                descEl.textContent = res.description;
+                badgeEl.textContent = res.badge;
+                dateEl.textContent = res.date;
+
+                // Update Download Panel Details
+                fileNameEl.textContent = res.fileName;
+                fileSizeEl.textContent = res.fileSize;
+                fileVersionEl.textContent = res.version;
+                
+                // Update Icon
+                fileIconEl.className = `fas ${res.iconClass}`;
+                
+                // Update Download Button
+                mainDownloadBtn.href = res.downloadUrl;
+                
+                // Parse markdown-like instructions (bold text logic)
+                const formattedInstructions = res.instructions.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800 dark:text-white">$1</strong>');
+                instructionsEl.innerHTML = formattedInstructions;
+
+                renderSidebar();
+            }
+
+            // Initialize
+            renderSidebar();
+            loadResource(0, 0, 0);
+        });
+    </script>
+</body>
+</html>
