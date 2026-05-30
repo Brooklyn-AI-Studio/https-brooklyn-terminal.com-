@@ -177,22 +177,49 @@
         </div>
     </nav>
 
-    <!-- About Section -->
-    <section id="about" class="py-24 bg-white dark:bg-slate-900 transition-colors duration-300">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16 fade-in">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">關於我</h2>
-                <div class="w-16 h-1 bg-primary mx-auto rounded-full"></div>
-            </div>
+                <!-- About Section -->
+                <section id="about" class="py-24 bg-white dark:bg-slate-900 transition-colors duration-300">
+                    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="text-center mb-16 fade-in">
+                            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">關於我</h2>
+                            <div class="w-16 h-1 bg-primary mx-auto rounded-full"></div>
+                        </div>
 
-            <div class="flex flex-col md:flex-row items-center gap-12 fade-in">
-                <div class="w-full md:w-1/2 relative group">
-                    <div
-                        class="absolute inset-0 bg-primary/20 rounded-xl transform translate-x-3 translate-y-3 transition-transform group-hover:translate-x-4 group-hover:translate-y-4">
-                    </div>
-                    <img src="/assets/me-pic/brooklyn.png" alt="brooklyn"
-                        class="relative rounded-xl shadow-lg w-full object-cover z-10 transition-transform duration-500 group-hover:-translate-y-1 group-hover:-translate-x-1">
+                        <div class="flex flex-col md:flex-row items-center gap-12 fade-in">
+                            <div class="w-full md:w-1/2 relative group">
+                <div
+                    class="absolute inset-0 bg-primary/20 rounded-xl transform translate-x-3 translate-y-3 transition-transform group-hover:translate-x-4 group-hover:translate-y-4">
                 </div>
+
+                <div id="about-photo-carousel"
+                    class="relative rounded-xl shadow-lg overflow-hidden z-10 bg-slate-100 dark:bg-slate-800">
+
+                    <img id="about-photo"
+                        src="./assets/me-pic/brooklyn.png"
+                        alt="Brooklyn Chen"
+                        draggable="false"
+                        class="w-full aspect-[4/5] object-cover transition-all duration-500 ease-out select-none">
+
+                 <!-- 左右切換按鈕 -->
+                    <button id="photo-prev" type="button"
+                        class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/60 text-white flex items-center justify-center hover:bg-primary transition-colors">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+
+                    <button id="photo-next" type="button"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/60 text-white flex items-center justify-center hover:bg-primary transition-colors">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+
+                    <!-- 下方圓點 -->
+                    <div id="photo-dots"
+                        class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    </div>
+                </div>
+
+                <p class="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
+                </p>
+            </div>
                 <div class="w-full md:w-1/2">
                     <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Brooklyn Chen</h3>
                     <p class="text-lg leading-relaxed text-slate-600 dark:text-slate-400 mb-6">
@@ -398,7 +425,7 @@
                 <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">專業技能</h2>
                 <div class="w-16 h-1 bg-primary mx-auto rounded-full"></div>
                 <p class="mt-6 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-lg">
-                    SyetemVerilog ． C++ ． Python ． SQL
+                    SyetemVerilog ． C++ ． Python ． R
                 </p>
             </div>
 
@@ -446,7 +473,7 @@
                         <span
                             class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">資料探勘</span>
                         <span
-                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">最佳化方法</span>
+                            class="px-4 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold shadow-sm border border-gray-100 dark:border-slate-700 hover:border-primary/50 transition-colors cursor-default">A/B 測試</span>
                     </div>
                 </div>
 
@@ -482,7 +509,7 @@
     <section id="portfolio" class="py-24 bg-slate-50 dark:bg-slate-800/40 transition-colors duration-300">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16 fade-in">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">近期作品集</h2>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">近期作品</h2>
                 <div class="w-16 h-1 bg-primary mx-auto rounded-full"></div>
             </div>
 
@@ -492,16 +519,16 @@
                 <div
                     class="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 fade-in group border border-gray-100 dark:border-slate-700 flex flex-col">
                     <div class="relative overflow-hidden h-52">
-                        <img src="https://placehold.co/600x400/3B82F6/ffffff?text=E-Commerce+App" alt="Project 1"
+                        <img src="https://raw.githubusercontent.com/Brooklyn-AI-Studio/knowledge/refs/heads/main/%E5%9F%BA%E6%96%BCAMD%20Artix7%20FPGA%20%E4%B9%8BXADC%E6%99%B6%E7%89%87%E6%BA%AB%E5%BA%A6%E7%9B%A3%E6%B8%AC%E8%88%87%20UART%20%E5%8D%B3%E6%99%82%E5%82%B3%E8%BC%B8%E8%A8%AD%E8%A8%88/A7_Lite_Interface%20.png" alt="Project 1"
                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
                         <div
                             class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
                             <div
                                 class="flex gap-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                                <a href="#"
+                                <a href="https://github.com/Brooklyn-AI-Studio/knowledge/blob/main/%E5%9F%BA%E6%96%BCAMD%20Artix7%20FPGA%20%E4%B9%8BXADC%E6%99%B6%E7%89%87%E6%BA%AB%E5%BA%A6%E7%9B%A3%E6%B8%AC%E8%88%87%20UART%20%E5%8D%B3%E6%99%82%E5%82%B3%E8%BC%B8%E8%A8%AD%E8%A8%88/%E5%9F%BA%E6%96%BCAMD%20Artix-7%20FPGA%20%E4%B9%8BXADC%E6%99%B6%E7%89%87%E6%BA%AB%E5%BA%A6%E7%9B%A3%E6%B8%AC.pdf"
                                     class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg"
                                     title="Live Preview"><i class="fas fa-external-link-alt"></i></a>
-                                <a href="#"
+                                <a href="https://github.com/Brooklyn-AI-Studio/knowledge/tree/main/%E5%9F%BA%E6%96%BCAMD%20Artix7%20FPGA%20%E4%B9%8BXADC%E6%99%B6%E7%89%87%E6%BA%AB%E5%BA%A6%E7%9B%A3%E6%B8%AC%E8%88%87%20UART%20%E5%8D%B3%E6%99%82%E5%82%B3%E8%BC%B8%E8%A8%AD%E8%A8%88"
                                     class="w-12 h-12 rounded-full bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 transition-colors shadow-lg"
                                     title="View Source"><i class="fab fa-github text-xl"></i></a>
                             </div>
@@ -510,15 +537,16 @@
                     <div class="p-6 flex flex-col flex-grow">
                         <h3
                             class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-primary transition-colors">
-                            資料連結中</h3>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm mb-6 flex-grow leading-relaxed">資料連結中</p>
+                            基於AMD Artix-7 FPGA 之 XADC 晶片溫度監測與 UART 即時傳輸設計
+                            </h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm mb-6 flex-grow leading-relaxed">實驗設計一套晶片溫度與板載狀態資料之即時監測系統。</p>
                         <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-slate-800">
                             <span
-                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中</span>
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">UART</span>
                             <span
-                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中</span>
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">XADC</span>
                             <span
-                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">資料連結中</span>
+                                class="text-xs font-bold text-primary bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-md">Python</span>
                         </div>
                     </div>
                 </div>
@@ -643,7 +671,101 @@
             const themeToggleBtnMobile = document.getElementById('theme-toggle-mobile');
             const themeToggleDarkIcons = document.querySelectorAll('#theme-toggle-dark-icon, #theme-toggle-dark-icon-mobile');
             const themeToggleLightIcons = document.querySelectorAll('#theme-toggle-light-icon, #theme-toggle-light-icon-mobile');
+            /* --- About Photo Carousel Logic --- */
+            const aboutPhotos = [
+                {
+                    src: "./assets/me-pic/brooklyn.png",
+                    alt: "BrooklynChen"
+                },
+                {
+                    src: "./assets/me-pic/brooklyn2.png",
+                    alt: "BrooklynChen"
+                },
+                {
+                    src: "./assets/me-pic/brooklyn3.png",
+                    alt: "BrooklynChen"
+                }
+            ];
 
+            const aboutPhoto = document.getElementById("about-photo");
+            const photoPrev = document.getElementById("photo-prev");
+            const photoNext = document.getElementById("photo-next");
+            const photoDots = document.getElementById("photo-dots");
+            const photoCarousel = document.getElementById("about-photo-carousel");
+
+            let currentPhotoIndex = 0;
+
+            function renderPhoto(index) {
+                currentPhotoIndex = (index + aboutPhotos.length) % aboutPhotos.length;
+
+                aboutPhoto.classList.add("opacity-0", "scale-105");
+
+                setTimeout(() => {
+                    aboutPhoto.src = aboutPhotos[currentPhotoIndex].src;
+                    aboutPhoto.alt = aboutPhotos[currentPhotoIndex].alt;
+                    aboutPhoto.classList.remove("opacity-0", "scale-105");
+                }, 180);
+
+                renderDots();
+            }
+
+            function renderDots() {
+                photoDots.innerHTML = "";
+
+                aboutPhotos.forEach((_, index) => {
+                    const dot = document.createElement("button");
+                    dot.type = "button";
+
+                    dot.className = index === currentPhotoIndex
+                        ? "w-6 h-2 rounded-full bg-primary transition-all"
+                        : "w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all";
+
+                    dot.addEventListener("click", () => renderPhoto(index));
+                    photoDots.appendChild(dot);
+                });
+            }
+
+            function nextPhoto() {
+                renderPhoto(currentPhotoIndex + 1);
+            }
+
+            function prevPhoto() {
+                renderPhoto(currentPhotoIndex - 1);
+            }
+
+            if (aboutPhoto && photoPrev && photoNext && photoDots && photoCarousel) {
+                renderPhoto(0);
+
+                // 如果目前只有一張照片，就隱藏按鈕和圓點
+                if (aboutPhotos.length <= 1) {
+                    photoPrev.classList.add("hidden");
+                    photoNext.classList.add("hidden");
+                    photoDots.classList.add("hidden");
+                } else {
+                    photoPrev.addEventListener("click", prevPhoto);
+                    photoNext.addEventListener("click", nextPhoto);
+                }
+
+                // 手機滑動支援
+                let startX = 0;
+
+                photoCarousel.addEventListener("touchstart", (event) => {
+                    startX = event.touches[0].clientX;
+                });
+
+                photoCarousel.addEventListener("touchend", (event) => {
+                    const endX = event.changedTouches[0].clientX;
+                    const diffX = startX - endX;
+
+                    if (Math.abs(diffX) > 50) {
+                        if (diffX > 0) {
+                            nextPhoto();
+                        } else {
+                            prevPhoto();
+                        }
+                    }
+                });
+            }
             // Set initial icon based on applied theme
             if (document.documentElement.classList.contains('dark')) {
                 themeToggleLightIcons.forEach(icon => icon.classList.remove('hidden'));
