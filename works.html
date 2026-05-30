@@ -169,25 +169,34 @@
                 <!-- Decorative element -->
                 <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -z-0"></div>
 
-                <div class="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <span id="project-badge"
-                                class="px-2.5 py-1 text-xs font-bold rounded-md bg-blue-100 text-primary dark:bg-blue-900/30">AI
-                                Development</span>
-                            <span class="text-sm text-slate-500 dark:text-slate-400" id="project-date">2025.08</span>
-                        </div>
-                        <h1 id="project-title"
-                            class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3">載入中...</h1>
-                        <p id="project-desc" class="text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
-                            載入專案中，請稍候...
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 mt-2 sm:mt-0">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-2">
+    <div id="project-badges" class="flex items-center gap-2 flex-wrap">
+        <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-blue-100 text-primary dark:bg-blue-900/30">
+            brooklyn-terminal
+        </span>
+    </div>
+
+    <span class="text-sm text-slate-500 dark:text-slate-400" id="project-date"></span>
+</div>
+
+                    <h1 id="project-title"
+                        class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3">
+                        ←在左側選擇專案檢視
+                    </h1>
+
+                    <p id="project-desc" class="text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
+                    </p>
+
+                    <div class="mt-5">
                         <a id="project-github" href="#" target="_blank" rel="noopener noreferrer"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-primary dark:hover:bg-primary hover:text-white dark:hover:text-white rounded-lg font-bold transition-all shadow-md transform hover:-translate-y-0.5 whitespace-nowrap">
+                            class="inline-flex w-fit items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-primary dark:hover:bg-primary hover:text-white dark:hover:text-white rounded-lg font-bold transition-all shadow-md transform hover:-translate-y-0.5 whitespace-nowrap">
                             <i class="fab fa-github text-lg"></i> 查看 GitHub
                         </a>
+                        <button id="project-file-download" type="button"
+                            class="inline-flex w-fit items-center gap-2 px-5 py-2.5 bg-primary text-white hover:bg-blue-600 rounded-lg font-bold transition-all shadow-md transform hover:-translate-y-0.5 whitespace-nowrap">
+                            <i class="fas fa-download text-lg"></i> 文件下載
+                        </button>
                     </div>
                 </div>
             </div>
@@ -256,25 +265,26 @@
                 {
                     categoryTitle: 'FPGA',
                     icon: 'fa-layer-group',
-                    isOpen: false,
+                    isOpen: true,
                     subCategories: [
                         {
-                            categoryTitle: 'Artix 7 FPGA 專案',
+                            categoryTitle: 'AMD Artix-7 實驗',
                             icon: 'fa-microchip',
-                            isOpen: false,
+                            isOpen: true,
                             projects: [
                                 {
                                     id: 'fpga-img-processing',
-                                    title: '影像邊緣運算加速',
-                                    badge: 'Verilog / HLS',
-                                    date: '2024.05',
-                                    description: '在 Artix-7 平台上實作 Sobel Edge Detection 演算法的硬體加速。相較於純軟體實作，效能提升約 40 倍。包含 AXI4-Stream 介面設計與 Testbench 驗證。',
-                                    github: 'https://github.com/Brooklyn-AI-Studio',
-                                    pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
+                                    title: '基於AMD Artix7 FPGA 之 XADC 晶片溫度監測與 UART 即時傳輸設計',
+                                    badges: ['UART', 'XADC','Python'],
+                                    date: '2026/05/31',
+                                    description: '實驗設計一套晶片溫度與板載狀態資料之即時監測系統。FPGA 端透過內部 XADC 取得晶片接面溫度原始資料，並整合按鍵狀態、LED 狀態與封包計數器，將資料封裝為 ASCII 文字封包後，透過 UART TX 傳送至電腦端。',
+                                    github: 'https://github.com/Brooklyn-AI-Studio/knowledge/tree/main/%E5%9F%BA%E6%96%BCAMD%20Artix7%20FPGA%20%E4%B9%8BXADC%E6%99%B6%E7%89%87%E6%BA%AB%E5%BA%A6%E7%9B%A3%E6%B8%AC%E8%88%87%20UART%20%E5%8D%B3%E6%99%82%E5%82%B3%E8%BC%B8%E8%A8%AD%E8%A8%88',
+                                    pdfUrl: 'https://cdn.jsdelivr.net/gh/Brooklyn-AI-Studio/knowledge@main/%E5%9F%BA%E6%96%BCAMD%20Artix7%20FPGA%20%E4%B9%8BXADC%E6%99%B6%E7%89%87%E6%BA%AB%E5%BA%A6%E7%9B%A3%E6%B8%AC%E8%88%87%20UART%20%E5%8D%B3%E6%99%82%E5%82%B3%E8%BC%B8%E8%A8%AD%E8%A8%88/%E5%9F%BA%E6%96%BCAMD%20Artix-7%20FPGA%20%E4%B9%8BXADC%E6%99%B6%E7%89%87%E6%BA%AB%E5%BA%A6%E7%9B%A3%E6%B8%AC.pdf',
+                                    downloadName: '基於AMD Artix7 FPGA 之 XADC 晶片溫度監測與 UART 即時傳輸設計.pdf'
                                 },
                                 {
                                     id: 'fpga-uart',
-                                    title: 'UART 通訊控制器',
+                                    title: '待上版',
                                     badge: 'Verilog',
                                     date: '2023.11',
                                     description: '使用 Verilog 從零打造 UART (Universal Asynchronous Receiver-Transmitter) 模組，支援可調 Baud Rate，並於 FPGA 開發板上與 PC 完成非同步串列通訊測試。',
@@ -283,7 +293,7 @@
                                 },
                                 {
                                     id: 'fpga-vga',
-                                    title: 'VGA 顯示控制器',
+                                    title: '待上版',
                                     badge: 'FPGA',
                                     date: '2023.08',
                                     description: '開發 VGA 顯示控制器，透過 FPGA 直接驅動螢幕顯示特定圖案與動態畫面，深入理解時序控制 (Timing Control) 與螢幕更新率的硬體實作細節。',
@@ -312,18 +322,19 @@
             const projectListEl = document.getElementById('project-list');
             const titleEl = document.getElementById('project-title');
             const descEl = document.getElementById('project-desc');
-            const badgeEl = document.getElementById('project-badge');
+            const badgesEl = document.getElementById('project-badges');
             const dateEl = document.getElementById('project-date');
             const githubEl = document.getElementById('project-github');
+            const fileDownloadBtn = document.getElementById('project-file-download');
             const pdfViewerEl = document.getElementById('pdf-viewer');
             const pdfDownloadEl = document.getElementById('project-pdf-download');
             const loadingEl = document.getElementById('pdf-loading');
             const contentEl = document.getElementById('project-content');
 
             // --- Render Logic ---
-            let activeCategoryIndex = 0;
-            let activeSubCategoryIndex = 0;
-            let activeProjectIndex = 0;
+            let activeCategoryIndex = -1;
+            let activeSubCategoryIndex = -1;
+            let activeProjectIndex = -1;
 
             function renderSidebar() {
                 projectListEl.innerHTML = '';
@@ -432,20 +443,59 @@
 
                 titleEl.textContent = proj.title;
                 descEl.textContent = proj.description;
-                badgeEl.textContent = proj.badge;
+                badgesEl.innerHTML = '';
+                const badges = proj.badges || [proj.badge || 'Project'];
+
+                badges.forEach((badge) => {
+                    const badgeSpan = document.createElement('span');
+                    badgeSpan.className = 'px-2.5 py-1 text-xs font-bold rounded-md bg-blue-100 text-primary dark:bg-blue-900/30';
+                    badgeSpan.textContent = badge;
+                    badgesEl.appendChild(badgeSpan);
+                });
                 dateEl.textContent = proj.date;
 
                 githubEl.href = proj.github;
                 pdfDownloadEl.href = proj.pdfUrl;
+
+                fileDownloadBtn.onclick = () => {
+                    downloadFile(
+                        proj.pdfUrl,
+                        proj.downloadName || `${proj.id}.pdf`
+                    );
+                };
                 loadingEl.style.display = 'flex';
                 loadingEl.style.opacity = '1';
 
-                pdfViewerEl.src = proj.pdfUrl + "#toolbar=1&navpanes=0&view=FitH";
+                pdfViewerEl.src = `${proj.pdfUrl}#toolbar=1&navpanes=0&view=FitH`;
                 renderSidebar();
             }
 
             renderSidebar();
             loadProject(0, 0, 0);
+            async function downloadFile(url, filename) {
+                try {
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                        throw new Error('文件下載失敗');
+                    }
+
+                    const blob = await response.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+
+                    a.remove();
+                    URL.revokeObjectURL(blobUrl);
+                } catch (error) {
+                    console.error(error);
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                }
+            }
         });
     </script>
 </body>
