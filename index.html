@@ -9,115 +9,177 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['"Noto Sans TC"', 'sans-serif'],
+                        display: ['"Space Grotesk"', '"Noto Sans TC"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
                     },
                     colors: {
-                        brand: {
-                            50: '#f0fdfa',
-                            100: '#ccfbf1',
-                            500: '#14b8a6', 
-                            600: '#0d9488',
-                            900: '#134e4a',
+                        ink: {
+                            950: '#070809',
+                            900: '#0b0d0f',
+                            850: '#101316',
+                            800: '#15191d',
+                            700: '#1d2227',
+                            600: '#2a3138',
+                        },
+                        accent: {
+                            300: '#7df0dd',
+                            400: '#39e0c8',
+                            500: '#14c9ad',
+                            600: '#0ea58c',
+                        },
+                        gold: {
+                            300: '#f5e6c8',
+                            400: '#e8cf9a',
+                            500: '#d4b16a',
                         }
                     },
                     animation: {
-                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
-                        'glow-pulse': 'glowPulse 4s ease-in-out infinite',
+                        'fade-in-up': 'fadeInUp 0.9s cubic-bezier(0.22,1,0.36,1) forwards',
+                        'shine': 'shine 6s linear infinite',
                     },
                     keyframes: {
                         fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '0%': { opacity: '0', transform: 'translateY(24px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
                         },
-                        glowPulse: {
-                            '0%, 100%': { 
-                                boxShadow: '0 0 25px -5px rgba(20, 184, 166, 0.3)',
-                                borderColor: 'rgba(20, 184, 166, 0.2)'
-                            },
-                            '50%': { 
-                                boxShadow: '0 0 50px -5px rgba(20, 184, 166, 0.6), 0 0 30px -5px rgba(59, 130, 246, 0.4)',
-                                borderColor: 'rgba(20, 184, 166, 0.6)'
-                            }
+                        shine: {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '100%': { backgroundPosition: '200% 50%' },
                         }
                     }
                 }
             }
         }
     </script>
-    
-    <style>
 
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-        }
+    <style>
+        ::-webkit-scrollbar { width: 9px; }
+        ::-webkit-scrollbar-track { background: #0b0d0f; }
         ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
+            background: #2a3138;
             border-radius: 4px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
+        ::-webkit-scrollbar-thumb:hover { background: #14c9ad; }
+
+        ::selection { background: rgba(20,201,173,0.3); color: #fff; }
+
+        .delay-100 { animation-delay: 120ms; }
+        .delay-200 { animation-delay: 240ms; }
+        .delay-300 { animation-delay: 380ms; }
+        .delay-400 { animation-delay: 520ms; }
+
+        /* 細緻網格背景 */
+        .bg-grid {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 56px 56px;
+            -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%);
+            mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%);
         }
-        
-        .delay-100 { animation-delay: 100ms; }
-        .delay-200 { animation-delay: 200ms; }
-        .delay-300 { animation-delay: 300ms; }
 
-
-        .bg-dots {
-            background-image: radial-gradient(rgba(13, 148, 136, 0.15) 1.5px, transparent 1.5px);
-            background-size: 32px 32px;
+        /* 漸層描邊卡片 */
+        .card-border {
+            position: relative;
+            background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
         }
-
+        .card-border::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            padding: 1px;
+            border-radius: inherit;
+            background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(255,255,255,0.02) 45%);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            transition: background 0.4s ease;
+        }
+        .card-border.accent:hover::before {
+            background: linear-gradient(160deg, rgba(20,201,173,0.7), rgba(20,201,173,0.05) 60%);
+        }
+        .card-border.blue:hover::before {
+            background: linear-gradient(160deg, rgba(96,165,250,0.7), rgba(96,165,250,0.05) 60%);
+        }
+        .card-border.gold:hover::before {
+            background: linear-gradient(160deg, rgba(212,177,106,0.7), rgba(212,177,106,0.05) 60%);
+        }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(3deg); }
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-18px); }
         }
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
+        .animate-float { animation: float 7s ease-in-out infinite; }
+        .animate-float-delayed { animation: float 8s ease-in-out 2.5s infinite; }
+        .animate-float-slow { animation: float 10s ease-in-out 1s infinite; }
+
+        .glow-orb {
+            position: absolute;
+            border-radius: 9999px;
+            filter: blur(90px);
+            pointer-events: none;
         }
-        .animate-float-delayed {
-            animation: float 7s ease-in-out 3s infinite;
+
+        .text-shine {
+            background: linear-gradient(90deg, #7df0dd, #ffffff, #e8cf9a, #7df0dd);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 6s linear infinite;
         }
-        .animate-float-slow {
-            animation: float 9s ease-in-out 1s infinite;
-        }
+
+        .hairline { letter-spacing: 0.35em; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col relative">
+<body class="bg-ink-950 text-gray-300 font-sans antialiased min-h-screen flex flex-col relative overflow-x-hidden">
 
-    <div id="terminal-bg" class="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-gray-50 opacity-20">
-        <div id="terminal-content" class="text-brand-600 font-mono text-sm sm:text-base p-4 whitespace-pre-wrap leading-relaxed select-none"></div>
+    <!-- 背景終端機 -->
+    <div id="terminal-bg" class="fixed inset-0 z-0 pointer-events-none overflow-hidden opacity-[0.06]">
+        <div id="terminal-content" class="text-accent-400 font-mono text-sm sm:text-base p-6 whitespace-pre-wrap leading-relaxed select-none"></div>
+    </div>
+
+    <!-- 背景星雲光暈 -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div class="glow-orb w-[42rem] h-[42rem] bg-indigo-600/15 -top-48 -left-32"></div>
+        <div class="glow-orb w-[34rem] h-[34rem] bg-accent-600/12 top-1/3 -right-40"></div>
+        <div class="glow-orb w-[30rem] h-[30rem] bg-purple-700/12 bottom-0 left-1/4"></div>
+        <div class="glow-orb w-[26rem] h-[26rem] bg-blue-700/10 top-1/4 left-1/3"></div>
     </div>
 
     <!-- 頂部導航列 -->
-    <header class="fixed w-full top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300" id="navbar">
+    <header class="fixed w-full top-0 z-50 bg-ink-950/70 backdrop-blur-xl border-b border-white/[0.06] transition-all duration-300" id="navbar">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
-                <a href="./index.html" class="flex items-center gap-2 flex-shrink-0 font-bold text-xl text-primary cursor-pointer transition-transform hover:scale-105">
-                    <img src="./assets/logo.png" alt="brooklyn-terminal logo" class="w-8 h-8 rounded-lg object-cover">
-                    <span>brooklyn-termimal</span>
+                <a href="./index.html" class="flex items-center gap-3 flex-shrink-0 group cursor-pointer">
+                    <img src="./assets/logo.png" alt="brooklyn-terminal logo" class="w-8 h-8 rounded-lg object-cover ring-1 ring-white/10 transition-transform group-hover:scale-105">
+                    <span class="font-display font-semibold text-lg text-white tracking-tight">brooklyn<span class="text-accent-400">-</span>terminal</span>
                 </a>
-                
-                <nav class="hidden md:flex space-x-8">
-                    <a href="#home" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">首頁</a>
-                    <a href="#sections" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">探索</a>
+
+                <nav class="hidden md:flex items-center space-x-10">
+                    <a href="#home" class="text-sm text-gray-400 hover:text-white font-medium tracking-wide transition-colors relative group">
+                        首頁
+                        <span class="absolute -bottom-1.5 left-0 w-0 h-px bg-accent-400 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#sections" class="text-sm text-gray-400 hover:text-white font-medium tracking-wide transition-colors relative group">
+                        探索
+                        <span class="absolute -bottom-1.5 left-0 w-0 h-px bg-accent-400 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
                 </nav>
 
                 <div class="md:hidden flex items-center">
-                    <button class="text-gray-600 hover:text-brand-600 focus:outline-none">
+                    <button class="text-gray-400 hover:text-white focus:outline-none">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                 </div>
@@ -126,173 +188,102 @@
     </header>
 
 
-    <main class="flex-grow pt-16">
-        <section id="home" class="relative overflow-hidden bg-white/40 min-h-[75vh] flex items-center">
-            <div class="absolute inset-0 z-0 bg-dots opacity-80 pointer-events-none"></div>
-            <div class="absolute inset-0 z-0 opacity-40 pointer-events-none">
-                <div class="absolute top-10 left-10 w-72 h-72 bg-brand-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob"></div>
-                <div class="absolute top-10 right-20 w-72 h-72 bg-purple-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob animation-delay-2000"></div>
-                <div class="absolute -bottom-8 left-1/3 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob animation-delay-4000"></div>
-            </div>
+    <main class="flex-grow pt-16 relative z-10">
+        <section id="home" class="relative overflow-hidden min-h-[88vh] flex items-center">
+            <div class="absolute inset-0 z-0 bg-grid pointer-events-none"></div>
 
-            <!-- 背景浮動元素 -->
-            <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-                <!-- 左上角 (原有) -->
-                <div class="absolute top-24 left-[10%] md:left-[15%] text-brand-300/50 animate-float">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-                </div>
-                
-                <!-- 新增：中左 Database -->
-                <div class="absolute top-[40%] left-[5%] md:left-[8%] text-gray-400/40 animate-float-delayed">
-                    <i data-lucide="database" class="w-8 h-8"></i>
-                </div>
+            <!-- 科技動態背景:粒子網路 -->
+            <canvas id="tech-canvas" class="absolute inset-0 z-0 pointer-events-none w-full h-full"></canvas>
 
-                <!-- 新增：左下 Command -->
-                <div class="absolute bottom-[25%] left-[12%] md:left-[18%] text-blue-300/30 animate-float-slow">
-                    <i data-lucide="command" class="w-10 h-10"></i>
-                </div>
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-16 md:py-24">
+                <div class="relative max-w-3xl mx-auto text-center">
 
-                <!-- 圓圈 (原有) -->
-                <div class="absolute bottom-20 left-[20%] text-brand-400/40 animate-float-slow">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/></svg>
-                </div>
+                    <p class="text-accent-400 font-mono tracking-[0.4em] uppercase text-xs mb-5 mt-4 opacity-0 animate-fade-in-up delay-100">Salut,</p>
 
-                <!-- 新增：上中 CPU -->
-                <div class="absolute top-16 left-[45%] text-purple-300/30 animate-float-delayed">
-                    <i data-lucide="cpu" class="w-10 h-10"></i>
-                </div>
-
-                <!-- Code 符號 (原有) -->
-                <div class="absolute top-32 right-[15%] text-blue-300/40 animate-float-delayed">
-                    <i data-lucide="code" class="w-10 h-10"></i>
-                </div>
-
-                <!-- 新增：中右 Triangle -->
-                <div class="absolute top-[45%] right-[8%] md:right-[12%] text-brand-400/40 animate-float">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 20 2 20"/></svg>
-                </div>
-
-                <!-- 新增：右下 Cloud -->
-                <div class="absolute bottom-16 right-[35%] text-gray-400/30 animate-float-slow">
-                    <i data-lucide="cloud" class="w-10 h-10"></i>
-                </div>
-
-                <!-- 終端機符號 (原有) -->
-                <div class="absolute bottom-32 right-[10%] md:right-[20%] text-purple-300/40 animate-float">
-                    <i data-lucide="terminal-square" class="w-12 h-12"></i>
-                </div>
-            </div>
-
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-12 md:py-20 lg:py-24">
-                <!-- 大字卡包裝層：在此加入背後的光暈 -->
-                <div class="relative max-w-3xl mx-auto">
-                    <!-- 背後的光暈元素 -->
-                    <div class="absolute -inset-2 bg-gradient-to-r from-brand-300/60 via-blue-300/60 to-brand-300/60 blur-3xl opacity-80 rounded-[3rem] -z-10 animate-pulse"></div>
-                    
-                    <!-- 發光的字卡內容 -->
-                    <div class="text-center bg-white/70 backdrop-blur-md p-8 rounded-3xl border relative z-10 animate-glow-pulse transition-all duration-300">
-                        <p class="text-brand-600 font-semibold tracking-wide uppercase text-sm mb-3 opacity-0 animate-fade-in-up"> Salut,</p>
-                        <h1 class="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 mb-6 leading-tight opacity-0 animate-fade-in-up delay-100">
-                        Brooklyn Chen<br/>
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-blue-600">
+                    <h1 class="font-display text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-7 leading-[1.05] tracking-tight opacity-0 animate-fade-in-up delay-100">
+                        Brooklyn Chen
+                        <span class="block mt-3 text-3xl sm:text-4xl md:text-5xl font-medium text-shine">
                             資訊備份的地方
                         </span>
                     </h1>
 
-                    <p class="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto mb-8 opacity-0 animate-fade-in-up delay-200">
-                        你之所以還活著是因為你死掉了時候不會變好吃。<br> —瑞克和莫蒂S7E4 
+                    <p class="text-gray-400 text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed opacity-0 animate-fade-in-up delay-200">
+                        你之所以還活著是因為你死掉了時候不會變好吃。
+                        <span class="block mt-1 text-sm text-gray-600 font-mono">— 瑞克和莫蒂 S7E4</span>
                     </p>
 
                     <div class="opacity-0 animate-fade-in-up delay-300">
-                        <a href="#sections" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-brand-600 hover:bg-brand-700 md:text-lg shadow-lg shadow-brand-500/30 transition-all hover:-translate-y-1">
-                            探索
-                            <i data-lucide="arrow-down" class="ml-2 w-5 h-5"></i>
+                        <a href="#sections" class="group inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-sm font-semibold tracking-wide text-ink-950 bg-accent-400 hover:bg-accent-300 transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-accent-500/20 hover:shadow-accent-500/40">
+                            探索內容
+                            <i data-lucide="arrow-down" class="w-4 h-4 transition-transform group-hover:translate-y-0.5"></i>
                         </a>
-                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- 探索內容 -->
-        <section id="sections" class="py-20 bg-gray-50 relative z-10 border-t border-gray-100 overflow-hidden">
-            <!-- 網格背景 -->
-            <div class="absolute inset-0 z-0 bg-dots opacity-80 pointer-events-none"></div>
-
+        <section id="sections" class="py-24 relative z-10 border-t border-white/[0.06]">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                
+
                 <div class="text-center mb-16">
-                    <h2 class="text-3xl font-bold text-gray-900">探索內容</h2>
-                    <div class="w-16 h-1 bg-brand-500 mx-auto mt-4 rounded-full"></div>
+                    <p class="font-mono text-xs text-accent-400 tracking-[0.4em] uppercase mb-4">Explore</p>
+                    <h2 class="font-display text-3xl md:text-4xl font-bold text-white tracking-tight">探索內容</h2>
+                    <div class="w-12 h-px bg-gradient-to-r from-transparent via-accent-400 to-transparent mx-auto mt-6"></div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    
-    
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
                     <!-- 作品集 -->
-                    
-                <a href="works.html" class="group bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-xl hover:border-brand-200 transition-all duration-300 flex flex-col items-center text-center transform hover:-translate-y-2 relative overflow-hidden h-full min-h-[292px]">
-                    <!-- 裝飾背景 -->
-                    <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-gradient-to-br from-brand-100 to-transparent rounded-full z-0 opacity-50 transition-transform group-hover:scale-150"></div>
-                    
-                    <div class="relative z-10 h-full flex flex-col items-center">
-                        <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-brand-600 group-hover:text-white transition-colors duration-300">
-                            <i data-lucide="briefcase" class="w-8 h-8"></i>
+                    <a href="works.html" class="card-border accent group rounded-2xl p-8 transition-all duration-300 flex flex-col text-left transform hover:-translate-y-2 relative overflow-hidden h-full min-h-[300px]">
+                        <div class="relative z-10 h-full flex flex-col">
+                            <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-7 bg-accent-500/10 text-accent-400 ring-1 ring-accent-400/20 group-hover:bg-accent-400 group-hover:text-ink-950 transition-colors duration-300">
+                                <i data-lucide="briefcase" class="w-6 h-6"></i>
+                            </div>
+                            <span class="font-mono text-xs text-gray-600 tracking-wider mb-2">01</span>
+                            <h3 class="font-display text-2xl font-semibold text-white mb-3">作品集</h3>
+                            <p class="text-gray-400 mb-6 leading-relaxed text-sm flex-grow">
+                                瀏覽我過去的專案和那些讓人髮際線愈來愈高的東西。
+                            </p>
+                            <span class="mt-auto inline-flex items-center text-accent-400 font-medium text-sm gap-1.5 group-hover:gap-3 transition-all">
+                                觀看作品 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </span>
                         </div>
+                    </a>
 
-                        <h3 class="text-2xl font-bold text-gray-900 mb-3">作品集</h3>
-
-                        <p class="text-gray-500 mb-6 min-h-[56px] leading-relaxed">
-                            瀏覽我過去的專案和那些讓人髮際線愈來愈高的東西。
-                        </p>
-
-                        <span class="mt-auto inline-flex items-center text-brand-600 font-medium gap-1 group-hover:gap-2 transition-all">
-                            觀看作品 <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        </span>
-                    </div>
-                </a>
-
-                <!-- 關於我 -->
-                <a href="aboutme.html" class="group bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-xl hover:border-blue-200 transition-all duration-300 flex flex-col items-center text-center transform hover:-translate-y-2 relative overflow-hidden h-full min-h-[292px]">
-                    <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-gradient-to-br from-blue-100 to-transparent rounded-full z-0 opacity-50 transition-transform group-hover:scale-150"></div>
-                    
-                    <div class="relative z-10 h-full flex flex-col items-center">
-                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                            <i data-lucide="user" class="w-8 h-8"></i>
+                    <!-- 關於我 -->
+                    <a href="aboutme.html" class="card-border blue group rounded-2xl p-8 transition-all duration-300 flex flex-col text-left transform hover:-translate-y-2 relative overflow-hidden h-full min-h-[300px]">
+                        <div class="relative z-10 h-full flex flex-col">
+                            <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-7 bg-blue-500/10 text-blue-400 ring-1 ring-blue-400/20 group-hover:bg-blue-400 group-hover:text-ink-950 transition-colors duration-300">
+                                <i data-lucide="user" class="w-6 h-6"></i>
+                            </div>
+                            <span class="font-mono text-xs text-gray-600 tracking-wider mb-2">02</span>
+                            <h3 class="font-display text-2xl font-semibold text-white mb-3">關於我</h3>
+                            <p class="text-gray-400 mb-6 leading-relaxed text-sm flex-grow">
+                                如果你想知道我的背景......
+                            </p>
+                            <span class="mt-auto inline-flex items-center text-blue-400 font-medium text-sm gap-1.5 group-hover:gap-3 transition-all">
+                                了解更多 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </span>
                         </div>
+                    </a>
 
-                        <h3 class="text-2xl font-bold text-gray-900 mb-3">關於我</h3>
-
-                        <p class="text-gray-500 mb-6 min-h-[56px] leading-relaxed">
-                            如果你想知道我的背景......
-                        </p>
-
-                        <span class="mt-auto inline-flex items-center text-blue-600 font-medium gap-1 group-hover:gap-2 transition-all">
-                            了解更多 <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        </span>
-                    </div>
-                </a>
-
-                <!-- 資源下載 -->
-                <a href="resource.html" class="group bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-xl hover:border-purple-200 transition-all duration-300 flex flex-col items-center text-center transform hover:-translate-y-2 relative overflow-hidden h-full min-h-[292px]">
-                    <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-gradient-to-br from-purple-100 to-transparent rounded-full z-0 opacity-50 transition-transform group-hover:scale-150"></div>
-                    
-                    <div class="relative z-10 h-full flex flex-col items-center">
-                        <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
-                            <i data-lucide="download-cloud" class="w-8 h-8"></i>
+                    <!-- 資源下載 -->
+                    <a href="resource.html" class="card-border gold group rounded-2xl p-8 transition-all duration-300 flex flex-col text-left transform hover:-translate-y-2 relative overflow-hidden h-full min-h-[300px]">
+                        <div class="relative z-10 h-full flex flex-col">
+                            <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-7 bg-gold-500/10 text-gold-400 ring-1 ring-gold-400/20 group-hover:bg-gold-400 group-hover:text-ink-950 transition-colors duration-300">
+                                <i data-lucide="download-cloud" class="w-6 h-6"></i>
+                            </div>
+                            <span class="font-mono text-xs text-gray-600 tracking-wider mb-2">03</span>
+                            <h3 class="font-display text-2xl font-semibold text-white mb-3">資源下載</h3>
+                            <p class="text-gray-400 mb-6 leading-relaxed text-sm flex-grow">
+                                分享一些我整理的筆記、開源套件或實用的素材。
+                            </p>
+                            <span class="mt-auto inline-flex items-center text-gold-400 font-medium text-sm gap-1.5 group-hover:gap-3 transition-all">
+                                前往下載 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </span>
                         </div>
-
-                        <h3 class="text-2xl font-bold text-gray-900 mb-3">資源下載</h3>
-
-                        <p class="text-gray-500 mb-6 min-h-[56px] leading-relaxed">
-                            分享一些我整理的筆記、開源套件或實用的素材。
-                        </p>
-
-                        <span class="mt-auto inline-flex items-center text-purple-600 font-medium gap-1 group-hover:gap-2 transition-all">
-                            前往下載 <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        </span>
-                    </div>
-                </a>
+                    </a>
 
                 </div>
             </div>
@@ -301,47 +292,47 @@
     </main>
 
     <!-- 頁尾 -->
-    <footer class="bg-white border-t border-gray-200 py-8 mt-auto relative z-10">
+    <footer class="border-t border-white/[0.06] py-12 mt-auto relative z-10 bg-ink-950/50 backdrop-blur-sm">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-gray-500 text-sm">
-                &copy; <span id="currentYear"></span> brooklyn-terminal. All rights reserved.
-            </p>
-            <div class="mt-4 flex justify-center space-x-6">
-                <a href="https://www.instagram.com/ukuddz/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-pink-600 transition-colors">
+            <div class="flex justify-center space-x-8 mb-6">
+                <a href="https://www.instagram.com/ukuddz/" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-pink-400 transition-colors hover:-translate-y-0.5 inline-block">
                     <span class="sr-only">Instagram</span>
-                    <i data-lucide="instagram" class="w-6 h-6"></i>
+                    <i data-lucide="instagram" class="w-5 h-5"></i>
                 </a>
-                <a href="https://www.reddit.com/user/ukuleleddz/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-orange-600 transition-colors">
+                <a href="https://www.reddit.com/user/ukuleleddz/" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-orange-400 transition-colors hover:-translate-y-0.5 inline-block">
                     <span class="sr-only">Reddit</span>
-                    <i data-lucide="message-circle" class="w-6 h-6"></i>
+                    <i data-lucide="message-circle" class="w-5 h-5"></i>
                 </a>
-                <a href="mailto:coreinformation30@gmail.com" class="text-gray-400 hover:text-blue-600 transition-colors">
+                <a href="mailto:coreinformation30@gmail.com" class="text-gray-500 hover:text-accent-400 transition-colors hover:-translate-y-0.5 inline-block">
                     <span class="sr-only">Email</span>
-                    <i data-lucide="mail" class="w-6 h-6"></i>
+                    <i data-lucide="mail" class="w-5 h-5"></i>
                 </a>
             </div>
-            <!-- 顯示 Email 文字 -->
-            <p class="mt-4 text-gray-500 text-sm">
-                聯絡我：<a href="mailto:coreinformation30@gmail.com" class="hover:text-brand-600 hover:underline">coreinformation30@gmail.com</a>
+            <p class="text-gray-500 text-sm mb-2">
+                聯絡我：<a href="mailto:coreinformation30@gmail.com" class="text-gray-400 hover:text-accent-400 hover:underline transition-colors font-mono">coreinformation30@gmail.com</a>
+            </p>
+            <p class="text-gray-600 text-xs font-mono tracking-wider">
+                &copy; <span id="currentYear"></span> brooklyn-terminal · All rights reserved.
             </p>
         </div>
     </footer>
 
     <!-- 圖示與腳本 -->
     <script>
-       
         lucide.createIcons();
         document.getElementById('currentYear').textContent = new Date().getFullYear();
+
         window.addEventListener('scroll', () => {
             const navbar = document.getElementById('navbar');
             if (window.scrollY > 10) {
-                navbar.classList.add('shadow-md');
-                navbar.classList.remove('shadow-sm');
+                navbar.classList.add('bg-ink-950/90');
+                navbar.classList.remove('bg-ink-950/70');
             } else {
-                navbar.classList.remove('shadow-md');
-                navbar.classList.add('shadow-sm');
+                navbar.classList.remove('bg-ink-950/90');
+                navbar.classList.add('bg-ink-950/70');
             }
         });
+
         const terminalContent = document.getElementById('terminal-content');
         const terminalLines = [
                 "Launching CoreInformation Lab...",
@@ -369,28 +360,24 @@
 
         let currentLineIndex = 0;
         let currentCharIndex = 0;
-        let isTyping = true;
-        let typingDelay = 30; // 延遲 
-        let lineDelay = 500;  // 等待時間 
+        let typingDelay = 30;
+        let lineDelay = 500;
 
         function typeTerminal() {
             if (currentLineIndex < terminalLines.length) {
                 const currentLine = terminalLines[currentLineIndex];
-                
                 if (currentCharIndex === 0 && currentLineIndex > 0) {
                     terminalContent.innerHTML += "<br/>";
                 }
-
                 if (currentCharIndex < currentLine.length) {
                     terminalContent.innerHTML += currentLine.charAt(currentCharIndex);
                     currentCharIndex++;
-                    setTimeout(typeTerminal, typingDelay + (Math.random() * 20)); // 加上微小亂數讓打字更真實
+                    setTimeout(typeTerminal, typingDelay + (Math.random() * 20));
                 } else {
                     currentCharIndex = 0;
                     currentLineIndex++;
                     setTimeout(typeTerminal, lineDelay);
                 }
-
             } else {
                 blinkCursor();
             }
@@ -408,9 +395,156 @@
             }, 500);
         }
 
+        setTimeout(typeTerminal, 1000);
 
-        setTimeout(typeTerminal, 1000); 
+        /* ===== 銀河星空動態背景 ===== */
+        (function () {
+            const canvas = document.getElementById('tech-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const section = canvas.parentElement;
 
+            let w, h, dpr;
+            let stars = [];
+            let dust = [];
+            const mouse = { x: null, y: null };
+
+            // 偏冷的銀河色調:白、淡青、淡藍、微弱的暖金
+            const STAR_COLORS = [
+                { r: 255, g: 255, b: 255 },
+                { r: 200, g: 230, b: 255 },
+                { r: 180, g: 245, b: 235 },
+                { r: 245, g: 230, b: 200 },
+            ];
+
+            function resize() {
+                dpr = Math.min(window.devicePixelRatio || 1, 2);
+                w = section.clientWidth;
+                h = section.clientHeight;
+                canvas.width = w * dpr;
+                canvas.height = h * dpr;
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px';
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                init();
+            }
+
+            function init() {
+                // 星星數量克制:依面積給少量
+                const starCount = Math.min(Math.floor((w * h) / 26000), 50);
+                stars = [];
+                for (let i = 0; i < starCount; i++) {
+                    const c = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)];
+                    stars.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        size: Math.random() * 1.6 + 0.4,
+                        baseAlpha: Math.random() * 0.5 + 0.3,
+                        twinkleSpeed: Math.random() * 0.015 + 0.004,
+                        phase: Math.random() * Math.PI * 2,
+                        color: c,
+                        vx: (Math.random() - 0.5) * 0.06,
+                        vy: (Math.random() - 0.5) * 0.06,
+                        depth: Math.random() * 0.6 + 0.4, // 視差深度
+                    });
+                }
+
+                // 銀河塵埃:極淡的漂浮光點,營造星河感
+                const dustCount = Math.min(Math.floor((w * h) / 16000), 70);
+                dust = [];
+                for (let i = 0; i < dustCount; i++) {
+                    dust.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        size: Math.random() * 0.9 + 0.2,
+                        alpha: Math.random() * 0.18 + 0.04,
+                        vx: (Math.random() - 0.5) * 0.12,
+                        vy: (Math.random() - 0.5) * 0.12,
+                    });
+                }
+            }
+
+            function step() {
+                ctx.clearRect(0, 0, w, h);
+
+                // 銀河塵埃漂移
+                ctx.globalCompositeOperation = 'lighter';
+                for (let d of dust) {
+                    d.x += d.vx;
+                    d.y += d.vy;
+                    if (d.x < 0) d.x = w; else if (d.x > w) d.x = 0;
+                    if (d.y < 0) d.y = h; else if (d.y > h) d.y = 0;
+                    ctx.beginPath();
+                    ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(190,210,255,${d.alpha})`;
+                    ctx.fill();
+                }
+
+                // 星星:緩慢漂移 + 閃爍 + 光暈
+                for (let s of stars) {
+                    s.phase += s.twinkleSpeed;
+                    s.x += s.vx;
+                    s.y += s.vy;
+                    if (s.x < 0) s.x = w; else if (s.x > w) s.x = 0;
+                    if (s.y < 0) s.y = h; else if (s.y > h) s.y = 0;
+
+                    // 滑鼠靠近時星星微微亮起並輕推(視差)
+                    let dispX = 0, dispY = 0, boost = 0;
+                    if (mouse.x !== null) {
+                        const dx = s.x - mouse.x, dy = s.y - mouse.y;
+                        const dist = Math.hypot(dx, dy);
+                        if (dist < 200 && dist > 0) {
+                            const f = (1 - dist / 200);
+                            dispX = (dx / dist) * f * 12 * s.depth;
+                            dispY = (dy / dist) * f * 12 * s.depth;
+                            boost = f * 0.4;
+                        }
+                    }
+
+                    const twinkle = s.baseAlpha + Math.sin(s.phase) * 0.25;
+                    const alpha = Math.min(twinkle + boost, 1);
+                    const px = s.x + dispX, py = s.y + dispY;
+                    const { r, g, b } = s.color;
+
+                    // 光暈
+                    const grad = ctx.createRadialGradient(px, py, 0, px, py, s.size * 6);
+                    grad.addColorStop(0, `rgba(${r},${g},${b},${alpha * 0.5})`);
+                    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+                    ctx.beginPath();
+                    ctx.arc(px, py, s.size * 6, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+
+                    // 核心
+                    ctx.beginPath();
+                    ctx.arc(px, py, s.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+                    ctx.fill();
+                }
+                ctx.globalCompositeOperation = 'source-over';
+
+                requestAnimationFrame(step);
+            }
+
+            section.addEventListener('mousemove', (e) => {
+                const rect = section.getBoundingClientRect();
+                mouse.x = e.clientX - rect.left;
+                mouse.y = e.clientY - rect.top;
+            });
+            section.addEventListener('mouseleave', () => {
+                mouse.x = null;
+                mouse.y = null;
+            });
+
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(resize, 150);
+            });
+
+            resize();
+            step();
+        })();
     </script>
 </body>
 </html>
